@@ -1519,7 +1519,7 @@
     // ⚡ Notifier les admins (push FCM)
 try {
   const token = await user.getIdToken();
-  await fetch('https://admin-89.vercel.app/api/admin', {
+  const response = await fetch('https://admin-89.vercel.app/api/admin', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -1533,10 +1533,15 @@ try {
       establishment: establishmentValue || ''
     })
   });
-  console.log('✅ Notification admin envoyée');
+
+  if (response.ok) {
+    console.log('✅ Notification admin envoyée');
+  } else {
+    console.warn('Notification admin échouée (HTTP ' + response.status + ')');
+  }
 } catch (e) {
   console.warn('Notification admin échouée:', e.message);
-}
+    }
 
       // ⚡ Créer une notification pour l'admin (temps réel dans la console)
 try {
