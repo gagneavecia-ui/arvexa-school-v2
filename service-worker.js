@@ -1,15 +1,14 @@
 // ================================================================
 // SERVICE WORKER — ARVEXA School
-// Version : 5.1.0 — Cache complet + Permissions micro
+// Version : 6.0.0 — Network-first sur les cours
 // ================================================================
 
-const CACHE_VERSION = 'arvexa-v5.1.0';
-const CACHE_SHELL = 'arvexa-shell-v5';      // Pages de base
-const CACHE_COURS = 'arvexa-cours-v5';      // Contenu cours/exo/corr
-const CACHE_IMAGES = 'arvexa-images-v5';    // Images/fonts/icônes
-const CACHE_MANIFESTS = 'arvexa-manifests-v5'; // JSON de chapitres
+const CACHE_VERSION = 'arvexa-v6.0.0';
+const CACHE_SHELL = 'arvexa-shell-v6';
+const CACHE_COURS = 'arvexa-cours-v6';
+const CACHE_IMAGES = 'arvexa-images-v6';
 
-const ALL_CACHES = [CACHE_SHELL, CACHE_COURS, CACHE_IMAGES, CACHE_MANIFESTS];
+const ALL_CACHES = [CACHE_SHELL, CACHE_COURS, CACHE_IMAGES];
 
 // ================================================================
 // SHELL (pages de base précachées)
@@ -49,7 +48,7 @@ const PRECACHE_SHELL = [
 // INSTALLATION
 // ================================================================
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installation v5.1.0...');
+  console.log('[SW] Installation v6.0.0...');
   self.skipWaiting();
 
   event.waitUntil(
@@ -69,7 +68,7 @@ self.addEventListener('install', (event) => {
 // ACTIVATION
 // ================================================================
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activation v5.1.0...');
+  console.log('[SW] Activation v6.0.0...');
   event.waitUntil(
     caches.keys().then((names) => {
       return Promise.all(
@@ -106,23 +105,15 @@ self.addEventListener('fetch', (event) => {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 1️⃣ MANIFESTS JSON (cours/*.json) → cache-first permanent
+  // 1️⃣ COURS HTML + JSON → network-first (toujours frais)
   // ─────────────────────────────────────────────────────────────
-  if (url.pathname.includes('/cours/') && url.pathname.endsWith('.json')) {
-    event.respondWith(handleManifestRequest(request));
-    return;
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // 2️⃣ CONTENU COURS HTML (cours/*/*.html) → cache-first permanent
-  // ─────────────────────────────────────────────────────────────
-  if (url.pathname.includes('/cours/') && url.pathname.endsWith('.html')) {
+  if (url.pathname.includes('/cours/')) {
     event.respondWith(handleCoursRequest(request));
     return;
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 3️⃣ PAGES HTML principales → network-first avec fallback
+  // 2️⃣ PAGES HTML principales → network-first avec fallback
   // ─────────────────────────────────────────────────────────────
   if (request.mode === 'navigate' ||
       request.destination === 'document' ||
@@ -132,7 +123,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 4️⃣ ASSETS CDN KaTeX + Tesseract → cache-first permanent
+  // 3️⃣ ASSETS CDN KaTeX + Tesseract → cache-first permanent
   // ─────────────────────────────────────────────────────────────
   if (url.hostname === 'cdn.jsdelivr.net' &&
       (url.pathname.includes('/katex') || url.pathname.includes('/tesseract'))) {
@@ -141,7 +132,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 5️⃣ IMAGES / FONTS / ICÔNES → cache-first
+  // 4️⃣ IMAGES / FONTS / ICÔNES → cache-first
   // ─────────────────────────────────────────────────────────────
   if (request.destination === 'image' ||
       request.destination === 'font' ||
@@ -151,53 +142,35 @@ self.addEventListener('fetch', (event) => {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 6️⃣ CSS / JS externes → stale-while-revalidate
+  // 5️⃣ CSS / JS externes → stale-while-revalidate
   // ─────────────────────────────────────────────────────────────
   if (request.destination === 'style' || request.destination === 'script') {
     event.respondWith(handleAssetRequest(request, CACHE_IMAGES));
     return;
   }
-
-  // Autres : laisser passer
 });
 
 // ================================================================
 // HANDLERS
 // ================================================================
 
-// --- MANIFESTS : cache-first
-async function handleManifestRequest(request) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-
-  try {
-    const response = await fetch(request);
-    if (response && response.ok) {
-      const cache = await caches.open(CACHE_MANIFESTS);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (error) {
-    return new Response(
-      JSON.stringify({ parts: [] }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-}
-
-// --- COURS HTML : cache-first permanent
+// --- COURS (HTML + JSON) : NETWORK-FIRST
 async function handleCoursRequest(request) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-
   try {
-    const response = await fetch(request);
-    if (response && response.ok) {
+    // ⚡ Essayer le réseau d'abord
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok) {
+      // Mettre à jour le cache en arrière-plan
       const cache = await caches.open(CACHE_COURS);
-      cache.put(request, response.clone());
+      cache.put(request, networkResponse.clone()).catch(() => {});
     }
-    return response;
+    return networkResponse;
   } catch (error) {
+    // Réseau indisponible → servir le cache
+    const cached = await caches.match(request);
+    if (cached) return cached;
+
+    // Ni réseau ni cache → page offline ou message
     const offlinePage = await caches.match('./offline.html');
     if (offlinePage) return offlinePage;
 
@@ -214,7 +187,7 @@ async function handlePageRequest(request) {
     const networkResponse = await fetch(request);
     if (networkResponse && networkResponse.ok) {
       const cache = await caches.open(CACHE_SHELL);
-      cache.put(request, networkResponse.clone());
+      cache.put(request, networkResponse.clone()).catch(() => {});
     }
     return networkResponse;
   } catch (error) {
@@ -257,13 +230,11 @@ async function handleAssetRequest(request, cacheName) {
 self.addEventListener('message', (event) => {
   if (!event.data) return;
 
-  // ─── SKIP_WAITING
   if (event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
     return;
   }
 
-  // ─── CLEAR_CACHES
   if (event.data.type === 'CLEAR_CACHES') {
     event.waitUntil(
       caches.keys().then((names) =>
@@ -273,86 +244,16 @@ self.addEventListener('message', (event) => {
     return;
   }
 
-  // ─── DOWNLOAD_ALL
-  if (event.data.type === 'DOWNLOAD_ALL') {
-    event.waitUntil(
-      downloadAllFiles(event.data.files || [], event.source)
-    );
-    return;
-  }
-
-  // ─── CACHE_URL
   if (event.data.type === 'CACHE_URL') {
     event.waitUntil(cacheUrl(event.data.url));
     return;
   }
 
-  // ─── STATS
   if (event.data.type === 'STATS') {
     event.waitUntil(sendStats(event.source));
     return;
   }
-
-  // ─── MIC_REQUESTED : accusé de réception pour debug
-  if (event.data.type === 'REQUEST_MIC') {
-    event.source?.postMessage({ type: 'MIC_ACK' });
-    return;
-  }
 });
-
-// ================================================================
-// TÉLÉCHARGEMENT EN MASSE
-// ================================================================
-async function downloadAllFiles(files, client) {
-  const total = files.length;
-  let done = 0;
-  let failed = 0;
-
-  const cache = await caches.open(CACHE_COURS);
-  const manifestCache = await caches.open(CACHE_MANIFESTS);
-
-  for (const file of files) {
-    try {
-      const already = await caches.match(file);
-      if (already) {
-        done++;
-      } else {
-        const response = await fetch(file);
-        if (response && response.ok) {
-          if (file.endsWith('.json')) {
-            await manifestCache.put(file, response);
-          } else {
-            await cache.put(file, response);
-          }
-          done++;
-        } else {
-          failed++;
-        }
-      }
-    } catch (e) {
-      failed++;
-    }
-
-    if (client) {
-      client.postMessage({
-        type: 'DOWNLOAD_PROGRESS',
-        done,
-        failed,
-        total,
-        percent: Math.round(((done + failed) / total) * 100)
-      });
-    }
-  }
-
-  if (client) {
-    client.postMessage({
-      type: 'DOWNLOAD_COMPLETE',
-      done,
-      failed,
-      total
-    });
-  }
-}
 
 // ================================================================
 // CACHE URL UNIQUE
@@ -364,9 +265,7 @@ async function cacheUrl(url) {
 
     const response = await fetch(url);
     if (response && response.ok) {
-      const cacheName = url.includes('/cours/')
-        ? (url.endsWith('.json') ? CACHE_MANIFESTS : CACHE_COURS)
-        : CACHE_SHELL;
+      const cacheName = url.includes('/cours/') ? CACHE_COURS : CACHE_SHELL;
       const cache = await caches.open(cacheName);
       cache.put(url, response);
     }
@@ -379,16 +278,15 @@ async function cacheUrl(url) {
 async function sendStats(client) {
   if (!client) return;
 
-  const stats = { shell: 0, cours: 0, manifests: 0, images: 0 };
+  const stats = { shell: 0, cours: 0, images: 0 };
 
   try {
     stats.shell = (await (await caches.open(CACHE_SHELL)).keys()).length;
     stats.cours = (await (await caches.open(CACHE_COURS)).keys()).length;
-    stats.manifests = (await (await caches.open(CACHE_MANIFESTS)).keys()).length;
     stats.images = (await (await caches.open(CACHE_IMAGES)).keys()).length;
   } catch (e) {}
 
   client.postMessage({ type: 'STATS_RESULT', stats });
 }
 
-console.log('[SW] Service Worker v5.1.0 chargé');
+console.log('[SW] Service Worker v6.0.0 chargé (network-first sur les cours)');
