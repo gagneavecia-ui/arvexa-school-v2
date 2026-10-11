@@ -2238,79 +2238,99 @@ body {
   // ================================================================
   // CHARGEMENT
   // ================================================================
-  function loadContent() {
-    const suffix = tab === 'cours' ? 'cours' : (tab === 'exercices' ? 'exo' : 'corr');
-    const manifestPath = `cours/${subject}/ch${chapter}_${suffix}.json`;
+ function loadContent() {
+  const manifestPath = `cours/${subject}.json`;
 
-    contentBody.innerHTML = `
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Chargement du contenu...</p>
-      </div>
-    `;
+  contentBody.innerHTML = `
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement du contenu...</p>
+    </div>
+  `;
 
-    fetch(manifestPath)
-      .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
-      .then(data => {
-        parts = data.parts || [];
-        if (currentIndex >= parts.length) currentIndex = 0;
-        if (parts.length === 0) {
-          showContentUnavailable();
-          return;
-        }
-        renderPart();
-      })
-      .catch(() => {
+  fetch(manifestPath)
+    .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
+    .then(data => {
+      // ⚡ Trouver le chapitre
+      const ch = (data.chapters || []).find(c => c.number === chapter);
+      if (!ch) { showContentUnavailable(); return; }
+
+      // ⚡ Choisir la section selon l'onglet
+      const tabKey = tab === 'cours' ? 'cours'
+                   : tab === 'exercices' ? 'exercices'
+                   : 'corrections';
+
+      parts = (ch[tabKey] || []).map(p => ({
+        title: p.title || `Partie ${p.part}`,
+        file: p.file || '',
+        part: p.part,
+        duration: p.duration || 0
+      }));
+
+      // ⚡ Filtrer les parties sans fichier
+      parts = parts.filter(p => p.file);
+
+      if (parts.length === 0) {
         showContentUnavailable();
-      });
+        return;
+      }
+
+      if (currentIndex >= parts.length) currentIndex = 0;
+      renderPart();
+    })
+    .catch(() => {
+      showContentUnavailable();
+    });
+}
+
+ function renderPart() {
+  if (!parts || parts.length === 0) {
+    showContentUnavailable();
+    return;
+  }
+  if (currentIndex >= parts.length || currentIndex < 0) currentIndex = 0;
+
+  const part = parts[currentIndex];
+  if (!part) {
+    showContentUnavailable();
+    return;
   }
 
-  function renderPart() {
-    if (!parts || parts.length === 0) {
+  stopTTS();
+
+  pageTitle.textContent = part.title || 'Partie ' + (currentIndex + 1);
+  document.title = 'ARVEXA - ' + (part.title || 'Lecture');
+
+  partCounter.textContent = `${currentIndex + 1} / ${parts.length}`;
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.disabled = currentIndex >= parts.length - 1;
+  modalSub.textContent = part.title || 'Partie ' + (currentIndex + 1);
+
+  // ⚡ Le chemin est déjà complet dans part.file
+  const filePath = part.file;
+
+  contentBody.innerHTML = `
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement...</p>
+    </div>
+  `;
+
+  fetch(filePath)
+    .then(r => { if (!r.ok) throw new Error('not found'); return r.text(); })
+    .then(html => {
+      const cleaned = preprocessContent(html);
+      contentBody.innerHTML = cleaned;
+      markPartAsRead();
+      loadNotes();
+      renderKaTeX();
+      updateReadProgress();
+      resetStudyTimer();
+    })
+    .catch(() => {
       showContentUnavailable();
-      return;
-    }
-    if (currentIndex >= parts.length || currentIndex < 0) currentIndex = 0;
-
-    const part = parts[currentIndex];
-    if (!part) {
-      showContentUnavailable();
-      return;
-    }
-
-    stopTTS();
-
-    pageTitle.textContent = part.title || 'Partie ' + (currentIndex + 1);
-    document.title = 'ARVEXA - ' + (part.title || 'Lecture');
-
-    partCounter.textContent = `${currentIndex + 1} / ${parts.length}`;
-    prevBtn.disabled = currentIndex === 0;
-    nextBtn.disabled = currentIndex >= parts.length - 1;
-    modalSub.textContent = part.title || 'Partie ' + (currentIndex + 1);
-
-    const filePath = `cours/${subject}/${part.file}`;
-    contentBody.innerHTML = `
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Chargement...</p>
-      </div>
-    `;
-
-    fetch(filePath)
-      .then(r => { if (!r.ok) throw new Error('not found'); return r.text(); })
-      .then(html => {
-        const cleaned = preprocessContent(html);
-        contentBody.innerHTML = cleaned;
-        markPartAsRead();
-        loadNotes();
-        renderKaTeX();
-        updateReadProgress();
-        resetStudyTimer();
-      })
-      .catch(() => {
-        showContentUnavailable();
-      });
-  }
+    });
+}
 
   // ================================================================
   // PROGRESSION LECTURE
