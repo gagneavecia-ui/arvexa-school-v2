@@ -1,0 +1,244 @@
+{
+  "subject": "chimie",
+  "subjectLabel": "Chimie",
+  "icon": "fa-flask",
+  "color": "#E07A4A",
+  "version": "1.0.0",
+  "derniereMaj": "2026-01-15",
+
+  "chapters": [
+    {
+      "id": "solutions_aqueuses_ph",
+      "number": 0,
+      "title": "Solutions aqueuses et leur pH",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/solutions_aqueuses_ph/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/solutions_aqueuses_ph/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/solutions_aqueuses_ph/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/chimie/solutions_aqueuses_ph/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/solutions_aqueuses_ph/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/solutions_aqueuses_ph/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/solutions_aqueuses_ph/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/chimie/solutions_aqueuses_ph/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/solutions_aqueuses_ph/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/solutions_aqueuses_ph/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/solutions_aqueuses_ph/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/chimie/solutions_aqueuses_ph/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "acide_fort_base_forte",
+      "number": 1,
+      "title": "Acide fort, base forte",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/acide_fort_base_forte/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/acide_fort_base_forte/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/acide_fort_base_forte/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/chimie/acide_fort_base_forte/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/acide_fort_base_forte/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/acide_fort_base_forte/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/acide_fort_base_forte/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/chimie/acide_fort_base_forte/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/acide_fort_base_forte/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/acide_fort_base_forte/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/acide_fort_base_forte/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/chimie/acide_fort_base_forte/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "acide_faible_base_faible",
+      "number": 2,
+      "title": "Acide faible, base faible",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/acide_faible_base_faible/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/acide_faible_base_faible/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/acide_faible_base_faible/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/chimie/acide_faible_base_faible/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/acide_faible_base_faible/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/acide_faible_base_faible/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/acide_faible_base_faible/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/chimie/acide_faible_base_faible/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/acide_faible_base_faible/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/acide_faible_base_faible/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/acide_faible_base_faible/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/chimie/acide_faible_base_faible/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "couples_acide_base",
+      "number": 3,
+      "title": "Couples acide/base et classification",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/couples_acide_base/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/couples_acide_base/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/couples_acide_base/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/chimie/couples_acide_base/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/couples_acide_base/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/couples_acide_base/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/couples_acide_base/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/chimie/couples_acide_base/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/couples_acide_base/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/couples_acide_base/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/couples_acide_base/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/chimie/couples_acide_base/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "reaction_acido_basique_tampon",
+      "number": 4,
+      "title": "Réaction acido-basique et solution tampon",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/reaction_acido_basique_tampon/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/reaction_acido_basique_tampon/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/reaction_acido_basique_tampon/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/chimie/reaction_acido_basique_tampon/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/reaction_acido_basique_tampon/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/reaction_acido_basique_tampon/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/reaction_acido_basique_tampon/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/chimie/reaction_acido_basique_tampon/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/reaction_acido_basique_tampon/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/reaction_acido_basique_tampon/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/reaction_acido_basique_tampon/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/chimie/reaction_acido_basique_tampon/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "alcools",
+      "number": 5,
+      "title": "Alcools",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/alcools/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/alcools/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/alcools/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/chimie/alcools/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/alcools/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/alcools/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/alcools/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/chimie/alcools/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/alcools/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/alcools/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/alcools/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/chimie/alcools/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "acides_carboxyliques",
+      "number": 6,
+      "title": "Acides carboxyliques et ses dérivés",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/acides_carboxyliques/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/acides_carboxyliques/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/acides_carboxyliques/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/chimie/acides_carboxyliques/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/acides_carboxyliques/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/acides_carboxyliques/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/acides_carboxyliques/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/chimie/acides_carboxyliques/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/acides_carboxyliques/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/acides_carboxyliques/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/acides_carboxyliques/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/chimie/acides_carboxyliques/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "amines_amides",
+      "number": 7,
+      "title": "Amines et amides",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/amines_amides/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/amines_amides/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/amines_amides/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/chimie/amines_amides/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/amines_amides/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/amines_amides/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/amines_amides/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/chimie/amines_amides/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/amines_amides/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/amines_amides/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/amines_amides/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/chimie/amines_amides/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "acides_amines_proteines",
+      "number": 8,
+      "title": "Acides α-aminés et protéines",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/acides_amines_proteines/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/acides_amines_proteines/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/acides_amines_proteines/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/chimie/acides_amines_proteines/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/acides_amines_proteines/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/acides_amines_proteines/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/acides_amines_proteines/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/chimie/acides_amines_proteines/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/chimie/acides_amines_proteines/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/chimie/acides_amines_proteines/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/chimie/acides_amines_proteines/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/chimie/acides_amines_proteines/corr_p4.html" }
+      ]
+    }
+  ]
+}
