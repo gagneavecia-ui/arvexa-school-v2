@@ -834,8 +834,20 @@ async function generateWithFallback(prompt, subjectName) {
   var providers = getProviders();
   if (!providers.length) throw new Error('provider_missing');
 
+  // ⚡ NOUVEAU : budget temps de 80 secondes
+  var startTime = Date.now();
+  var TIME_BUDGET_MS = 80000;
+
   var errors = [];
   for (var i = 0; i < providers.length; i++) {
+    // ⚡ NOUVEAU : arrêter si on a déjà dépassé le budget
+    var elapsed = Date.now() - startTime;
+    if (elapsed > TIME_BUDGET_MS) {
+      console.warn('[AI] Budget temps épuisé après ' + elapsed + 'ms — arrêt cascade');
+      errors.push('time_budget_exceeded');
+      break;
+    }
+
     var provider = providers[i];
     try {
       console.log('[AI] Tentative ' + provider.name + '...');
