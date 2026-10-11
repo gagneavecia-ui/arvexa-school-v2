@@ -1011,24 +1011,49 @@
     loadManifest();
   }
 
-  function loadManifest() {
-    const suffix = currentTab === 'cours' ? 'cours' : (currentTab === 'exercices' ? 'exo' : 'corr');
-    const manifestPath = 'cours/' + subjectKey + '/ch' + chapIdx + '_' + suffix + '.json';
-    const container = document.getElementById('cardsView');
-    container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Chargement...</p></div>';
+function loadManifest() {
+  const container = document.getElementById('cardsView');
+  container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Chargement...</p></div>';
 
-    fetch(manifestPath)
-      .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
-      .then(data => {
-        currentParts = data.parts || [];
-        renderCards();
-      })
-      .catch(() => {
+  // ⚡ Charger le fichier unique de la matière
+  const manifestPath = 'cours/' + subjectKey + '.json';
+
+  fetch(manifestPath)
+    .then((r) => { if (!r.ok) throw new Error('not found'); return r.json(); })
+    .then((data) => {
+      // ⚡ Trouver le chapitre par son numéro
+      const chapter = (data.chapters || []).find((c) => c.number === chapIdx);
+      if (!chapter) {
         currentParts = [];
         renderEmpty();
-      });
-  }
+        return;
+      }
 
+      // ⚡ Choisir les parties selon l'onglet actif
+      let partsKey;
+      if (currentTab === 'cours') partsKey = 'cours';
+      else if (currentTab === 'exercices') partsKey = 'exercices';
+      else partsKey = 'corrections';
+
+      const rawParts = chapter[partsKey] || [];
+
+      // ⚡ Adapter le format pour renderCards
+      currentParts = rawParts.map((p) => ({
+        title: p.title || `Partie ${p.part}`,
+        file: p.file || '',
+        part: p.part,
+        duration: p.duration || 0
+      }));
+
+      renderCards();
+    })
+    .catch((err) => {
+      console.warn('Impossible de charger le chapitre :', err.message);
+      currentParts = [];
+      renderEmpty();
+    });
+}
+    
   function renderCards() {
     const container = document.getElementById('cardsView');
     if (currentParts.length === 0) {
