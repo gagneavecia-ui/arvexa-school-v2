@@ -1490,31 +1490,57 @@
     const lastNameValue = state.values.lastName.trim();
     const establishmentValue = state.values.establishment.trim() || '';
 
-    try {
-      // 1. Création du compte Firebase Auth
-      const credential = await createUserWithEmailAndPassword(auth, emailValue, passwordValue);
-      const user = credential.user;
+   try {
+  // 1. Création du compte Firebase Auth
+  const credential = await createUserWithEmailAndPassword(auth, emailValue, passwordValue);
+  const user = credential.user;
 
-      // 2. Création du profil Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        firstName: firstNameValue,
-        lastName: lastNameValue,
-        fullName: `${firstNameValue} ${lastNameValue}`.trim(),
-        email: emailValue,
-        establishment: establishmentValue,
-        classId: 'terminale_d',
-        exam: 'bac',
-        role: 'student',
-        onboardingCompleted: false,
-        premium: false,
-        isUnlocked: false,
-        hasDeposited: false,
-        accountStatus: 'active',
-        totalStudyTime: 0,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
+  // 2. Création du profil Firestore (avec retry automatique)
+  const profileData = {
+    uid: user.uid,
+    firstName: firstNameValue,
+    lastName: lastNameValue,
+    fullName: `${firstNameValue} ${lastNameValue}`.trim(),
+    email: emailValue,
+    establishment: establishmentValue,
+    classId: 'terminale_d',
+    exam: 'bac',
+    role: 'student',
+    onboardingCompleted: false,
+    premium: false,
+    isUnlocked: false,
+    hasDeposited: false,
+    accountStatus: 'active',
+    totalStudyTime: 0,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  };
+
+  // ⚡ Retry : si Firestore échoue, on réessaie 2 fois avant d'abandonner
+  let profileSaved = false;
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await setDoc(doc(db, 'users', user.uid), profileData);
+      profileSaved = true;
+      break;
+    } catch (err) {
+      lastError = err;
+      console.warn(`Tentative ${attempt}/3 échouée pour créer le profil :`, err.message);
+      if (attempt < 3) {
+        // Attente progressive avant retry : 1s, puis 2s
+        await new Promise((r) => setTimeout(r, attempt * 1000));
+      }
+    }
+  }
+
+  // ⚡ Si le profil n'a pas pu être créé après 3 essais, on nettoie
+  if (!profileSaved) {
+    console.error('Impossible de créer le profil après 3 tentatives. Suppression du compte Auth...');
+    try { await user.delete(); } catch (e) {}
+    throw new Error('PROFILE_CREATION_FAILED');
+  }
 
     // ⚡ Notifier les admins (push FCM)
 try {
@@ -1586,11 +1612,15 @@ try {
       let message = 'Une erreur est survenue. Réessaie.';
       let duration = 4000;
 
-      switch (error.code) {
-        case 'auth/email-already-in-use':
-          message = 'Cette adresse e-mail est déjà utilisée.';
-          duration = 6000;
-          break;
+       switch (error.message === 'PROFILE_CREATION_FAILED' ? 'PROFILE_CREATION_FAILED' : error.code) {
+       case 'PROFILE_CREATION_FAILED':
+        message = 'Impossible de créer ton profil. Vérifie ta connexion et réessaie.';
+        duration = 8000;
+        break;
+      case 'auth/email-already-in-use':
+    message = 'Cette adresse e-mail est déjà utilisée.';
+    duration = 6000;
+    break;
         case 'auth/invalid-email':
           message = 'Adresse e-mail invalide.';
           break;
