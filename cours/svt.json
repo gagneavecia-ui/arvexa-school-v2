@@ -1,0 +1,530 @@
+{
+  "subject": "svt",
+  "subjectLabel": "SVT",
+  "icon": "fa-dna",
+  "color": "#7AE04A",
+  "version": "1.0.0",
+  "derniereMaj": "2026-01-15",
+
+  "chapters": [
+    {
+      "id": "notion_ig",
+      "number": 0,
+      "title": "Notion de l'IG",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/notion_ig/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/notion_ig/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/notion_ig/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/notion_ig/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/notion_ig/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/notion_ig/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/notion_ig/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/notion_ig/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/notion_ig/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/notion_ig/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/notion_ig/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/notion_ig/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "adn_structure",
+      "number": 1,
+      "title": "Nature chimique et structure de l'IG : la molécule d'ADN",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/adn_structure/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/adn_structure/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/adn_structure/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/adn_structure/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/adn_structure/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/adn_structure/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/adn_structure/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/adn_structure/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/adn_structure/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/adn_structure/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/adn_structure/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/adn_structure/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "reproduction_conforme",
+      "number": 2,
+      "title": "La reproduction conforme",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/reproduction_conforme/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/reproduction_conforme/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/reproduction_conforme/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/reproduction_conforme/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/reproduction_conforme/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/reproduction_conforme/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/reproduction_conforme/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/reproduction_conforme/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/reproduction_conforme/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/reproduction_conforme/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/reproduction_conforme/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/reproduction_conforme/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "cycle_cellulaire",
+      "number": 3,
+      "title": "Notion de cycle cellulaire et évolution de la quantité d'ADN",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/cycle_cellulaire/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/cycle_cellulaire/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/cycle_cellulaire/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/cycle_cellulaire/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/cycle_cellulaire/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/cycle_cellulaire/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/cycle_cellulaire/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/cycle_cellulaire/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/cycle_cellulaire/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/cycle_cellulaire/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/cycle_cellulaire/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/cycle_cellulaire/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "proteines",
+      "number": 4,
+      "title": "Protéines",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/proteines/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/proteines/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/proteines/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/proteines/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/proteines/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/proteines/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/proteines/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/proteines/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/proteines/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/proteines/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/proteines/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/proteines/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "synthese_proteines",
+      "number": 5,
+      "title": "Mécanismes d'expression des gènes : la synthèse des protéines",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/synthese_proteines/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/synthese_proteines/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/synthese_proteines/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/synthese_proteines/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/synthese_proteines/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/synthese_proteines/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/synthese_proteines/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/synthese_proteines/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/synthese_proteines/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/synthese_proteines/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/synthese_proteines/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/synthese_proteines/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "reproduction_sexuee",
+      "number": 6,
+      "title": "Reproduction sexuée",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/reproduction_sexuee/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/reproduction_sexuee/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/reproduction_sexuee/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/reproduction_sexuee/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/reproduction_sexuee/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/reproduction_sexuee/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/reproduction_sexuee/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/reproduction_sexuee/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/reproduction_sexuee/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/reproduction_sexuee/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/reproduction_sexuee/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/reproduction_sexuee/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "brassage_genes",
+      "number": 7,
+      "title": "Brassage des gènes",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/brassage_genes/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/brassage_genes/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/brassage_genes/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/brassage_genes/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/brassage_genes/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/brassage_genes/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/brassage_genes/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/brassage_genes/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/brassage_genes/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/brassage_genes/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/brassage_genes/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/brassage_genes/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "transmission_caracteres",
+      "number": 8,
+      "title": "Transmission des caractères héréditaires chez l'Homme",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/transmission_caracteres/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/transmission_caracteres/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/transmission_caracteres/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/transmission_caracteres/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/transmission_caracteres/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/transmission_caracteres/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/transmission_caracteres/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/transmission_caracteres/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/transmission_caracteres/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/transmission_caracteres/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/transmission_caracteres/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/transmission_caracteres/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "anomalies_chromosomiques",
+      "number": 9,
+      "title": "Anomalies chromosomiques",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/anomalies_chromosomiques/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/anomalies_chromosomiques/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/anomalies_chromosomiques/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/anomalies_chromosomiques/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/anomalies_chromosomiques/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/anomalies_chromosomiques/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/anomalies_chromosomiques/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/anomalies_chromosomiques/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/anomalies_chromosomiques/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/anomalies_chromosomiques/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/anomalies_chromosomiques/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/anomalies_chromosomiques/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "tissus_nerveux",
+      "number": 10,
+      "title": "Tissus nerveux et notions de réflexes",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/tissus_nerveux/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/tissus_nerveux/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/tissus_nerveux/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/tissus_nerveux/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/tissus_nerveux/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/tissus_nerveux/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/tissus_nerveux/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/tissus_nerveux/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/tissus_nerveux/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/tissus_nerveux/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/tissus_nerveux/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/tissus_nerveux/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "messages_nerveux",
+      "number": 11,
+      "title": "Messages nerveux",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/messages_nerveux/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/messages_nerveux/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/messages_nerveux/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/messages_nerveux/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/messages_nerveux/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/messages_nerveux/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/messages_nerveux/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/messages_nerveux/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/messages_nerveux/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/messages_nerveux/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/messages_nerveux/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/messages_nerveux/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "glycemie",
+      "number": 12,
+      "title": "La glycémie",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/glycemie/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/glycemie/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/glycemie/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/glycemie/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/glycemie/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/glycemie/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/glycemie/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/glycemie/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/glycemie/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/glycemie/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/glycemie/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/glycemie/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "appareils_genitaux",
+      "number": 13,
+      "title": "Les appareils génitaux et leur fonctionnement",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/appareils_genitaux/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/appareils_genitaux/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/appareils_genitaux/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/appareils_genitaux/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/appareils_genitaux/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/appareils_genitaux/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/appareils_genitaux/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/appareils_genitaux/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/appareils_genitaux/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/appareils_genitaux/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/appareils_genitaux/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/appareils_genitaux/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "regulation_organes_genitaux",
+      "number": 14,
+      "title": "Régulation du fonctionnement des organes génitaux",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/regulation_organes_genitaux/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/regulation_organes_genitaux/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/regulation_organes_genitaux/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/regulation_organes_genitaux/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/regulation_organes_genitaux/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/regulation_organes_genitaux/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/regulation_organes_genitaux/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/regulation_organes_genitaux/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/regulation_organes_genitaux/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/regulation_organes_genitaux/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/regulation_organes_genitaux/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/regulation_organes_genitaux/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "fecondation_nidation",
+      "number": 15,
+      "title": "De la fécondation à la nidation",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/fecondation_nidation/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/fecondation_nidation/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/fecondation_nidation/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/fecondation_nidation/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/fecondation_nidation/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/fecondation_nidation/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/fecondation_nidation/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/fecondation_nidation/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/fecondation_nidation/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/fecondation_nidation/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/fecondation_nidation/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/fecondation_nidation/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "regulation_naissances",
+      "number": 16,
+      "title": "La régulation des naissances",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/regulation_naissances/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/regulation_naissances/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/regulation_naissances/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/regulation_naissances/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/regulation_naissances/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/regulation_naissances/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/regulation_naissances/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/regulation_naissances/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/regulation_naissances/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/regulation_naissances/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/regulation_naissances/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/regulation_naissances/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "soi_non_soi",
+      "number": 17,
+      "title": "Le soi et le non soi",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/soi_non_soi/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/soi_non_soi/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/soi_non_soi/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/soi_non_soi/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/soi_non_soi/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/soi_non_soi/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/soi_non_soi/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/soi_non_soi/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/soi_non_soi/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/soi_non_soi/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/soi_non_soi/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/soi_non_soi/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "reponses_immunitaires",
+      "number": 18,
+      "title": "Les réponses immunitaires",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/reponses_immunitaires/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/reponses_immunitaires/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/reponses_immunitaires/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/reponses_immunitaires/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/reponses_immunitaires/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/reponses_immunitaires/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/reponses_immunitaires/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/reponses_immunitaires/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/reponses_immunitaires/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/reponses_immunitaires/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/reponses_immunitaires/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/reponses_immunitaires/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "vih_sida",
+      "number": 19,
+      "title": "Dysfonctionnement du système immunitaire : cas du VIH/SIDA",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/vih_sida/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/vih_sida/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/vih_sida/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/svt/vih_sida/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/vih_sida/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/vih_sida/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/vih_sida/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/svt/vih_sida/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/svt/vih_sida/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/svt/vih_sida/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/svt/vih_sida/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/svt/vih_sida/corr_p4.html" }
+      ]
+    }
+  ]
+}
