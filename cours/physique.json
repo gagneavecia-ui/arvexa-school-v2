@@ -1,0 +1,452 @@
+{
+  "subject": "physique",
+  "subjectLabel": "Physique",
+  "icon": "fa-bolt",
+  "color": "#4AAFE0",
+  "version": "1.0.0",
+  "derniereMaj": "2026-01-15",
+
+  "chapters": [
+    {
+      "id": "cinematique",
+      "number": 0,
+      "title": "Cinématique",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/cinematique/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/cinematique/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/cinematique/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/cinematique/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/cinematique/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/cinematique/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/cinematique/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/cinematique/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/cinematique/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/cinematique/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/cinematique/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/cinematique/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "mouvement_rectiligne",
+      "number": 1,
+      "title": "Mouvement rectiligne",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/mouvement_rectiligne/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/mouvement_rectiligne/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/mouvement_rectiligne/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/mouvement_rectiligne/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/mouvement_rectiligne/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/mouvement_rectiligne/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/mouvement_rectiligne/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/mouvement_rectiligne/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/mouvement_rectiligne/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/mouvement_rectiligne/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/mouvement_rectiligne/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/mouvement_rectiligne/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "champ_pesanteur",
+      "number": 2,
+      "title": "Mouvement dans le champ de pesanteur",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/champ_pesanteur/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/champ_pesanteur/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/champ_pesanteur/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/champ_pesanteur/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/champ_pesanteur/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/champ_pesanteur/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/champ_pesanteur/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/champ_pesanteur/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/champ_pesanteur/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/champ_pesanteur/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/champ_pesanteur/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/champ_pesanteur/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "particules_chargees",
+      "number": 3,
+      "title": "Mouvement des particules chargées",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/particules_chargees/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/particules_chargees/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/particules_chargees/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/particules_chargees/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/particules_chargees/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/particules_chargees/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/particules_chargees/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/particules_chargees/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/particules_chargees/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/particules_chargees/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/particules_chargees/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/particules_chargees/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "oscillateurs_mecaniques",
+      "number": 4,
+      "title": "Oscillateurs mécaniques",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/oscillateurs_mecaniques/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/oscillateurs_mecaniques/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/oscillateurs_mecaniques/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/oscillateurs_mecaniques/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/oscillateurs_mecaniques/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/oscillateurs_mecaniques/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/oscillateurs_mecaniques/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/oscillateurs_mecaniques/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/oscillateurs_mecaniques/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/oscillateurs_mecaniques/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/oscillateurs_mecaniques/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/oscillateurs_mecaniques/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "generalites_ondes",
+      "number": 5,
+      "title": "Généralités sur les ondes",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/generalites_ondes/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/generalites_ondes/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/generalites_ondes/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/generalites_ondes/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/generalites_ondes/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/generalites_ondes/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/generalites_ondes/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/generalites_ondes/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/generalites_ondes/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/generalites_ondes/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/generalites_ondes/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/generalites_ondes/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "mouvement_vibratoire",
+      "number": 6,
+      "title": "Mouvement vibratoire",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/mouvement_vibratoire/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/mouvement_vibratoire/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/mouvement_vibratoire/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/mouvement_vibratoire/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/mouvement_vibratoire/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/mouvement_vibratoire/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/mouvement_vibratoire/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/mouvement_vibratoire/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/mouvement_vibratoire/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/mouvement_vibratoire/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/mouvement_vibratoire/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/mouvement_vibratoire/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "superposition_ondes",
+      "number": 7,
+      "title": "Superposition des ondes",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/superposition_ondes/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/superposition_ondes/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/superposition_ondes/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/superposition_ondes/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/superposition_ondes/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/superposition_ondes/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/superposition_ondes/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/superposition_ondes/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/superposition_ondes/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/superposition_ondes/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/superposition_ondes/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/superposition_ondes/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "interference_lumineuse",
+      "number": 8,
+      "title": "Interférence lumineuse",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/interference_lumineuse/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/interference_lumineuse/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/interference_lumineuse/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/interference_lumineuse/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/interference_lumineuse/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/interference_lumineuse/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/interference_lumineuse/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/interference_lumineuse/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/interference_lumineuse/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/interference_lumineuse/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/interference_lumineuse/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/interference_lumineuse/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "champ_magnetique",
+      "number": 9,
+      "title": "Champ magnétique",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/champ_magnetique/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/champ_magnetique/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/champ_magnetique/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/champ_magnetique/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/champ_magnetique/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/champ_magnetique/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/champ_magnetique/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/champ_magnetique/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/champ_magnetique/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/champ_magnetique/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/champ_magnetique/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/champ_magnetique/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "force_laplace",
+      "number": 10,
+      "title": "Force de Laplace",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/force_laplace/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/force_laplace/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/force_laplace/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/force_laplace/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/force_laplace/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/force_laplace/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/force_laplace/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/force_laplace/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/force_laplace/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/force_laplace/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/force_laplace/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/force_laplace/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "force_lorentz",
+      "number": 11,
+      "title": "Force de Lorentz",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/force_lorentz/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/force_lorentz/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/force_lorentz/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/force_lorentz/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/force_lorentz/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/force_lorentz/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/force_lorentz/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/force_lorentz/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/force_lorentz/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/force_lorentz/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/force_lorentz/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/force_lorentz/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "induction_magnetique",
+      "number": 12,
+      "title": "Induction magnétique",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/induction_magnetique/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/induction_magnetique/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/induction_magnetique/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/induction_magnetique/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/induction_magnetique/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/induction_magnetique/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/induction_magnetique/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/induction_magnetique/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/induction_magnetique/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/induction_magnetique/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/induction_magnetique/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/induction_magnetique/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "auto_induction",
+      "number": 13,
+      "title": "Auto-induction",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/auto_induction/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/auto_induction/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/auto_induction/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/auto_induction/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/auto_induction/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/auto_induction/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/auto_induction/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/auto_induction/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/auto_induction/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/auto_induction/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/auto_induction/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/auto_induction/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "circuit_lc",
+      "number": 14,
+      "title": "Circuit LC",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/circuit_lc/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/circuit_lc/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/circuit_lc/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/circuit_lc/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/circuit_lc/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/circuit_lc/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/circuit_lc/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/circuit_lc/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/circuit_lc/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/circuit_lc/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/circuit_lc/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/circuit_lc/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "circuit_rlc",
+      "number": 15,
+      "title": "Circuit RLC",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/circuit_rlc/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/circuit_rlc/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/circuit_rlc/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/circuit_rlc/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/circuit_rlc/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/circuit_rlc/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/circuit_rlc/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/circuit_rlc/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/circuit_rlc/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/circuit_rlc/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/circuit_rlc/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/circuit_rlc/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "radioactivite",
+      "number": 16,
+      "title": "Radioactivité",
+      "description": "",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/radioactivite/p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/radioactivite/p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/radioactivite/p3.html" },
+        { "part": 4, "title": "Fiche complète de révision", "duration": 0, "file": "cours/physique/radioactivite/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/radioactivite/exo_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/radioactivite/exo_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/radioactivite/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse", "duration": 0, "file": "cours/physique/radioactivite/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "", "duration": 0, "file": "cours/physique/radioactivite/corr_p1.html" },
+        { "part": 2, "title": "", "duration": 0, "file": "cours/physique/radioactivite/corr_p2.html" },
+        { "part": 3, "title": "", "duration": 0, "file": "cours/physique/radioactivite/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 0, "file": "cours/physique/radioactivite/corr_p4.html" }
+      ]
+    }
+  ]
+}
