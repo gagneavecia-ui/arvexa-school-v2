@@ -1233,22 +1233,38 @@ async function markDailyActivity(uid, inc = {}) {
 // ═══════════════════════════════════════════════════════════════
 async function getDashboard(uid) {
   const { db } = getAdminServices();
-  const subjects = [];
-  let totalChapters = 0;
-  let totalSections = 0;
 
-  for (const subjectKey of ALLOWED_SUBJECTS) {
-    const info = SUBJECT_INFO[subjectKey];
-    const chaptersSnap = await db
+  // ⚡ Lancer TOUTES les lectures en parallèle
+  const chaptersPromises = ALLOWED_SUBJECTS.map((subjectKey) =>
+    db
       .collection('users').doc(uid)
       .collection('notebooks').doc(subjectKey)
       .collection('chapters')
       .orderBy('updatedAt', 'desc')
       .limit(50)
       .get()
-      .catch(() => ({ docs: [] }));
+      .catch(() => ({ docs: [] }))
+  );
 
-    if (chaptersSnap.docs.length === 0) continue;
+  // ⚡ Streak en parallèle
+  const streakPromise = computeStreak(uid).catch(() => ({ current: 0, best: 0 }));
+
+  // Attendre toutes les lectures
+  const [chaptersResults, streak] = await Promise.all([
+    Promise.all(chaptersPromises),
+    streakPromise
+  ]);
+
+  // Traiter les résultats (rapide, en mémoire)
+  const subjects = [];
+  let totalChapters = 0;
+  let totalSections = 0;
+
+  ALLOWED_SUBJECTS.forEach((subjectKey, index) => {
+    const chaptersSnap = chaptersResults[index];
+    const info = SUBJECT_INFO[subjectKey];
+
+    if (!chaptersSnap.docs || chaptersSnap.docs.length === 0) return;
 
     const chapters = chaptersSnap.docs.map((d) => {
       const data = d.data();
@@ -1271,34 +1287,37 @@ async function getDashboard(uid) {
       sectionsCount: totalSubjectSections,
       last: chapters[0]?.last || ''
     });
-  }
+  });
 
   subjects.sort((a, b) => b.sectionsCount - a.sectionsCount);
-  const streak = await computeStreak(uid);
 
+  // ⚡ Activité récente (seulement si on a des sujets)
   let recentActivity = [];
   if (subjects.length > 0) {
     const topSubject = subjects[0];
-    const lastChaptersSnap = await db
-      .collection('users').doc(uid)
-      .collection('notebooks').doc(topSubject.key)
-      .collection('chapters')
-      .orderBy('updatedAt', 'desc')
-      .limit(3)
-      .get()
-      .catch(() => ({ docs: [] }));
+    try {
+      const lastChaptersSnap = await db
+        .collection('users').doc(uid)
+        .collection('notebooks').doc(topSubject.key)
+        .collection('chapters')
+        .orderBy('updatedAt', 'desc')
+        .limit(3)
+        .get();
 
-    recentActivity = lastChaptersSnap.docs.map((d) => {
-      const data = d.data();
-      return {
-        subject: topSubject.key,
-        subjectLabel: topSubject.label,
-        chapterId: d.id,
-        chapterTitle: data.title || 'Chapitre',
-        sectionsCount: data.sectionsCount || 0,
-        time: formatRelativeDate(data.updatedAt || data.createdAt)
-      };
-    });
+      recentActivity = lastChaptersSnap.docs.map((d) => {
+        const data = d.data();
+        return {
+          subject: topSubject.key,
+          subjectLabel: topSubject.label,
+          chapterId: d.id,
+          chapterTitle: data.title || 'Chapitre',
+          sectionsCount: data.sectionsCount || 0,
+          time: formatRelativeDate(data.updatedAt || data.createdAt)
+        };
+      });
+    } catch (e) {
+      recentActivity = [];
+    }
   }
 
   return {
