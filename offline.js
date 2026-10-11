@@ -235,22 +235,43 @@
 
     showToast('⬇️ Récupération de la liste...', 'info');
 
+   try {
+  // ⚡ Étape 1 : charger les 4 fichiers JSON des matières
+  const subjectFiles = [
+    'cours/mathematiques.json',
+    'cours/physique.json',
+    'cours/chimie.json',
+    'cours/svt.json'
+  ];
+
+  // ⚡ Étape 2 : pour chaque matière, extraire tous les HTML référencés
+  const htmlFiles = new Set();
+
+  for (const jsonFile of subjectFiles) {
     try {
-      // Charger le manifest
-      const res = await fetch('cache-manifest.json');
-      if (!res.ok) throw new Error('Manifest introuvable');
-      const manifest = await res.json();
+      const res = await fetch(jsonFile);
+      if (!res.ok) continue;
+      const data = await res.json();
 
-      // Compiler la liste de tous les fichiers
-      const files = [];
-      Object.values(manifest.matieres || {}).forEach((mat) => {
-        (mat.files || []).forEach((f) => files.push(f));
+      (data.chapters || []).forEach((ch) => {
+        ['cours', 'exercices', 'corrections'].forEach((section) => {
+          (ch[section] || []).forEach((part) => {
+            if (part.file) htmlFiles.add(part.file);
+          });
+        });
       });
+    } catch (e) {
+      // Ignorer les matières absentes
+    }
+  }
 
-      if (files.length === 0) {
-        showToast('ℹ️ Aucun fichier à télécharger', 'info');
-        return;
-      }
+  // ⚡ Étape 3 : compiler la liste finale (JSON + HTML)
+  const files = [...subjectFiles, ...Array.from(htmlFiles)];
+
+  if (files.length === 0) {
+    showToast('ℹ️ Aucun fichier à télécharger', 'info');
+    return;
+  }
 
       // Créer la modale de progression
       openDownloadModal(files.length);
