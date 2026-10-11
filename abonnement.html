@@ -2522,7 +2522,6 @@ confirmBtn.addEventListener('click', sendToWhatsApp);
 // DÉCONNEXION
 // ================================================================
 async function performLogout() {
-  isRedirecting = true;
   if (unsubscribeUser) unsubscribeUser();
   clearSession();
   try { await signOut(auth); } catch (e) {}
