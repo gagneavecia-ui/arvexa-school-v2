@@ -141,27 +141,24 @@
   // ================================================================
   // TOAST
   // ================================================================
-  let toastTimer = null;
   function showToast(message, type = 'info') {
-    if (typeof window.arvexaShowToast === 'function') {
-      window.arvexaShowToast(message, type);
-      return;
-    }
+  if (typeof window.arvexaShowToast === 'function') {
+    window.arvexaShowToast(message, type);
+    return;
+  }
 
-    let toast = document.getElementById('arvexaOfflineToast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.id = 'arvexaOfflineToast';
-      toast.className = 'arvexa-offline-toast';
-      document.body.appendChild(toast);
-    }
+  // ⚡ Chaque toast est un élément indépendant (empilement possible)
+  const toast = document.createElement('div');
+  toast.className = `arvexa-offline-toast ${type} show`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
 
-    toast.textContent = message;
-    toast.classList.remove('success', 'error', 'info');
-    toast.classList.add(type, 'show');
-
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-10px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
   }
 
   // ================================================================
