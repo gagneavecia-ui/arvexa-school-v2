@@ -29,14 +29,32 @@
   // 2. INJECTION AUTOMATIQUE DE offline.js
   // ============================================================
   function injectOffline() {
-    if (document.getElementById('arvexaOfflineScript')) return;
+  if (document.getElementById('arvexaOfflineScript')) return;
 
-    const script = document.createElement('script');
-    script.id = 'arvexaOfflineScript';
-    script.src = 'offline.js';
-    script.defer = true;
-    script.onerror = () => console.warn('[Offline] Impossible de charger offline.js');
-    document.head.appendChild(script);
+  // ⚡ Ne pas injecter sur les pages publiques / d'authentification
+  const path = window.location.pathname.toLowerCase();
+  const SKIP_PATTERNS = [
+    'login',
+    'register',
+    'forgot-password',
+    'auth-choice',
+    'onboarding',
+    'conditions',
+    'confidentialite',
+    'offline',
+    '404'
+  ];
+
+  if (SKIP_PATTERNS.some((pattern) => path.includes(pattern))) {
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.id = 'arvexaOfflineScript';
+  script.src = 'offline.js';
+  script.defer = true;
+  script.onerror = () => console.warn('[Offline] Impossible de charger offline.js');
+  document.head.appendChild(script);
   }
 
 
