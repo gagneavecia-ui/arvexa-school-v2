@@ -1,0 +1,296 @@
+{
+  "subject": "mathematiques",
+  "subjectLabel": "Mathématiques",
+  "icon": "fa-square-root-variable",
+  "color": "#E0B84A",
+  "version": "1.0.0",
+  "derniereMaj": "2026-01-15",
+
+  "chapters": [
+    {
+      "id": "nombres_complexes",
+      "number": 0,
+      "title": "Nombres complexes",
+      "description": "Étude des nombres de la forme a + bi, propriétés algébriques et géométriques.",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "Introduction & Forme algébrique", "duration": 20, "file": "cours/mathematiques/nombres_complexes/p1.html" },
+        { "part": 2, "title": "Conjugué, Module & Argument", "duration": 25, "file": "cours/mathematiques/nombres_complexes/p2.html" },
+        { "part": 3, "title": "Formes trigonométrique, exponentielle & Opérations", "duration": 25, "file": "cours/mathematiques/nombres_complexes/p3.html" },
+        { "part": 4, "title": "Fiche complète — Moivre, Euler, Équations, Racines & Géométrie", "duration": 20, "file": "cours/mathematiques/nombres_complexes/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "Exercices — Forme algébrique", "duration": 20, "file": "cours/mathematiques/nombres_complexes/exo_p1.html" },
+        { "part": 2, "title": "Exercices — Conjugué, Module & Argument", "duration": 25, "file": "cours/mathematiques/nombres_complexes/exo_p2.html" },
+        { "part": 3, "title": "Exercices — Formes & Opérations", "duration": 25, "file": "cours/mathematiques/nombres_complexes/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse — Géométrie & Racines", "duration": 30, "file": "cours/mathematiques/nombres_complexes/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "Corrections — Forme algébrique", "duration": 15, "file": "cours/mathematiques/nombres_complexes/corr_p1.html" },
+        { "part": 2, "title": "Corrections — Conjugué, Module & Argument", "duration": 15, "file": "cours/mathematiques/nombres_complexes/corr_p2.html" },
+        { "part": 3, "title": "Corrections — Formes & Opérations", "duration": 15, "file": "cours/mathematiques/nombres_complexes/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 20, "file": "cours/mathematiques/nombres_complexes/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "similitudes_planes",
+      "number": 1,
+      "title": "Similitudes planes directes",
+      "description": "Transformations du plan conservant les angles et multipliant les distances.",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "Définition & Écriture complexe", "duration": 20, "file": "cours/mathematiques/similitudes_planes/p1.html" },
+        { "part": 2, "title": "Rapport, Angle & Centre", "duration": 25, "file": "cours/mathematiques/similitudes_planes/p2.html" },
+        { "part": 3, "title": "Cas particuliers & Composition", "duration": 25, "file": "cours/mathematiques/similitudes_planes/p3.html" },
+        { "part": 4, "title": "Fiche complète — Applications géométriques", "duration": 20, "file": "cours/mathematiques/similitudes_planes/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "Exercices — Définition & Écriture", "duration": 20, "file": "cours/mathematiques/similitudes_planes/exo_p1.html" },
+        { "part": 2, "title": "Exercices — Rapport, Angle & Centre", "duration": 25, "file": "cours/mathematiques/similitudes_planes/exo_p2.html" },
+        { "part": 3, "title": "Exercices — Cas particuliers & Composition", "duration": 25, "file": "cours/mathematiques/similitudes_planes/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse — Applications", "duration": 30, "file": "cours/mathematiques/similitudes_planes/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "Corrections — Définition & Écriture", "duration": 15, "file": "cours/mathematiques/similitudes_planes/corr_p1.html" },
+        { "part": 2, "title": "Corrections — Rapport, Angle & Centre", "duration": 15, "file": "cours/mathematiques/similitudes_planes/corr_p2.html" },
+        { "part": 3, "title": "Corrections — Cas particuliers & Composition", "duration": 15, "file": "cours/mathematiques/similitudes_planes/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 20, "file": "cours/mathematiques/similitudes_planes/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "calcul_probabilites",
+      "number": 2,
+      "title": "Calcul de probabilités",
+      "description": "Probabilités sur un univers fini, conditionnement, indépendance.",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "Vocabulaire, Univers & Probabilité", "duration": 20, "file": "cours/mathematiques/calcul_probabilites/p1.html" },
+        { "part": 2, "title": "Événement contraire, Réunion & Intersection", "duration": 20, "file": "cours/mathematiques/calcul_probabilites/p2.html" },
+        { "part": 3, "title": "Probabilité conditionnelle & Probabilités totales", "duration": 25, "file": "cours/mathematiques/calcul_probabilites/p3.html" },
+        { "part": 4, "title": "Fiche complète — Formule de Bayes & Indépendance", "duration": 25, "file": "cours/mathematiques/calcul_probabilites/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "Exercices — Vocabulaire & Probabilité", "duration": 20, "file": "cours/mathematiques/calcul_probabilites/exo_p1.html" },
+        { "part": 2, "title": "Exercices — Événements & Opérations", "duration": 20, "file": "cours/mathematiques/calcul_probabilites/exo_p2.html" },
+        { "part": 3, "title": "Exercices — Conditionnement", "duration": 25, "file": "cours/mathematiques/calcul_probabilites/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse — Bayes & Indépendance", "duration": 30, "file": "cours/mathematiques/calcul_probabilites/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "Corrections — Vocabulaire & Probabilité", "duration": 15, "file": "cours/mathematiques/calcul_probabilites/corr_p1.html" },
+        { "part": 2, "title": "Corrections — Événements & Opérations", "duration": 15, "file": "cours/mathematiques/calcul_probabilites/corr_p2.html" },
+        { "part": 3, "title": "Corrections — Conditionnement", "duration": 15, "file": "cours/mathematiques/calcul_probabilites/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 20, "file": "cours/mathematiques/calcul_probabilites/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "variable_aleatoire",
+      "number": 3,
+      "title": "Variable aléatoire",
+      "description": "Loi de probabilité, espérance, variance, lois usuelles.",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "Définition & Loi de probabilité", "duration": 20, "file": "cours/mathematiques/variable_aleatoire/p1.html" },
+        { "part": 2, "title": "Espérance mathématique", "duration": 20, "file": "cours/mathematiques/variable_aleatoire/p2.html" },
+        { "part": 3, "title": "Variance & Écart-type", "duration": 20, "file": "cours/mathematiques/variable_aleatoire/p3.html" },
+        { "part": 4, "title": "Fiche complète — Loi binomiale, Loi normale & Applications", "duration": 30, "file": "cours/mathematiques/variable_aleatoire/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "Exercices — Définition & Loi", "duration": 20, "file": "cours/mathematiques/variable_aleatoire/exo_p1.html" },
+        { "part": 2, "title": "Exercices — Espérance", "duration": 20, "file": "cours/mathematiques/variable_aleatoire/exo_p2.html" },
+        { "part": 3, "title": "Exercices — Variance & Écart-type", "duration": 20, "file": "cours/mathematiques/variable_aleatoire/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse — Lois & Applications", "duration": 30, "file": "cours/mathematiques/variable_aleatoire/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "Corrections — Définition & Loi", "duration": 15, "file": "cours/mathematiques/variable_aleatoire/corr_p1.html" },
+        { "part": 2, "title": "Corrections — Espérance", "duration": 15, "file": "cours/mathematiques/variable_aleatoire/corr_p2.html" },
+        { "part": 3, "title": "Corrections — Variance & Écart-type", "duration": 15, "file": "cours/mathematiques/variable_aleatoire/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 20, "file": "cours/mathematiques/variable_aleatoire/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "fonctions_numeriques",
+      "number": 4,
+      "title": "Fonctions numériques",
+      "description": "Limites, continuité, dérivabilité, études de fonctions.",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "Limites & Croissances comparées", "duration": 25, "file": "cours/mathematiques/fonctions_numeriques/p1.html" },
+        { "part": 2, "title": "Continuité, TVI & Théorème de la bijection", "duration": 25, "file": "cours/mathematiques/fonctions_numeriques/p2.html" },
+        { "part": 3, "title": "Dérivabilité, Dérivées & Opérations", "duration": 25, "file": "cours/mathematiques/fonctions_numeriques/p3.html" },
+        { "part": 4, "title": "Fiche complète — Variations, Extremums & Étude complète", "duration": 15, "file": "cours/mathematiques/fonctions_numeriques/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "Exercices — Limites", "duration": 20, "file": "cours/mathematiques/fonctions_numeriques/exo_p1.html" },
+        { "part": 2, "title": "Exercices — Continuité & Théorèmes", "duration": 20, "file": "cours/mathematiques/fonctions_numeriques/exo_p2.html" },
+        { "part": 3, "title": "Exercices — Dérivées", "duration": 25, "file": "cours/mathematiques/fonctions_numeriques/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse — Étude complète", "duration": 30, "file": "cours/mathematiques/fonctions_numeriques/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "Corrections — Limites", "duration": 15, "file": "cours/mathematiques/fonctions_numeriques/corr_p1.html" },
+        { "part": 2, "title": "Corrections — Continuité & Théorèmes", "duration": 15, "file": "cours/mathematiques/fonctions_numeriques/corr_p2.html" },
+        { "part": 3, "title": "Corrections — Dérivées", "duration": 15, "file": "cours/mathematiques/fonctions_numeriques/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 20, "file": "cours/mathematiques/fonctions_numeriques/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "logarithme_neperien",
+      "number": 5,
+      "title": "Fonction logarithme népérien",
+      "description": "Définition, propriétés, dérivée, limites.",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "Définition & Propriétés algébriques", "duration": 20, "file": "cours/mathematiques/logarithme_neperien/p1.html" },
+        { "part": 2, "title": "Dérivée de ln et de ln(u)", "duration": 20, "file": "cours/mathematiques/logarithme_neperien/p2.html" },
+        { "part": 3, "title": "Limites & Étude de la fonction ln", "duration": 25, "file": "cours/mathematiques/logarithme_neperien/p3.html" },
+        { "part": 4, "title": "Fiche complète — Équations, Inéquations & Applications", "duration": 25, "file": "cours/mathematiques/logarithme_neperien/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "Exercices — Définition & Propriétés", "duration": 20, "file": "cours/mathematiques/logarithme_neperien/exo_p1.html" },
+        { "part": 2, "title": "Exercices — Dérivées", "duration": 20, "file": "cours/mathematiques/logarithme_neperien/exo_p2.html" },
+        { "part": 3, "title": "Exercices — Limites & Étude", "duration": 25, "file": "cours/mathematiques/logarithme_neperien/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse — Équations & Applications", "duration": 30, "file": "cours/mathematiques/logarithme_neperien/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "Corrections — Définition & Propriétés", "duration": 15, "file": "cours/mathematiques/logarithme_neperien/corr_p1.html" },
+        { "part": 2, "title": "Corrections — Dérivées", "duration": 15, "file": "cours/mathematiques/logarithme_neperien/corr_p2.html" },
+        { "part": 3, "title": "Corrections — Limites & Étude", "duration": 15, "file": "cours/mathematiques/logarithme_neperien/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 20, "file": "cours/mathematiques/logarithme_neperien/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "fonction_exponentielle",
+      "number": 6,
+      "title": "Fonction exponentielle",
+      "description": "Définition, propriétés, dérivée, limites.",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "Définition & Propriétés algébriques", "duration": 20, "file": "cours/mathematiques/fonction_exponentielle/p1.html" },
+        { "part": 2, "title": "Dérivée de exp et de exp(u)", "duration": 20, "file": "cours/mathematiques/fonction_exponentielle/p2.html" },
+        { "part": 3, "title": "Limites & Étude de la fonction exp", "duration": 25, "file": "cours/mathematiques/fonction_exponentielle/p3.html" },
+        { "part": 4, "title": "Fiche complète — Relation ln/exp, Équations & Applications", "duration": 25, "file": "cours/mathematiques/fonction_exponentielle/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "Exercices — Définition & Propriétés", "duration": 20, "file": "cours/mathematiques/fonction_exponentielle/exo_p1.html" },
+        { "part": 2, "title": "Exercices — Dérivées", "duration": 20, "file": "cours/mathematiques/fonction_exponentielle/exo_p2.html" },
+        { "part": 3, "title": "Exercices — Limites & Étude", "duration": 25, "file": "cours/mathematiques/fonction_exponentielle/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse — Équations & Applications", "duration": 30, "file": "cours/mathematiques/fonction_exponentielle/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "Corrections — Définition & Propriétés", "duration": 15, "file": "cours/mathematiques/fonction_exponentielle/corr_p1.html" },
+        { "part": 2, "title": "Corrections — Dérivées", "duration": 15, "file": "cours/mathematiques/fonction_exponentielle/corr_p2.html" },
+        { "part": 3, "title": "Corrections — Limites & Étude", "duration": 15, "file": "cours/mathematiques/fonction_exponentielle/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 20, "file": "cours/mathematiques/fonction_exponentielle/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "calcul_integral",
+      "number": 7,
+      "title": "Calcul intégral",
+      "description": "Primitives, intégrales, techniques de calcul.",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "Primitives & Primitives usuelles", "duration": 20, "file": "cours/mathematiques/calcul_integral/p1.html" },
+        { "part": 2, "title": "Primitives composées & Définition de l'intégrale", "duration": 25, "file": "cours/mathematiques/calcul_integral/p2.html" },
+        { "part": 3, "title": "Propriétés, Linéarité & Relation de Chasles", "duration": 20, "file": "cours/mathematiques/calcul_integral/p3.html" },
+        { "part": 4, "title": "Fiche complète — Intégration par parties, Aires & Valeur moyenne", "duration": 25, "file": "cours/mathematiques/calcul_integral/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "Exercices — Primitives", "duration": 20, "file": "cours/mathematiques/calcul_integral/exo_p1.html" },
+        { "part": 2, "title": "Exercices — Primitives composées & Intégrales", "duration": 25, "file": "cours/mathematiques/calcul_integral/exo_p2.html" },
+        { "part": 3, "title": "Exercices — Propriétés & Chasles", "duration": 20, "file": "cours/mathematiques/calcul_integral/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse — Intégration & Aires", "duration": 30, "file": "cours/mathematiques/calcul_integral/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "Corrections — Primitives", "duration": 15, "file": "cours/mathematiques/calcul_integral/corr_p1.html" },
+        { "part": 2, "title": "Corrections — Primitives composées & Intégrales", "duration": 15, "file": "cours/mathematiques/calcul_integral/corr_p2.html" },
+        { "part": 3, "title": "Corrections — Propriétés & Chasles", "duration": 15, "file": "cours/mathematiques/calcul_integral/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 20, "file": "cours/mathematiques/calcul_integral/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "equations_differentielles",
+      "number": 8,
+      "title": "Équations différentielles",
+      "description": "Équations y' = ay, y' = ay + b, y' = ay + f(x).",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "Équation y' = ay", "duration": 20, "file": "cours/mathematiques/equations_differentielles/p1.html" },
+        { "part": 2, "title": "Équation y' = ay + b", "duration": 20, "file": "cours/mathematiques/equations_differentielles/p2.html" },
+        { "part": 3, "title": "Équation y' = ay + f(x)", "duration": 25, "file": "cours/mathematiques/equations_differentielles/p3.html" },
+        { "part": 4, "title": "Fiche complète — Conditions initiales & Applications", "duration": 25, "file": "cours/mathematiques/equations_differentielles/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "Exercices — y' = ay", "duration": 20, "file": "cours/mathematiques/equations_differentielles/exo_p1.html" },
+        { "part": 2, "title": "Exercices — y' = ay + b", "duration": 20, "file": "cours/mathematiques/equations_differentielles/exo_p2.html" },
+        { "part": 3, "title": "Exercices — y' = ay + f(x)", "duration": 25, "file": "cours/mathematiques/equations_differentielles/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse — Applications", "duration": 30, "file": "cours/mathematiques/equations_differentielles/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "Corrections — y' = ay", "duration": 15, "file": "cours/mathematiques/equations_differentielles/corr_p1.html" },
+        { "part": 2, "title": "Corrections — y' = ay + b", "duration": 15, "file": "cours/mathematiques/equations_differentielles/corr_p2.html" },
+        { "part": 3, "title": "Corrections — y' = ay + f(x)", "duration": 15, "file": "cours/mathematiques/equations_differentielles/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 20, "file": "cours/mathematiques/equations_differentielles/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "suites_numeriques",
+      "number": 9,
+      "title": "Suites numériques",
+      "description": "Suites arithmétiques, géométriques, convergence.",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "Définition & Suite arithmétique", "duration": 20, "file": "cours/mathematiques/suites_numeriques/p1.html" },
+        { "part": 2, "title": "Suite géométrique & Sens de variation", "duration": 25, "file": "cours/mathematiques/suites_numeriques/p2.html" },
+        { "part": 3, "title": "Convergence & Raisonnement par récurrence", "duration": 25, "file": "cours/mathematiques/suites_numeriques/p3.html" },
+        { "part": 4, "title": "Fiche complète — Suites bornées & Applications", "duration": 20, "file": "cours/mathematiques/suites_numeriques/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "Exercices — Définition & Arithmétique", "duration": 20, "file": "cours/mathematiques/suites_numeriques/exo_p1.html" },
+        { "part": 2, "title": "Exercices — Géométrique & Variations", "duration": 25, "file": "cours/mathematiques/suites_numeriques/exo_p2.html" },
+        { "part": 3, "title": "Exercices — Convergence & Récurrence", "duration": 25, "file": "cours/mathematiques/suites_numeriques/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse — Applications", "duration": 30, "file": "cours/mathematiques/suites_numeriques/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "Corrections — Définition & Arithmétique", "duration": 15, "file": "cours/mathematiques/suites_numeriques/corr_p1.html" },
+        { "part": 2, "title": "Corrections — Géométrique & Variations", "duration": 15, "file": "cours/mathematiques/suites_numeriques/corr_p2.html" },
+        { "part": 3, "title": "Corrections — Convergence & Récurrence", "duration": 15, "file": "cours/mathematiques/suites_numeriques/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 20, "file": "cours/mathematiques/suites_numeriques/corr_p4.html" }
+      ]
+    },
+
+    {
+      "id": "statistiques",
+      "number": 10,
+      "title": "Statistiques",
+      "description": "Séries statistiques, ajustement linéaire, corrélation.",
+      "duration_min": 90,
+      "cours": [
+        { "part": 1, "title": "Série statistique & Indicateurs de position", "duration": 20, "file": "cours/mathematiques/statistiques/p1.html" },
+        { "part": 2, "title": "Écart-type & Ajustement linéaire", "duration": 25, "file": "cours/mathematiques/statistiques/p2.html" },
+        { "part": 3, "title": "Corrélation linéaire", "duration": 20, "file": "cours/mathematiques/statistiques/p3.html" },
+        { "part": 4, "title": "Fiche complète — Applications", "duration": 25, "file": "cours/mathematiques/statistiques/p4.html" }
+      ],
+      "exercices": [
+        { "part": 1, "title": "Exercices — Série & Indicateurs", "duration": 20, "file": "cours/mathematiques/statistiques/exo_p1.html" },
+        { "part": 2, "title": "Exercices — Écart-type & Ajustement", "duration": 25, "file": "cours/mathematiques/statistiques/exo_p2.html" },
+        { "part": 3, "title": "Exercices — Corrélation", "duration": 20, "file": "cours/mathematiques/statistiques/exo_p3.html" },
+        { "part": 4, "title": "Exercices de synthèse — Applications", "duration": 30, "file": "cours/mathematiques/statistiques/exo_p4.html" }
+      ],
+      "corrections": [
+        { "part": 1, "title": "Corrections — Série & Indicateurs", "duration": 15, "file": "cours/mathematiques/statistiques/corr_p1.html" },
+        { "part": 2, "title": "Corrections — Écart-type & Ajustement", "duration": 15, "file": "cours/mathematiques/statistiques/corr_p2.html" },
+        { "part": 3, "title": "Corrections — Corrélation", "duration": 15, "file": "cours/mathematiques/statistiques/corr_p3.html" },
+        { "part": 4, "title": "Corrections — Synthèse", "duration": 20, "file": "cours/mathematiques/statistiques/corr_p4.html" }
+      ]
+    }
+  ]
+}
