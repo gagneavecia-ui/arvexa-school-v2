@@ -494,26 +494,26 @@
       await setPersistence(auth, browserLocalPersistence);
     } catch (e) {}
 
-    // Redirection demandée
-    const redirect = sessionStorage.getItem('redirectAfterAuth') || 'index.html';
-    const target = encodeURIComponent(redirect);
+    // Redirection demandée — on lit la clé utilisée partout ailleurs
+const redirect = sessionStorage.getItem('redirectAfterLogin') || 'index.html';
+const target = encodeURIComponent(redirect);
 
-    document.getElementById('registerLink').href = `register.html?redirect=${target}`;
-    document.getElementById('loginLink').href = `login.html?redirect=${target}`;
+document.getElementById('registerLink').href = `register.html?redirect=${target}`;
+document.getElementById('loginLink').href = `login.html?redirect=${target}`;
 
-    // Vérifier la session
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // Déjà connecté → redirection directe
-        sessionStorage.removeItem('redirectAfterAuth');
-        window.location.replace(redirect);
-        return;
-      }
+// Vérifier la session
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // Déjà connecté → redirection directe
+    sessionStorage.removeItem('redirectAfterLogin');
+    window.location.replace(redirect);
+    return;
+  }
 
-      // Sinon, afficher le choix
-      document.getElementById('loading').hidden = true;
-      document.getElementById('choice').hidden = false;
-    });
+  // Sinon, afficher le choix
+  document.getElementById('loading').hidden = true;
+  document.getElementById('choice').hidden = false;
+});
   </script>
 </body>
 </html>
