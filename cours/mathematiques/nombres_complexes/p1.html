@@ -1,1 +1,1168 @@
-aaaa
+<!-- ============================================================ -->
+<!-- PARTIE 1 : INTRODUCTION & FORME ALGÉBRIQUE (2 NOTIONS)        -->
+<!-- Notion 1 : forme_algebrique — Définition et forme algébrique  -->
+<!-- Notion 2 : egalite_complexes — Égalité de deux complexes      -->
+<!-- ============================================================ -->
+
+<div class="lecture-container">
+
+  <!-- Styles pour les QCM / exercices dépliables -->
+  <style>
+    .lecture-quiz { display: flex; flex-direction: column; gap: 12px; }
+    .lecture-quiz-item { background: rgba(255,255,255,0.02); border: 1px solid rgba(224,184,74,0.15); border-radius: 12px; padding: 16px 20px; }
+    .lecture-quiz-q { font-weight: 600; color: #F5F0E8; margin-bottom: 8px; }
+    .lecture-quiz-options { display: grid; gap: 5px; margin: 10px 0; }
+    .lecture-quiz-options span { color: #8a8a7a; font-size: 0.95em; }
+    .lecture-quiz summary { cursor: pointer; color: #E0B84A; font-weight: 600; font-size: 0.9em; user-select: none; }
+    .lecture-quiz-answer { margin-top: 10px; background: rgba(74,222,128,0.06); border-left: 3px solid #4ade80; padding: 12px 16px; border-radius: 0 8px 8px 0; color: #d8d8c8; font-size: 0.95em; }
+    .lecture-exercise { background: rgba(96,165,250,0.05); border: 1px solid rgba(96,165,250,0.2); border-radius: 14px; padding: 20px 24px; margin: 20px 0; }
+    .lecture-exercise-label { font-size: 0.75em; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #60a5fa; margin-bottom: 10px; }
+  </style>
+
+  <!-- ===== HERO ===== -->
+  <header class="lecture-hero">
+    <div class="lecture-hero-badge">
+      <span class="lecture-hero-icon">📘</span>
+      <span class="lecture-hero-label">Partie 01 · Introduction</span>
+    </div>
+    <h1 class="lecture-hero-title">
+      Introduction &amp; <em>Forme algébrique</em>
+    </h1>
+    <p class="lecture-hero-intro">
+      Pourquoi inventer des nombres « qui n'existent pas » ? Comment s'écrit un nombre complexe, et quand deux complexes sont-ils égaux ? Cette partie construit les fondations du chapitre autour de <strong>2 notions</strong> : la <strong>forme algébrique</strong> et l'<strong>égalité de deux complexes</strong>. Chaque notion est illustrée, schématisée, puis immédiatement mise en pratique.
+    </p>
+    <div class="lecture-hero-meta">
+      <span class="lecture-hero-meta-item"><i class="fas fa-clock"></i> 50 min</span>
+      <span class="lecture-hero-meta-item"><i class="fas fa-cubes"></i> 2 notions</span>
+      <span class="lecture-hero-meta-item"><i class="fas fa-layer-group"></i> 8 sections</span>
+      <span class="lecture-hero-meta-item"><i class="fas fa-graduation-cap"></i> Terminale D</span>
+    </div>
+  </header>
+
+  <!-- ===== SOMMAIRE ===== -->
+  <nav class="lecture-toc">
+    <div class="lecture-toc-header">
+      <span>Dans cette partie</span>
+      <span class="lecture-toc-count">2 notions · 8 sections</span>
+    </div>
+    <ol class="lecture-toc-list">
+      <li><a href="#s0"><span class="toc-num">00</span><span>Motivation — Pourquoi les nombres complexes ?</span></a></li>
+      <li><a href="#s1"><span class="toc-num">01</span><span>Notion 1 · forme_algebrique — Le nombre i et ses puissances</span></a></li>
+      <li><a href="#s2"><span class="toc-num">02</span><span>Notion 1 · forme_algebrique — L'écriture z = a + ib</span></a></li>
+      <li><a href="#s3"><span class="toc-num">03</span><span>Notion 1 · forme_algebrique — La forme algébrique en pratique</span></a></li>
+      <li><a href="#s4"><span class="toc-num">04</span><span>Notion 2 · egalite_complexes — La règle d'égalité</span></a></li>
+      <li><a href="#s5"><span class="toc-num">05</span><span>Notion 2 · egalite_complexes — L'identification en action</span></a></li>
+      <li><a href="#s6"><span class="toc-num">06</span><span>Fiches méthodes</span></a></li>
+      <li><a href="#s7"><span class="toc-num">07</span><span>Exercices d'entraînement</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 0 : MOTIVATION -->
+  <!-- ============================================================ -->
+  <section class="lecture-section" id="s0">
+    <div class="lecture-section-header">
+      <div class="lecture-section-num">00</div>
+      <div class="lecture-section-heading">
+        <span class="lecture-section-eyebrow">Motivation</span>
+        <h2 class="lecture-section-title">Pourquoi les nombres complexes ?</h2>
+      </div>
+    </div>
+
+    <div class="lecture-section-body">
+      <p class="lecture-text">
+        Commençons par une question toute simple : <strong>existe-t-il un nombre dont le carré vaut −1 ?</strong> Faisons l'inventaire. Un nombre positif au carré donne un positif (<span class="math">3² = 9</span>). Un nombre négatif au carré donne… aussi un positif (<span class="math">(−3)² = 9</span>, le signe − disparaît). Et zéro donne zéro. Conclusion :
+      </p>
+
+      <div class="lecture-callout lecture-callout-danger">
+        <div class="lecture-callout-body">
+          <div class="lecture-callout-title">Le mur</div>
+          <p><strong>Aucun nombre réel n'a un carré négatif.</strong> L'équation <span class="math">x² = −1</span> n'a <em>aucune solution</em> dans <span class="math">ℝ</span>. Il en va de même pour toutes les équations <span class="math">x² = k</span> avec <span class="math">k &lt; 0</span>.</p>
+        </div>
+      </div>
+
+      <p class="lecture-text">
+        Visualisons ce problème sur la droite des réels. Pour <span class="math">x² = 4</span>, on trouve <span class="math">x = 2</span> et <span class="math">x = −2</span> : deux points bien présents sur la droite. Mais pour <span class="math">x² = −1</span>, la droite est « trouée » : aucun point ne convient.
+      </p>
+
+      <!-- SVG : droite des réels trouée -->
+      <figure class="lecture-figure">
+        <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="La droite des réels et les solutions manquantes de x carré égale moins un">
+          <text x="250" y="24" fill="#E0B84A" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">LA DROITE DES RÉELS NE SUFFIT PLUS</text>
+
+          <line x1="30" y1="120" x2="470" y2="120" stroke="#E0B84A" stroke-width="2"/>
+          <polygon points="470,120 460,115 460,125" fill="#E0B84A"/>
+          <text x="478" y="124" fill="#8a8a7a" font-size="12" font-family="Inter">ℝ</text>
+
+          <g stroke="#E0B84A" stroke-width="1.5">
+            <line x1="150" y1="114" x2="150" y2="126"/>
+            <line x1="250" y1="114" x2="250" y2="126"/>
+            <line x1="350" y1="114" x2="350" y2="126"/>
+          </g>
+          <text x="150" y="145" fill="#8a8a7a" font-size="12" font-family="Inter" text-anchor="middle">−1</text>
+          <text x="250" y="145" fill="#8a8a7a" font-size="12" font-family="Inter" text-anchor="middle">0</text>
+          <text x="350" y="145" fill="#8a8a7a" font-size="12" font-family="Inter" text-anchor="middle">1</text>
+
+          <circle cx="100" cy="120" r="7" fill="#4ade80"/>
+          <circle cx="400" cy="120" r="7" fill="#4ade80"/>
+          <text x="100" y="100" fill="#4ade80" font-size="11" font-family="Inter" text-anchor="middle">−2 ✔</text>
+          <text x="400" y="100" fill="#4ade80" font-size="11" font-family="Inter" text-anchor="middle">2 ✔</text>
+          <text x="250" y="72" fill="#4ade80" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">x² = 4 : deux solutions sur la droite</text>
+
+          <g>
+            <circle cx="150" cy="120" r="10" fill="none" stroke="#f87171" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <line x1="143" y1="113" x2="157" y2="127" stroke="#f87171" stroke-width="1.5"/>
+            <line x1="143" y1="127" x2="157" y2="113" stroke="#f87171" stroke-width="1.5"/>
+          </g>
+          <text x="250" y="180" fill="#f87171" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">x² = −1 : AUCUNE solution — la droite est « trouée » ici</text>
+        </svg>
+        <figcaption class="lecture-figure-caption">x² = 4 a ses deux solutions sur la droite des réels. Celles de x² = −1 n'y figurent nulle part : il faut aller « ailleurs ».</figcaption>
+      </figure>
+
+      <p class="lecture-text">
+        Face à ce mur, deux options : <strong>renoncer</strong>, ou <strong>inventer</strong>. L'histoire a choisi d'inventer — et ce n'est pas la première fois ! Les nombres négatifs ont longtemps paru absurdes (« comment avoir −3 moutons ? »). Les irrationnels comme <span class="math">√2</span> ont scandalisé les Grecs. À chaque fois, élargir la notion de nombre a résolu des problèmes jusque-là insolubles.
+      </p>
+
+      <div class="lecture-callout lecture-callout-gold">
+        <div class="lecture-callout-body">
+          <div class="lecture-callout-title">L'idée géniale</div>
+          <p>On <strong>décide</strong> d'inventer un nouveau nombre, noté <span class="math">i</span>, et on lui attribue par convention la propriété manquante :</p>
+          <p style="text-align:center; margin-top:8px;"><span class="math"><strong>i² = −1</strong></span></p>
+          <p>Ce nombre s'appelle l'<strong>unité imaginaire</strong>. Ce n'est pas un réel : c'est un objet nouveau, créé exprès pour combler le trou de la droite. La seule règle du jeu : il obéit aux <strong>mêmes lois de calcul</strong> que les réels (addition, multiplication, distributivité…), avec cette seule propriété supplémentaire <span class="math">i² = −1</span>.</p>
+        </div>
+      </div>
+
+      <p class="lecture-text">
+        Conséquence immédiate : <span class="math">x² = −1</span> possède désormais <strong>deux solutions</strong>, <span class="math">x = i</span> et <span class="math">x = −i</span> (vérifie : <span class="math">(−i)² = i² = −1</span> ✔). Et mieux : on montrera plus loin que <em>toute</em> équation polynomiale devient résoluble — c'est le <strong>théorème fondamental de l'algèbre</strong>.
+      </p>
+
+      <div class="lecture-callout lecture-callout-key">
+        <div class="lecture-callout-body">
+          <div class="lecture-callout-title">Où rencontre-t-on les complexes ?</div>
+          <ul class="lecture-list">
+            <li><strong>Électricité</strong> : impédances et courants alternatifs</li>
+            <li><strong>Mécanique quantique</strong> : la fonction d'onde est complexe</li>
+            <li><strong>Traitement du signal</strong> : analyse de Fourier, compression MP3, JPEG</li>
+            <li><strong>Télécommunications</strong> : WiFi, 4G, 5G</li>
+            <li><strong>Imagerie médicale</strong> : reconstruction des images d'IRM</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="lecture-exercise">
+        <div class="lecture-exercise-label">✏️ Exercice d'application 1 — Solutions dans ℝ ou dans ℂ ?</div>
+        <p class="lecture-text"><strong>Énoncé :</strong> parmi les équations suivantes, lesquelles ont des solutions dans ℝ ? Lesquelles en ont dans ℂ ? Donne-les quand elles existent.</p>
+        <p class="lecture-text">a) <span class="math">x² = 16</span> &nbsp;&nbsp; b) <span class="math">x² + 1 = 0</span> &nbsp;&nbsp; c) <span class="math">x² − 3x = 0</span> &nbsp;&nbsp; d) <span class="math">x² = −9</span></p>
+        <details>
+          <summary>Voir la solution détaillée</summary>
+          <div class="lecture-quiz-answer">
+            <p><strong>a) x² = 16.</strong> <span class="math">4² = 16</span> et <span class="math">(−4)² = 16</span>. Deux solutions dans ℝ : <span class="math">x = 4</span> ou <span class="math">x = −4</span> ✔</p>
+            <p><strong>b) x² + 1 = 0</strong>, c'est-à-dire <span class="math">x² = −1</span>. Carré négatif impossible dans ℝ → <strong>aucune solution dans ℝ</strong>. Dans ℂ : par définition de <span class="math">i</span>, <span class="math">x = i</span> ou <span class="math">x = −i</span> ✔</p>
+            <p><strong>c) x² − 3x = 0.</strong> On factorise : <span class="math">x(x − 3) = 0</span>. Un produit est nul si un facteur est nul : <span class="math">x = 0</span> ou <span class="math">x = 3</span>. Deux solutions dans ℝ ✔</p>
+            <p><strong>d) x² = −9.</strong> Aucune solution dans ℝ. Dans ℂ : on remarque que <span class="math">−9 = 9 × (−1) = 9i² = (3i)²</span>. Donc <span class="math">x = 3i</span> ou <span class="math">x = −3i</span> ✔</p>
+            <p><strong>Bilan :</strong> dès qu'un carré doit valoir un nombre négatif, ℝ échoue et ℂ réussit — toujours avec deux solutions opposées.</p>
+          </div>
+        </details>
+      </div>
+
+      <aside class="lecture-aside">
+        <div class="lecture-aside-content">
+          <div class="lecture-aside-label">Un peu d'histoire</div>
+          <p>À leurs débuts, ces nombres sont appelés « impossibles » ou « fictifs ». <strong>Descartes</strong> forge l'expression « nombres imaginaires » avec une nuance méprisante — et le nom est resté. <strong>Euler</strong> introduit la lettre <span class="math">i</span> en 1777, et <strong>Gauss</strong> leur donne leurs lettres de noblesse avec leur interprétation géométrique. Ironie : ce sont les équations de degré 3 (Bombelli, 1572) qui ont révélé leur utilité — des nombres « fictifs » qui produisaient des résultats parfaitement réels !</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 1 : NOTION 1 · forme_algebrique — LE NOMBRE i -->
+  <!-- ============================================================ -->
+  <section class="lecture-section" id="s1">
+    <div class="lecture-section-header">
+      <div class="lecture-section-num">01</div>
+      <div class="lecture-section-heading">
+        <span class="lecture-section-eyebrow">Notion 1 · forme_algebrique</span>
+        <h2 class="lecture-section-title">Le nombre i et ses puissances</h2>
+      </div>
+    </div>
+
+    <div class="lecture-section-body">
+      <p class="lecture-text">
+        Avant d'écrire des nombres complexes, il faut bien connaître l'ingrédient de base : le nombre <span class="math">i</span>, défini par <span class="math">i² = −1</span>. Que se passe-t-il si on le multiplie par lui-même encore et encore ? Chaque ligne se déduit de la précédente :
+      </p>
+
+      <div class="lecture-example lecture-example-featured">
+        <div class="lecture-example-label">La construction du cycle, ligne par ligne</div>
+        <div class="lecture-example-content">
+          <p><span class="math">i¹ = i</span> &nbsp;(par définition)</p>
+          <p><span class="math">i² = −1</span> &nbsp;(la propriété fondatrice)</p>
+          <p><span class="math">i³ = i² × i = (−1) × i = −i</span></p>
+          <p><span class="math">i⁴ = i³ × i = (−i) × i = −i² = −(−1) = 1</span></p>
+          <p><span class="math">i⁵ = i⁴ × i = 1 × i = i</span> &nbsp;← <em>le cycle recommence !</em></p>
+          <p>Les puissances de <span class="math">i</span> tournent en boucle avec une <strong>périodicité de 4</strong> : <span class="math">i, −1, −i, 1</span>, puis encore <span class="math">i, −1, −i, 1</span>…</p>
+        </div>
+      </div>
+
+      <!-- SVG : roue des puissances de i -->
+      <figure class="lecture-figure">
+        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Roue des puissances de i">
+          <defs>
+            <marker id="arrowGoldN1" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+              <path d="M0,0 L7,3.5 L0,7" fill="none" stroke="#E0B84A" stroke-width="1.3"/>
+            </marker>
+          </defs>
+
+          <circle cx="200" cy="200" r="140" fill="none" stroke="rgba(224,184,74,0.15)" stroke-width="1"/>
+          <circle cx="200" cy="200" r="100" fill="none" stroke="rgba(224,184,74,0.08)" stroke-width="1" stroke-dasharray="3 4"/>
+
+          <line x1="60" y1="200" x2="340" y2="200" stroke="rgba(224,184,74,0.3)" stroke-width="1"/>
+          <line x1="200" y1="60" x2="200" y2="340" stroke="rgba(224,184,74,0.3)" stroke-width="1"/>
+          <text x="345" y="205" fill="#8a8a7a" font-size="11" font-family="Inter">Réels</text>
+          <text x="205" y="55" fill="#8a8a7a" font-size="11" font-family="Inter">Imaginaires</text>
+
+          <circle cx="200" cy="100" r="24" fill="rgba(224,184,74,0.1)" stroke="#E0B84A" stroke-width="2"/>
+          <text x="200" y="97" fill="#E0B84A" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">i¹</text>
+          <text x="200" y="113" fill="#F5F0E8" font-size="11" font-family="Inter" text-anchor="middle">i</text>
+
+          <circle cx="100" cy="200" r="24" fill="rgba(74,222,128,0.1)" stroke="#4ade80" stroke-width="2"/>
+          <text x="100" y="197" fill="#4ade80" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">i²</text>
+          <text x="100" y="213" fill="#F5F0E8" font-size="11" font-family="Inter" text-anchor="middle">−1</text>
+
+          <circle cx="200" cy="300" r="24" fill="rgba(96,165,250,0.1)" stroke="#60a5fa" stroke-width="2"/>
+          <text x="200" y="297" fill="#60a5fa" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">i³</text>
+          <text x="200" y="313" fill="#F5F0E8" font-size="11" font-family="Inter" text-anchor="middle">−i</text>
+
+          <circle cx="300" cy="200" r="24" fill="rgba(224,184,74,0.1)" stroke="#E0B84A" stroke-width="2"/>
+          <text x="300" y="197" fill="#E0B84A" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">i⁴</text>
+          <text x="300" y="213" fill="#F5F0E8" font-size="11" font-family="Inter" text-anchor="middle">1</text>
+
+          <path d="M 178 106 Q 120 122 104 172" fill="none" stroke="#E0B84A" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#arrowGoldN1)"/>
+          <path d="M 104 228 Q 120 278 174 296" fill="none" stroke="#E0B84A" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#arrowGoldN1)"/>
+          <path d="M 226 296 Q 280 278 296 228" fill="none" stroke="#E0B84A" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#arrowGoldN1)"/>
+          <path d="M 296 172 Q 280 122 224 106" fill="none" stroke="#E0B84A" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#arrowGoldN1)"/>
+
+          <text x="200" y="205" fill="#8a8a7a" font-size="13" font-family="Playfair Display, serif" text-anchor="middle" font-style="italic">cycle</text>
+          <text x="200" y="222" fill="#8a8a7a" font-size="11" font-family="Inter" text-anchor="middle">période 4</text>
+
+          <text x="200" y="30" fill="#E0B84A" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">LA ROUE DES PUISSANCES DE i</text>
+        </svg>
+        <figcaption class="lecture-figure-caption">Les quatre puissances de base à connaître par cœur : i, −1, −i, 1. Toutes les autres s'y ramènent.</figcaption>
+      </figure>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">Calculer iⁿ pour n'importe quel n : la méthode du reste</h3>
+
+        <p class="lecture-text">
+          La roue fait un tour complet tous les 4 pas. Multiplier par <span class="math">i⁴ = 1</span> ne change rien : seuls comptent les pas <em>excédentaires</em> — c'est-à-dire le <strong>reste de la division de n par 4</strong>.
+        </p>
+
+        <div class="lecture-formula-box">
+          <div class="lecture-formula-main">iⁿ = i<sup>r</sup> où r est le reste de n dans la division par 4</div>
+          <div class="lecture-formula-desc">On écrit n = 4q + r avec r ∈ {0, 1, 2, 3}, puis iⁿ = (i⁴)ᵈ × iʳ = 1 × iʳ = iʳ.</div>
+        </div>
+
+        <ul class="lecture-list">
+          <li>Si <span class="math">n ≡ 0 (mod 4)</span> → <span class="math">iⁿ = 1</span></li>
+          <li>Si <span class="math">n ≡ 1 (mod 4)</span> → <span class="math">iⁿ = i</span></li>
+          <li>Si <span class="math">n ≡ 2 (mod 4)</span> → <span class="math">iⁿ = −1</span></li>
+          <li>Si <span class="math">n ≡ 3 (mod 4)</span> → <span class="math">iⁿ = −i</span></li>
+        </ul>
+
+        <div class="lecture-callout lecture-callout-gold">
+          <div class="lecture-callout-body">
+            <div class="lecture-callout-title">💡 Bonus : la somme magique</div>
+            <p>Additionne les quatre positions de la roue :</p>
+            <p><span class="math">i + i² + i³ + i⁴ = i + (−1) + (−i) + 1 = 0</span></p>
+            <p><strong>Toute somme de 4 puissances consécutives de i vaut zéro</strong> — les termes s'éteignent deux à deux. Très utile pour les sommes longues.</p>
+          </div>
+        </div>
+
+        <div class="lecture-callout lecture-callout-danger">
+          <div class="lecture-callout-body">
+            <div class="lecture-callout-title">Erreur classique — à bannir définitivement</div>
+            <p>Ne <strong>jamais</strong> écrire <span class="math">i = √(−1)</span>. Ce n'est pas une question de style : c'est <strong>mathématiquement faux</strong>. Les règles de la racine carrée cessent d'être vraies sur les négatifs — les utiliser conduit à des absurdités :</p>
+            <p><span class="math">−1 = i × i = √(−1) × √(−1) = √1 = 1</span> ?! — donc <span class="math">−1 = 1</span>, absurde.</p>
+            <p>La formulation correcte est toujours : <em>« i est le nombre tel que i² = −1 »</em>.</p>
+          </div>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">✏️ Exercice d'application 2 — Manier les puissances de i</div>
+          <p class="lecture-text"><strong>Énoncé :</strong> calculer <span class="math">i³⁷</span>, <span class="math">i⁴⁸</span>, <span class="math">(2i)³</span>, puis <span class="math">S = i + i² + i³ + … + i²⁰²⁵</span></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>i³⁷ :</strong> division euclidienne : <span class="math">37 = 4 × 9 + 1</span> → reste 1 → <span class="math">i³⁷ = i¹ = i</span></p>
+              <p><strong>i⁴⁸ :</strong> <span class="math">48 = 4 × 12 + 0</span> → reste 0 → <span class="math">i⁴⁸ = 1</span></p>
+              <p><strong>(2i)³ :</strong> on sépare le nombre et le i : <span class="math">(2i)³ = 2³ × i³ = 8 × (−i) = −8i</span></p>
+              <p><strong>S :</strong> il y a <span class="math">2025 = 4 × 506 + 1</span> termes. On regroupe <span class="math">506</span> paquets de 4 termes consécutifs — chacun vaut 0 (somme magique !) — et il reste le dernier terme <span class="math">i²⁰²⁵ = i</span> (reste 1).</p>
+              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Conclusion :</strong> <span class="math">i³⁷ = i</span>, <span class="math">i⁴⁸ = 1</span>, <span class="math">(2i)³ = −8i</span>, <span class="math">S = i</span></p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 2 : NOTION 1 · forme_algebrique — L'ÉCRITURE z = a + ib -->
+  <!-- ============================================================ -->
+  <section class="lecture-section" id="s2">
+    <div class="lecture-section-header">
+      <div class="lecture-section-num">02</div>
+      <div class="lecture-section-heading">
+        <span class="lecture-section-eyebrow">Notion 1 · forme_algebrique</span>
+        <h2 class="lecture-section-title">L'écriture z = a + ib</h2>
+      </div>
+    </div>
+
+    <div class="lecture-section-body">
+      <p class="lecture-text">
+        Comment s'écrit un nombre complexe ? L'idée est simple : <strong>toute quantité contenant des <span class="math">i</span> peut se ramener, après calcul, à une écriture « quelque chose + i fois quelque chose d'autre »</strong>. C'est la <strong>forme algébrique</strong>.
+      </p>
+
+      <div class="lecture-formula-hero">
+        <div class="lecture-formula-hero-label">Forme algébrique</div>
+        <div class="lecture-formula-hero-main">z = a + ib</div>
+        <div class="lecture-formula-hero-desc">avec a ∈ ℝ, b ∈ ℝ et i² = −1 — cette écriture est unique</div>
+      </div>
+
+      <!-- SVG : anatomie de z = a + ib -->
+      <figure class="lecture-figure">
+        <svg viewBox="0 0 520 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Anatomie de l'écriture z égale a plus i b">
+          <text x="260" y="24" fill="#E0B84A" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">ANATOMIE DE L'ÉCRITURE z = a + ib</text>
+
+          <text x="260" y="78" fill="#F5F0E8" font-size="30" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">z = a + i b</text>
+
+          <line x1="208" y1="90" x2="185" y2="125" stroke="#E0B84A" stroke-width="1.2"/>
+          <text x="170" y="140" fill="#E0B84A" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">a : partie réelle</text>
+          <text x="170" y="156" fill="#8a8a7a" font-size="10" font-family="Inter" text-anchor="middle">un réel quelconque</text>
+
+          <line x1="243" y1="86" x2="243" y2="125" stroke="#8a8a7a" stroke-width="1" stroke-dasharray="3 3"/>
+          <text x="243" y="140" fill="#8a8a7a" font-size="11" font-family="Inter" text-anchor="middle">le signe qui relie</text>
+
+          <line x1="273" y1="90" x2="285" y2="125" stroke="#60a5fa" stroke-width="1.2"/>
+          <text x="295" y="140" fill="#60a5fa" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">i : l'unité imaginaire</text>
+          <text x="295" y="156" fill="#8a8a7a" font-size="10" font-family="Inter" text-anchor="middle">i² = −1</text>
+
+          <line x1="300" y1="86" x2="360" y2="125" stroke="#4ade80" stroke-width="1.2"/>
+          <text x="400" y="140" fill="#4ade80" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">b : partie imaginaire</text>
+          <text x="400" y="156" fill="#8a8a7a" font-size="10" font-family="Inter" text-anchor="middle">un RÉEL (coefficient de i)</text>
+
+          <text x="260" y="180" fill="#8a8a7a" font-size="10" font-family="Inter" text-anchor="middle" font-style="italic">a et b sont toujours des réels — i n'est « collé » qu'à b</text>
+        </svg>
+        <figcaption class="lecture-figure-caption">Un complexe = un réel (a) + un multiple de i (ib). Les deux « ingrédients » a et b sont toujours des nombres réels.</figcaption>
+      </figure>
+
+      <p class="lecture-text">
+        Le mot <strong>unique</strong> est capital : un complexe donné possède <em>une seule</em> forme algébrique, tout comme un entier pair s'écrit de manière unique <span class="math">2k</span>. Garde cette unicité en tête : c'est <strong>elle qui justifiera la règle d'égalité</strong> de la Notion 2. Les deux notions de cette partie sont liées !
+      </p>
+
+      <div class="lecture-callout lecture-callout-gold">
+        <div class="lecture-callout-body">
+          <div class="lecture-callout-title">Conventions d'écriture (les usages qui évitent les malentendus)</div>
+          <ul class="lecture-list">
+            <li>Partie réelle <strong>d'abord</strong> : on écrit <span class="math">3 + 5i</span>, pas <span class="math">5i + 3</span></li>
+            <li>On écrit <span class="math">5i</span> plutôt que <span class="math">i5</span> — et <span class="math">ib</span> plutôt que <span class="math">bi</span> (même si <span class="math">ib = bi</span>)</li>
+            <li>Partie imaginaire négative : <span class="math">−3 − 2i</span> plutôt que <span class="math">−3 + (−2)i</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">Vocabulaire : les deux « ingrédients » de z</h3>
+
+        <p class="lecture-text">
+          Dans l'écriture <span class="math">z = a + ib</span>, les deux réels <span class="math">a</span> et <span class="math">b</span> portent des noms précis qu'il faut connaître sur le bouton :
+        </p>
+
+        <div class="lecture-vocab-grid">
+          <div class="vocab-card">
+            <div class="vocab-symbol">a</div>
+            <div class="vocab-name">Partie réelle</div>
+            <div class="vocab-notation">Re(z) = a</div>
+          </div>
+          <div class="vocab-card">
+            <div class="vocab-symbol">b</div>
+            <div class="vocab-name">Partie imaginaire</div>
+            <div class="vocab-notation">Im(z) = b</div>
+          </div>
+          <div class="vocab-card vocab-card-success">
+            <div class="vocab-symbol">ℝ</div>
+            <div class="vocab-name">Réel pur</div>
+            <div class="vocab-notation">Im(z) = 0</div>
+          </div>
+          <div class="vocab-card vocab-card-info">
+            <div class="vocab-symbol">iℝ</div>
+            <div class="vocab-name">Imaginaire pur</div>
+            <div class="vocab-notation">Re(z) = 0</div>
+          </div>
+        </div>
+
+        <div class="lecture-callout lecture-callout-danger">
+          <div class="lecture-callout-body">
+            <div class="lecture-callout-title">Le piège n°1 du chapitre</div>
+            <p>La partie imaginaire de <span class="math">z = 3 + 5i</span> est <span class="math">5</span>, et <strong>non</strong> <span class="math">5i</span> ! La partie imaginaire est toujours un <strong>nombre réel</strong> — c'est le <em>coefficient</em> qui multiplie <span class="math">i</span>. De même, <span class="math">Re(z)</span> et <span class="math">Im(z)</span> sont des <strong>réels</strong> : <span class="math">Re(3 + 5i) = 3</span> et <span class="math">Im(3 + 5i) = 5</span>.</p>
+          </div>
+        </div>
+
+        <div class="lecture-formula-box">
+          <div class="lecture-formula-main">z = Re(z) + i·Im(z)</div>
+          <div class="lecture-formula-desc">Identité à connaître : un complexe se reconstitue à partir de ses deux parties.</div>
+        </div>
+      </div>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">Cas particuliers : lire la forme algébrique à la loupe</h3>
+
+        <ul class="lecture-list">
+          <li><strong>Réel pur</strong> : <span class="math">z = a + 0i = a</span>. Exemples : <span class="math">5</span>, <span class="math">−3</span>, <span class="math">√2</span>, <span class="math">π</span>. Le nombre 5 <em>est</em> un complexe — sa partie imaginaire vaut simplement zéro.</li>
+          <li><strong>Imaginaire pur</strong> : <span class="math">z = 0 + ib = ib</span>. Exemples : <span class="math">3i</span>, <span class="math">−i</span>, <span class="math">7i</span>.</li>
+          <li><strong>Le nombre 0</strong> : à la fois réel pur et imaginaire pur — c'est le <strong>seul</strong> dans ce cas.</li>
+        </ul>
+
+        <div class="lecture-formula-box">
+          <div class="lecture-formula-main">z ∈ ℝ ⟺ Im(z) = 0</div>
+          <div class="lecture-formula-desc">Un complexe est réel si et seulement si sa partie imaginaire est nulle.</div>
+        </div>
+
+        <div class="lecture-formula-box">
+          <div class="lecture-formula-main">z ∈ iℝ ⟺ Re(z) = 0</div>
+          <div class="lecture-formula-desc">Un complexe est imaginaire pur si et seulement si sa partie réelle est nulle.</div>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">✏️ Exercice d'application 3 — Lire Re et Im, classer</div>
+          <p class="lecture-text"><strong>Énoncé :</strong> pour chaque nombre, donner <span class="math">Re(z)</span> et <span class="math">Im(z)</span>, puis dire s'il est réel pur, imaginaire pur, ou ni l'un ni l'autre :</p>
+          <p class="lecture-text"><span class="math">z₁ = 5 − 2i</span> · <span class="math">z₂ = −7i</span> · <span class="math">z₃ = 1/2</span> · <span class="math">z₄ = i² + 2i</span> · <span class="math">z₅ = 0</span></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>z₁ = 5 − 2i</strong> : directement lisible → <span class="math">Re(z₁) = 5</span>, <span class="math">Im(z₁) = −2</span> (attention au signe !). Ni l'un ni l'autre.</p>
+              <p><strong>z₂ = −7i</strong> : pas de partie réelle visible, donc elle vaut 0 → <span class="math">Re(z₂) = 0</span>, <span class="math">Im(z₂) = −7</span>. <strong>Imaginaire pur</strong> ✔</p>
+              <p><strong>z₃ = 1/2</strong> : <span class="math">Re(z₃) = 1/2</span>, <span class="math">Im(z₃) = 0</span>. <strong>Réel pur</strong> ✔</p>
+              <p><strong>z₄ = i² + 2i</strong> : ⚠️ il faut <strong>d'abord simplifier</strong> ! Comme <span class="math">i² = −1</span> : <span class="math">z₄ = −1 + 2i</span>. Donc <span class="math">Re(z₄) = −1</span>, <span class="math">Im(z₄) = 2</span>. Ni l'un ni l'autre.</p>
+              <p><strong>z₅ = 0</strong> : <span class="math">Re(z₅) = 0</span> et <span class="math">Im(z₅) = 0</span>. À la fois réel pur ET imaginaire pur — le seul !</p>
+              <p><strong>Règle d'or :</strong> on ne lit Re et Im qu'<em>après</em> avoir tout simplifié sous la forme a + ib.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 3 : NOTION 1 · forme_algebrique — EN PRATIQUE -->
+  <!-- ============================================================ -->
+  <section class="lecture-section" id="s3">
+    <div class="lecture-section-header">
+      <div class="lecture-section-num">03</div>
+      <div class="lecture-section-heading">
+        <span class="lecture-section-eyebrow">Notion 1 · forme_algebrique</span>
+        <h2 class="lecture-section-title">La forme algébrique en pratique</h2>
+      </div>
+    </div>
+
+    <div class="lecture-section-body">
+      <p class="lecture-text">
+        En exercice, on te donnera rarement <span class="math">z</span> déjà écrit <span class="math">a + ib</span> : il faudra <strong>transformer une expression</strong> (somme, produit, puissance…) pour la mettre sous forme algébrique. Voici les techniques, de la plus simple à la plus complète.
+      </p>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">Technique 1 — Sommes et différences : ingrédient par ingrédient</h3>
+
+        <div class="lecture-formula-box">
+          <div class="lecture-formula-main">(a + ib) ± (c + id) = (a ± c) + i(b ± d)</div>
+          <div class="lecture-formula-desc">On regroupe les parties réelles entre elles, les parties imaginaires entre elles.</div>
+        </div>
+
+        <div class="lecture-example">
+          <div class="lecture-example-label">Exemple</div>
+          <div class="lecture-example-content">
+            <p><span class="math">(2 + 3i) + (5 − i) = (2 + 5) + i(3 − 1) = 7 + 2i</span></p>
+            <p><span class="math">(2 + 3i) − (5 − i) = (2 − 5) + i(3 − (−1)) = −3 + 4i</span> — attention : <span class="math">−(−i) = +i</span> !</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">Technique 2 — Produits : développer puis remplacer i² par −1</h3>
+
+        <p class="lecture-text">
+          On développe comme un produit de deux binômes classique (distributivité), puis <strong>chaque <span class="math">i²</span> devient <span class="math">−1</span></strong>. Enfin, on regroupe réel / imaginaire.
+        </p>
+
+        <div class="lecture-example lecture-example-featured">
+          <div class="lecture-example-label">Démonstration de la formule générale</div>
+          <div class="lecture-example-content">
+            <p><span class="math">(a + ib)(c + id)</span></p>
+            <p><span class="math">= ac + iad + ibc + i²bd</span> &nbsp;(distributivité — double développement)</p>
+            <p><span class="math">= ac + iad + ibc − bd</span> &nbsp;(car <span class="math">i² = −1</span>)</p>
+            <p><span class="math">= (ac − bd) + i(ad + bc)</span> &nbsp;(regroupement)</p>
+          </div>
+        </div>
+
+        <div class="lecture-formula-box">
+          <div class="lecture-formula-main">(a + ib)(c + id) = (ac − bd) + i(ad + bc)</div>
+          <div class="lecture-formula-desc">En pratique, tu n'as pas besoin d'apprendre cette formule : tu développes et tu simplifies les i².</div>
+        </div>
+
+        <div class="lecture-example">
+          <div class="lecture-example-label">Exemples numériques</div>
+          <div class="lecture-example-content">
+            <p><span class="math">(2 + 3i)(1 − i) = 2 − 2i + 3i − 3i² = 2 + i + 3 = 5 + i</span></p>
+            <p><span class="math">(1 + i)² = 1 + 2i + i² = 1 + 2i − 1 = 2i</span> &nbsp;← un carré <em>imaginaire pur</em>, du jamais vu dans ℝ !</p>
+          </div>
+        </div>
+
+        <div class="lecture-callout lecture-callout-gold">
+          <div class="lecture-callout-body">
+            <div class="lecture-callout-title">⭐ Le schéma à connaître par cœur</div>
+            <p><span class="math">(a + ib)(a − ib) = a² + b²</span> — le résultat est <strong>toujours un réel positif</strong> ! Les termes en i s'éteignent : <span class="math">a² − iab + iab − i²b² = a² + b²</span>.</p>
+            <p>Exemple : <span class="math">(3 + 2i)(3 − 2i) = 9 + 4 = 13</span>. Ce schéma sera la clé des quotients plus loin dans le chapitre — mémorise-le maintenant !</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">Technique 3 — Puissances d'un complexe : multiplication répétée</h3>
+
+        <div class="lecture-example">
+          <div class="lecture-example-label">Exemple détaillé</div>
+          <div class="lecture-example-content">
+            <p>Soit <span class="math">z = 1 + i</span> :</p>
+            <p><span class="math">z² = (1 + i)² = 1 + 2i + i² = 1 + 2i − 1 = 2i</span> &nbsp;(identité remarquable (a+b)²)</p>
+            <p><span class="math">z³ = z² × z = 2i × (1 + i) = 2i + 2i² = −2 + 2i</span></p>
+            <p><span class="math">z⁴ = z² × z² = 2i × 2i = 4i² = −4</span> — et hop, un réel !</p>
+          </div>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">✏️ Exercice d'application 4 — Mettre sous forme algébrique</div>
+          <p class="lecture-text"><strong>Énoncé :</strong> écrire sous forme algébrique et donner Re et Im :</p>
+          <p class="lecture-text">a) <span class="math">z = (2 + i) + 3i(2 − i)</span> &nbsp;&nbsp; b) <span class="math">w = (1 + i)² + (2 − i)(2 + i)</span></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>a)</strong> D'abord le produit : <span class="math">3i(2 − i) = 6i − 3i² = 6i + 3 = 3 + 6i</span>. Puis la somme : <span class="math">z = (2 + 3) + i(1 + 6) = 5 + 7i</span>. Donc <span class="math">Re(z) = 5</span>, <span class="math">Im(z) = 7</span>.</p>
+              <p><strong>b)</strong> Premier terme (identité (a+b)²) : <span class="math">(1 + i)² = 1 + 2i + i² = 2i</span>. Second terme (schéma (a+ib)(a−ib)) : <span class="math">(2 − i)(2 + i) = 2² + 1² = 5</span>. Somme : <span class="math">w = 5 + 2i</span>. Donc <span class="math">Re(w) = 5</span>, <span class="math">Im(w) = 2</span>.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 4 : NOTION 2 · egalite_complexes — LA RÈGLE -->
+  <!-- ============================================================ -->
+  <section class="lecture-section" id="s4">
+    <div class="lecture-section-header">
+      <div class="lecture-section-num">04</div>
+      <div class="lecture-section-heading">
+        <span class="lecture-section-eyebrow">Notion 2 · egalite_complexes</span>
+        <h2 class="lecture-section-title">La règle d'égalité</h2>
+      </div>
+    </div>
+
+    <div class="lecture-section-body">
+      <p class="lecture-text">
+        Comment savoir si deux nombres complexes sont égaux ? La réponse s'appuie directement sur la Notion 1 : puisque la forme algébrique est <strong>unique</strong>, deux complexes égaux ont <em>forcément</em> la même écriture <span class="math">a + ib</span> — donc les mêmes parties réelle et imaginaire.
+      </p>
+
+      <div class="lecture-rule">
+        <div class="lecture-rule-label">Règle fondamentale d'égalité</div>
+        <div class="lecture-rule-body">
+          <span class="math">a + ib = a' + ib'</span>
+          <span class="rule-iff">⟺</span>
+          <span class="math">a = a'</span>
+          <span class="rule-and">ET</span>
+          <span class="math">b = b'</span>
+        </div>
+      </div>
+
+      <p class="lecture-text">
+        Autrement dit : <strong>deux nombres complexes sont égaux si et seulement si leurs parties réelles coïncident ET leurs parties imaginaires coïncident</strong>. Une seule égalité complexe équivaut à <strong>deux égalités réelles</strong>. C'est cette bascule — du complexe vers le réel — qui transforme les équations en systèmes : c'est l'outil le plus utilisé de tout le chapitre.
+      </p>
+
+      <!-- SVG : une égalité complexe = deux égalités réelles -->
+      <figure class="lecture-figure">
+        <svg viewBox="0 0 520 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Une égalité complexe équivaut à deux égalités réelles">
+          <text x="260" y="26" fill="#E0B84A" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">UNE ÉGALITÉ COMPLEXE = DEUX ÉGALITÉS RÉELLES</text>
+
+          <text x="260" y="90" fill="#F5F0E8" font-size="26" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">a + i b = a' + i b'</text>
+
+          <!-- Arc réel : a ↔ a' -->
+          <path d="M 175 100 Q 190 165 330 100" fill="none" stroke="#E0B84A" stroke-width="1.8"/>
+          <text x="252" y="160" fill="#E0B84A" font-size="13" font-weight="700" font-family="Inter" text-anchor="middle">partie réelle = partie réelle</text>
+          <text x="252" y="177" fill="#8a8a7a" font-size="11" font-family="Inter" text-anchor="middle">a = a'</text>
+
+          <!-- Arc imaginaire : b ↔ b' -->
+          <path d="M 238 100 Q 265 235 430 100" fill="none" stroke="#60a5fa" stroke-width="1.8"/>
+          <text x="345" y="222" fill="#60a5fa" font-size="13" font-weight="700" font-family="Inter" text-anchor="middle">partie imaginaire = partie imaginaire</text>
+          <text x="345" y="239" fill="#8a8a7a" font-size="11" font-family="Inter" text-anchor="middle">b = b'</text>
+        </svg>
+        <figcaption class="lecture-figure-caption">L'égalité se teste « ingrédient par ingrédient » : le réel se compare au réel, l'imaginaire à l'imaginaire. Il faut les DEUX coïncidences à la fois.</figcaption>
+      </figure>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">Conséquence 1 — Quand un complexe est-il nul ?</h3>
+
+        <div class="lecture-example">
+          <div class="lecture-example-label">Le complexe nul</div>
+          <div class="lecture-example-content">
+            <p>Un complexe est nul si et seulement si <strong>les deux ingrédients</strong> sont nuls :</p>
+            <p><span class="math">z = 0 ⟺ Re(z) = 0 <em>et</em> Im(z) = 0</span></p>
+            <p>Attention : <span class="math">Re(z) = 0</span> tout seul signifie seulement que <span class="math">z</span> est imaginaire pur — par exemple <span class="math">z = 5i</span> n'est pas nul pour autant ! Il faut les <strong>deux</strong> conditions.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">Conséquence 2 — Prouver que deux complexes sont différents</h3>
+
+        <div class="lecture-example">
+          <div class="lecture-example-label">Un seul ingrédient qui diffère suffit</div>
+          <div class="lecture-example-content">
+            <p><strong>Les complexes <span class="math">z = 2 + 3i</span> et <span class="math">w = 2 − 3i</span> sont-ils égaux ?</strong></p>
+            <p>Comparons ingrédient par ingrédient :</p>
+            <p><span class="math">Re(z) = 2</span> et <span class="math">Re(w) = 2</span> → les parties réelles coïncident ✔</p>
+            <p><span class="math">Im(z) = 3</span> et <span class="math">Im(w) = −3</span> → les parties imaginaires <strong>diffèrent</strong> ✘</p>
+            <p><strong>Conclusion :</strong> <span class="math">z ≠ w</span>. Une seule différence suffit : la règle exige que les <em>deux</em> ingrédients coïncident.</p>
+          </div>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">✏️ Exercice d'application 5 — Utiliser la règle directement</div>
+          <p class="lecture-text"><strong>Énoncé :</strong> déterminer les réels x et y tels que <span class="math">(2x − 1) + (y + 3)i = 5 − 2i</span></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>Étape 1 — Identifier les ingrédients.</strong> À gauche : partie réelle <span class="math">2x − 1</span>, partie imaginaire <span class="math">y + 3</span>. À droite : partie réelle <span class="math">5</span>, partie imaginaire <span class="math">−2</span> (car <span class="math">5 − 2i = 5 + (−2)i</span>).</p>
+              <p><strong>Étape 2 — Appliquer la règle</strong> (réel = réel ET imaginaire = imaginaire) :</p>
+              <p><span class="math">2x − 1 = 5</span> &nbsp;et&nbsp; <span class="math">y + 3 = −2</span></p>
+              <p><strong>Étape 3 — Résoudre :</strong> <span class="math">2x = 6</span> donc <span class="math">x = 3</span> ; <span class="math">y = −2 − 3 = −5</span></p>
+              <p><strong>Étape 4 — Vérifier :</strong> <span class="math">(2×3 − 1) + (−5 + 3)i = 5 − 2i</span> ✔</p>
+              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> x = 3 et y = −5</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 5 : NOTION 2 · egalite_complexes — L'IDENTIFICATION -->
+  <!-- ============================================================ -->
+  <section class="lecture-section" id="s5">
+    <div class="lecture-section-header">
+      <div class="lecture-section-num">05</div>
+      <div class="lecture-section-heading">
+        <span class="lecture-section-eyebrow">Notion 2 · egalite_complexes</span>
+        <h2 class="lecture-section-title">L'identification en action</h2>
+      </div>
+    </div>
+
+    <div class="lecture-section-body">
+      <p class="lecture-text">
+        La règle d'égalité devient une <strong>méthode</strong> quand l'inconnue est complexe : on pose <span class="math">z = x + iy</span> (avec <span class="math">x</span>, <span class="math">y</span> réels), on développe tout, puis la règle transforme l'équation complexe en <strong>système de deux équations réelles</strong>. Cette méthode s'appelle <strong>l'identification</strong> — c'est LE réflexe n°1 du chapitre.
+      </p>
+
+      <div class="lecture-steps">
+        <div class="lecture-step">
+          <span class="lecture-step-number">1</span>
+          <div class="lecture-step-content">
+            <strong>Poser l'inconnue sous forme algébrique</strong>
+            <p>on cherche z = x + iy, avec x et y réels</p>
+          </div>
+        </div>
+        <div class="lecture-step">
+          <span class="lecture-step-number">2</span>
+          <div class="lecture-step-content">
+            <strong>Développer le membre de gauche</strong>
+            <p>remplacer chaque i² par −1, puis regrouper en (réel) + i(réel)</p>
+          </div>
+        </div>
+        <div class="lecture-step">
+          <span class="lecture-step-number">3</span>
+          <div class="lecture-step-content">
+            <strong>Identifier les parties réelles et imaginaires</strong>
+            <p>grâce à : a + ib = a' + ib' ⟺ a = a' et b = b'</p>
+          </div>
+        </div>
+        <div class="lecture-step">
+          <span class="lecture-step-number">4</span>
+          <div class="lecture-step-content">
+            <strong>Résoudre le système, conclure, vérifier</strong>
+            <p>la vérification dans l'équation de départ valide tout</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lecture-example lecture-example-featured">
+        <div class="lecture-example-label">🎓 Exemple complet résolu</div>
+        <div class="lecture-example-content">
+          <p><strong>Énoncé :</strong> déterminer les réels x et y tels que <span class="math">(1 + i)(x + iy) = 2 − i</span>.</p>
+          <p><strong>Étape 1 — Développer :</strong></p>
+          <p><span class="math">(1 + i)(x + iy) = x + iy + ix + i²y = x + iy + ix − y</span></p>
+          <p><span class="math">= (x − y) + i(x + y)</span></p>
+          <p><strong>Étape 2 — Identifier</strong> avec <span class="math">2 − i = 2 + (−1)i</span> :</p>
+          <p><span class="math">x − y = 2</span> &nbsp;et&nbsp; <span class="math">x + y = −1</span></p>
+          <p><strong>Étape 3 — Résoudre :</strong> en additionnant les deux lignes : <span class="math">2x = 1</span>, donc <span class="math">x = 1/2</span> ; en reportant : <span class="math">1/2 + y = −1</span>, donc <span class="math">y = −3/2</span></p>
+          <p><strong>Étape 4 — Vérifier :</strong> <span class="math">(1 + i)(1/2 − 3i/2) = 1/2 − 3i/2 + i/2 + 3/2 = 2 − i</span> ✔</p>
+          <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> <span class="math">z = 1/2 − (3/2)i</span></p>
+        </div>
+      </div>
+
+      <div class="lecture-callout lecture-callout-key">
+        <div class="lecture-callout-body">
+          <div class="lecture-callout-title">📝 Rédaction modèle (à recopier le jour du contrôle)</div>
+          <p>« Soit <span class="math">z = x + iy</span> avec <span class="math">x, y ∈ ℝ</span>. On développe : <span class="math">… = (…) + i(…)</span>. Or <span class="math">… = c + id</span>. Par <strong>identification des parties réelles et imaginaires</strong> : <span class="math">… = c</span> et <span class="math">… = d</span>. On résout le système : <span class="math">x = …, y = …</span>. <strong>Vérification :</strong> <span class="math">…</span> ✔ »</p>
+          <p>Cette trame en 4 temps (poser → développer → identifier → vérifier) vaut la totalité des points de méthode.</p>
+        </div>
+      </div>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">Application type 1 — Résoudre (a + ib)z = c</h3>
+
+        <div class="lecture-example">
+          <div class="lecture-example-label">Exemple résolu</div>
+          <div class="lecture-example-content">
+            <p><strong>Résoudre (1 + i)z = 4 + 2i.</strong></p>
+            <p><strong>Étape 1 — Poser z = x + iy :</strong> <span class="math">(1 + i)(x + iy) = 4 + 2i</span></p>
+            <p><strong>Étape 2 — Développer :</strong> <span class="math">(x − y) + i(x + y) = 4 + 2i</span></p>
+            <p><strong>Étape 3 — Identifier :</strong> <span class="math">x − y = 4</span> et <span class="math">x + y = 2</span></p>
+            <p><strong>Étape 4 — Résoudre :</strong> addition : <span class="math">2x = 6</span> → <span class="math">x = 3</span> ; puis <span class="math">y = 2 − 3 = −1</span></p>
+            <p><strong>Vérification :</strong> <span class="math">(1 + i)(3 − i) = 3 − i + 3i − i² = 4 + 2i</span> ✔</p>
+            <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> <span class="math">z = 3 − i</span></p>
+            <p>Remarque : cette équation ressemble à une division <span class="math">z = (4 + 2i)/(1 + i)</span> — l'identification permet de la résoudre sans aucune formule d'inverse !</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">Application type 2 — Décomposer sur des coefficients réels</h3>
+
+        <div class="lecture-example">
+          <div class="lecture-example-label">Exemple résolu</div>
+          <div class="lecture-example-content">
+            <p><strong>Déterminer les réels a et b tels que a(1 + i) + b(1 − i) = 4 + 2i.</strong></p>
+            <p><strong>Étape 1 — Développer :</strong> <span class="math">a + ai + b − bi = (a + b) + i(a − b)</span></p>
+            <p><strong>Étape 2 — Identifier :</strong> <span class="math">a + b = 4</span> et <span class="math">a − b = 2</span></p>
+            <p><strong>Étape 3 — Résoudre :</strong> en additionnant : <span class="math">2a = 6</span> → <span class="math">a = 3</span> ; en reportant : <span class="math">b = 4 − 3 = 1</span></p>
+            <p><strong>Vérification :</strong> <span class="math">3(1 + i) + 1(1 − i) = 3 + 3i + 1 − i = 4 + 2i</span> ✔</p>
+            <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> a = 3 et b = 1</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">Application type 3 — Reconnaître un réel pur grâce à l'égalité</h3>
+
+        <div class="lecture-example">
+          <div class="lecture-example-label">Exemple résolu (paramètre réel)</div>
+          <div class="lecture-example-content">
+            <p><strong>Déterminer les réels x tels que z = x + (x² − 1)i soit réel pur.</strong></p>
+            <p><strong>Étape 1 — Écrire la condition :</strong> d'après la Notion 1, <span class="math">z ∈ ℝ ⟺ Im(z) = 0</span></p>
+            <p><strong>Étape 2 — Appliquer :</strong> <span class="math">Im(z) = x² − 1</span>, donc on résout <span class="math">x² − 1 = 0</span></p>
+            <p><strong>Étape 3 — Résoudre :</strong> <span class="math">x² = 1</span> → <span class="math">x = 1</span> ou <span class="math">x = −1</span></p>
+            <p><strong>Vérification :</strong> pour x = 1 : <span class="math">z = 1 + 0i = 1</span> ✔ réel. Pour x = −1 : <span class="math">z = −1 + 0i = −1</span> ✔ réel.</p>
+            <p style="color:#4ade80;margin-top:10px;"><strong>✅ Conclusion :</strong> z est réel pur pour <span class="math">x = 1</span> ou <span class="math">x = −1</span></p>
+          </div>
+        </div>
+
+        <div class="lecture-callout lecture-callout-danger">
+          <div class="lecture-callout-body">
+            <div class="lecture-callout-title">Erreur classique : identifier trop tôt</div>
+            <p>Il faut <strong>d'abord regrouper</strong> tous les termes réels ensemble et tous les termes en <span class="math">i</span> ensemble, <strong>puis</strong> identifier. Identifier « en vrac », terme à terme sans regrouper, est la source principale d'erreurs dans ce type d'exercice.</p>
+          </div>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">✏️ Exercice d'application 6 — Identification complète</div>
+          <p class="lecture-text"><strong>Énoncé :</strong> déterminer les réels x et y tels que <span class="math">(x + iy)(2 − i) = 4 + 3i</span></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>Étape 1 — Développer :</strong> <span class="math">(x + iy)(2 − i) = 2x − ix + 2iy − i²y = (2x + y) + i(2y − x)</span></p>
+              <p><strong>Étape 2 — Identifier :</strong> <span class="math">2x + y = 4</span> et <span class="math">−x + 2y = 3</span></p>
+              <p><strong>Étape 3 — Résoudre par substitution :</strong> de la première : <span class="math">y = 4 − 2x</span>. Dans la seconde : <span class="math">−x + 2(4 − 2x) = 3</span> → <span class="math">−x + 8 − 4x = 3</span> → <span class="math">−5x = −5</span> → <span class="math">x = 1</span>, puis <span class="math">y = 4 − 2 = 2</span></p>
+              <p><strong>Étape 4 — Vérifier :</strong> <span class="math">(1 + 2i)(2 − i) = 2 − i + 4i − 2i² = 4 + 3i</span> ✔</p>
+              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> x = 1 et y = 2</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 6 : FICHES MÉTHODES -->
+  <!-- ============================================================ -->
+  <section class="lecture-section" id="s6">
+    <div class="lecture-section-header">
+      <div class="lecture-section-num">06</div>
+      <div class="lecture-section-heading">
+        <span class="lecture-section-eyebrow">Méthodologie</span>
+        <h2 class="lecture-section-title">Fiches méthodes</h2>
+      </div>
+    </div>
+
+    <div class="lecture-section-body">
+      <p class="lecture-text">
+        Trois procédés à automatiser. Le jour du contrôle, ils doivent venir sans réfléchir.
+      </p>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">📋 Méthode 1 — Mettre une expression sous forme algébrique <em>(Notion 1)</em></h3>
+        <div class="lecture-steps">
+          <div class="lecture-step">
+            <span class="lecture-step-number">1</span>
+            <div class="lecture-step-content">
+              <strong>Développer tous les produits et remplacer chaque i² par −1</strong>
+              <p>utiliser les identités remarquables et le schéma (a + ib)(a − ib) = a² + b² si possible</p>
+            </div>
+          </div>
+          <div class="lecture-step">
+            <span class="lecture-step-number">2</span>
+            <div class="lecture-step-content">
+              <strong>Regrouper : les réels ensemble, les termes en i ensemble</strong>
+              <p>z = (somme des réels) + i(somme des coefficients)</p>
+            </div>
+          </div>
+          <div class="lecture-step">
+            <span class="lecture-step-number">3</span>
+            <div class="lecture-step-content">
+              <strong>Lire Re(z) et Im(z), simplifier les fractions</strong>
+              <p>ne conclure qu'une fois la forme a + ib obtenue</p>
+            </div>
+          </div>
+        </div>
+        <div class="lecture-example">
+          <div class="lecture-example-label">Application</div>
+          <div class="lecture-example-content">
+            <p><span class="math">z = (2 + i) + 3i(2 − i)</span></p>
+            <p><span class="math">3i(2 − i) = 6i − 3i² = 3 + 6i</span></p>
+            <p><span class="math">z = (2 + 3) + i(1 + 6) = 5 + 7i</span> → <span class="math">Re(z) = 5</span>, <span class="math">Im(z) = 7</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">📋 Méthode 2 — Identifier (équation à inconnue complexe) <em>(Notion 2)</em></h3>
+        <div class="lecture-steps">
+          <div class="lecture-step">
+            <span class="lecture-step-number">1</span>
+            <div class="lecture-step-content">
+              <strong>Poser z = x + iy avec x, y réels</strong>
+              <p>et écrire l'équation complète</p>
+            </div>
+          </div>
+          <div class="lecture-step">
+            <span class="lecture-step-number">2</span>
+            <div class="lecture-step-content">
+              <strong>Développer et regrouper en (réel) + i(réel)</strong>
+              <p>(ax − by) + i(ay + bx) = c + id</p>
+            </div>
+          </div>
+          <div class="lecture-step">
+            <span class="lecture-step-number">3</span>
+            <div class="lecture-step-content">
+              <strong>Identifier puis résoudre le système 2×2</strong>
+              <p>addition/soustraction des lignes ou substitution</p>
+            </div>
+          </div>
+          <div class="lecture-step">
+            <span class="lecture-step-number">4</span>
+            <div class="lecture-step-content">
+              <strong>Conclure z = x + iy et vérifier</strong>
+              <p>le membre de gauche doit redonner le membre de droite — vérification en 10 secondes</p>
+            </div>
+          </div>
+        </div>
+        <div class="lecture-example">
+          <div class="lecture-example-label">Application</div>
+          <div class="lecture-example-content">
+            <p><span class="math">(1 + i)z = 4 + 2i</span> : <span class="math">x − y = 4</span> et <span class="math">x + y = 2</span> → <span class="math">z = 3 − i</span> ✔</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">📋 Méthode 3 — Reconnaître réel pur / imaginaire pur <em>(Notions 1 + 2)</em></h3>
+        <div class="lecture-steps">
+          <div class="lecture-step">
+            <span class="lecture-step-number">1</span>
+            <div class="lecture-step-content">
+              <strong>Mettre d'abord z sous forme algébrique</strong>
+              <p>simplifier tous les i², développer tous les produits</p>
+            </div>
+          </div>
+          <div class="lecture-step">
+            <span class="lecture-step-number">2</span>
+            <div class="lecture-step-content">
+              <strong>Appliquer la bonne caractérisation</strong>
+              <p>réel pur ⟺ Im(z) = 0 · imaginaire pur ⟺ Re(z) = 0 · nul ⟺ les deux nuls</p>
+            </div>
+          </div>
+          <div class="lecture-step">
+            <span class="lecture-step-number">3</span>
+            <div class="lecture-step-content">
+              <strong>Résoudre l'équation obtenue et vérifier sur un exemple</strong>
+              <p>si un paramètre x figure dans z, on obtient une condition sur x</p>
+            </div>
+          </div>
+        </div>
+        <div class="lecture-example">
+          <div class="lecture-example-label">Application</div>
+          <div class="lecture-example-content">
+            <p><span class="math">z = x + (x² − 1)i</span> est réel pur ⟺ <span class="math">x² − 1 = 0</span> ⟺ <span class="math">x = ±1</span> ✔</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 7 : EXERCICES D'ENTRAÎNEMENT -->
+  <!-- ============================================================ -->
+  <section class="lecture-section" id="s7">
+    <div class="lecture-section-header">
+      <div class="lecture-section-num">07</div>
+      <div class="lecture-section-heading">
+        <span class="lecture-section-eyebrow">Entraînement</span>
+        <h2 class="lecture-section-title">Exercices d'entraînement</h2>
+      </div>
+    </div>
+
+    <div class="lecture-section-body">
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">🎯 QCM — Teste tes réflexes</h3>
+
+        <div class="lecture-quiz">
+          <div class="lecture-quiz-item">
+            <p class="lecture-quiz-q">Q1 — La partie imaginaire de z = 4 − 7i est :</p>
+            <div class="lecture-quiz-options">
+              <span>A) 4i</span>
+              <span>B) −7i</span>
+              <span>C) −7</span>
+              <span>D) 7</span>
+            </div>
+            <details>
+              <summary>Voir la réponse</summary>
+              <div class="lecture-quiz-answer"><strong>C) −7.</strong> La partie imaginaire est le coefficient <em>réel</em> devant i — jamais un multiple de i. La réponse B est le piège classique !</div>
+            </details>
+          </div>
+
+          <div class="lecture-quiz-item">
+            <p class="lecture-quiz-q">Q2 — i²⁰²⁶ est égal à :</p>
+            <div class="lecture-quiz-options">
+              <span>A) i</span>
+              <span>B) −1</span>
+              <span>C) −i</span>
+              <span>D) 1</span>
+            </div>
+            <details>
+              <summary>Voir la réponse</summary>
+              <div class="lecture-quiz-answer"><strong>B) −1.</strong> 2026 = 4 × 506 + 2, reste 2 → i²⁰²⁶ = i² = −1.</div>
+            </details>
+          </div>
+
+          <div class="lecture-quiz-item">
+            <p class="lecture-quiz-q">Q3 — a + ib = a' + ib' si et seulement si :</p>
+            <div class="lecture-quiz-options">
+              <span>A) a = a'</span>
+              <span>B) b = b'</span>
+              <span>C) a = a' et b = b'</span>
+              <span>D) a + b = a' + b'</span>
+            </div>
+            <details>
+              <summary>Voir la réponse</summary>
+              <div class="lecture-quiz-answer"><strong>C) a = a' ET b = b'.</strong> Les DEUX ingrédients doivent coïncider — c'est la règle fondamentale d'égalité. (D est faux : 2 + 3i ≠ 3 + 2i alors que 2 + 3 = 3 + 2 !)</div>
+            </details>
+          </div>
+
+          <div class="lecture-quiz-item">
+            <p class="lecture-quiz-q">Q4 — z est un réel pur si et seulement si :</p>
+            <div class="lecture-quiz-options">
+              <span>A) Im(z) = 0</span>
+              <span>B) Re(z) = 0</span>
+              <span>C) z = 0</span>
+              <span>D) Re(z) = Im(z)</span>
+            </div>
+            <details>
+              <summary>Voir la réponse</summary>
+              <div class="lecture-quiz-answer"><strong>A) Im(z) = 0.</strong> Réel pur ⟺ partie imaginaire nulle. (B correspond à l'imaginaire pur, et C est le seul nombre à la fois réel ET imaginaire pur.)</div>
+            </details>
+          </div>
+
+          <div class="lecture-quiz-item">
+            <p class="lecture-quiz-q">Q5 — (2 + i)(2 − i) est :</p>
+            <div class="lecture-quiz-options">
+              <span>A) un imaginaire pur</span>
+              <span>B) un réel</span>
+              <span>C) égal à 4</span>
+              <span>D) égal à 4 + 2i</span>
+            </div>
+            <details>
+              <summary>Voir la réponse</summary>
+              <div class="lecture-quiz-answer"><strong>B) un réel.</strong> (2 + i)(2 − i) = 4 − i² = 4 + 1 = 5. Le schéma (a + ib)(a − ib) = a² + b² donne toujours un réel positif !</div>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <div class="lecture-section-sub">
+        <h3 class="lecture-subtitle">💪 Exercices d'application (du plus facile au plus corsé)</h3>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">Exercice 1 — Lire et classer (Notion 1)</div>
+          <p class="lecture-text">Donner <span class="math">Re(z)</span> et <span class="math">Im(z)</span> pour <span class="math">z = −3 + 7i</span>, puis classer les nombres suivants : réel pur, imaginaire pur, ou ni l'un ni l'autre : <span class="math">5</span> · <span class="math">−3i</span> · <span class="math">2 + 2i</span> · <span class="math">i²</span></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><span class="math">z = −3 + 7i</span> : <span class="math">Re(z) = −3</span>, <span class="math">Im(z) = 7</span>.</p>
+              <p><strong>5</strong> : Im = 0 → <strong>réel pur</strong>.</p>
+              <p><strong>−3i</strong> : Re = 0 → <strong>imaginaire pur</strong>.</p>
+              <p><strong>2 + 2i</strong> : les deux parties sont non nulles → <strong>ni l'un ni l'autre</strong>.</p>
+              <p><strong>i²</strong> : ⚠️ piège ! Il faut d'abord simplifier : <span class="math">i² = −1</span>, donc <strong>réel pur</strong> !</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">Exercice 2 — Puissances de i (Notion 1)</div>
+          <p class="lecture-text">Calculer <span class="math">i⁴²</span>, <span class="math">i¹⁰⁰</span>, <span class="math">(3i)⁴</span></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>i⁴² :</strong> <span class="math">42 = 4 × 10 + 2</span> → reste 2 → <span class="math">i⁴² = −1</span></p>
+              <p><strong>i¹⁰⁰ :</strong> <span class="math">100 = 4 × 25 + 0</span> → reste 0 → <span class="math">i¹⁰⁰ = 1</span></p>
+              <p><strong>(3i)⁴ :</strong> <span class="math">3⁴ × i⁴ = 81 × 1 = 81</span></p>
+            </div>
+          </details>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">Exercice 3 — Forme algébrique (Notion 1)</div>
+          <p class="lecture-text">Écrire sous forme algébrique : <span class="math">z = (2 + i)² + 3i(1 − i)</span>, puis donner Re(z) et Im(z)</p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>Premier terme</strong> (identité (a+b)²) : <span class="math">(2 + i)² = 4 + 4i + i² = 3 + 4i</span></p>
+              <p><strong>Second terme :</strong> <span class="math">3i(1 − i) = 3i − 3i² = 3 + 3i</span></p>
+              <p><strong>Somme :</strong> <span class="math">z = (3 + 3) + i(4 + 3) = 6 + 7i</span></p>
+              <p style="color:#4ade80;margin-top:10px;"><strong>✅ z = 6 + 7i</strong> — avec <span class="math">Re(z) = 6</span> et <span class="math">Im(z) = 7</span></p>
+            </div>
+          </details>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">Exercice 4 — Égalité directe (Notion 2)</div>
+          <p class="lecture-text">Déterminer les réels x et y tels que <span class="math">(3x + 2) + (y − 4)i = 8 − i</span></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>Identification :</strong> à droite, <span class="math">8 − i = 8 + (−1)i</span>, donc :</p>
+              <p><span class="math">3x + 2 = 8</span> → <span class="math">3x = 6</span> → <span class="math">x = 2</span></p>
+              <p><span class="math">y − 4 = −1</span> → <span class="math">y = 3</span></p>
+              <p><strong>Vérification :</strong> <span class="math">(3×2 + 2) + (3 − 4)i = 8 − i</span> ✔</p>
+              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> x = 2 et y = 3</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">Exercice 5 — Identification complète ★ (Notion 2)</div>
+          <p class="lecture-text">Déterminer les réels x et y tels que <span class="math">(2 + i)(x + iy) = 3 + i</span></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>Étape 1 — Développer :</strong> <span class="math">(2 + i)(x + iy) = 2x + 2iy + ix + i²y = (2x − y) + i(x + 2y)</span></p>
+              <p><strong>Étape 2 — Identifier :</strong> <span class="math">2x − y = 3</span> et <span class="math">x + 2y = 1</span></p>
+              <p><strong>Étape 3 — Résoudre :</strong> de la première : <span class="math">y = 2x − 3</span>. Dans la seconde : <span class="math">x + 4x − 6 = 1</span> → <span class="math">5x = 7</span> → <span class="math">x = 7/5</span>, puis <span class="math">y = 14/5 − 15/5 = −1/5</span></p>
+              <p><strong>Étape 4 — Vérifier :</strong> <span class="math">(2 + i)(7/5 − i/5) = 14/5 − 2i/5 + 7i/5 + 1/5 = 3 + i</span> ✔</p>
+              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> x = 7/5 et y = −1/5</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">Exercice 6 — Type division ★ (Notion 2)</div>
+          <p class="lecture-text">Résoudre dans ℂ : <span class="math">(1 − i)z = 6 + 2i</span></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>Étape 1 — Poser z = x + iy :</strong> <span class="math">(1 − i)(x + iy) = 6 + 2i</span></p>
+              <p><strong>Étape 2 — Développer :</strong> <span class="math">x + iy − ix − i²y = (x + y) + i(y − x)</span></p>
+              <p><strong>Étape 3 — Identifier :</strong> <span class="math">x + y = 6</span> et <span class="math">y − x = 2</span></p>
+              <p><strong>Étape 4 — Résoudre :</strong> en additionnant : <span class="math">2y = 8</span> → <span class="math">y = 4</span> ; puis <span class="math">x = 6 − 4 = 2</span></p>
+              <p><strong>Vérification :</strong> <span class="math">(1 − i)(2 + 4i) = 2 + 4i − 2i − 4i² = 6 + 2i</span> ✔</p>
+              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> <span class="math">z = 2 + 4i</span></p>
+            </div>
+          </details>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">Exercice 7 — Décomposition réelle ★★ (Notion 2)</div>
+          <p class="lecture-text">Déterminer les réels a et b tels que <span class="math">a(2 + i) + b(1 − i) = 5</span></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>Étape 1 — Développer :</strong> <span class="math">2a + ai + b − bi = (2a + b) + i(a − b)</span></p>
+              <p><strong>Étape 2 — Identifier</strong> avec <span class="math">5 = 5 + 0i</span> :</p>
+              <p><span class="math">2a + b = 5</span> et <span class="math">a − b = 0</span></p>
+              <p><strong>Étape 3 — Résoudre :</strong> la seconde donne <span class="math">a = b</span> ; en reportant : <span class="math">3a = 5</span> → <span class="math">a = b = 5/3</span></p>
+              <p><strong>Vérification :</strong> <span class="math">(5/3)(2 + i) + (5/3)(1 − i) = (5/3)(3) = 5</span> ✔</p>
+              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> a = b = 5/3</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">Exercice 8 — Synthèse des deux notions ★★</div>
+          <p class="lecture-text">Résoudre dans ℂ : <span class="math">z² = 2i</span> <em>(indice : pose z = x + iy et utilise la règle d'égalité)</em></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>Étape 1 — Poser z = x + iy</strong> (<span class="math">x, y</span> réels) et développer avec l'identité (a + b)² :</p>
+              <p><span class="math">z² = (x + iy)² = x² + 2ixy + i²y² = (x² − y²) + 2xyi</span></p>
+              <p><strong>Étape 2 — Identifier</strong> avec <span class="math">2i = 0 + 2i</span> :</p>
+              <p><span class="math">x² − y² = 0</span> &nbsp;et&nbsp; <span class="math">2xy = 2</span></p>
+              <p><strong>Étape 3 — Résoudre :</strong> la première donne <span class="math">x² = y²</span>, donc <span class="math">y = x</span> ou <span class="math">y = −x</span>. La seconde donne <span class="math">xy = 1 &gt; 0</span> : x et y sont de <strong>même signe</strong> → on garde <span class="math">y = x</span>. Alors <span class="math">2x² = 2</span> → <span class="math">x² = 1</span> → <span class="math">x = 1</span> ou <span class="math">x = −1</span>, et <span class="math">y = x</span>.</p>
+              <p><strong>Étape 4 — Vérifier :</strong> <span class="math">(1 + i)² = 2i</span> ✔ et <span class="math">(−1 − i)² = 1 + 2i + i² = 2i</span> ✔</p>
+              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solutions :</strong> <span class="math">z = 1 + i</span> ou <span class="math">z = −1 − i</span></p>
+              <p>Cet exercice réunit les deux notions : la forme algébrique (développer z²) et l'égalité (identifier). Le jour du contrôle, c'est ce genre de sujet qui tombe !</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RÉCAPITULATIF ===== -->
+  <div class="lecture-recap">
+    <div class="lecture-recap-title">📌 Ce qu'il faut retenir</div>
+    <ul class="lecture-recap-list">
+      <li>Aucun réel n'a un carré négatif : on invente <span class="math">i</span> tel que <span class="math">i² = −1</span> — et toute équation <span class="math">x² = k</span> (<span class="math">k &lt; 0</span>) a deux solutions opposées <span class="math">±i√k</span>… écrites <span class="math">±i√(|k|)</span> (jamais de √ sous un négatif !)</li>
+      <li><strong>[forme_algebrique]</strong> Puissances de i : cycle de période 4 — <span class="math">i, −1, −i, 1</span> — et <span class="math">iⁿ = i</span>^(reste de n par 4) ; somme de 4 puissances consécutives = 0</li>
+      <li><strong>[forme_algebrique]</strong> Forme algébrique <strong>unique</strong> : <span class="math">z = a + ib</span> avec <span class="math">a, b ∈ ℝ</span></li>
+      <li><strong>[forme_algebrique]</strong> <span class="math">Re(z) = a</span> et <span class="math">Im(z) = b</span> sont deux <strong>réels</strong> (piège : Im(3 + 5i) = 5, pas 5i !) et <span class="math">z = Re(z) + i·Im(z)</span></li>
+      <li><strong>[forme_algebrique]</strong> z réel pur ⟺ Im(z) = 0 · z imaginaire pur ⟺ Re(z) = 0 · 0 est les deux à la fois</li>
+      <li><strong>[forme_algebrique]</strong> Calculs : développer puis remplacer chaque <span class="math">i²</span> par <span class="math">−1</span> ; schéma précieux <span class="math">(a + ib)(a − ib) = a² + b²</span></li>
+      <li><strong>[egalite_complexes]</strong> Règle : <span class="math">a + ib = a' + ib' ⟺ a = a'</span> ET <span class="math">b = b'</span> — justifiée par l'unicité de la forme algébrique</li>
+      <li><strong>[egalite_complexes]</strong> <span class="math">z = 0 ⟺ Re(z) = 0</span> ET <span class="math">Im(z) = 0</span> — les deux conditions à la fois</li>
+      <li><strong>[egalite_complexes]</strong> Une différence sur un seul ingrédient suffit pour conclure <span class="math">z ≠ z'</span></li>
+      <li><strong>[egalite_complexes]</strong> L'identification (poser z = x + iy → développer → identifier → vérifier) transforme toute équation complexe en système réel — le réflexe n°1 du chapitre</li>
+    </ul>
+  </div>
+
+  <!-- ===== FIN ===== -->
+  <div class="lecture-end">
+    <span class="lecture-end-icon">🎯</span>
+    <div class="lecture-end-text">Partie 1 terminée !</div>
+    <div class="lecture-end-sub">Passe à la partie suivante : suite du chapitre</div>
+    <div class="lecture-end-divider"></div>
+  </div>
+
+</div>
