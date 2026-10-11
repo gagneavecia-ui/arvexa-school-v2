@@ -99,7 +99,6 @@ function loadKnowledgeBase(subject) {
   KNOWLEDGE_MEMORY_CACHE.set(subject, null);
   return null;
 }
-}
 
 function normalizeText(str) {
   return String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
