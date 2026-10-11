@@ -70,25 +70,35 @@ function getAdminServices() {
 // ════════════════════════════════════════════════════════════════
 function loadKnowledgeBase(subject) {
   if (KNOWLEDGE_MEMORY_CACHE.has(subject)) return KNOWLEDGE_MEMORY_CACHE.get(subject);
-  const filename = `bac-${subject}.json`;
-  const filePath = path.join(process.cwd(), filename);
 
-  try {
-    if (!fs.existsSync(filePath)) {
-      console.log(`[REVISEUR] Base absente : ${filename}`);
-      KNOWLEDGE_MEMORY_CACHE.set(subject, null);
-      return null;
+  const filename = `bac-${subject}.json`;
+
+  // ⚡ Plusieurs chemins possibles selon l'environnement (Vercel, local, etc.)
+  const candidates = [
+    path.join(process.cwd(), filename),
+    path.join(process.cwd(), 'api', filename),
+    path.join(__dirname, filename),
+    path.join(__dirname, '..', filename)
+  ];
+
+  for (const filePath of candidates) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, 'utf-8');
+        const data = JSON.parse(raw);
+        console.log(`[REVISEUR] ✅ Base chargée : ${filename} (depuis ${filePath})`);
+        KNOWLEDGE_MEMORY_CACHE.set(subject, data);
+        return data;
+      }
+    } catch (error) {
+      console.warn(`[REVISEUR] Erreur lecture ${filePath}:`, error.message);
     }
-    const raw = fs.readFileSync(filePath, 'utf-8');
-    const data = JSON.parse(raw);
-    console.log(`[REVISEUR] ✅ Base chargée : ${filename}`);
-    KNOWLEDGE_MEMORY_CACHE.set(subject, data);
-    return data;
-  } catch (error) {
-    console.error(`[REVISEUR] Erreur ${filename}:`, error.message);
-    KNOWLEDGE_MEMORY_CACHE.set(subject, null);
-    return null;
   }
+
+  console.log(`[REVISEUR] Base absente : ${filename} (essayé ${candidates.length} chemins)`);
+  KNOWLEDGE_MEMORY_CACHE.set(subject, null);
+  return null;
+}
 }
 
 function normalizeText(str) {
