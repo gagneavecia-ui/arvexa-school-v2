@@ -1375,8 +1375,15 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+/**
+ * Échappe une chaîne pour insertion HTML sécurisée.
+ * Déséchappe une fois ce qui aurait pu être doublement échappé côté serveur
+ * (données historiques), puis échappe proprement.
+ */
 function safeText(text) {
-  return String(text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  let s = String(text || '');
+  s = s.replace(/&amp;(lt|gt|quot|amp|#39);/g, '&$1;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 let katexAttempts = 0;
@@ -1385,6 +1392,13 @@ function isKatexReady() { return typeof renderMathInElement === 'function'; }
 function renderKaTeX(root) {
   if (!root) return;
   if (root.dataset.katexDone === '1') return;
+
+  // Déléguer à KaTeXUtils (MutationObserver global déjà actif) si dispo
+  if (window.KaTeXUtils?.renderMath) {
+    window.KaTeXUtils.renderMath(root);
+    root.dataset.katexDone = '1';
+    return;
+  }
 
   if (!isKatexReady()) {
     if (katexAttempts++ < 60) setTimeout(() => renderKaTeX(root), 100);
@@ -1403,8 +1417,7 @@ function renderKaTeX(root) {
       throwOnError: false,
       errorColor: '#ff9a84',
       strict: false,
-      trust: true,
-      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option']
+      trust: false
     });
     root.dataset.katexDone = '1';
   } catch (e) {
@@ -1525,6 +1538,13 @@ async function callApi(action, params = {}) {
     body: JSON.stringify({ action, ...params })
   });
   const data = await response.json().catch(() => null);
+
+  // Redirection si la session a expiré
+  if (response.status === 401 && data?.code === 'AUTH_REQUIRED') {
+    window.location.replace('login.html');
+    throw new Error('Session expirée');
+  }
+
   if (!response.ok || !data?.success) {
     const err = new Error(data?.error || `Erreur ${response.status}`);
     err.code = data?.code;
@@ -1909,7 +1929,7 @@ async function renderSectionView(params) {
     const data = await callApi('getSection', { subject, chapterId, sectionId });
     const s = data.section;
     const a = s.analysis || {};
-    const profile = s.profile || info.profile || 'scientific';
+    const profile = s.profile || 'scientific';
     const chapterTitle = state.cache.chapter[`${subject}/${chapterId}`]?.chapter?.title || '';
 
     el.innerHTML = `
@@ -2005,6 +2025,8 @@ async function renderSectionView(params) {
       notesTimer = setTimeout(async () => {
         try {
           await callApi('updateNotes', { subject, chapterId, sectionId, userNotes: $('notesArea').value });
+          // ⚡ Invalider le cache du chapitre (évite l'obsolescence au retour)
+          delete state.cache.chapter[`${subject}/${chapterId}`];
           status.textContent = 'Enregistré';
           status.className = 'notes-status saved';
           setTimeout(() => { status.textContent = ''; status.className = 'notes-status'; }, 2000);
@@ -2015,22 +2037,22 @@ async function renderSectionView(params) {
       }, 1400);
     });
 
-    // ⚡ Lien vers mode examen (avec contexte cahier)
-   $('goToExamBtn')?.addEventListener('click', function () {
-  var subj = $('goToExamBtn').dataset.subject;
-  var chap = $('goToExamBtn').dataset.chapter;
-  var examSubject = EXAM_SUBJECT_MAP[subj] || '';
-  if (!examSubject) {
-    showToast('Cette matière n\'est pas encore disponible en mode examen.', 'info', 3000);
-    return;
-  }
-  var params = new URLSearchParams();
-  params.set('subject', examSubject);
-  if (chap) params.set('chapter', chap);
-  if (chapterId) params.set('chapterId', chapterId);
-  params.set('useNotebook', 'true');
-  window.location.href = 'exam.html?' + params.toString();
-});
+    // Lien vers mode examen (avec contexte cahier)
+    $('goToExamBtn')?.addEventListener('click', function () {
+      var subj = $('goToExamBtn').dataset.subject;
+      var chap = $('goToExamBtn').dataset.chapter;
+      var examSubject = EXAM_SUBJECT_MAP[subj] || '';
+      if (!examSubject) {
+        showToast('Cette matière n\'est pas encore disponible en mode examen.', 'info', 3000);
+        return;
+      }
+      var params = new URLSearchParams();
+      params.set('subject', examSubject);
+      if (chap) params.set('chapter', chap);
+      if (chapterId) params.set('chapterId', chapterId);
+      params.set('useNotebook', 'true');
+      window.location.href = 'exam.html?' + params.toString();
+    });
 
   } catch (err) {
     if (err.status === 404) showEmptyState(el, 'fa-file', 'Section introuvable', 'Cette section n\'existe plus.');
@@ -2099,7 +2121,7 @@ function renderPart(p, profile) {
     const steps = p.mechanism.steps || [];
     if (steps.length > 0) {
       extra += `<div class="part-terms" style="margin-top:10px;">
-        <div class="part-terms-title">⚙️ ${escapeHtml(p.mechanism.description || 'Mécanisme')}</div>
+        <div class="part-terms-title">⚙️ ${safeText(p.mechanism.description || 'Mécanisme')}</div>
         <ol class="method-list">${steps.map((s) => `<li>${safeText(s)}</li>`).join('')}</ol>
       </div>`;
     }
@@ -2617,22 +2639,21 @@ async function renderLessonView(params) {
       setTimeout(() => renderKaTeX(el), 0);
     });
 
-    // ⚡ Lien vers mode examen (avec contexte cahier)
-  $('goToExamLessonBtn')?.addEventListener('click', function () {
-  var subj = $('goToExamLessonBtn').dataset.subject;
-  var chap = $('goToExamLessonBtn').dataset.chapter;
-  var examSubject = EXAM_SUBJECT_MAP[subj] || '';
-  if (!examSubject) {
-    showToast('Cette matière n\'est pas encore disponible en mode examen.', 'info', 3000);
-    return;
-  }
-  var params = new URLSearchParams();
-  params.set('subject', examSubject);
-  if (chap) params.set('chapter', chap);
-  if (chapterId) params.set('chapterId', chapterId);
-  params.set('useNotebook', 'true');
-  window.location.href = 'exam.html?' + params.toString();
-});
+    $('goToExamLessonBtn')?.addEventListener('click', function () {
+      var subj = $('goToExamLessonBtn').dataset.subject;
+      var chap = $('goToExamLessonBtn').dataset.chapter;
+      var examSubject = EXAM_SUBJECT_MAP[subj] || '';
+      if (!examSubject) {
+        showToast('Cette matière n\'est pas encore disponible en mode examen.', 'info', 3000);
+        return;
+      }
+      var params = new URLSearchParams();
+      params.set('subject', examSubject);
+      if (chap) params.set('chapter', chap);
+      if (chapterId) params.set('chapterId', chapterId);
+      params.set('useNotebook', 'true');
+      window.location.href = 'exam.html?' + params.toString();
+    });
 
   } catch (err) {
     showEmptyState(el, 'fa-exclamation-triangle', 'Erreur', err.message || 'Erreur réseau.');
@@ -2873,10 +2894,10 @@ function openAddSectionModal(subject, chapterId) {
     submitBtn.classList.add('loading');
 
     const container = $('view-section');
-    const info = SUBJECTS[subject];
+    const infoLocal = SUBJECTS[subject];
     document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
     container.classList.add('active');
-    const cleanupProgress = showGeneratingState(container, info?.profile || 'scientific');
+    const cleanupProgress = showGeneratingState(container, infoLocal?.profile || 'scientific');
 
     try {
       closeModal();
@@ -2958,7 +2979,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-console.log('ARVEXA — Mon cahier v8.0 — Mode examen intégré');
+console.log('ARVEXA — Mon cahier v8.0 — Correctifs P0/P1/P2');
 </script>
 </body>
 </html>
