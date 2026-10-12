@@ -23,25 +23,40 @@
     :root {
       --accent: #B8860B;
       --accent-bright: #E0B84A;
+      --accent-dim: rgba(184, 134, 11, 0.08);
+      --success: #2D7D5A;
       --success-light: #3AB67E;
       --danger: #B85C3A;
+      --danger-light: #E07A5F;
+      --warning: #D4A017;
+      --info: #4AAFE0;
       --bg-dark: #0A0A0A;
-      --card-bg: rgba(20, 20, 20, 0.6);
-      --card-border: rgba(255, 255, 255, 0.06);
-      --block-bg: rgba(0, 0, 0, 0.25);
+      --bg-surface: #141414;
+      --bg-card: rgba(20, 20, 20, 0.7);
       --text-light: #F5F0E8;
       --text-dim: #8A8A7A;
       --text-muted: #5A5A4A;
       --text-body: #cfd0cc;
-      --transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+      --border-soft: rgba(255, 255, 255, 0.05);
+      --border-strong: rgba(255, 255, 255, 0.08);
+      --border-gold: rgba(184, 134, 11, 0.15);
+      --transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      --transition-fast: all 0.15s ease;
+      --radius-sm: 10px;
+      --radius: 16px;
+      --radius-lg: 20px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+      --font-body: 'Inter', system-ui, sans-serif;
+      --font-serif: 'Playfair Display', Georgia, serif;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-    /* ⚡ FOND DÉGRADÉ SUR HTML — le body ne s'étire plus */
     html {
+      background: var(--bg-dark);
+      color-scheme: dark;
       min-width: 320px;
       width: 100%;
       min-height: 100%;
@@ -50,11 +65,8 @@
         radial-gradient(ellipse 35% 25% at 75% 85%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
         linear-gradient(180deg, #0A0A0A 0%, #060606 100%);
       background-attachment: fixed;
-      background-color: var(--bg-dark);
-      color-scheme: dark;
     }
 
-    /* ⚡ BODY — min-height auto + display block */
     body {
       margin: 0;
       min-height: auto;
@@ -63,15 +75,16 @@
       display: block;
       background: transparent;
       color: var(--text-light);
-      font: 15px/1.6 'Inter', system-ui, sans-serif;
+      font: 15px/1.6 var(--font-body);
       padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bottom);
       -webkit-font-smoothing: antialiased;
     }
 
     button { cursor: pointer; font-family: inherit; }
     button:disabled { cursor: not-allowed; opacity: 0.55; }
 
-    /* HEADER */
+    /* ═══ HEADER ═══ */
     header {
       position: sticky;
       top: 0;
@@ -79,11 +92,12 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: calc(12px + var(--safe-top)) 16px 12px;
+      padding: 12px 16px;
+      padding-top: calc(12px + var(--safe-top));
       background: rgba(10, 10, 10, 0.94);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--border-soft);
       gap: 12px;
     }
     .brand {
@@ -93,6 +107,35 @@
       letter-spacing: 0.04em;
     }
     .brand span { color: var(--accent-bright); font-style: italic; }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .top-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-dim);
+      font-weight: 600;
+      font-size: 12.5px;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+    .top-btn:hover {
+      border-color: rgba(184, 134, 11, 0.3);
+      background: rgba(184, 134, 11, 0.06);
+      color: var(--accent-bright);
+    }
+    .top-btn i { font-size: 11px; }
+
     .connection {
       color: var(--text-muted);
       font-size: 12px;
@@ -109,22 +152,22 @@
     }
     .connection.online::before { background: var(--success-light); }
 
-    /* SHELL */
+    /* ═══ SHELL ═══ */
     .shell {
       width: min(100% - 28px, 900px);
       margin: 0 auto;
       padding: 20px 0 30px;
     }
 
-    /* STEP BAR */
+    /* ═══ STEP BAR ═══ */
     .step-bar {
       display: none;
       align-items: center;
       gap: 8px;
       padding: 12px 16px;
       margin-bottom: 20px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
       border-radius: 12px;
       overflow-x: auto;
     }
@@ -144,10 +187,14 @@
       flex-shrink: 0;
     }
     .step-item .num {
-      width: 20px; height: 20px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 10px; font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
       background: rgba(255, 255, 255, 0.05);
       color: var(--text-muted);
     }
@@ -163,10 +210,10 @@
     .step-item.done .num span { display: none; }
     .step-sep { color: var(--text-muted); font-size: 10px; opacity: 0.5; }
 
-    /* PANEL */
+    /* ═══ PANEL ═══ */
     .panel {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
       border-radius: 14px;
       padding: 22px;
     }
@@ -190,7 +237,7 @@
     h1, h2 {
       margin: 0;
       line-height: 1.2;
-      font-family: 'Playfair Display', serif;
+      font-family: var(--font-serif);
       color: var(--text-light);
     }
     h1 { font-size: clamp(24px, 4.5vw, 36px); }
@@ -212,7 +259,7 @@
       font-size: 14.5px;
     }
 
-    /* FORM */
+    /* ═══ FORM ═══ */
     .form-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -223,71 +270,7 @@
     .field.full { grid-column: 1 / -1; }
     label { color: var(--text-light); font-size: 13px; font-weight: 600; }
 
-    /* CHIPS */
-    .chips-row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .chip {
-      padding: 8px 16px;
-      border-radius: 20px;
-      border: 1px solid var(--card-border);
-      background: transparent;
-      color: var(--text-dim);
-      font-size: 12.5px;
-      font-weight: 600;
-      transition: var(--transition);
-    }
-    .chip.active {
-      background: rgba(224, 184, 74, 0.12);
-      border-color: rgba(224, 184, 74, 0.3);
-      color: var(--accent-bright);
-    }
-
-    /* BUTTONS */
-    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
-    .btn {
-      min-height: 44px;
-      border: 1px solid transparent;
-      border-radius: 10px;
-      padding: 10px 18px;
-      color: var(--text-light);
-      background: rgba(255, 255, 255, 0.04);
-      font-weight: 600;
-      font-size: 14px;
-      transition: var(--transition);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .btn.primary {
-      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
-      color: #0A0A0A;
-      font-weight: 700;
-    }
-    .btn.secondary {
-      background: transparent;
-      border-color: rgba(255, 255, 255, 0.08);
-      color: var(--text-dim);
-    }
-    .btn.full { width: 100%; }
-
-    /* LOADER */
-    .loader {
-      display: none;
-      width: 18px; height: 18px;
-      border: 2px solid rgba(10, 10, 10, 0.25);
-      border-top-color: currentColor;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-    .btn.loading .loader { display: inline-block; }
-    .btn.loading .btn-text { display: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .status { min-height: 20px; margin-top: 12px; color: var(--text-dim); font-size: 13px; }
-    .status.error { color: #ff9a84; }
-    .status.info { color: var(--accent-bright); }
-
-    /* CUSTOM SELECT */
+    /* ═══ CUSTOM SELECT ═══ */
     .custom-select { position: relative; width: 100%; user-select: none; }
     .custom-select-trigger {
       display: flex;
@@ -298,14 +281,23 @@
       min-height: 46px;
       padding: 12px 14px;
       background: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
       color: var(--text-light);
       font-size: 14px;
       text-align: left;
       cursor: pointer;
+      transition: var(--transition-fast);
+      font-family: inherit;
     }
-    .custom-select.open .custom-select-trigger { border-color: var(--accent-bright); }
+    .custom-select-trigger:hover {
+      border-color: rgba(224, 184, 74, 0.3);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .custom-select.open .custom-select-trigger {
+      border-color: var(--accent-bright);
+      box-shadow: 0 0 0 3px rgba(224, 184, 74, 0.1);
+    }
     .custom-select-value {
       flex: 1; min-width: 0;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -337,6 +329,11 @@
     .custom-select.open .custom-select-options {
       opacity: 1; visibility: visible; transform: translateY(0);
     }
+    .custom-select-options::-webkit-scrollbar { width: 4px; }
+    .custom-select-options::-webkit-scrollbar-thumb {
+      background: rgba(224, 184, 74, 0.2);
+      border-radius: 10px;
+    }
     .custom-select-option {
       display: flex;
       align-items: center;
@@ -347,12 +344,113 @@
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
+      transition: var(--transition-fast);
+      position: relative;
     }
-    .custom-select-option:hover { background: rgba(224, 184, 74, 0.08); color: var(--text-light); }
-    .custom-select-option.selected { background: rgba(224, 184, 74, 0.12); color: var(--accent-bright); font-weight: 600; }
-    .custom-select-option .option-prefix { color: var(--accent-bright); font-size: 13px; width: 18px; text-align: center; }
+    .custom-select-option:hover {
+      background: rgba(224, 184, 74, 0.08);
+      color: var(--text-light);
+    }
+    .custom-select-option.selected {
+      background: rgba(224, 184, 74, 0.12);
+      color: var(--accent-bright);
+      font-weight: 600;
+    }
+    .custom-select-option.selected::after {
+      content: '✓';
+      margin-left: auto;
+      color: var(--accent-bright);
+      font-size: 12px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .custom-select-option .option-prefix {
+      color: var(--accent-bright);
+      font-size: 13px;
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
 
-    /* LOADING STEPS */
+    /* ═══ CHIPS ═══ */
+    .chips-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border-soft);
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 12.5px;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    .chip.active {
+      background: rgba(224, 184, 74, 0.12);
+      border-color: rgba(224, 184, 74, 0.3);
+      color: var(--accent-bright);
+    }
+
+    /* ═══ BUTTONS ═══ */
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+    .btn {
+      min-height: 46px;
+      border: 1px solid transparent;
+      border-radius: 30px;
+      padding: 12px 22px;
+      color: var(--text-light);
+      background: rgba(255, 255, 255, 0.04);
+      font-weight: 700;
+      font-size: 14px;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
+      text-decoration: none;
+    }
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(224, 184, 74, 0.3);
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .btn.primary {
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+      color: #0A0A0A;
+      box-shadow: 0 4px 16px rgba(184, 134, 11, 0.2);
+    }
+    .btn.primary:hover:not(:disabled) {
+      box-shadow: 0 8px 28px rgba(184, 134, 11, 0.35);
+    }
+    .btn.secondary {
+      background: transparent;
+      border-color: var(--border-strong);
+      color: var(--text-dim);
+    }
+    .btn.full { width: 100%; }
+
+    .loader {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(10, 10, 10, 0.25);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .btn.secondary .loader {
+      border-color: rgba(255, 255, 255, 0.2);
+      border-top-color: var(--text-light);
+    }
+    .btn.loading .loader { display: inline-block; }
+    .btn.loading .btn-text { display: none; }
+    .btn.loading .btn-icon { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status { min-height: 20px; margin-top: 12px; color: var(--text-dim); font-size: 13px; }
+    .status.error { color: #ff9a84; }
+    .status.info { color: var(--accent-bright); }
+
+    /* ═══ LOADING STEPS ═══ */
     .loading-steps {
       margin-top: 26px;
       display: flex;
@@ -381,7 +479,7 @@
       padding: 12px 14px;
       border-radius: 10px;
       background: rgba(20, 20, 20, 0.5);
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-soft);
       opacity: 0.5;
       transition: all 0.3s ease;
     }
@@ -404,7 +502,7 @@
     .loading-status { font-size: 13px; color: var(--text-muted); text-align: center; min-height: 20px; }
     .loading-status.active { color: var(--accent-bright); font-weight: 600; }
 
-    /* SESSION HEAD */
+    /* ═══ SESSION HEAD ═══ */
     .session-head {
       display: flex;
       justify-content: space-between;
@@ -429,21 +527,20 @@
       padding: 4px 10px;
       border-radius: 20px;
       background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-soft);
     }
     .session-meta i { color: var(--accent-bright); font-size: 11px; }
 
-    /* CARTE NOTION */
+    /* ═══ FICHE ═══ */
     .notion-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
       border-radius: 12px;
       margin-bottom: 10px;
       overflow: hidden;
       transition: var(--transition);
     }
     .notion-card.open { border-color: rgba(224, 184, 74, 0.25); }
-
     .notion-header {
       display: flex;
       align-items: center;
@@ -453,7 +550,6 @@
       user-select: none;
     }
     .notion-header:hover { background: rgba(255, 255, 255, 0.02); }
-
     .notion-num {
       width: 30px; height: 30px;
       border-radius: 8px;
@@ -480,7 +576,6 @@
       transition: transform 0.3s ease, color 0.2s ease;
     }
     .notion-card.open .notion-toggle { transform: rotate(180deg); color: var(--accent-bright); }
-
     .notion-body {
       max-height: 0;
       overflow: hidden;
@@ -491,18 +586,16 @@
       max-height: 5000px;
       overflow: visible;
     }
-
     .notion-content {
       padding: 14px 16px 16px;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      border-top: 1px solid var(--card-border);
+      border-top: 1px solid var(--border-soft);
     }
 
-    /* BLOC INTERNE */
     .block {
-      background: var(--block-bg);
+      background: rgba(0, 0, 0, 0.25);
       border-radius: 10px;
       padding: 12px 14px;
       overflow-wrap: break-word;
@@ -525,16 +618,8 @@
       line-height: 1.7;
     }
 
-    /* FORMULES */
-    .formula-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .formula-item {
-      padding: 10px 0;
-      text-align: center;
-    }
+    .formula-list { display: flex; flex-direction: column; gap: 10px; }
+    .formula-item { padding: 10px 0; text-align: center; }
     .formula-latex {
       font-size: 15px;
       color: var(--text-light);
@@ -557,12 +642,7 @@
       color: var(--text-dim);
     }
 
-    /* MÉTHODE */
-    .method-steps {
-      list-style: none;
-      padding: 0;
-      counter-reset: step;
-    }
+    .method-steps { list-style: none; padding: 0; counter-reset: step; }
     .method-steps li {
       position: relative;
       padding-left: 28px;
@@ -586,7 +666,6 @@
       display: flex; align-items: center; justify-content: center;
     }
 
-    /* EXEMPLE */
     .example-enonce {
       padding: 10px 12px;
       border-radius: 8px;
@@ -627,7 +706,6 @@
       font-weight: 600;
     }
 
-    /* PIÈGE */
     .piege-trap {
       font-size: 13.5px;
       color: var(--text-light);
@@ -648,13 +726,12 @@
       font-weight: 700;
     }
 
-    /* GLOBAL BLOCK */
     .global-block {
       padding: 14px 16px;
       border-radius: 10px;
       margin-bottom: 12px;
       background: rgba(255, 255, 255, 0.015);
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-soft);
     }
     .global-title {
       font-size: 11.5px;
@@ -692,7 +769,7 @@
       color: var(--text-light);
       margin: 20px 0 12px;
       padding-bottom: 10px;
-      border-bottom: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--border-soft);
     }
     .sections-label i { color: var(--accent-bright); font-size: 14px; }
     .sections-label .count {
@@ -704,7 +781,7 @@
       text-transform: uppercase;
     }
 
-    /* FLASHCARD */
+    /* ═══ FLASHCARDS ═══ */
     .flashcard-progress {
       display: flex;
       align-items: center;
@@ -726,10 +803,7 @@
       background: linear-gradient(90deg, var(--accent), var(--accent-bright));
       transition: width 0.4s ease;
     }
-    .flashcard {
-      perspective: 1400px;
-      margin-bottom: 16px;
-    }
+    .flashcard { perspective: 1400px; margin-bottom: 16px; }
     .flashcard-inner {
       position: relative;
       width: 100%;
@@ -750,8 +824,8 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      border: 1px solid var(--card-border);
-      background: var(--card-bg);
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
       overflow-y: auto;
     }
     .flashcard-back {
@@ -797,7 +871,6 @@
       gap: 6px;
     }
     .flashcard-hint i { color: var(--accent-bright); font-size: 11px; }
-
     .flashcard-flip-hint {
       text-align: center;
       font-size: 11.5px;
@@ -805,7 +878,6 @@
       margin-bottom: 14px;
       font-style: italic;
     }
-
     .flashcard-feedback {
       display: none;
       gap: 8px;
@@ -818,7 +890,7 @@
     .feedback-btn {
       padding: 12px 8px;
       border-radius: 10px;
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-soft);
       background: rgba(255, 255, 255, 0.02);
       font-size: 12px;
       font-weight: 600;
@@ -829,13 +901,14 @@
       gap: 4px;
       color: var(--text-dim);
       transition: all 0.15s ease;
+      font-family: inherit;
     }
     .feedback-btn i { font-size: 16px; }
     .feedback-btn.hard:hover { background: rgba(215, 101, 74, 0.1); border-color: rgba(215, 101, 74, 0.3); color: #ff9a84; }
     .feedback-btn.medium:hover { background: rgba(212, 160, 23, 0.1); border-color: rgba(212, 160, 23, 0.3); color: #fbbf24; }
     .feedback-btn.easy:hover { background: rgba(69, 180, 125, 0.1); border-color: rgba(69, 180, 125, 0.3); color: #7ce0aa; }
 
-    /* QUIZ */
+    /* ═══ QUIZ ═══ */
     .progress {
       height: 4px;
       border-radius: 10px;
@@ -851,8 +924,8 @@
       width: 0%;
     }
     .quiz-question {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
       border-radius: 12px;
       padding: 16px 18px;
       margin-bottom: 12px;
@@ -895,13 +968,16 @@
       gap: 12px;
       padding: 12px 14px;
       border-radius: 10px;
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-soft);
       background: rgba(0, 0, 0, 0.25);
       cursor: pointer;
       font-size: 14px;
       color: var(--text-body);
       line-height: 1.5;
       transition: all 0.15s ease;
+      font-family: inherit;
+      text-align: left;
+      width: 100%;
     }
     .quiz-option:hover:not(.disabled) {
       border-color: rgba(224, 184, 74, 0.4);
@@ -938,12 +1014,12 @@
     .quiz-explanation.show { display: block; }
     .quiz-explanation strong { color: #4AAFE0; }
 
-    /* RESULT */
+    /* ═══ RESULTS ═══ */
     .result-hero {
       text-align: center;
       padding: 28px 22px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
       border-radius: 12px;
       margin-bottom: 18px;
     }
@@ -958,10 +1034,10 @@
       margin-bottom: 18px;
     }
     .metric {
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-soft);
       border-radius: 10px;
       padding: 14px 10px;
-      background: var(--card-bg);
+      background: var(--bg-card);
       text-align: center;
     }
     .metric strong {
@@ -984,9 +1060,9 @@
     .mastery-block {
       padding: 16px 18px;
       border-radius: 10px;
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-soft);
       margin-bottom: 14px;
-      background: var(--card-bg);
+      background: var(--bg-card);
     }
     .mastery-head {
       display: flex;
@@ -1025,7 +1101,7 @@
     .recommendations {
       padding: 16px 18px;
       border-radius: 10px;
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-soft);
       background: rgba(74, 175, 224, 0.04);
       margin-bottom: 14px;
     }
@@ -1054,14 +1130,238 @@
       font-weight: 700;
     }
 
-    /* SCROLL TOP */
+    /* ═══ ÉCRAN PREMIUM ═══ */
+    .premium-lock-screen {
+      text-align: center;
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .premium-lock-icon {
+      width: 100px; height: 100px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(184, 134, 11, 0.18), rgba(26, 58, 42, 0.1));
+      border: 2px solid rgba(224, 184, 74, 0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 44px;
+      animation: crownPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes crownPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(224, 184, 74, 0.3); transform: scale(1); }
+      50% { box-shadow: 0 0 30px 10px rgba(224, 184, 74, 0.15); transform: scale(1.03); }
+    }
+    .premium-lock-screen h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(22px, 5vw, 30px);
+      font-weight: 700;
+      color: var(--text-light);
+      line-height: 1.2;
+      max-width: 500px;
+    }
+    .premium-lock-screen h1 em { color: var(--accent-bright); font-style: italic; }
+    .premium-lock-screen p {
+      color: var(--text-dim);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 460px;
+    }
+    .premium-lock-screen p strong { color: var(--accent-bright); font-weight: 700; }
+    .premium-features-list {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 400px;
+      text-align: left;
+    }
+    .premium-features-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-soft);
+      font-size: 14px;
+      color: var(--text-body);
+    }
+    .premium-features-list li i {
+      color: var(--accent-bright);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .premium-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 32px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+      color: #0A0A0A;
+      font-weight: 700;
+      font-size: 15px;
+      text-decoration: none;
+      transition: var(--transition);
+      box-shadow: 0 8px 24px rgba(184, 134, 11, 0.25);
+      margin-top: 12px;
+    }
+    .premium-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(184, 134, 11, 0.4);
+    }
+    .premium-cta i { font-size: 14px; }
+
+    /* ═══ EMPTY / UNAVAILABLE ═══ */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .empty-state .empty-icon {
+      width: 72px; height: 72px;
+      border-radius: 20px;
+      background: rgba(184, 134, 11, 0.06);
+      border: 1px solid rgba(184, 134, 11, 0.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      color: var(--text-muted);
+    }
+    .empty-state h3 {
+      font-family: var(--font-serif);
+      font-size: 19px;
+      color: var(--text-light);
+    }
+    .empty-state p {
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 360px;
+    }
+
+    /* ═══ HISTORIQUE ═══ */
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: left;
+      color: inherit;
+      font-family: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+    .history-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--accent-bright), var(--accent));
+      opacity: 0.7;
+    }
+    .history-item:hover {
+      border-color: rgba(224, 184, 74, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    .history-item-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      background: rgba(224, 184, 74, 0.08);
+      border: 1px solid rgba(224, 184, 74, 0.15);
+    }
+    .history-item-body { flex: 1; min-width: 0; }
+    .history-item-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 4px;
+      line-height: 1.35;
+      overflow-wrap: break-word;
+    }
+    .history-item-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .history-item-meta .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 8px;
+      background: rgba(224, 184, 74, 0.08);
+      color: var(--accent-bright);
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+    .history-item-arrow {
+      color: var(--text-muted);
+      font-size: 14px;
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+    .history-item:hover .history-item-arrow {
+      color: var(--accent-bright);
+      transform: translateX(4px);
+    }
+
+    /* ═══ TOAST ═══ */
+    .toast {
+      position: fixed;
+      top: calc(var(--safe-top) + 20px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      padding: 12px 20px;
+      border-radius: 10px;
+      background: rgba(20, 22, 20, 0.96);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(224, 184, 74, 0.3);
+      color: var(--text-light);
+      font-size: 13px;
+      z-index: 300;
+      opacity: 0;
+      transition: all 0.3s ease;
+      display: flex; align-items: center; gap: 10px;
+      pointer-events: none;
+      max-width: 90vw;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { border-color: rgba(215, 101, 74, 0.4); }
+    .toast.success { border-color: rgba(69, 180, 125, 0.4); }
+
+    /* ═══ SCROLL TOP ═══ */
     .scroll-top {
       position: fixed;
       bottom: calc(20px + var(--safe-bottom));
       right: 20px;
       width: 40px; height: 40px;
       border-radius: 50%;
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-soft);
       background: rgba(20, 20, 20, 0.95);
       color: var(--accent-bright);
       font-size: 14px;
@@ -1074,7 +1374,7 @@
     }
     .scroll-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
 
-    /* PREMIUM */
+    /* ═══ PREMIUM POPUP ═══ */
     .premium-popup-overlay {
       position: fixed; inset: 0;
       z-index: 100;
@@ -1101,12 +1401,13 @@
       position: absolute;
       top: 10px; right: 10px;
       width: 30px; height: 30px;
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--border-soft);
       border-radius: 8px;
       background: transparent;
       color: var(--text-muted);
       display: flex; align-items: center; justify-content: center;
       font-size: 13px;
+      font-family: inherit;
     }
     .popup-icon { display: block; text-align: center; font-size: 40px; margin-bottom: 6px; }
     .premium-popup h2 {
@@ -1137,6 +1438,7 @@
       font-weight: 700;
       text-decoration: none;
       font-size: 14px;
+      font-family: inherit;
     }
     .btn-later {
       padding: 9px;
@@ -1144,34 +1446,13 @@
       background: transparent;
       color: var(--text-muted);
       font-size: 13px;
+      font-family: inherit;
     }
-
-    /* TOAST */
-    .toast {
-      position: fixed;
-      top: calc(var(--safe-top) + 20px);
-      left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      padding: 12px 20px;
-      border-radius: 10px;
-      background: rgba(20, 22, 20, 0.96);
-      border: 1px solid rgba(224, 184, 74, 0.3);
-      color: var(--text-light);
-      font-size: 13px;
-      z-index: 300;
-      opacity: 0;
-      transition: all 0.3s ease;
-      display: flex; align-items: center; gap: 10px;
-      pointer-events: none;
-      max-width: 90vw;
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .toast.error { border-color: rgba(215, 101, 74, 0.4); }
-    .toast.success { border-color: rgba(69, 180, 125, 0.4); }
 
     .katex { font-size: 1.05em; }
     .katex-display { margin: 8px 0; overflow-x: auto; padding: 4px 0; }
 
+    /* ═══ RESPONSIVE ═══ */
     @media (max-width: 620px) {
       .shell { width: min(100% - 20px, 900px); padding: 14px 0 20px; }
       .panel { padding: 16px; }
@@ -1180,10 +1461,15 @@
       .actions .btn { flex: 1 1 100%; }
       .notion-content { padding: 12px 14px 14px; }
       .flashcard-inner { height: 260px; }
+      .top-btn { padding: 8px 12px; font-size: 11.5px; }
+      .header-actions { gap: 6px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
@@ -1191,7 +1477,13 @@
 
   <header>
     <a class="brand" href="index.html">ARVEX<span>A School</span></a>
-    <div class="connection" id="connectionState">Vérification...</div>
+    <div class="header-actions">
+      <a href="reviseur-history.html" class="top-btn" id="historyLink">
+        <i class="fas fa-history"></i>
+        Historique
+      </a>
+      <div class="connection" id="connectionState">Vérification...</div>
+    </div>
   </header>
 
   <main class="shell">
@@ -1206,37 +1498,39 @@
       <div class="step-item" data-step="results"><div class="num"><span>4</span></div><span>Résultats</span></div>
     </div>
 
-    <!-- CONFIG -->
+    <!-- ═══════════════════════════════════════════════════════════
+         VUE 1 : CONFIGURATION
+         ═══════════════════════════════════════════════════════════ -->
     <section class="view active" id="configView">
       <div class="panel">
         <div class="eyebrow">Réviseur</div>
         <h1>Révise <em style="color:var(--accent-bright);font-style:italic;">efficacement</em>.</h1>
-        <p class="lead">Fiche détaillée, flashcards actives, quiz varié. Un seul objectif : ta réussite.</p>
+        <p class="lead">Fiche détaillée, flashcards actives, quiz varié. Un seul objectif : ta réussite au BAC.</p>
 
         <form id="configForm" class="form-grid">
           <div class="field">
             <label>Matière</label>
             <div class="custom-select" id="subjectSelect" data-name="subject">
-              <button type="button" class="custom-select-trigger">
+              <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
                 <span class="custom-select-value"></span>
                 <i class="fas fa-chevron-down custom-select-arrow"></i>
               </button>
-            <div class="custom-select-options">
-  <div class="custom-select-option" data-value="mathematiques"><span class="option-prefix">📐</span> Mathématiques</div>
-  <div class="custom-select-option" data-value="physique"><span class="option-prefix">⚡</span> Physique</div>
-  <div class="custom-select-option" data-value="chimie"><span class="option-prefix">🧪</span> Chimie</div>
-  <div class="custom-select-option" data-value="svt"><span class="option-prefix">🧬</span> SVT</div>
-  <div class="custom-select-option" data-value="philosophie"><span class="option-prefix">🧠</span> Philosophie</div>
-  <div class="custom-select-option" data-value="histoire"><span class="option-prefix">🌍</span> Histoire</div>
-  <div class="custom-select-option" data-value="geographie"><span class="option-prefix">🗺️</span> Géographie</div>
-</div>
+              <div class="custom-select-options">
+                <div class="custom-select-option" data-value="mathematiques"><span class="option-prefix">📐</span> Mathématiques</div>
+                <div class="custom-select-option" data-value="physique"><span class="option-prefix">⚡</span> Physique</div>
+                <div class="custom-select-option" data-value="chimie"><span class="option-prefix">🧪</span> Chimie</div>
+                <div class="custom-select-option" data-value="svt"><span class="option-prefix">🧬</span> SVT</div>
+                <div class="custom-select-option" data-value="philosophie"><span class="option-prefix">🧠</span> Philosophie</div>
+                <div class="custom-select-option" data-value="histoire"><span class="option-prefix">🌍</span> Histoire</div>
+                <div class="custom-select-option" data-value="geographie"><span class="option-prefix">🗺️</span> Géographie</div>
+              </div>
             </div>
           </div>
 
           <div class="field">
             <label>Chapitre</label>
             <div class="custom-select" id="chapterSelect" data-name="chapter">
-              <button type="button" class="custom-select-trigger">
+              <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
                 <span class="custom-select-value"></span>
                 <i class="fas fa-chevron-down custom-select-arrow"></i>
               </button>
@@ -1283,7 +1577,9 @@
       </div>
     </section>
 
-    <!-- LOADING FICHE -->
+    <!-- ═══════════════════════════════════════════════════════════
+         VUE 2 : LOADING FICHE
+         ═══════════════════════════════════════════════════════════ -->
     <section class="view" id="loadingView">
       <div class="panel">
         <div class="eyebrow">Génération</div>
@@ -1302,7 +1598,9 @@
       </div>
     </section>
 
-    <!-- LOADING FLASHCARDS -->
+    <!-- ═══════════════════════════════════════════════════════════
+         VUE 3 : LOADING FLASHCARDS
+         ═══════════════════════════════════════════════════════════ -->
     <section class="view" id="loadingFlashView">
       <div class="panel">
         <div class="eyebrow">Génération</div>
@@ -1321,7 +1619,9 @@
       </div>
     </section>
 
-    <!-- LOADING QUIZ -->
+    <!-- ═══════════════════════════════════════════════════════════
+         VUE 4 : LOADING QUIZ
+         ═══════════════════════════════════════════════════════════ -->
     <section class="view" id="loadingQuizView">
       <div class="panel">
         <div class="eyebrow">Génération</div>
@@ -1340,7 +1640,9 @@
       </div>
     </section>
 
-    <!-- FICHE -->
+    <!-- ═══════════════════════════════════════════════════════════
+         VUE 5 : FICHE
+         ═══════════════════════════════════════════════════════════ -->
     <section class="view" id="ficheView">
       <div class="panel">
         <div class="session-head">
@@ -1365,7 +1667,9 @@
       </div>
     </section>
 
-    <!-- FLASHCARDS -->
+    <!-- ═══════════════════════════════════════════════════════════
+         VUE 6 : FLASHCARDS
+         ═══════════════════════════════════════════════════════════ -->
     <section class="view" id="flashcardView">
       <div class="panel">
         <div class="session-head">
@@ -1403,9 +1707,9 @@
         <div class="flashcard-flip-hint"><i class="fas fa-hand-pointer"></i> Clique pour voir la réponse</div>
 
         <div class="flashcard-feedback" id="flashFeedback">
-          <button class="feedback-btn hard" data-rating="hard"><i class="fas fa-times-circle"></i><span>Oublié</span></button>
-          <button class="feedback-btn medium" data-rating="medium"><i class="fas fa-circle-half-stroke"></i><span>Hésité</span></button>
-          <button class="feedback-btn easy" data-rating="easy"><i class="fas fa-check-circle"></i><span>Je savais</span></button>
+          <button class="feedback-btn hard" data-rating="hard" type="button"><i class="fas fa-times-circle"></i><span>Oublié</span></button>
+          <button class="feedback-btn medium" data-rating="medium" type="button"><i class="fas fa-circle-half-stroke"></i><span>Hésité</span></button>
+          <button class="feedback-btn easy" data-rating="easy" type="button"><i class="fas fa-check-circle"></i><span>Je savais</span></button>
         </div>
 
         <div class="actions">
@@ -1414,7 +1718,9 @@
       </div>
     </section>
 
-    <!-- QUIZ -->
+    <!-- ═══════════════════════════════════════════════════════════
+         VUE 7 : QUIZ
+         ═══════════════════════════════════════════════════════════ -->
     <section class="view" id="quizView">
       <div class="panel">
         <div class="session-head">
@@ -1435,7 +1741,9 @@
       </div>
     </section>
 
-    <!-- RESULTS -->
+    <!-- ═══════════════════════════════════════════════════════════
+         VUE 8 : RÉSULTATS
+         ═══════════════════════════════════════════════════════════ -->
     <section class="view" id="resultsView">
       <div class="panel">
         <div class="result-hero">
@@ -1465,24 +1773,28 @@
         </div>
       </div>
     </section>
+
   </main>
 
-  <button class="scroll-top" id="scrollTop"><i class="fas fa-arrow-up"></i></button>
+  <button class="scroll-top" id="scrollTop" type="button" aria-label="Haut de page"><i class="fas fa-arrow-up"></i></button>
 
   <div class="premium-popup-overlay" id="premiumOverlay">
     <div class="premium-popup">
-      <button class="popup-close" id="premiumClose"><i class="fas fa-times"></i></button>
+      <button class="popup-close" id="premiumClose" type="button"><i class="fas fa-times"></i></button>
       <span class="popup-icon">👑</span>
       <h2>Premium</h2>
       <p class="popup-subtitle" id="premiumSubtitle">Débloque l'accès illimité.</p>
       <div class="popup-buttons">
         <a href="abonnement.html" class="btn-subscribe">S'abonner</a>
-        <button class="btn-later" id="popupLaterBtn">Plus tard</button>
+        <button class="btn-later" id="popupLaterBtn" type="button">Plus tard</button>
       </div>
     </div>
   </div>
 
-  <div class="toast" id="toast"><i class="fas fa-info-circle"></i><span id="toastText"></span></div>
+  <div class="toast" id="toast">
+    <i class="fas fa-info-circle"></i>
+    <span id="toastText"></span>
+  </div>
 
   <script type="importmap">
   { "imports": {
@@ -1508,121 +1820,122 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-const CHAPTERS = {
-  mathematiques: [
-    'Nombres complexes',
-    'Similitudes planes directes',
-    'Calcul de probabilités',
-    'Variable aléatoire',
-    'Fonction numérique',
-    'Fonction logarithme',
-    'Fonction exponentielle',
-    'Calcul intégral',
-    'Équations différentielles',
-    'Suites numériques',
-    'Statistiques'
-  ],
-  physique: [
-    'Cinématique',
-    'Mouvement rectiligne',
-    'Mouvement dans le champ de pesanteur',
-    'Mouvement des particules chargées',
-    'Oscillateurs mécaniques',
-    'Généralités sur les ondes',
-    'Mouvement vibratoire',
-    'Superposition des ondes',
-    'Interférence lumineuse',
-    'Champ magnétique',
-    'Force de Laplace',
-    'Force de Lorentz',
-    'Induction magnétique',
-    'Auto-induction',
-    'Circuit LC',
-    'Circuit RLC',
-    'Radioactivité'
-  ],
-  chimie: [
-    'Solutions aqueuses et leur pH',
-    'Acide fort, base forte',
-    'Acide faible, base faible',
-    'Couples acide/base et classification',
-    'Réaction acido-basique et solution tampon',
-    'Alcools',
-    'Acides carboxyliques et ses dérivés',
-    'Amines et amides',
-    'Acides α-aminés et protéines'
-  ],
-  svt: [
-    'Notion de l\'IG',
-    'Nature chimique et structure de l\'IG : la molécule d\'ADN',
-    'La reproduction conforme',
-    'Notion de cycle cellulaire et évolution de la quantité d\'ADN au cours du cycle',
-    'Protéines',
-    'Mécanismes d\'expression des gènes : la synthèse des protéines',
-    'Reproduction sexuée',
-    'Brassage des gènes',
-    'Transmission des caractères héréditaires chez l\'Homme',
-    'Anomalies chromosomiques',
-    'Tissus nerveux et notions de réflexes',
-    'Messages nerveux',
-    'La glycémie',
-    'Les appareils génitaux et leur fonctionnement',
-    'Régulation du fonctionnement des organes génitaux',
-    'De la fécondation à la nidation',
-    'La régulation des naissances',
-    'Le soi et le non soi',
-    'Les réponses immunitaires',
-    'Dysfonctionnement du système immunitaire : cas du VIH/SIDA'
-  ],
-  philosophie: [
-    'Conscience - Inconscient',
-    'Les passions',
-    'Autrui',
-    'Travail',
-    'Histoire',
-    'Religion',
-    'Science et technique',
-    'Le langage',
-    'La vérité',
-    'Espace - temps',
-    'État',
-    'La justice',
-    'La liberté'
-  ],
-  histoire: [
-    'Les causes de la Seconde Guerre mondiale',
-    'Le déroulement de la Seconde Guerre mondiale',
-    'L\'Afrique dans la guerre',
-    'Le bilan de la Seconde Guerre mondiale',
-    'Les conditions de la lutte de libération',
-    'La libération de l\'Algérie',
-    'La décolonisation en Afrique occidentale française (AOF)',
-    'Les problèmes des pays décolonisés'
-  ],
-  geographie: [
-    'Les aspects physiques',
-    'Étude humaine',
-    'L\'agriculture',
-    'L\'élevage',
-    'La pêche',
-    'L\'industrie et l\'artisanat',
-    'La communication et le transport',
-    'Le commerce',
-    'Le tourisme'
-  ]
-};
-   const SUBJECT_LABELS = {
-  mathematiques: 'Mathématiques',
-  physique: 'Physique',
-  chimie: 'Chimie',
-  svt: 'SVT',
-  philosophie: 'Philosophie',
-  histoire: 'Histoire',
-  geographie: 'Géographie'
-};
+  const CHAPTERS = {
+    mathematiques: [
+      'Nombres complexes',
+      'Similitudes planes directes',
+      'Calcul de probabilités',
+      'Variable aléatoire',
+      'Fonction numérique',
+      'Fonction logarithme',
+      'Fonction exponentielle',
+      'Calcul intégral',
+      'Équations différentielles',
+      'Suites numériques',
+      'Statistiques'
+    ],
+    physique: [
+      'Cinématique',
+      'Mouvement rectiligne',
+      'Mouvement dans le champ de pesanteur',
+      'Mouvement des particules chargées',
+      'Oscillateurs mécaniques',
+      'Généralités sur les ondes',
+      'Mouvement vibratoire',
+      'Superposition des ondes',
+      'Interférence lumineuse',
+      'Champ magnétique',
+      'Force de Laplace',
+      'Force de Lorentz',
+      'Induction magnétique',
+      'Auto-induction',
+      'Circuit LC',
+      'Circuit RLC',
+      'Radioactivité'
+    ],
+    chimie: [
+      'Solutions aqueuses et leur pH',
+      'Acide fort, base forte',
+      'Acide faible, base faible',
+      'Couples acide/base et classification',
+      'Réaction acido-basique et solution tampon',
+      'Alcools',
+      'Acides carboxyliques et ses dérivés',
+      'Amines et amides',
+      'Acides α-aminés et protéines'
+    ],
+    svt: [
+      'Notion de l\'IG',
+      'Nature chimique et structure de l\'IG : la molécule d\'ADN',
+      'La reproduction conforme',
+      'Notion de cycle cellulaire et évolution de la quantité d\'ADN au cours du cycle',
+      'Protéines',
+      'Mécanismes d\'expression des gènes : la synthèse des protéines',
+      'Reproduction sexuée',
+      'Brassage des gènes',
+      'Transmission des caractères héréditaires chez l\'Homme',
+      'Anomalies chromosomiques',
+      'Tissus nerveux et notions de réflexes',
+      'Messages nerveux',
+      'La glycémie',
+      'Les appareils génitaux et leur fonctionnement',
+      'Régulation du fonctionnement des organes génitaux',
+      'De la fécondation à la nidation',
+      'La régulation des naissances',
+      'Le soi et le non soi',
+      'Les réponses immunitaires',
+      'Dysfonctionnement du système immunitaire : cas du VIH/SIDA'
+    ],
+    philosophie: [
+      'Conscience - Inconscient',
+      'Les passions',
+      'Autrui',
+      'Travail',
+      'Histoire',
+      'Religion',
+      'Science et technique',
+      'Le langage',
+      'La vérité',
+      'Espace - temps',
+      'État',
+      'La justice',
+      'La liberté'
+    ],
+    histoire: [
+      'Les causes de la Seconde Guerre mondiale',
+      'Le déroulement de la Seconde Guerre mondiale',
+      'L\'Afrique dans la guerre',
+      'Le bilan de la Seconde Guerre mondiale',
+      'Les conditions de la lutte de libération',
+      'La libération de l\'Algérie',
+      'La décolonisation en Afrique occidentale française (AOF)',
+      'Les problèmes des pays décolonisés'
+    ],
+    geographie: [
+      'Les aspects physiques',
+      'Étude humaine',
+      'L\'agriculture',
+      'L\'élevage',
+      'La pêche',
+      'L\'industrie et l\'artisanat',
+      'La communication et le transport',
+      'Le commerce',
+      'Le tourisme'
+    ]
+  };
+
+  const SUBJECT_LABELS = {
+    mathematiques: 'Mathématiques',
+    physique: 'Physique',
+    chimie: 'Chimie',
+    svt: 'SVT',
+    philosophie: 'Philosophie',
+    histoire: 'Histoire',
+    geographie: 'Géographie'
+  };
 
   const DIFFICULTY_LABELS = { 1: 'Facile', 2: 'Moyen', 3: 'Difficile', 4: 'Niveau BAC' };
-  const TYPE_LABELS = { definition: 'Définition', formule: 'Formule', methode: 'Méthode', piege: 'Piège' };
+  const TYPE_LABELS = { definition: 'Définition', formule: 'Formule', methode: 'Méthode', piege: 'Piège', application: 'Application' };
 
   const state = {
     subject: 'mathematiques',
@@ -1646,16 +1959,14 @@ const CHAPTERS = {
 
   let katexAttempts = 0;
 
-  // ────────────────────────────────────────────────────────────
-  // UTILITAIRES TEXTE — anti "[object Object]"
-  // ────────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════
+  // UTILITAIRES TEXTE
+  // ═══════════════════════════════════════════════════════════════
   function toPlainText(value) {
     if (value === null || value === undefined) return '';
     if (typeof value === 'string') return value;
     if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-    if (Array.isArray(value)) {
-      return value.map((v) => toPlainText(v)).filter(Boolean).join('\n');
-    }
+    if (Array.isArray(value)) return value.map((v) => toPlainText(v)).filter(Boolean).join('\n');
     if (typeof value === 'object') {
       const keys = ['text', 'latex', 'formule', 'expression', 'content', 'value', 'label', 'titre', 'title', 'description'];
       for (const k of keys) {
@@ -1687,33 +1998,6 @@ const CHAPTERS = {
     txt = txt.replace(/^\\\(([\s\S]*)\\\)$/, '$1');
     return txt.trim();
   }
-  // ────────────────────────────────────────────────────────────
-
-  function showView(id) {
-    views.forEach((v) => $(v).classList.toggle('active', v === id));
-    const stepMap = { ficheView: 'fiche', flashcardView: 'flashcard', quizView: 'quiz', resultsView: 'results' };
-    const current = stepMap[id];
-    if (current) {
-      const order = ['fiche','flashcard','quiz','results'];
-      const idx = order.indexOf(current);
-      document.querySelectorAll('.step-item').forEach((el) => {
-        const i = order.indexOf(el.dataset.step);
-        el.classList.toggle('active', i === idx);
-        el.classList.toggle('done', i < idx);
-      });
-      $('stepBar').classList.add('show');
-    } else {
-      $('stepBar').classList.remove('show');
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function setStatus(id, msg, type = '') {
-    const el = $(id);
-    if (!el) return;
-    el.textContent = msg;
-    el.className = `status ${type}`;
-  }
 
   function escapeHtml(text) {
     const div = document.createElement('div');
@@ -1742,6 +2026,35 @@ const CHAPTERS = {
     } catch (e) {}
   }
 
+  function showView(id) {
+    views.forEach((v) => {
+      const el = $(v);
+      if (el) el.classList.toggle('active', v === id);
+    });
+    const stepMap = { ficheView: 'fiche', flashcardView: 'flashcard', quizView: 'quiz', resultsView: 'results' };
+    const current = stepMap[id];
+    if (current) {
+      const order = ['fiche','flashcard','quiz','results'];
+      const idx = order.indexOf(current);
+      document.querySelectorAll('.step-item').forEach((el) => {
+        const i = order.indexOf(el.dataset.step);
+        el.classList.toggle('active', i === idx);
+        el.classList.toggle('done', i < idx);
+      });
+      $('stepBar').classList.add('show');
+    } else {
+      $('stepBar').classList.remove('show');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function setStatus(id, msg, type = '') {
+    const el = $(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.className = `status ${type}`;
+  }
+
   function showToast(message, type = 'info') {
     const toast = $('toast');
     $('toastText').textContent = toPlainText(message);
@@ -1750,47 +2063,9 @@ const CHAPTERS = {
     window.__toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
   }
 
-  function normalizeFormula(f) {
-    if (!f) return null;
-    if (typeof f === 'string') {
-      const t = f.trim();
-      return t ? { latex: t, condition: '', usage: '' } : null;
-    }
-    if (typeof f === 'object') {
-      const latex = f.latex || f.formule || f.expression || f.text || '';
-      if (!latex || typeof latex !== 'string') return null;
-      return {
-        latex: latex.trim(),
-        condition: toPlainText(f.condition || ''),
-        usage: toPlainText(f.usage || '')
-      };
-    }
-    return null;
-  }
-
-  function buildFallbackContent() {
-    return {
-      comprendre: `Cette notion fait partie du programme du BAC. Relis-la et fais des exercices d'application.`,
-      tips: ['Note l\'essentiel dans ton carnet','Revois dans 24h puis 3 jours','Refais 2 exercices types','Explique-la à un camarade']
-    };
-  }
-
-  function resetSteps(prefix) {
-    ['1','2','3','4','5'].forEach((n) => $(`${prefix}Step${n}`)?.classList.remove('active','done'));
-  }
-  function activateStep(stepId, statusEl, label) {
-    document.querySelectorAll('.loading-step').forEach((s) => {
-      if (s.id === stepId) { s.classList.add('active'); s.classList.remove('done'); }
-      else if (s.classList.contains('active')) { s.classList.remove('active'); s.classList.add('done'); }
-    });
-    if (statusEl) { statusEl.textContent = label; statusEl.classList.add('active'); }
-  }
-  function finishAllSteps(prefix, statusEl, finalLabel) {
-    ['1','2','3','4','5'].forEach((n) => $(`${prefix}Step${n}`)?.classList.remove('active'));
-    ['1','2','3','4','5'].forEach((n) => $(`${prefix}Step${n}`)?.classList.add('done'));
-    if (statusEl) { statusEl.textContent = finalLabel; statusEl.classList.remove('active'); }
-  }
-
+  // ═══════════════════════════════════════════════════════════════
+  // CUSTOM SELECT
+  // ═══════════════════════════════════════════════════════════════
   class CustomSelect {
     constructor(element) {
       this.element = element;
@@ -1842,6 +2117,7 @@ const CHAPTERS = {
   }
 
   const cs = { subject: null, chapter: null };
+
   function initCustomSelects() {
     cs.subject = new CustomSelect($('subjectSelect'));
     cs.chapter = new CustomSelect($('chapterSelect'));
@@ -1849,6 +2125,7 @@ const CHAPTERS = {
     cs.subject.select('mathematiques', true);
     updateChapters();
   }
+
   function updateChapters() {
     const s = cs.subject.getValue();
     cs.chapter.setOptions([
@@ -1856,6 +2133,7 @@ const CHAPTERS = {
       ...(CHAPTERS[s] || []).map((ch) => ({ value: ch, label: ch, prefix: '📖' }))
     ]);
   }
+
   function initChips() {
     ['modeChips','difficultyChips','quizCountChips'].forEach((id) => {
       const chips = document.querySelectorAll(`#${id} .chip`);
@@ -1868,12 +2146,15 @@ const CHAPTERS = {
       }));
     });
   }
+
   function syncModeFromChips() {
     const active = document.querySelector('#modeChips .chip.active');
     if (active) state.mode = active.dataset.mode;
   }
 
-  // ── API ──
+  // ═══════════════════════════════════════════════════════════════
+  // API
+  // ═══════════════════════════════════════════════════════════════
   async function callApi(payload) {
     const token = await getIdToken(state.user);
     const res = await fetch('/api/reviseur', {
@@ -1885,7 +2166,9 @@ const CHAPTERS = {
     return { res, data };
   }
 
-  // ── FICHE ──
+  // ═══════════════════════════════════════════════════════════════
+  // FICHE
+  // ═══════════════════════════════════════════════════════════════
   $('configForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (state.isGenerating) return;
@@ -2051,6 +2334,25 @@ const CHAPTERS = {
     }
   }
 
+  function resetSteps(prefix) {
+    ['1','2','3','4','5'].forEach((n) => $(`${prefix}Step${n}`)?.classList.remove('active','done'));
+  }
+  function activateStep(stepId, statusEl, label) {
+    document.querySelectorAll('.loading-step').forEach((s) => {
+      if (s.id === stepId) { s.classList.add('active'); s.classList.remove('done'); }
+      else if (s.classList.contains('active')) { s.classList.remove('active'); s.classList.add('done'); }
+    });
+    if (statusEl) { statusEl.textContent = label; statusEl.classList.add('active'); }
+  }
+  function finishAllSteps(prefix, statusEl, finalLabel) {
+    ['1','2','3','4','5'].forEach((n) => $(`${prefix}Step${n}`)?.classList.remove('active'));
+    ['1','2','3','4','5'].forEach((n) => $(`${prefix}Step${n}`)?.classList.add('done'));
+    if (statusEl) { statusEl.textContent = finalLabel; statusEl.classList.remove('active'); }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // RENDU FICHE
+  // ═══════════════════════════════════════════════════════════════
   function renderFiche() {
     const s = state.currentSession;
     if (!s) return;
@@ -2102,7 +2404,19 @@ const CHAPTERS = {
 
     let formulesHTML = '';
     if (Array.isArray(section.formules) && section.formules.length > 0) {
-      const valid = section.formules.map(normalizeFormula).filter(Boolean);
+      const valid = section.formules
+        .map((f) => {
+          if (!f) return null;
+          if (typeof f === 'string') return f.trim() ? { latex: f, condition: '', usage: '' } : null;
+          if (typeof f === 'object') {
+            const latex = f.latex || f.formule || f.expression || f.text || '';
+            if (!latex) return null;
+            return { latex, condition: toPlainText(f.condition || ''), usage: toPlainText(f.usage || '') };
+          }
+          return null;
+        })
+        .filter(Boolean);
+
       if (valid.length > 0) {
         formulesHTML = `
           <div class="block">
@@ -2175,11 +2489,7 @@ const CHAPTERS = {
     const hasContent = comprendreHTML || formulesHTML || methodeHTML || exempleHTML || piegeHTML || astuceHTML;
     let fallbackHTML = '';
     if (!hasContent) {
-      const fb = buildFallbackContent();
-      fallbackHTML = `
-        <div class="block"><div class="block-label"><i class="fas fa-lightbulb"></i> À retenir</div><div class="block-text">${safeText(fb.comprendre)}</div></div>
-        <div class="block"><div class="block-label"><i class="fas fa-check-circle"></i> Conseils</div><ol class="method-steps">${fb.tips.map((t) => `<li>${safeText(t)}</li>`).join('')}</ol></div>
-      `;
+      fallbackHTML = `<div class="block"><div class="block-label"><i class="fas fa-info-circle"></i> Information</div><div class="block-text">Cette notion n'a pas pu être détaillée. Réessaie la génération.</div></div>`;
     }
 
     card.innerHTML = `
@@ -2212,6 +2522,9 @@ const CHAPTERS = {
     }
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // RENDU FLASHCARDS
+  // ═══════════════════════════════════════════════════════════════
   function renderFlashcard() {
     if (!state.flashcards || state.flashcards.length === 0) { showView('configView'); return; }
     $('flashMeta').innerHTML = `<span><i class="fas fa-layer-group"></i> ${state.flashcards.length} cartes</span>`;
@@ -2276,6 +2589,9 @@ const CHAPTERS = {
 
   $('finishFlashBtn').addEventListener('click', generateQuiz);
 
+  // ═══════════════════════════════════════════════════════════════
+  // RENDU QUIZ
+  // ═══════════════════════════════════════════════════════════════
   function renderQuiz() {
     const container = $('quizContent');
     container.innerHTML = '';
@@ -2300,7 +2616,7 @@ const CHAPTERS = {
       const opts = (q.options || []).map((opt, optIdx) => {
         const text = toPlainText(typeof opt === 'string' ? opt : (opt.text || opt.label || ''));
         const id = typeof opt === 'string' ? String.fromCharCode(65 + optIdx) : toPlainText(opt.id || String.fromCharCode(65 + optIdx));
-        return `<div class="quiz-option" data-option="${escapeHtml(id)}" data-qindex="${i}"><span class="quiz-option-letter">${escapeHtml(id)}</span><span>${safeText(text)}</span></div>`;
+        return `<button class="quiz-option" data-option="${escapeHtml(id)}" data-qindex="${i}" type="button"><span class="quiz-option-letter">${escapeHtml(id)}</span><span>${safeText(text)}</span></button>`;
       }).join('');
       div.innerHTML = `
         <div class="quiz-q-header">
@@ -2341,6 +2657,9 @@ const CHAPTERS = {
     renderKaTeX(container);
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // VALIDATION QUIZ
+  // ═══════════════════════════════════════════════════════════════
   $('validateQuizBtn').addEventListener('click', () => {
     let correct = 0;
     state.quiz.forEach((q, i) => { if (state.quizAnswers[i] === q.correctAnswer) correct++; });
@@ -2372,6 +2691,9 @@ const CHAPTERS = {
     showView('resultsView');
   });
 
+  // ═══════════════════════════════════════════════════════════════
+  // BOUTONS
+  // ═══════════════════════════════════════════════════════════════
   $('newFicheBtn').addEventListener('click', () => { syncModeFromChips(); showView('configView'); });
   $('newFlashBtn').addEventListener('click', () => { syncModeFromChips(); showView('configView'); });
   $('restartBtn').addEventListener('click', () => { syncModeFromChips(); showView('configView'); });
@@ -2397,6 +2719,9 @@ const CHAPTERS = {
   $('popupLaterBtn').addEventListener('click', () => $('premiumOverlay').classList.remove('show'));
   $('premiumOverlay').addEventListener('click', (e) => { if (e.target === $('premiumOverlay')) $('premiumOverlay').classList.remove('show'); });
 
+  // ═══════════════════════════════════════════════════════════════
+  // AUTH
+  // ═══════════════════════════════════════════════════════════════
   function isUserPremium(data) {
     if (!data) return false;
     const active = data.premium === true || data.isUnlocked === true || data.hasDeposited === true;
@@ -2404,6 +2729,7 @@ const CHAPTERS = {
     const end = data.subscriptionEndDate?.toDate?.() || (data.subscriptionEndDate?.seconds ? new Date(data.subscriptionEndDate.seconds * 1000) : null);
     return !end || end.getTime() > Date.now();
   }
+
   onAuthStateChanged(auth, async (user) => {
     const conn = $('connectionState');
     if (!user) { window.location.replace('login.html'); return; }
@@ -2422,7 +2748,7 @@ const CHAPTERS = {
 
   initCustomSelects();
   initChips();
-  console.log('🎓 ARVEXA — Réviseur v6.1');
+  console.log('🎓 ARVEXA — Réviseur v6.0');
   </script>
 </body>
 </html>
