@@ -165,7 +165,7 @@
       line-height: 1.7;
     }
 
-    /* ═══ RÉSUMÉ EN HAUT ═══ */
+    /* ═══ RÉSUMÉ ═══ */
     .summary-bar {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -198,50 +198,137 @@
     }
     .summary-card strong.neutral { color: var(--text-light); }
     .summary-card strong.success { color: var(--success-light); }
-    .summary-card strong.warning { color: var(--warning); }
 
-    /* ═══ FILTRES ═══ */
+    /* ═══ FILTRES (Custom Select uniforme) ═══ */
     .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
       margin-bottom: 20px;
     }
-    .filter-select {
+
+    .custom-select {
       position: relative;
-      min-width: 160px;
-      flex: 1;
-    }
-    .filter-select select {
       width: 100%;
-      padding: 10px 14px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-soft);
-      background: rgba(0, 0, 0, 0.3);
-      color: var(--text-light);
-      font-size: 13px;
-      font-family: inherit;
-      outline: none;
-      cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
-      transition: var(--transition-fast);
+      user-select: none;
     }
-    .filter-select select:focus {
+    .custom-select-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      min-height: 46px;
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+      color: var(--text-light);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      text-align: left;
+      font-family: var(--font-body);
+    }
+    .custom-select-trigger:hover {
+      border-color: rgba(224, 184, 74, 0.3);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .custom-select.open .custom-select-trigger {
       border-color: var(--accent-bright);
       box-shadow: 0 0 0 3px rgba(224, 184, 74, 0.1);
+      background: rgba(184, 134, 11, 0.02);
     }
-    .filter-select::after {
-      content: '\f078';
-      font-family: 'Font Awesome 6 Free';
-      font-weight: 900;
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
+    .custom-select-value {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .custom-select-value .icon-prefix {
+      color: var(--accent-bright);
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .custom-select-arrow {
       color: var(--text-muted);
-      font-size: 11px;
-      pointer-events: none;
+      font-size: 12px;
+      flex-shrink: 0;
+      transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .custom-select.open .custom-select-arrow {
+      transform: rotate(180deg);
+      color: var(--accent-bright);
+    }
+    .custom-select-options {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0; right: 0;
+      z-index: 50;
+      max-height: 280px;
+      overflow-y: auto;
+      background: linear-gradient(145deg, #171717, #101010);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(224, 184, 74, 0.05);
+      padding: 6px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px) scale(0.98);
+      transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+      transform-origin: top center;
+    }
+    .custom-select.open .custom-select-options {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+    .custom-select-options::-webkit-scrollbar { width: 4px; }
+    .custom-select-options::-webkit-scrollbar-thumb {
+      background: rgba(224, 184, 74, 0.2);
+      border-radius: 10px;
+    }
+    .custom-select-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border-radius: 8px;
+      color: var(--text-body);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      position: relative;
+    }
+    .custom-select-option:hover {
+      background: rgba(224, 184, 74, 0.08);
+      color: var(--text-light);
+    }
+    .custom-select-option.selected {
+      background: rgba(224, 184, 74, 0.12);
+      color: var(--accent-bright);
+      font-weight: 700;
+    }
+    .custom-select-option.selected::after {
+      content: '✓';
+      margin-left: auto;
+      color: var(--accent-bright);
+      font-size: 12px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .custom-select-option .option-prefix {
+      color: var(--accent-bright);
+      font-size: 13px;
+      flex-shrink: 0;
+      width: 18px;
+      text-align: center;
     }
 
     /* ═══ LISTE DES EXAMENS ═══ */
@@ -421,6 +508,102 @@
       box-shadow: 0 6px 20px rgba(184, 134, 11, 0.3);
     }
 
+    /* ═══ ÉCRAN PREMIUM ═══ */
+    .premium-lock-screen {
+      text-align: center;
+      padding: 48px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .premium-lock-icon {
+      width: 100px;
+      height: 100px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(184, 134, 11, 0.18), rgba(26, 58, 42, 0.1));
+      border: 2px solid rgba(224, 184, 74, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      animation: crownPulse 2.5s ease-in-out infinite;
+      margin-bottom: 8px;
+    }
+    @keyframes crownPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(224, 184, 74, 0.3); transform: scale(1); }
+      50% { box-shadow: 0 0 30px 10px rgba(224, 184, 74, 0.15); transform: scale(1.03); }
+    }
+    .premium-lock-screen h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(24px, 5vw, 32px);
+      font-weight: 700;
+      color: var(--text-light);
+      line-height: 1.2;
+      max-width: 500px;
+    }
+    .premium-lock-screen h1 em {
+      color: var(--accent-bright);
+      font-style: italic;
+    }
+    .premium-lock-screen p {
+      color: var(--text-dim);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 460px;
+    }
+    .premium-lock-screen p strong {
+      color: var(--accent-bright);
+      font-weight: 700;
+    }
+    .premium-features-list {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 400px;
+      text-align: left;
+    }
+    .premium-features-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-soft);
+      font-size: 14px;
+      color: var(--text-body);
+    }
+    .premium-features-list li i {
+      color: var(--accent-bright);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .premium-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 32px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+      color: #0A0A0A;
+      font-weight: 700;
+      font-size: 15px;
+      text-decoration: none;
+      transition: var(--transition);
+      box-shadow: 0 8px 24px rgba(184, 134, 11, 0.25);
+      margin-top: 12px;
+    }
+    .premium-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(184, 134, 11, 0.4);
+    }
+    .premium-cta i { font-size: 14px; }
+
     /* ═══ SKELETON ═══ */
     .skeleton {
       background: linear-gradient(90deg,
@@ -466,7 +649,7 @@
       border-radius: 8px;
     }
 
-    /* ═══ MODALE DÉTAIL ═══ */
+    /* ═══ MODALE ═══ */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -559,11 +742,8 @@
       background: rgba(184, 134, 11, 0.06);
     }
 
-    .modal-body {
-      padding: 22px;
-    }
+    .modal-body { padding: 22px; }
 
-    /* Score dans la modale */
     .modal-score {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -599,7 +779,6 @@
     .modal-score-card strong.warning { color: var(--warning); }
     .modal-score-card strong.danger { color: var(--danger-light); }
 
-    /* Exercices */
     .modal-section-title {
       font-family: var(--font-serif);
       font-size: 17px;
@@ -676,7 +855,6 @@
       transform: translateX(4px);
     }
 
-    /* ═══ DÉTAIL QUESTION ═══ */
     .back-btn-detail {
       display: inline-flex;
       align-items: center;
@@ -864,7 +1042,6 @@
     .qd-section.tip { background: rgba(58, 182, 126, 0.05); border-left: 3px solid #7ce0aa; }
     .qd-section.tip .qd-section-label { color: #7ce0aa; }
 
-    /* ═══ ACTIONS MODALE ═══ */
     .modal-actions {
       display: flex;
       gap: 10px;
@@ -906,7 +1083,6 @@
       border-color: rgba(215, 101, 74, 0.5);
     }
 
-    /* ═══ CONFIRM MODAL ═══ */
     .confirm-modal {
       max-width: 420px;
       padding: 26px 24px 22px;
@@ -966,7 +1142,6 @@
       box-shadow: 0 6px 20px rgba(184, 92, 58, 0.3);
     }
 
-    /* ═══ TOAST ═══ */
     .toast-container {
       position: fixed;
       top: calc(var(--safe-top) + 16px);
@@ -1044,9 +1219,9 @@
     </header>
 
     <section class="panel">
-      <div class="eyebrow">Historique</div>
-      <h1>Mes examens passés</h1>
-      <p class="lead">Consulte tes résultats, révise tes erreurs et suis ta progression.</p>
+      <div class="eyebrow" id="eyebrowTitle">Historique</div>
+      <h1 id="pageTitle">Mes examens passés</h1>
+      <p class="lead" id="pageLead">Consulte tes résultats, révise tes erreurs et suis ta progression.</p>
 
       <!-- Résumé -->
       <div class="summary-bar" id="summaryBar" style="display:none;">
@@ -1064,27 +1239,60 @@
         </div>
       </div>
 
-      <!-- Filtres -->
+      <!-- Filtres (Custom Select uniforme) -->
       <div class="filters" id="filtersBar" style="display:none;">
-        <div class="filter-select">
-          <select id="filterSubject">
-            <option value="">Toutes les matières</option>
-            <option value="mathematiques">Mathématiques</option>
-            <option value="physique">Physique</option>
-            <option value="chimie">Chimie</option>
-            <option value="svt">SVT</option>
-            <option value="philosophie">Philosophie</option>
-            <option value="histoire">Histoire</option>
-            <option value="geographie">Géographie</option>
-          </select>
+        <div class="custom-select" id="filterSubjectSelect">
+          <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+            <span class="custom-select-value"></span>
+            <i class="fas fa-chevron-down custom-select-arrow"></i>
+          </button>
+          <div class="custom-select-options" role="listbox">
+            <div class="custom-select-option" data-value="" role="option">
+              <span class="option-prefix">📚</span> Toutes les matières
+            </div>
+            <div class="custom-select-option" data-value="mathematiques" role="option">
+              <span class="option-prefix">📐</span> Mathématiques
+            </div>
+            <div class="custom-select-option" data-value="physique" role="option">
+              <span class="option-prefix">⚡</span> Physique
+            </div>
+            <div class="custom-select-option" data-value="chimie" role="option">
+              <span class="option-prefix">🧪</span> Chimie
+            </div>
+            <div class="custom-select-option" data-value="svt" role="option">
+              <span class="option-prefix">🧬</span> SVT
+            </div>
+            <div class="custom-select-option" data-value="philosophie" role="option">
+              <span class="option-prefix">🧠</span> Philosophie
+            </div>
+            <div class="custom-select-option" data-value="histoire" role="option">
+              <span class="option-prefix">🌍</span> Histoire
+            </div>
+            <div class="custom-select-option" data-value="geographie" role="option">
+              <span class="option-prefix">🗺️</span> Géographie
+            </div>
+          </div>
         </div>
-        <div class="filter-select">
-          <select id="filterPeriod">
-            <option value="">Toute la période</option>
-            <option value="7">7 derniers jours</option>
-            <option value="30">30 derniers jours</option>
-            <option value="90">90 derniers jours</option>
-          </select>
+
+        <div class="custom-select" id="filterPeriodSelect">
+          <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+            <span class="custom-select-value"></span>
+            <i class="fas fa-chevron-down custom-select-arrow"></i>
+          </button>
+          <div class="custom-select-options" role="listbox">
+            <div class="custom-select-option" data-value="" role="option">
+              <span class="option-prefix">📅</span> Toute la période
+            </div>
+            <div class="custom-select-option" data-value="7" role="option">
+              <span class="option-prefix">📅</span> 7 derniers jours
+            </div>
+            <div class="custom-select-option" data-value="30" role="option">
+              <span class="option-prefix">📅</span> 30 derniers jours
+            </div>
+            <div class="custom-select-option" data-value="90" role="option">
+              <span class="option-prefix">📅</span> 90 derniers jours
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1151,12 +1359,12 @@
 
   <script type="module">
   // ═══════════════════════════════════════════════════════════════
-  // EXAM-HISTORY — Historique des examens
+  // EXAM-HISTORY v2.0 — Premium + Custom Select
   // ═══════════════════════════════════════════════════════════════
 
   import { initializeApp } from 'firebase/app';
   import { getAuth, onAuthStateChanged, getIdToken } from 'firebase/auth';
-  import { getFirestore } from 'firebase/firestore';
+  import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
   var firebaseConfig = {
     apiKey: 'AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE',
@@ -1173,10 +1381,13 @@
 
   var state = {
     user: null,
+    isPremium: false,
     exams: [],
     filteredExams: [],
     currentExam: null,
-    deleteCallback: null
+    deleteCallback: null,
+    filterSubject: '',
+    filterPeriod: ''
   };
 
   var $ = function (id) { return document.getElementById(id); };
@@ -1219,6 +1430,88 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
+  // CUSTOM SELECT (uniforme avec exam.html)
+  // ═══════════════════════════════════════════════════════════════
+  function CustomSelect(element, onChange) {
+    this.element = element;
+    this.trigger = element.querySelector('.custom-select-trigger');
+    this.valueEl = element.querySelector('.custom-select-value');
+    this.optionsContainer = element.querySelector('.custom-select-options');
+    this.options = [];
+    this.value = null;
+    this.isOpen = false;
+    this.onChange = onChange || null;
+    this.init();
+  }
+
+  CustomSelect.prototype.init = function () {
+    var self = this;
+    this.trigger.addEventListener('click', function (e) { e.stopPropagation(); self.toggle(); });
+    document.addEventListener('click', function (e) {
+      if (!self.element.contains(e.target)) self.close();
+    });
+    this.refreshOptions();
+  };
+
+  CustomSelect.prototype.refreshOptions = function () {
+    var self = this;
+    this.options = Array.prototype.slice.call(this.optionsContainer.querySelectorAll('.custom-select-option'));
+    this.options.forEach(function (opt) {
+      opt.addEventListener('click', function (e) {
+        e.stopPropagation();
+        self.select(opt.dataset.value);
+      });
+    });
+    if (this.value === null && this.options.length > 0) {
+      this.select(this.options[0].dataset.value, true);
+    }
+  };
+
+  CustomSelect.prototype.select = function (value, silent) {
+    this.value = value;
+    var selected = null;
+    for (var i = 0; i < this.options.length; i++) {
+      if (this.options[i].dataset.value === String(value)) { selected = this.options[i]; break; }
+    }
+    if (!selected) return;
+
+    var prefix = selected.querySelector('.option-prefix');
+    var prefixHTML = prefix ? prefix.outerHTML : '';
+    var label = selected.textContent.replace(prefix ? prefix.textContent : '', '').trim();
+    this.valueEl.innerHTML = prefixHTML + ' <span>' + escapeHtml(label) + '</span>';
+
+    this.options.forEach(function (o) {
+      o.classList.toggle('selected', o.dataset.value === String(value));
+    });
+    this.close();
+
+    if (!silent && typeof this.onChange === 'function') {
+      this.onChange(this.value);
+    }
+  };
+
+  CustomSelect.prototype.toggle = function () { this.isOpen ? this.close() : this.open(); };
+
+  CustomSelect.prototype.open = function () {
+    var self = this;
+    document.querySelectorAll('.custom-select.open').forEach(function (el) {
+      if (el !== self.element) el.classList.remove('open');
+    });
+    this.element.classList.add('open');
+    this.trigger.setAttribute('aria-expanded', 'true');
+    this.isOpen = true;
+  };
+
+  CustomSelect.prototype.close = function () {
+    this.element.classList.remove('open');
+    this.trigger.setAttribute('aria-expanded', 'false');
+    this.isOpen = false;
+  };
+
+  var filterSubjectSelect = null;
+  var filterPeriodSelect = null;
+
+  // ═══════════════════════════════════════════════════════════════
   // FORMATAGE
   // ═══════════════════════════════════════════════════════════════
   function formatDate(iso) {
@@ -1252,23 +1545,34 @@
     return '💪';
   }
 
-  function getSubjectEmoji(subjectKey) {
-    var map = {
-      mathematiques: '📐',
-      physique: '⚡',
-      chimie: '🧪',
-      svt: '🧬',
-      philosophie: '🧠',
-      histoire: '🌍',
-      geographie: '🗺️'
-    };
-    return map[subjectKey] || '📄';
-  }
-
   function getProgressColor(percent) {
     if (percent >= 75) return 'linear-gradient(90deg, #45b47d, #6fd99a)';
     if (percent >= 50) return 'linear-gradient(90deg, #E0B84A, #F0CC65)';
     return 'linear-gradient(90deg, #d7654a, #e88a72)';
+  }
+
+  function isPremiumUser(data) {
+    if (!data) return false;
+    var status = data.subscriptionStatus || 'none';
+    if (status === 'pending') return false;
+
+    var active = data.premium === true ||
+                 data.isUnlocked === true ||
+                 data.hasDeposited === true;
+
+    var end = null;
+    if (data.subscriptionEndDate) {
+      if (typeof data.subscriptionEndDate.toDate === 'function') {
+        end = data.subscriptionEndDate.toDate();
+      } else if (data.subscriptionEndDate.seconds) {
+        end = new Date(data.subscriptionEndDate.seconds * 1000);
+      }
+    }
+
+    if (active && end) return end.getTime() > Date.now();
+    if (status === 'expired') return false;
+    if (active && !end) return true;
+    return false;
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -1285,6 +1589,13 @@
       body: JSON.stringify(payload)
     });
     var data = await res.json().catch(function () { return null; });
+
+    if (res.status === 403 && data && data.code === 'PREMIUM_REQUIRED') {
+      var err = new Error(data.error || 'Réservé aux comptes Premium.');
+      err.code = 'PREMIUM_REQUIRED';
+      throw err;
+    }
+
     if (!res.ok || !data || !data.success) {
       throw new Error((data && data.error) || ('Erreur ' + res.status));
     }
@@ -1298,6 +1609,10 @@
       applyFilters();
       renderSummary();
     } catch (error) {
+      if (error.code === 'PREMIUM_REQUIRED') {
+        renderPremiumLockScreen();
+        return;
+      }
       console.error('Load exams error:', error);
       $('examsContainer').innerHTML =
         '<div class="empty-state">' +
@@ -1312,8 +1627,8 @@
   // FILTRES
   // ═══════════════════════════════════════════════════════════════
   function applyFilters() {
-    var subject = $('filterSubject').value;
-    var period = $('filterPeriod').value;
+    var subject = state.filterSubject;
+    var period = state.filterPeriod;
     var filtered = state.exams.slice();
 
     if (subject) {
@@ -1342,7 +1657,7 @@
       return;
     }
     $('summaryBar').style.display = 'grid';
-    $('filtersBar').style.display = 'flex';
+    $('filtersBar').style.display = 'grid';
 
     var total = state.exams.length;
     var sum = 0;
@@ -1417,6 +1732,36 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
+  // ÉCRAN PREMIUM
+  // ═══════════════════════════════════════════════════════════════
+  function renderPremiumLockScreen() {
+    var container = $('examsContainer');
+    document.getElementById('summaryBar').style.display = 'none';
+    document.getElementById('filtersBar').style.display = 'none';
+    document.getElementById('eyebrowTitle').style.display = 'none';
+    document.getElementById('pageTitle').style.display = 'none';
+    document.getElementById('pageLead').style.display = 'none';
+
+    container.innerHTML =
+      '<div class="premium-lock-screen">' +
+      '<div class="premium-lock-icon">👑</div>' +
+      '<h1>Historique <em>Premium</em></h1>' +
+      '<p>L\'historique de tes examens est réservé aux membres <strong>Premium</strong>. ' +
+      'Passe à Premium pour revoir tous tes anciens sujets, tes corrections et tes erreurs ' +
+      'autant de fois que tu veux.</p>' +
+      '<ul class="premium-features-list">' +
+      '<li><i class="fas fa-history"></i> Historique illimité de tes examens</li>' +
+      '<li><i class="fas fa-redo"></i> Revoyez chaque question autant de fois que tu veux</li>' +
+      '<li><i class="fas fa-chart-line"></i> Suis ta progression et tes points forts</li>' +
+      '<li><i class="fas fa-infinity"></i> Générations d\'examens illimitées</li>' +
+      '</ul>' +
+      '<a href="abonnement.html" class="premium-cta">' +
+      '<i class="fas fa-crown"></i> S\'abonner maintenant' +
+      '</a>' +
+      '</div>';
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   // MODALE DÉTAIL
   // ═══════════════════════════════════════════════════════════════
   async function openExamDetail(examId) {
@@ -1437,6 +1782,11 @@
       state.currentExam = data.exam;
       renderExamDetail(data.exam);
     } catch (error) {
+      if (error.code === 'PREMIUM_REQUIRED') {
+        modal.classList.remove('show');
+        renderPremiumLockScreen();
+        return;
+      }
       console.error('Load exam error:', error);
       content.innerHTML =
         '<div class="modal-body" style="text-align:center;padding:40px 20px;">' +
@@ -1513,7 +1863,6 @@
 
     content.innerHTML = headerHtml + scoreHtml + exercisesHtml + footerHtml;
 
-    // Events
     $('closeDetailBtn').addEventListener('click', closeDetailModal);
     $('deleteExamBtn').addEventListener('click', function () {
       openDeleteConfirm(exam.id);
@@ -1526,15 +1875,12 @@
       });
     });
 
-    // Rendu KaTeX
     renderMath(content);
   }
 
   function renderExerciseDetail(exercise, idx) {
     var content = $('detailModalContent');
     var exam = state.currentExam;
-    var percent = exercise.maxScore > 0 ? (exercise.score / exercise.maxScore) * 100 : 0;
-    var icon = percent >= 75 ? '✅' : percent >= 50 ? '⚠️' : '❌';
     var questions = Array.isArray(exercise.questions) ? exercise.questions : [];
 
     var headerHtml =
@@ -1561,7 +1907,6 @@
         var pointsClass = q.status === 'correct' ? 'full' : (Number(q.points) > 0 ? '' : 'zero');
 
         bodyHtml += '<div class="question-detail q-' + (q.status || 'pending') + '">';
-
         bodyHtml +=
           '<div class="qd-header">' +
           '<div class="qd-number"><span>' + qIcon + '</span> Question ' + escapeHtml(q.number || (qIdx + 1)) + '</div>' +
@@ -1723,9 +2068,6 @@
   // ═══════════════════════════════════════════════════════════════
   // ÉVÉNEMENTS
   // ═══════════════════════════════════════════════════════════════
-  $('filterSubject').addEventListener('change', applyFilters);
-  $('filterPeriod').addEventListener('change', applyFilters);
-
   $('detailModal').addEventListener('click', function (e) {
     if (e.target === $('detailModal')) closeDetailModal();
   });
@@ -1749,18 +2091,64 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
+  // INIT CUSTOM SELECTS
+  // ═══════════════════════════════════════════════════════════════
+  function initFilters() {
+    filterSubjectSelect = new CustomSelect($('filterSubjectSelect'), function (value) {
+      state.filterSubject = value || '';
+      applyFilters();
+    });
+
+    filterPeriodSelect = new CustomSelect($('filterPeriodSelect'), function (value) {
+      state.filterPeriod = value || '';
+      applyFilters();
+    });
+
+    // Sélectionner les valeurs par défaut
+    filterSubjectSelect.select('', true);
+    filterPeriodSelect.select('', true);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   // AUTH
   // ═══════════════════════════════════════════════════════════════
-  onAuthStateChanged(auth, function (user) {
+  onAuthStateChanged(auth, async function (user) {
     if (!user) {
       window.location.replace('auth-choice.html');
       return;
     }
     state.user = user;
-    loadExams();
+
+    // Init des filtres avant tout
+    initFilters();
+
+    try {
+      var snap = await getDoc(doc(db, 'users', user.uid));
+      if (!snap.exists()) {
+        window.location.replace('register.html');
+        return;
+      }
+      var userData = snap.data();
+
+      if (!isPremiumUser(userData)) {
+        renderPremiumLockScreen();
+        return;
+      }
+
+      state.isPremium = true;
+      loadExams();
+    } catch (error) {
+      console.error('[HISTORIQUE] Erreur vérification Premium:', error);
+      $('examsContainer').innerHTML =
+        '<div class="empty-state">' +
+        '<div class="empty-icon"><i class="fas fa-exclamation-triangle"></i></div>' +
+        '<h3>Erreur de chargement</h3>' +
+        '<p>Impossible de vérifier ton statut. Réessaie plus tard.</p>' +
+        '</div>';
+    }
   });
 
-  console.log('ARVEXA — Exam-History v1.0');
+  console.log('ARVEXA — Exam-History v2.0');
   </script>
 </body>
 </html>
