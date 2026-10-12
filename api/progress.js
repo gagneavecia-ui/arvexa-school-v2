@@ -1,12 +1,12 @@
 // ================================================================
-// API PROGRESS v8.1 — ARVEXA School
+// API PROGRESS v8.2 — ARVEXA School
 // Cahier intelligent multi-profils + fan-out IA
 // 6 profils : scientifique / svt / philosophie / histoire-geo /
 //             francais / langue
 // Sans images, sans Vrai/Faux
 // ================================================================
 
-module.exports.config = { maxDuration: 90 };
+module.exports.config = { maxDuration: 120 };
 
 const WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 60;
@@ -17,7 +17,7 @@ const requestLog = new Map();
 // ────────────────────────────────────────────────────────────────
 var ALLOWED_SUBJECTS = new Set([
   'mathematiques', 'physique', 'chimie', 'svt',
-  'philosophie', 'histoire', 'geographie', 'anglais'
+  'philosophie', 'histoire', 'geographie'
 ]);
 
 // ⚡ Version tableau pour les itérations (map/forEach/filter)
@@ -30,14 +30,13 @@ var SUBJECT_INFO = {
   svt:           { label: 'SVT',            profile: 'svt' },
   philosophie:   { label: 'Philosophie',    profile: 'philosophy' },
   histoire:      { label: 'Histoire',       profile: 'history' },
-  geographie:    { label: 'Géographie',     profile: 'history' },
-  anglais:       { label: 'Anglais',        profile: 'language' }
+  geographie:    { label: 'Géographie',     profile: 'history' }
 };
 const MIN_CONTENT_LENGTH = 40;
 const MAX_CONTENT_LENGTH = 15000;
 
 const FREE_SECTION_LIMIT = 5;
-const GLOBAL_AI_TIME_BUDGET_MS = 65000;
+const GLOBAL_AI_TIME_BUDGET_MS = 80000;
 
 let adminServices = null;
 
@@ -242,10 +241,53 @@ function getProviders() {
   ].filter((p) => Boolean(p.key));
 }
 
+// ⚡ Réparation JSON basique pour réponses tronquées ou légèrement malformées
+function repairJson(str) {
+  if (!str || typeof str !== 'string') return null;
+
+  let s = String(str).trim();
+
+  // Retirer les backticks markdown
+  s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+  // Tentative directe
+  try { return JSON.parse(s); } catch (_) {}
+
+  // Extraire entre la première { et la dernière }
+  const firstBrace = s.indexOf('{');
+  const lastBrace = s.lastIndexOf('}');
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return null;
+
+  let candidate = s.slice(firstBrace, lastBrace + 1);
+
+  try { return JSON.parse(candidate); } catch (_) {}
+
+  // Fermer les accolades/crochets manquants (JSON tronqué)
+  let open = 0, openBrackets = 0;
+  let inString = false, escape = false;
+  for (const ch of candidate) {
+    if (escape) { escape = false; continue; }
+    if (ch === '\\') { escape = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') open++;
+    else if (ch === '}') open--;
+    else if (ch === '[') openBrackets++;
+    else if (ch === ']') openBrackets--;
+  }
+  while (openBrackets > 0) { candidate += ']'; openBrackets--; }
+  while (open > 0) { candidate += '}'; open--; }
+
+  try { return JSON.parse(candidate); } catch (_) {}
+
+  return null;
+}
+
 async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 4000, deadline }) {
   const controller = new AbortController();
-  const remaining = deadline ? Math.max(5000, deadline - Date.now()) : 55000;
-  const timeoutMs = Math.min(55000, remaining);
+  // ⚡ Timeout par provider : 60s max
+  const remaining = deadline ? Math.max(5000, deadline - Date.now()) : 60000;
+  const timeoutMs = Math.min(60000, remaining);
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
@@ -282,8 +324,19 @@ async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 40
     if (!rawContent) throw new Error(`${provider.name}: réponse vide`);
 
     const cleaned = String(rawContent).replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+    // ⚡ Tentative normale
     try { return JSON.parse(cleaned); }
-    catch (e) { return { raw: cleaned }; }
+    catch (_) {
+      // ⚡ Tentative avec réparation
+      const repaired = repairJson(cleaned);
+      if (repaired) {
+        console.warn(`[AI] ${provider.name} — JSON réparé avec succès`);
+        return repaired;
+      }
+      console.warn(`[AI] ${provider.name} — JSON invalide non réparable. Début: ${cleaned.slice(0, 200)}`);
+      throw new Error(`${provider.name}: JSON invalide`);
+    }
   } finally {
     clearTimeout(timeout);
   }
@@ -410,6 +463,16 @@ RÈGLE DE PÉRIMÈTRE STRICT (TRÈS IMPORTANTE) :
 - INTERDICTION d'utiliser une connaissance externe au texte fourni.
 `.trim();
 
+const JSON_STRICT_RULES = `
+⚠️ RÈGLE JSON STRICTE :
+- Réponds UNIQUEMENT avec un objet JSON valide.
+- Pas de texte avant ou après le JSON.
+- Pas de markdown (pas de \`\`\`json).
+- Échappe correctement les guillemets doubles dans les chaînes (\\").
+- Utilise des apostrophes droites (') et non typographiques (‘ ’).
+- Maximum 5 éléments dans les tableaux longs (parts, questions, etc.).
+`.trim();
+
 // ────────────────────────────────────────────────────────────────
 // PROMPTS PAR PROFIL
 // ────────────────────────────────────────────────────────────────
@@ -445,12 +508,14 @@ Format JSON :
   "definitions": [{"term": "terme", "definition": "définition"}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 4000,
-      systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
+      maxTokens: 5000,
+      systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
       userPrompt: `Tu es professeur expert du BAC. Explique cette section comme à un élève qui découvre.
 
 ${baseContext}
@@ -479,6 +544,8 @@ Format JSON :
   ]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -502,6 +569,8 @@ Format JSON :
   "traps": [{"trap": "...", "solution": "..."}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -523,6 +592,8 @@ Format JSON :
   "questions": [{"id": "q1", "level": 1, "type": "definition", "question": "...", "answer": "...", "mustHave": ["..."], "importance": 1}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -540,6 +611,8 @@ Format JSON :
 {
   "qcm": [{"question": "...", "options": [{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."},{"id":"D","text":"..."}], "correct": "A", "explanation": "..."}]
 }
+
+${JSON_STRICT_RULES}
 
 Réponds UNIQUEMENT avec le JSON.`
     }
@@ -576,12 +649,14 @@ Format JSON :
   "mechanisms": ["mécanisme 1"]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 4500,
-      systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
+      maxTokens: 5000,
+      systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
       userPrompt: `Tu es professeur de SVT. Explique cette section comme à un élève qui découvre.
 
 ${baseContext}
@@ -612,6 +687,13 @@ Format JSON :
   ]
 }
 
+CONTRAINTES :
+- Maximum 5 parties (parts).
+- Si le contenu est court, 2 à 3 parties suffisent.
+- Chaque simpleExplanation : 3 à 6 phrases.
+
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -633,6 +715,8 @@ Format JSON :
   "classifications": [{"category": "...", "items": ["..."]}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -652,6 +736,8 @@ Format JSON :
   "questions": [{"id": "q1", "level": 1, "type": "definition", "question": "...", "answer": "...", "mustHave": ["..."], "importance": 1}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -668,6 +754,8 @@ Format JSON :
 {
   "qcm": [{"question": "...", "options": [{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."},{"id":"D","text":"..."}], "correct": "A", "explanation": "..."}]
 }
+
+${JSON_STRICT_RULES}
 
 Réponds UNIQUEMENT avec le JSON.`
     }
@@ -703,12 +791,14 @@ Format JSON :
   "keyTerms": [{"term": "...", "definition": "..."}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
       maxTokens: 5000,
-      systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
+      systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
       userPrompt: `Tu es professeur de philosophie. Explique cette section COMME SI L'ÉLÈVE N'Y CONNAISSAIT RIEN.
 
 ${baseContext}
@@ -738,6 +828,8 @@ Format JSON :
   ]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -756,6 +848,8 @@ Format JSON :
   "vocabulary": [{"term": "...", "meaning": "..."}],
   "plans": [{"title": "Plan", "parties": ["I. ...", "II. ..."]}]
 }
+
+${JSON_STRICT_RULES}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
@@ -776,6 +870,8 @@ Format JSON :
   "questions": [{"id": "q1", "level": 1, "type": "definition", "question": "...", "answer": "Une phrase complète.", "mustHave": ["..."], "importance": 1}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -792,6 +888,8 @@ Format JSON :
 {
   "qcm": [{"question": "...", "options": [{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."},{"id":"D","text":"..."}], "correct": "A", "explanation": "..."}]
 }
+
+${JSON_STRICT_RULES}
 
 Réponds UNIQUEMENT avec le JSON.`
     }
@@ -829,6 +927,8 @@ Format JSON :
   "consequences": ["..."]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -851,6 +951,8 @@ Format JSON :
   "keyFacts": ["fait 1"]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -870,6 +972,8 @@ Format JSON :
   "keyFigures": [{"name": "...", "role": "..."}],
   "vocabulary": [{"term": "...", "meaning": "..."}]
 }
+
+${JSON_STRICT_RULES}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
@@ -892,6 +996,8 @@ Format JSON :
   "questions": [{"id": "q1", "level": 1, "type": "date", "question": "...", "answer": "...", "mustHave": ["..."], "importance": 1}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -908,6 +1014,8 @@ Format JSON :
 {
   "qcm": [{"question": "...", "options": [{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."},{"id":"D","text":"..."}], "correct": "A", "explanation": "..."}]
 }
+
+${JSON_STRICT_RULES}
 
 Réponds UNIQUEMENT avec le JSON.`
     }
@@ -943,6 +1051,8 @@ Format JSON :
   "keyTerms": [{"term": "...", "definition": "..."}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -970,6 +1080,8 @@ Format JSON :
   ]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -989,6 +1101,8 @@ Format JSON :
   "texts": [{"title": "...", "author": "...", "analysis": "..."}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -1006,6 +1120,8 @@ Format JSON :
   "questions": [{"id": "q1", "level": 1, "type": "definition", "question": "...", "answer": "Une phrase complète.", "mustHave": ["..."], "importance": 1}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -1022,6 +1138,8 @@ Format JSON :
 {
   "qcm": [{"question": "...", "options": [{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."},{"id":"D","text":"..."}], "correct": "A", "explanation": "..."}]
 }
+
+${JSON_STRICT_RULES}
 
 Réponds UNIQUEMENT avec le JSON.`
     }
@@ -1056,6 +1174,8 @@ Format JSON :
   "structures": ["structure 1"],
   "keyTerms": [{"term": "...", "definition": "..."}]
 }
+
+${JSON_STRICT_RULES}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
@@ -1093,6 +1213,8 @@ Format JSON :
   ]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -1112,6 +1234,8 @@ Format JSON :
   "phrases": [{"english": "...", "french": "..."}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -1129,6 +1253,8 @@ Format JSON :
   "questions": [{"id": "q1", "level": 1, "type": "vocabulary", "question": "...", "answer": "...", "mustHave": ["..."], "importance": 1}]
 }
 
+${JSON_STRICT_RULES}
+
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
@@ -1145,6 +1271,8 @@ Format JSON :
 {
   "qcm": [{"question": "...", "options": [{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."},{"id":"D","text":"..."}], "correct": "A", "explanation": "..."}]
 }
+
+${JSON_STRICT_RULES}
 
 Réponds UNIQUEMENT avec le JSON.`
     }
@@ -1173,13 +1301,11 @@ function getPromptsForProfile(profile, context) {
 // ────────────────────────────────────────────────────────────────
 function wrapOrphanLatex(text) {
   if (!text || typeof text !== 'string') return text;
-  // Ne pas toucher au texte contenant déjà des $ (formules complètes ou mixtes)
   if (text.includes('$')) return text;
   let r = text;
   r = r.replace(/(\\[a-zA-Z]+(?:\{[^}]*\}){1,2})/g, ' $$$1$$ ');
   r = r.replace(/(\\[a-zA-Z]+)(?![a-zA-Z{]|\$)/g, ' $$$1$$ ');
   r = r.replace(/([_^]\{[^}]*\})/g, ' $$$1$$ ');
-  // Nettoyage : seulement $ isolés ou collés, pas les $$ légitimes
   r = r.replace(/\${4,}/g, '$$$$');
   r = r.replace(/(?:^|\s)\$(?:\s|$)/g, ' ');
   r = r.replace(/\s+/g, ' ').trim();
@@ -1292,7 +1418,6 @@ async function markDailyActivity(uid, inc = {}) {
 async function getDashboard(uid) {
   const { db } = getAdminServices();
 
-  // ⚡ Utilise ALLOWED_SUBJECTS_ARRAY (tableau) pour .map()
   const chaptersPromises = ALLOWED_SUBJECTS_ARRAY.map((subjectKey) =>
     db
       .collection('users').doc(uid)
@@ -1315,7 +1440,6 @@ async function getDashboard(uid) {
   let totalChapters = 0;
   let totalSections = 0;
 
-  // ⚡ Utilise ALLOWED_SUBJECTS_ARRAY (tableau) pour .forEach()
   ALLOWED_SUBJECTS_ARRAY.forEach((subjectKey, index) => {
     const chaptersSnap = chaptersResults[index];
     const info = SUBJECT_INFO[subjectKey];
@@ -1424,7 +1548,6 @@ async function computeStreak(uid) {
 
 async function listChapters(uid, body) {
   const { subject } = body;
-  // ⚡ .has() fonctionne sur Set
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
 
   const { db } = getAdminServices();
@@ -1584,12 +1707,33 @@ async function createSection(uid, body) {
   try {
     const deadline = Date.now() + GLOBAL_AI_TIME_BUDGET_MS;
     const results = await runParallelTasks(tasks, providers, deadline);
+
+    // ⚡ Log détaillé : quelle tâche a réussi / échoué
+    results.forEach((r) => {
+      if (r.status === 'fulfilled') {
+        console.log(`[FAN-OUT] ✅ ${r.task.name} (via ${r.provider})`);
+      } else {
+        console.error(`[FAN-OUT] ❌ ${r.task.name} — raison: ${r.error?.message || 'unknown'}`);
+      }
+    });
+
     analysis = mergeAnalysis(results, profile);
     analysis = deepClean(analysis);
 
+    // ⚡ Fallback spécifique : explanation jamais null
+    if (!analysis.explanation || typeof analysis.explanation !== 'object') {
+      console.warn('[FAN-OUT] explanation manquant → fallback minimal');
+      analysis.explanation = {
+        sectionTitle: analysis.sectionTitle || 'Section',
+        understanding: 'L\'explication pédagogique n\'a pas pu être générée pour cette section. Les questions et QCM restent disponibles ci-dessous.',
+        parts: []
+      };
+    }
+
+    // ⚡ Vérification globale
     const hasContent = analysis.explanation || analysis.questions.length > 0;
     if (!hasContent) {
-      console.warn('[FAN-OUT] Tout a échoué → fallback');
+      console.warn('[FAN-OUT] Tout a échoué → fallback complet');
       analysis = buildFallbackAnalysis({ rawInput: normalizedInput, profile });
     }
   } catch (err) {
@@ -1796,7 +1940,7 @@ module.exports = async function handler(request, response) {
   const action = body.action;
   const uid = user.uid;
 
-  console.log(`[PROGRESS v8.1] ${action} | uid=${uid.slice(0, 8)}`);
+  console.log(`[PROGRESS v8.2] ${action} | uid=${uid.slice(0, 8)}`);
 
   try {
     switch (action) {
@@ -1814,7 +1958,7 @@ module.exports = async function handler(request, response) {
         return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[PROGRESS v8.1] "${action}" failed:`, error.message);
+    console.error(`[PROGRESS v8.2] "${action}" failed:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
