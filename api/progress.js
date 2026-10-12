@@ -1288,6 +1288,8 @@ async function markDailyActivity(uid, inc = {}) {
 async function getDashboard(uid) {
   const { db } = getAdminServices();
 
+  
+  const subjectKeys = Array.from(ALLOWED_SUBJECTS);
   const chaptersPromises = ALLOWED_SUBJECTS.map((subjectKey) =>
     db
       .collection('users').doc(uid)
@@ -1310,7 +1312,7 @@ async function getDashboard(uid) {
   let totalChapters = 0;
   let totalSections = 0;
 
-  ALLOWED_SUBJECTS.forEach((subjectKey, index) => {
+   subjectKeys.forEach((subjectKey, index) => {
     const chaptersSnap = chaptersResults[index];
     const info = SUBJECT_INFO[subjectKey];
 
