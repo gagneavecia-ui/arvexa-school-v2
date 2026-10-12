@@ -3,7 +3,7 @@
 // Version : 6.0.0 — Network-first sur les cours
 // ================================================================
 
-const CACHE_VERSION = 'arvexa-v6.0.0';
+const CACHE_VERSION = 'arvexa-v7.0.0';
 const CACHE_SHELL = 'arvexa-shell-v6';
 const CACHE_COURS = 'arvexa-cours-v6';
 const CACHE_IMAGES = 'arvexa-images-v6';
