@@ -1,5 +1,5 @@
 // ================================================================
-// API PROGRESS v7.0 — ARVEXA School
+// API PROGRESS v8.0 — ARVEXA School
 // Cahier intelligent multi-profils + fan-out IA
 // 6 profils : scientifique / svt / philosophie / histoire-geo /
 //             francais / langue
@@ -33,6 +33,7 @@ const MIN_CONTENT_LENGTH = 40;
 const MAX_CONTENT_LENGTH = 15000;
 
 const FREE_SECTION_LIMIT = 5;
+const GLOBAL_AI_TIME_BUDGET_MS = 65000;
 
 let adminServices = null;
 
@@ -168,6 +169,12 @@ function formatRelativeDate(value) {
   return d.toLocaleDateString('fr-FR');
 }
 
+function isMeaningfulContent(text) {
+  if (!text || typeof text !== 'string') return false;
+  const words = text.match(/[a-zA-ZÀ-ÿ]{2,}/g) || [];
+  return words.length >= 5;
+}
+
 // ────────────────────────────────────────────────────────────────
 // NORMALISATION DES ENTRÉES CLAVIER
 // ────────────────────────────────────────────────────────────────
@@ -231,9 +238,11 @@ function getProviders() {
   ].filter((p) => Boolean(p.key));
 }
 
-async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 4000 }) {
+async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 4000, deadline }) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 55000);
+  const remaining = deadline ? Math.max(5000, deadline - Date.now()) : 55000;
+  const timeoutMs = Math.min(55000, remaining);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const body = {
@@ -283,12 +292,12 @@ function distributeTasks(tasks, providers) {
   }));
 }
 
-async function runParallelTasks(tasks, providers) {
+async function runParallelTasks(tasks, providers, deadline) {
   const assignments = distributeTasks(tasks, providers);
 
   const results = await Promise.allSettled(
     assignments.map(({ provider, systemPrompt, userPrompt, maxTokens }) =>
-      callProvider(provider, { systemPrompt, userPrompt, maxTokens })
+      callProvider(provider, { systemPrompt, userPrompt, maxTokens, deadline })
     )
   );
 
@@ -299,6 +308,21 @@ async function runParallelTasks(tasks, providers) {
         return { status: 'fulfilled', value: r.value, task: tasks[i], provider: assignments[i].provider.name };
       }
 
+      const errMsg = String(r.reason?.message || '');
+
+      // Ne pas tenter le fallback si erreur structurelle
+      const isStructural = errMsg.includes('JSON') || errMsg.includes('structure');
+      if (isStructural) {
+        console.warn(`[FAN-OUT] Tâche "${tasks[i].name}" : erreur structurelle, pas de fallback`);
+        return { status: 'rejected', error: r.reason, task: tasks[i], provider: 'none' };
+      }
+
+      // Ne pas tenter le fallback si la deadline est proche
+      if (deadline && Date.now() > deadline - 10000) {
+        console.warn(`[FAN-OUT] Tâche "${tasks[i].name}" : deadline proche, pas de fallback`);
+        return { status: 'rejected', error: r.reason, task: tasks[i], provider: 'none' };
+      }
+
       console.warn(`[FAN-OUT] Tâche "${tasks[i].name}" échouée sur ${assignments[i].provider.name}, fallback...`);
 
       for (const provider of providers) {
@@ -307,7 +331,8 @@ async function runParallelTasks(tasks, providers) {
           const value = await callProvider(provider, {
             systemPrompt: tasks[i].systemPrompt,
             userPrompt: tasks[i].userPrompt,
-            maxTokens: tasks[i].maxTokens
+            maxTokens: tasks[i].maxTokens,
+            deadline
           });
           return { status: 'fulfilled', value, task: tasks[i], provider: provider.name };
         } catch (e) {
@@ -1138,16 +1163,22 @@ function getPromptsForProfile(profile, context) {
 }
 
 // ────────────────────────────────────────────────────────────────
-// POST-TRAITEMENT (wrap LaTeX orphelins)
+// POST-TRAITEMENT
+// ⚠️ IMPORTANT : le serveur ne fait QUE normaliser le LaTeX.
+// L'échappement HTML est fait côté client (safeText).
 // ────────────────────────────────────────────────────────────────
 function wrapOrphanLatex(text) {
   if (!text || typeof text !== 'string') return text;
+  // Ne pas toucher au texte contenant déjà des $ (formules complètes ou mixtes)
   if (text.includes('$')) return text;
   let r = text;
   r = r.replace(/(\\[a-zA-Z]+(?:\{[^}]*\}){1,2})/g, ' $$$1$$ ');
   r = r.replace(/(\\[a-zA-Z]+)(?![a-zA-Z{]|\$)/g, ' $$$1$$ ');
   r = r.replace(/([_^]\{[^}]*\})/g, ' $$$1$$ ');
-  r = r.replace(/\${3,}/g, '$$').replace(/\$\s*\$/g, '').replace(/\s+/g, ' ').trim();
+  // Nettoyage : seulement $ isolés ou collés, pas les $$ légitimes
+  r = r.replace(/\${4,}/g, '$$$$');
+  r = r.replace(/(?:^|\s)\$(?:\s|$)/g, ' ');
+  r = r.replace(/\s+/g, ' ').trim();
   return r;
 }
 
@@ -1190,31 +1221,54 @@ function buildFallbackAnalysis({ rawInput, profile }) {
 // ────────────────────────────────────────────────────────────────
 // QUOTAS
 // ────────────────────────────────────────────────────────────────
-async function checkSectionQuota(uid) {
-  const { db } = getAdminServices();
-  const userSnap = await db.collection('users').doc(uid).get();
-  const data = userSnap.data();
-  if (isPremiumUser(data)) return { allowed: true, premium: true, used: 0, limit: Infinity };
-
+async function reserveSectionQuota(uid) {
+  const { db, FieldValue } = getAdminServices();
+  const userRef = db.collection('users').doc(uid);
   const period = monthKey();
-  const ref = db.collection('users').doc(uid).collection('notebookQuota').doc(`sections-${period}`);
-  const snap = await ref.get();
-  const used = Number(snap.data()?.count || 0);
+  const quotaRef = userRef.collection('notebookQuota').doc(`sections-${period}`);
 
-  if (used >= FREE_SECTION_LIMIT) {
-    return { allowed: false, used, limit: FREE_SECTION_LIMIT, premium: false };
-  }
-  return { allowed: true, used, limit: FREE_SECTION_LIMIT, premium: false };
+  return db.runTransaction(async (transaction) => {
+    const userSnap = await transaction.get(userRef);
+    if (!userSnap.exists) throw new Error('profile_missing');
+    if (isPremiumUser(userSnap.data())) {
+      return { allowed: true, premium: true, used: 0, limit: Infinity, reserved: false };
+    }
+
+    const quotaSnap = await transaction.get(quotaRef);
+    const used = Number(quotaSnap.data()?.count || 0);
+    if (used >= FREE_SECTION_LIMIT) {
+      return { allowed: false, used, limit: FREE_SECTION_LIMIT, premium: false, reserved: false };
+    }
+
+    transaction.set(quotaRef, {
+      count: used + 1,
+      updatedAt: FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    return {
+      allowed: true,
+      used: used + 1,
+      limit: FREE_SECTION_LIMIT,
+      premium: false,
+      reserved: true
+    };
+  });
 }
 
-async function incrementSectionQuota(uid) {
+async function releaseSectionQuota(uid) {
   const { db, FieldValue } = getAdminServices();
   const period = monthKey();
-  const ref = db.collection('users').doc(uid).collection('notebookQuota').doc(`sections-${period}`);
-  await ref.set(
-    { count: FieldValue.increment(1), updatedAt: FieldValue.serverTimestamp() },
-    { merge: true }
-  );
+  const quotaRef = db.collection('users').doc(uid).collection('notebookQuota').doc(`sections-${period}`);
+  try {
+    await db.runTransaction(async (transaction) => {
+      const snap = await transaction.get(quotaRef);
+      const used = Math.max(0, Number(snap.data()?.count || 0) - 1);
+      transaction.set(quotaRef, {
+        count: used,
+        updatedAt: FieldValue.serverTimestamp()
+      }, { merge: true });
+    });
+  } catch (_) {}
 }
 
 async function markDailyActivity(uid, inc = {}) {
@@ -1234,7 +1288,6 @@ async function markDailyActivity(uid, inc = {}) {
 async function getDashboard(uid) {
   const { db } = getAdminServices();
 
-  // ⚡ Lancer TOUTES les lectures en parallèle
   const chaptersPromises = ALLOWED_SUBJECTS.map((subjectKey) =>
     db
       .collection('users').doc(uid)
@@ -1246,16 +1299,13 @@ async function getDashboard(uid) {
       .catch(() => ({ docs: [] }))
   );
 
-  // ⚡ Streak en parallèle
-  const streakPromise = computeStreak(uid).catch(() => ({ current: 0, best: 0 }));
+  const streakPromise = computeStreak(uid);
 
-  // Attendre toutes les lectures
   const [chaptersResults, streak] = await Promise.all([
     Promise.all(chaptersPromises),
     streakPromise
   ]);
 
-  // Traiter les résultats (rapide, en mémoire)
   const subjects = [];
   let totalChapters = 0;
   let totalSections = 0;
@@ -1291,7 +1341,6 @@ async function getDashboard(uid) {
 
   subjects.sort((a, b) => b.sectionsCount - a.sectionsCount);
 
-  // ⚡ Activité récente (seulement si on a des sujets)
   let recentActivity = [];
   if (subjects.length > 0) {
     const topSubject = subjects[0];
@@ -1331,8 +1380,14 @@ async function getDashboard(uid) {
 
 async function computeStreak(uid) {
   const { db } = getAdminServices();
-  const snap = await db.collection('users').doc(uid).collection('dailyActivity')
-    .orderBy('date', 'desc').limit(90).get().catch(() => ({ docs: [] }));
+  let snap;
+  try {
+    snap = await db.collection('users').doc(uid).collection('dailyActivity')
+      .orderBy('date', 'desc').limit(90).get();
+  } catch (e) {
+    console.warn('[PROGRESS] computeStreak failed:', e.message);
+    return { current: 0, best: 0 };
+  }
 
   if (snap.docs.length === 0) return { current: 0, best: 0 };
 
@@ -1475,8 +1530,11 @@ async function createSection(uid, body) {
   if (trimmed.length > MAX_CONTENT_LENGTH) {
     throw { status: 400, message: `Contenu trop long (max ${MAX_CONTENT_LENGTH}).` };
   }
+  if (!isMeaningfulContent(trimmed)) {
+    throw { status: 400, message: 'Contenu trop court ou sans texte exploitable. Ajoute des phrases.' };
+  }
 
-  const quota = await checkSectionQuota(uid);
+  const quota = await reserveSectionQuota(uid);
   if (!quota.allowed) {
     throw {
       status: 429,
@@ -1493,7 +1551,10 @@ async function createSection(uid, body) {
     .collection('chapters').doc(chapterId);
 
   const chapterSnap = await chapterRef.get();
-  if (!chapterSnap.exists) throw { status: 404, message: 'Chapitre introuvable.' };
+  if (!chapterSnap.exists) {
+    if (quota.reserved) await releaseSectionQuota(uid);
+    throw { status: 404, message: 'Chapitre introuvable.' };
+  }
 
   const info = SUBJECT_INFO[subject];
   const subjectLabel = info.label;
@@ -1506,19 +1567,27 @@ async function createSection(uid, body) {
   const providers = getProviders();
 
   if (!providers.length) {
+    if (quota.reserved) await releaseSectionQuota(uid);
     throw { status: 503, message: 'Aucun fournisseur IA disponible.' };
   }
 
   console.log(`[FAN-OUT] ${tasks.length} tâches, ${providers.length} fournisseurs pour profil "${profile}"`);
 
-  const results = await runParallelTasks(tasks, providers);
-  let analysis = mergeAnalysis(results, profile);
-  analysis = deepClean(analysis);
+  let analysis;
+  try {
+    const deadline = Date.now() + GLOBAL_AI_TIME_BUDGET_MS;
+    const results = await runParallelTasks(tasks, providers, deadline);
+    analysis = mergeAnalysis(results, profile);
+    analysis = deepClean(analysis);
 
-  const hasContent = analysis.explanation || analysis.questions.length > 0;
-  if (!hasContent) {
-    console.warn('[FAN-OUT] Tout a échoué → fallback');
-    analysis = buildFallbackAnalysis({ rawInput: normalizedInput, profile });
+    const hasContent = analysis.explanation || analysis.questions.length > 0;
+    if (!hasContent) {
+      console.warn('[FAN-OUT] Tout a échoué → fallback');
+      analysis = buildFallbackAnalysis({ rawInput: normalizedInput, profile });
+    }
+  } catch (err) {
+    if (quota.reserved) await releaseSectionQuota(uid);
+    throw err;
   }
 
   const sectionRef = chapterRef.collection('sections').doc();
@@ -1539,7 +1608,6 @@ async function createSection(uid, body) {
     updatedAt: FieldValue.serverTimestamp()
   }, { merge: true });
 
-  if (!quota.premium) await incrementSectionQuota(uid);
   await markDailyActivity(uid, { sectionsCreated: 1 });
 
   return {
@@ -1721,7 +1789,7 @@ module.exports = async function handler(request, response) {
   const action = body.action;
   const uid = user.uid;
 
-  console.log(`[PROGRESS v7] ${action} | uid=${uid.slice(0, 8)}`);
+  console.log(`[PROGRESS v8] ${action} | uid=${uid.slice(0, 8)}`);
 
   try {
     switch (action) {
@@ -1739,7 +1807,7 @@ module.exports = async function handler(request, response) {
         return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[PROGRESS v7] "${action}" failed:`, error.message);
+    console.error(`[PROGRESS v8] "${action}" failed:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
