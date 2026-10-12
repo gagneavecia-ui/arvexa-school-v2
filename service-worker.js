@@ -1,12 +1,13 @@
 // ================================================================
 // SERVICE WORKER — ARVEXA School
-// Version : 6.0.0 — Network-first sur les cours
+// Version : 7.0.0 — Network-first sur HTML + JS + CSS locaux
+// Les correctifs prennent effet dès le prochain chargement.
 // ================================================================
 
 const CACHE_VERSION = 'arvexa-v7.0.0';
-const CACHE_SHELL = 'arvexa-shell-v6';
-const CACHE_COURS = 'arvexa-cours-v6';
-const CACHE_IMAGES = 'arvexa-images-v6';
+const CACHE_SHELL = 'arvexa-shell-v7';
+const CACHE_COURS = 'arvexa-cours-v7';
+const CACHE_IMAGES = 'arvexa-images-v7';
 
 const ALL_CACHES = [CACHE_SHELL, CACHE_COURS, CACHE_IMAGES];
 
@@ -48,7 +49,7 @@ const PRECACHE_SHELL = [
 // INSTALLATION
 // ================================================================
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installation v6.0.0...');
+  console.log('[SW] Installation v7.0.0...');
   self.skipWaiting();
 
   event.waitUntil(
@@ -68,7 +69,7 @@ self.addEventListener('install', (event) => {
 // ACTIVATION
 // ================================================================
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activation v6.0.0...');
+  console.log('[SW] Activation v7.0.0...');
   event.waitUntil(
     caches.keys().then((names) => {
       return Promise.all(
@@ -105,7 +106,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 1️⃣ COURS HTML + JSON → network-first (toujours frais)
+  // 1️⃣ COURS HTML + JSON → network-first
   // ─────────────────────────────────────────────────────────────
   if (url.pathname.includes('/cours/')) {
     event.respondWith(handleCoursRequest(request));
@@ -124,6 +125,7 @@ self.addEventListener('fetch', (event) => {
 
   // ─────────────────────────────────────────────────────────────
   // 3️⃣ ASSETS CDN KaTeX + Tesseract → cache-first permanent
+  // (externes, versionnés, jamais modifiés)
   // ─────────────────────────────────────────────────────────────
   if (url.hostname === 'cdn.jsdelivr.net' &&
       (url.pathname.includes('/katex') || url.pathname.includes('/tesseract'))) {
@@ -142,10 +144,11 @@ self.addEventListener('fetch', (event) => {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 5️⃣ CSS / JS externes → stale-while-revalidate
+  // 5️⃣ CSS / JS LOCAUX → network-first (correctifs pris en compte)
+  // ⚡ Différence clé avec v6 : on ne cache-plus-first plus les JS locaux
   // ─────────────────────────────────────────────────────────────
   if (request.destination === 'style' || request.destination === 'script') {
-    event.respondWith(handleAssetRequest(request, CACHE_IMAGES));
+    event.respondWith(handleLocalAssetRequest(request));
     return;
   }
 });
@@ -157,20 +160,16 @@ self.addEventListener('fetch', (event) => {
 // --- COURS (HTML + JSON) : NETWORK-FIRST
 async function handleCoursRequest(request) {
   try {
-    // ⚡ Essayer le réseau d'abord
     const networkResponse = await fetch(request);
     if (networkResponse && networkResponse.ok) {
-      // Mettre à jour le cache en arrière-plan
       const cache = await caches.open(CACHE_COURS);
       cache.put(request, networkResponse.clone()).catch(() => {});
     }
     return networkResponse;
   } catch (error) {
-    // Réseau indisponible → servir le cache
     const cached = await caches.match(request);
     if (cached) return cached;
 
-    // Ni réseau ni cache → page offline ou message
     const offlinePage = await caches.match('./offline.html');
     if (offlinePage) return offlinePage;
 
@@ -201,7 +200,7 @@ async function handlePageRequest(request) {
   }
 }
 
-// --- ASSETS (images, fonts, css, js) : cache-first avec revalidate
+// --- ASSETS (images, fonts, CSS/JS externes CDN) : cache-first avec revalidate
 async function handleAssetRequest(request, cacheName) {
   const cached = await caches.match(request);
 
@@ -222,6 +221,23 @@ async function handleAssetRequest(request, cacheName) {
   const response = await networkPromise;
   if (response) return response;
   return new Response('', { status: 404 });
+}
+
+// --- ASSETS LOCAUX (CSS / JS applicatifs) : NETWORK-FIRST avec fallback cache
+// ⚡ Correctifs JS pris en compte dès le prochain chargement
+async function handleLocalAssetRequest(request) {
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok) {
+      const cache = await caches.open(CACHE_SHELL);
+      cache.put(request, networkResponse.clone()).catch(() => {});
+    }
+    return networkResponse;
+  } catch (error) {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    return new Response('', { status: 503 });
+  }
 }
 
 // ================================================================
@@ -289,4 +305,4 @@ async function sendStats(client) {
   client.postMessage({ type: 'STATS_RESULT', stats });
 }
 
-console.log('[SW] Service Worker v6.0.0 chargé (network-first sur les cours)');
+console.log('[SW] Service Worker v7.0.0 chargé (network-first sur HTML + JS + CSS locaux)');
