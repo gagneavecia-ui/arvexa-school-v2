@@ -223,12 +223,6 @@
       display: block;
       animation: appear 0.3s ease;
     }
-    .view:not(.active) {
-      height: 0;
-      overflow: hidden;
-      pointer-events: none;
-      visibility: hidden;
-    }
     @keyframes appear {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: none; }
@@ -1498,9 +1492,7 @@
       <div class="step-item" data-step="results"><div class="num"><span>4</span></div><span>Résultats</span></div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         VUE 1 : CONFIGURATION
-         ═══════════════════════════════════════════════════════════ -->
+    <!-- VUE 1 : CONFIGURATION -->
     <section class="view active" id="configView">
       <div class="panel">
         <div class="eyebrow">Réviseur</div>
@@ -1577,9 +1569,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         VUE 2 : LOADING FICHE
-         ═══════════════════════════════════════════════════════════ -->
+    <!-- VUE 2 : LOADING FICHE -->
     <section class="view" id="loadingView">
       <div class="panel">
         <div class="eyebrow">Génération</div>
@@ -1598,9 +1588,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         VUE 3 : LOADING FLASHCARDS
-         ═══════════════════════════════════════════════════════════ -->
+    <!-- VUE 3 : LOADING FLASHCARDS -->
     <section class="view" id="loadingFlashView">
       <div class="panel">
         <div class="eyebrow">Génération</div>
@@ -1619,9 +1607,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         VUE 4 : LOADING QUIZ
-         ═══════════════════════════════════════════════════════════ -->
+    <!-- VUE 4 : LOADING QUIZ -->
     <section class="view" id="loadingQuizView">
       <div class="panel">
         <div class="eyebrow">Génération</div>
@@ -1640,9 +1626,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         VUE 5 : FICHE
-         ═══════════════════════════════════════════════════════════ -->
+    <!-- VUE 5 : FICHE -->
     <section class="view" id="ficheView">
       <div class="panel">
         <div class="session-head">
@@ -1667,9 +1651,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         VUE 6 : FLASHCARDS
-         ═══════════════════════════════════════════════════════════ -->
+    <!-- VUE 6 : FLASHCARDS -->
     <section class="view" id="flashcardView">
       <div class="panel">
         <div class="session-head">
@@ -1718,9 +1700,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         VUE 7 : QUIZ
-         ═══════════════════════════════════════════════════════════ -->
+    <!-- VUE 7 : QUIZ -->
     <section class="view" id="quizView">
       <div class="panel">
         <div class="session-head">
@@ -1741,9 +1721,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         VUE 8 : RÉSULTATS
-         ═══════════════════════════════════════════════════════════ -->
+    <!-- VUE 8 : RÉSULTATS -->
     <section class="view" id="resultsView">
       <div class="panel">
         <div class="result-hero">
@@ -2005,9 +1983,18 @@
     return div.innerHTML;
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // RENDU KATEX
+  // Si KaTeXUtils est disponible, on lui délègue (MutationObserver gère le reste).
+  // Sinon fallback local.
+  // ═══════════════════════════════════════════════════════════════
   function renderKaTeX(root) {
     if (!root) return;
-    if (window.KaTeXUtils?.renderMath) { window.KaTeXUtils.renderMath(root); return; }
+    if (window.KaTeXUtils?.renderMath) {
+      // Délégué au module global qui a déjà un MutationObserver
+      window.KaTeXUtils.renderMath(root);
+      return;
+    }
     if (typeof renderMathInElement !== 'function') {
       if (katexAttempts++ < 10) setTimeout(() => renderKaTeX(root), 200);
       return;
@@ -2021,7 +2008,7 @@
           { left: '$', right: '$', display: false },
           { left: '\\(', right: '\\)', display: false }
         ],
-        throwOnError: false, errorColor: '#ff9a84', strict: false, trust: true
+        throwOnError: false, errorColor: '#ff9a84', strict: false, trust: false
       });
     } catch (e) {}
   }
@@ -2191,7 +2178,13 @@
       await new Promise((r) => setTimeout(r, 400));
       activateStep('genStep2', $('genLoadingStatus'), 'Extraction...');
 
-      const resPromise = callApi({ action: 'generate', subject: state.subject, chapter: state.chapter, mode: 'fiche' });
+      const resPromise = callApi({
+        action: 'generate',
+        subject: state.subject,
+        chapter: state.chapter,
+        mode: 'fiche',
+        includeFlashcards: true
+      });
 
       await new Promise((r) => setTimeout(r, 1200));
       activateStep('genStep3', $('genLoadingStatus'), 'Rédaction...');
@@ -2697,13 +2690,24 @@
   $('newFicheBtn').addEventListener('click', () => { syncModeFromChips(); showView('configView'); });
   $('newFlashBtn').addEventListener('click', () => { syncModeFromChips(); showView('configView'); });
   $('restartBtn').addEventListener('click', () => { syncModeFromChips(); showView('configView'); });
+
+  // ⚡ 1 crédit : réutiliser les flashcards déjà générées avec la fiche
   $('startFlashcardsBtn').addEventListener('click', async () => {
+    if (state.currentSession?.flashcards?.length > 0) {
+      state.flashcards = state.currentSession.flashcards;
+      state.currentFlashIndex = 0;
+      state.flashRatings = {};
+      renderFlashcard();
+      showView('flashcardView');
+      return;
+    }
     state.flashcards = [];
     state.currentFlashIndex = 0;
     state.flashRatings = {};
     state.mode = 'flashcard';
     await generateFlashcards();
   });
+
   $('skipToQuizBtn').addEventListener('click', generateQuiz);
 
   window.addEventListener('scroll', () => {
@@ -2724,10 +2728,15 @@
   // ═══════════════════════════════════════════════════════════════
   function isUserPremium(data) {
     if (!data) return false;
+    const status = data.subscriptionStatus || 'none';
+    if (status === 'pending') return false;
     const active = data.premium === true || data.isUnlocked === true || data.hasDeposited === true;
     if (!active) return false;
-    const end = data.subscriptionEndDate?.toDate?.() || (data.subscriptionEndDate?.seconds ? new Date(data.subscriptionEndDate.seconds * 1000) : null);
-    return !end || end.getTime() > Date.now();
+    const end = data.subscriptionEndDate?.toDate?.() ||
+      (data.subscriptionEndDate?.seconds ? new Date(data.subscriptionEndDate.seconds * 1000) : null);
+    if (end) return end.getTime() > Date.now();
+    if (status === 'expired') return false;
+    return true;
   }
 
   onAuthStateChanged(auth, async (user) => {
@@ -2748,7 +2757,7 @@
 
   initCustomSelects();
   initChips();
-  console.log('🎓 ARVEXA — Réviseur v6.0');
+  console.log('🎓 ARVEXA — Réviseur v6.1');
   </script>
 </body>
 </html>
