@@ -1,13 +1,10 @@
 // ================================================================
-// API EXAM v4.0 — ARVEXA School
-// 7 matières · 3 exercices × 5 questions
-// Cascade IA + pool Firestore + base JSON enrichie
+// API EXAM v5.0 — ARVEXA School
+// Mode examen 100% IA + Pool Firestore + Correction pédagogique
+// 7 matières · 2 sujets générés · 1 joué · Note sur 20
 // ================================================================
 
 module.exports.config = { maxDuration: 90 };
-
-const fs = require('fs');
-const path = require('path');
 
 const WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 3;
@@ -19,17 +16,22 @@ const ALLOWED_DURATIONS = new Set([30, 60, 90, 120, 180]);
 const ALLOWED_ACTIONS = new Set(['generate', 'correct', 'listExams', 'loadExam', 'deleteExam']);
 const REQUIRED_EXERCISES = 3;
 const QUESTIONS_PER_EXERCISE = 5;
+const TOTAL_POINTS = 20;
 const FREE_EXAM_LIMIT = 2;
 const POOL_COLLECTION = 'examPool';
 
 const SUBJECT_LABELS = {
-  mathematiques: 'Mathématiques', physique: 'Physique', chimie: 'Chimie',
-  svt: 'SVT', philosophie: 'Philosophie', histoire: 'Histoire', geographie: 'Géographie'
+  mathematiques: 'Mathématiques',
+  physique: 'Physique',
+  chimie: 'Chimie',
+  svt: 'SVT',
+  philosophie: 'Philosophie',
+  histoire: 'Histoire',
+  geographie: 'Géographie'
 };
 
 const CHOICE_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie']);
 
-const KNOWLEDGE_MEMORY_CACHE = new Map();
 let adminServices = null;
 
 // ════════════════════════════════════════════════════════════════
@@ -50,53 +52,6 @@ function getAdminServices() {
     FieldValue: admin.firestore.FieldValue
   };
   return adminServices;
-}
-
-// ════════════════════════════════════════════════════════════════
-// BASE DE CONNAISSANCES
-// ════════════════════════════════════════════════════════════════
-function loadKnowledgeBase(subject) {
-  if (KNOWLEDGE_MEMORY_CACHE.has(subject)) return KNOWLEDGE_MEMORY_CACHE.get(subject);
-  const filename = `bac-${subject}.json`;
-  const candidates = [
-    path.join(process.cwd(), filename),
-    path.join(process.cwd(), 'api', filename),
-    path.join(__dirname, filename),
-    path.join(__dirname, '..', filename)
-  ];
-  for (const filePath of candidates) {
-    try {
-      if (fs.existsSync(filePath)) {
-        const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        KNOWLEDGE_MEMORY_CACHE.set(subject, data);
-        return data;
-      }
-    } catch (e) {}
-  }
-  KNOWLEDGE_MEMORY_CACHE.set(subject, null);
-  return null;
-}
-
-function normalizeText(str) {
-  return String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-}
-
-function findChapter(knowledgeBase, chapterName) {
-  if (!knowledgeBase || !chapterName) return null;
-  const target = normalizeText(chapterName);
-  for (const ch of knowledgeBase.chapitres || []) {
-    if (normalizeText(ch.titre) === target || normalizeText(ch.id) === target) return ch;
-  }
-  for (const ch of knowledgeBase.chapitres || []) {
-    const chNorm = normalizeText(ch.titre);
-    if (chNorm.includes(target) || target.includes(chNorm)) return ch;
-  }
-  return null;
-}
-
-function getMandatoryNotions(chapter) {
-  if (!chapter || !Array.isArray(chapter.notions)) return [];
-  return chapter.notions.filter((n) => n.obligatoire !== false);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -175,6 +130,10 @@ function shuffle(array) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
+}
+
+function round2(n) {
+  return Math.round(n * 100) / 100;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -358,6 +317,7 @@ async function saveExercisesToPool(exam, subject, difficulty, uid) {
 
     exam.subjects.forEach((subjectData) => {
       subjectData.exercises.forEach((exercise) => {
+        if (!exercise.questions || exercise.questions.length === 0) return;
         const ref = db.collection(POOL_COLLECTION).doc();
         batch.set(ref, {
           subject,
@@ -377,8 +337,10 @@ async function saveExercisesToPool(exam, subject, difficulty, uid) {
       });
     });
 
-    await batch.commit();
-    console.log(`[POOL] ${savedCount} exercices sauvegardés pour ${subject}`);
+    if (savedCount > 0) {
+      await batch.commit();
+      console.log(`[POOL] ${savedCount} exercices sauvegardés pour ${subject}`);
+    }
   } catch (e) {
     console.warn('[POOL] Erreur sauvegarde:', e.message);
   }
@@ -395,32 +357,27 @@ async function buildExamFromPool(config) {
     if (snap.empty) return null;
 
     const allEx = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-    // Filtrer par difficulté si possible
     let filtered = allEx.filter((e) => e.difficulty === config.difficulty);
     if (filtered.length < 6) filtered = allEx;
 
     const consolidation = filtered.filter((e) => e.level === 'consolidation');
     const approfondissement = filtered.filter((e) => e.level === 'approfondissement');
 
-    // Élargir si pas assez
-    if (consolidation.length < 3) consolidation.push(...filtered.filter((e) => e.level !== 'consolidation'));
-    if (approfondissement.length < 3) approfondissement.push(...filtered.filter((e) => e.level !== 'approfondissement'));
+    if (consolidation.length < 3) {
+      consolidation.push(...filtered.filter((e) => !consolidation.includes(e)));
+    }
+    if (approfondissement.length < 3) {
+      approfondissement.push(...filtered.filter((e) => !approfondissement.includes(e)));
+    }
 
     if (consolidation.length < 3 || approfondissement.length < 3) return null;
 
-    // Trier par usedCount ascendant (favoriser les peu utilisés)
     consolidation.sort((a, b) => (a.usedCount || 0) - (b.usedCount || 0));
     approfondissement.sort((a, b) => (a.usedCount || 0) - (b.usedCount || 0));
 
-    // Prendre les 8 moins utilisés puis en choisir 3 au hasard
-    const poolCons = consolidation.slice(0, Math.min(8, consolidation.length));
-    const poolApp = approfondissement.slice(0, Math.min(8, approfondissement.length));
+    const pickedCons = shuffle(consolidation.slice(0, Math.min(8, consolidation.length))).slice(0, 3);
+    const pickedApp = shuffle(approfondissement.slice(0, Math.min(8, approfondissement.length))).slice(0, 3);
 
-    const pickedCons = shuffle(poolCons).slice(0, 3);
-    const pickedApp = shuffle(poolApp).slice(0, 3);
-
-    // Incrémenter usedCount
     const batch = db.batch();
     [...pickedCons, ...pickedApp].forEach((ex) => {
       batch.update(db.collection(POOL_COLLECTION).doc(ex.id), {
@@ -436,7 +393,7 @@ async function buildExamFromPool(config) {
       subject: config.subject,
       level: config.level,
       duration: config.duration,
-      totalPoints: 20,
+      totalPoints: TOTAL_POINTS,
       chapter: config.chapter,
       fromNotebook: false,
       subjects: [
@@ -468,11 +425,11 @@ async function buildUnavailableExam(config) {
     subject: config.subject,
     level: config.level,
     duration: config.duration,
-    totalPoints: 20,
+    totalPoints: TOTAL_POINTS,
     chapter: config.chapter,
     fromNotebook: false,
     unavailable: true,
-    message: `Le service est temporairement indisponible et aucun contenu n'est en cache. Merci de réessayer dans quelques minutes.`,
+    message: 'Le service est temporairement indisponible et aucun contenu n\'est en cache. Merci de réessayer dans quelques minutes.',
     subjects: [
       { id: 'subject_1', title: 'Indisponible', level: 'consolidation', instructions: '', exercises: [] },
       { id: 'subject_2', title: 'Indisponible', level: 'approfondissement', instructions: '', exercises: [] }
@@ -481,7 +438,7 @@ async function buildUnavailableExam(config) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// PROMPTS ENRICHIS
+// PROMPTS
 // ════════════════════════════════════════════════════════════════
 const LATEX_RULES = `
 ═══════════════════════════════════════════════════════════════
@@ -489,41 +446,28 @@ RÈGLES LATEX — OBLIGATOIRES
 ═══════════════════════════════════════════════════════════════
 1. Formule mathématique TOUJOURS entre $...$ ou $$...$$.
 2. INTERDIT de mettre du LaTeX brut sans $.
-3. INTERDIT d'utiliser des symboles Unicode : π → $\\pi$, √ → $\\sqrt{}$, × → $\\times$, etc.
-4. Fractions : $\\frac{...}{...}$. Vecteurs : $\\vec{u}$.
+3. INTERDIT d'utiliser des symboles Unicode : π → $\\pi$, √ → $\\sqrt{}$, × → $\\times$, ≤ → $\\leq$, ≥ → $\\geq$, ∞ → $\\infty$, Δ → $\\Delta$, ² → $^2$, etc.
+4. Fractions : $\\frac{...}{...}$. Vecteurs : $\\vec{u}$. Ensembles : $\\mathbb{R}$.
+5. Unités avec petit espace : $9{,}81\\,\\text{m/s}^2$.
 `;
 
 const PEDAGOGY_RULES = `
-MISSION PÉDAGOGIQUE :
-Tu prépares un élève de Terminale D au Niger qui peut avoir 1 journée
-pour réviser avant l'examen. Chaque question doit tester une notion clé,
-être résoluble en 2-5 minutes, et avoir une seule réponse correcte.
-Les exercices doivent être progressifs (facile → difficile).
-`;
+═══════════════════════════════════════════════════════════════
+MISSION PÉDAGOGIQUE
+═══════════════════════════════════════════════════════════════
+Tu prépares un élève de Terminale D au Niger pour le BAC.
+Les exercices doivent être :
+- Réalistes (niveau BAC)
+- Progressifs (facile → difficile)
+- Résolubles en 5-15 minutes
+- Chaque question teste UNE notion précise
+- Chaque question a UNE SEULE bonne réponse (pour QCM)
 
-function serializeNotion(notion, index) {
-  const lines = [];
-  lines.push(`─── NOTION ${index + 1} ───`);
-  lines.push(`id: ${notion.id}`);
-  lines.push(`titre: ${notion.titre}`);
-  if (notion.description_courte) lines.push(`description: ${notion.description_courte}`);
-  if (Array.isArray(notion.formules)) {
-    lines.push('FORMULES :');
-    notion.formules.forEach((f) => {
-      const latex = typeof f === 'string' ? f : (f.latex || '');
-      if (latex) lines.push(`  • ${latex}`);
-    });
-  }
-  if (Array.isArray(notion.pieges_examen)) {
-    lines.push('PIÈGES :');
-    notion.pieges_examen.forEach((p) => lines.push(`  • ${p}`));
-  }
-  if (Array.isArray(notion.erreurs_frequentes)) {
-    lines.push('ERREURS FRÉQUENTES :');
-    notion.erreurs_frequentes.forEach((e) => lines.push(`  • ${e}`));
-  }
-  return lines.join('\n');
-}
+Les points sont FIXES :
+- Chaque exercice vaut exactement 6.67 points (× 3 = 20.01 → arrondi à 20)
+- Chaque question vaut exactement 1.33 points (× 5 = 6.65)
+- NE JAMAIS attribuer de points différents
+`;
 
 const STRUCTURE_CONTROL = `
 ═══════════════════════════════════════════════════════════════
@@ -532,9 +476,9 @@ CONTRÔLE STRUCTUREL OBLIGATOIRE
 Ton JSON contient EXACTEMENT :
 - "subjects" : tableau de 2 objets
 - Chaque subject a : "id" ("subject_1" / "subject_2"), "title", "level", "instructions", "exercises" (3 objets)
-- Chaque exercise a : "number" (1-3), "title", "points", "statement", "questions" (5 objets)
-- Chaque question a : "number" ("1.a"), "text", "points", "type" ("choice" ou "text")
-  - Si "choice" : "options" (4 objets {id:A/B/C/D, text}) + "correctAnswer"
+- Chaque exercise a : "number" (1-3), "title", "points" (6.67), "statement", "questions" (5 objets)
+- Chaque question a : "number" ("1.a"), "text", "points" (1.33), "type" ("choice" ou "text")
+  - Si "choice" : "options" (4 objets {id:A/B/C/D, text}) + "correctAnswer" (A/B/C/D)
   - Si "text" : PAS d'options, PAS de correctAnswer
 `;
 
@@ -545,37 +489,20 @@ function generationPrompt(config) {
     ? 'Pour les questions de calcul : type "choice" avec 4 options A/B/C/D. Pour les questions de raisonnement : type "text".'
     : 'Toutes les questions : type "text" (sauf QCM explicite).';
 
-  const kb = loadKnowledgeBase(config.subject);
-  const chapterData = kb ? findChapter(kb, config.chapter) : null;
-  const notions = chapterData ? getMandatoryNotions(chapterData) : [];
-
-  let notionsSection = '';
-  if (notions.length > 0) {
-    notionsSection = `
-═══════════════════════════════════════════════════════════════
-NOTIONS À COUVRIR (base de connaissances officielle)
-═══════════════════════════════════════════════════════════════
-${notions.map((n, i) => serializeNotion(n, i)).join('\n\n')}
-
-⚠️ CHAQUE EXERCICE DOIT TESTER AU MOINS UNE NOTION DIFFÉRENTE
-⚠️ AUCUNE NOTION NE DOIT ÊTRE OUBLIÉE
-`;
-  }
-
   return `Tu es un professeur expert du BAC au Niger.
 
 ${PEDAGOGY_RULES}
 
-MISSION : Génère DEUX sujets d'examen.
+MISSION : Génère DEUX sujets d'examen complets.
 
 Matière : ${subjectLabel}
 Niveau : ${config.level}
 Chapitre : ${config.chapter === 'all' ? 'tous les chapitres' : config.chapter}
 Difficulté : ${config.difficulty}
 Durée : ${config.duration} minutes
-${notionsSection}
-SUJET 1 — "Consolidation" (facile à moyen) : notions de base.
-SUJET 2 — "Approfondissement" (moyen à difficile) : angles exigeants.
+
+SUJET 1 — "Consolidation" (facile à moyen) : tester les bases.
+SUJET 2 — "Approfondissement" (moyen à difficile) : aller plus loin.
 
 ${qFormat}
 
@@ -588,7 +515,6 @@ FORMAT JSON :
   "duration": ${config.duration},
   "totalPoints": 20,
   "chapter": "${config.chapter}",
-  "fromNotebook": false,
   "subjects": [
     { "id": "subject_1", "title": "Sujet 1 — Consolidation", "level": "consolidation", "instructions": "...", "exercises": [] },
     { "id": "subject_2", "title": "Sujet 2 — Approfondissement", "level": "approfondissement", "instructions": "...", "exercises": [] }
@@ -622,7 +548,7 @@ CONTENU DU CHAPITRE ÉTUDIÉ
 ═══════════════════════════════════════════════════════════════
 ${notebookContext.contentText}
 
-RÈGLE ABSOLUE : génère UNIQUEMENT à partir du contenu ci-dessus. Aucune connaissance externe.
+RÈGLE ABSOLUE : génère UNIQUEMENT à partir du contenu ci-dessus.
 
 ${qFormat}
 ${LATEX_RULES}
@@ -656,9 +582,11 @@ function correctionPrompt(body) {
       const key = body.subjectId + ':' + exIdx + ':' + qIdx;
       questionsDetail.push({
         exerciseNumber: exercise.number || (exIdx + 1),
+        exerciseStatement: exercise.statement || '',
         questionNumber: question.number || ((exIdx + 1) + '.' + (qIdx + 1)),
         questionText: question.text,
         type: question.type || 'text',
+        options: question.options || null,
         points: Number(question.points) || 1.33,
         correctAnswer: question.correctAnswer || null,
         studentAnswer: body.answers[key] || null,
@@ -667,43 +595,99 @@ function correctionPrompt(body) {
     });
   });
 
-  return `Tu es un professeur correcteur expert du BAC.
+  return `Tu es un professeur correcteur expert du BAC au Niger. Ton rôle : corriger CHAQUE question avec une PÉDAGOGIE MAXIMALE pour que l'élève COMPRENNE, même s'il a raté.
 
-MISSION : Corrige chaque question avec bienveillance et rigueur.
+${PEDAGOGY_RULES}
 
-RÈGLES :
-- QCM : réponse exacte = tous les points, sinon 0
-- Texte libre : évalue fond + méthode + rigueur
-- Réponse vide : 0 point
-- Feedback : encourageant et pédagogique
+MISSION DE CORRECTION :
+Pour CHAQUE question, tu dois produire une analyse pédagogique complète.
 
-DONNÉES :
+DONNÉES (chaque question avec réponse élève) :
 ${JSON.stringify(questionsDetail, null, 2)}
+
+═══════════════════════════════════════════════════════════════
+CE QUE TU DOIS GÉNÉRER POUR CHAQUE QUESTION
+═══════════════════════════════════════════════════════════════
+1. "explanation" : Explication complète de POURQUOI la bonne réponse est correcte (3-6 phrases).
+
+2. "steps" : Tableau des ÉTAPES du calcul à suivre pour résoudre la question.
+   Chaque étape = 1 phrase claire avec les calculs intermédiaires.
+   Minimum 3 étapes, maximum 7 étapes.
+
+3. "concept" : La notion/théorème testée (une phrase).
+
+4. "whyWrong" : Si l'élève a raté, explication de SON erreur probable (1-2 phrases).
+
+5. "commonMistake" : L'erreur classique que les élèves font sur cette question.
+
+6. "toReview" : Ce qu'il faut revoir pour réussir cette question la prochaine fois (1 phrase).
+
+7. "betterMethod" : Une astuce ou méthode plus rapide (si pertinent).
+
+8. "feedback" : Message encourageant adapté au statut :
+   - correct : "🎉 Bravo !"
+   - wrong : "Presque ! Regarde la méthode ci-dessous."
+   - unanswered : "Pas de réponse. Voici comment on fait."
+
+═══════════════════════════════════════════════════════════════
+CALCUL DES POINTS — RÈGLES STRICTES
+═══════════════════════════════════════════════════════════════
+- Chaque question vaut exactement le "points" fourni (généralement 1.33).
+- QCM correct = points maximaux. QCM faux = 0.
+- QCM non répondu = 0.
+- Texte libre : évalue le fond. Peut donner 0, 0.5, 1, ou 1.33 pt.
+- Le score d'un exercice = somme des points des 5 questions.
+- Score TOTAL sur 20.
+
+${LATEX_RULES}
 
 FORMAT JSON :
 {
-  "score": 0, "totalScore": 20, "percentage": 0, "grade": "Insuffisant",
+  "score": 15.5,
+  "totalScore": 20,
+  "percentage": 77,
+  "grade": "Bien",
   "exercises": [
     {
-      "number": 1, "title": "...", "score": 5.0, "maxScore": 6.67,
-      "correctAnswers": 3, "totalQuestions": 5,
+      "number": 1,
+      "title": "Exercice 1 — Résolution",
+      "score": 5.0,
+      "maxScore": 6.67,
+      "correctAnswers": 4,
+      "totalQuestions": 5,
       "questions": [
         {
-          "number": "1.1", "questionText": "...", "type": "choice",
-          "studentAnswer": "B", "correctAnswer": "A",
-          "points": 1.33, "maxPoints": 1.33, "status": "correct",
-          "feedback": "🎉 Bravo !",
-          "betterMethod": "...", "toReview": null
+          "number": "1.1",
+          "questionText": "Énoncé complet de la question",
+          "type": "choice",
+          "studentAnswer": "B",
+          "correctAnswer": "A",
+          "points": 1.33,
+          "maxPoints": 1.33,
+          "status": "wrong",
+          "explanation": "Explication complète 3-6 phrases...",
+          "steps": ["Étape 1...", "Étape 2...", "Étape 3..."],
+          "concept": "Notion testée",
+          "whyWrong": "Pourquoi ta réponse est fausse...",
+          "commonMistake": "Erreur classique à éviter...",
+          "toReview": "À revoir : ...",
+          "betterMethod": "Astuce...",
+          "feedback": "Presque ! Regarde la méthode."
         }
       ],
-      "explanation": "...", "advice": "..."
+      "explanation": "Bilan global de l'exercice",
+      "advice": "Conseil pour progresser"
     }
   ],
-  "revisionTopics": ["..."],
-  "globalFeedback": { "strengths": ["..."], "weaknesses": ["..."], "encouragement": "..." }
+  "revisionTopics": ["Notion 1", "Notion 2"],
+  "globalFeedback": {
+    "strengths": ["Point fort 1"],
+    "weaknesses": ["Faiblesse 1"],
+    "encouragement": "Message personnalisé"
+  }
 }
 
-Réponds UNIQUEMENT avec l'object JSON.`;
+Réponds UNIQUEMENT avec l'objet JSON.`;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -887,9 +871,14 @@ function correctQCMDeterministic(subject, subjectId, answers) {
     const exRes = {
       number: exercise.number || (exIdx + 1),
       title: exercise.title || ('Exercice ' + (exIdx + 1)),
-      score: 0, maxScore: 0, correctAnswers: 0,
+      score: 0,
+      maxScore: 0,
+      correctAnswers: 0,
       totalQuestions: exercise.questions.length,
-      questions: [], wrongAnswers: [], explanation: '', advice: ''
+      questions: [],
+      wrongAnswers: [],
+      explanation: '',
+      advice: ''
     };
     const textQuestions = [];
 
@@ -901,12 +890,21 @@ function correctQCMDeterministic(subject, subjectId, answers) {
 
       const qRes = {
         number: question.number || ((exIdx + 1) + '.' + (qIdx + 1)),
-        questionText: question.text,
+        questionText: question.text || '',
         type: question.type || 'text',
         studentAnswer: studentAnswer || null,
         correctAnswer: question.correctAnswer || null,
-        points: 0, maxPoints: points, status: 'pending',
-        feedback: '', betterMethod: null, toReview: null
+        points: 0,
+        maxPoints: points,
+        status: 'pending',
+        feedback: '',
+        explanation: '',
+        steps: [],
+        concept: '',
+        whyWrong: null,
+        commonMistake: null,
+        toReview: null,
+        betterMethod: null
       };
 
       if (question.type === 'choice' && question.correctAnswer) {
@@ -921,7 +919,9 @@ function correctQCMDeterministic(subject, subjectId, answers) {
           qRes.status = 'wrong';
           exRes.wrongAnswers.push({
             number: qRes.number,
-            studentAnswer, correctAnswer: question.correctAnswer, question: question.text
+            studentAnswer,
+            correctAnswer: question.correctAnswer,
+            question: question.text
           });
         }
       } else {
@@ -951,10 +951,25 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
         aiResult.exercises.forEach((aiEx, exIdx) => {
           const target = deterministicResults[exIdx];
           if (!target) return;
+
+          // Enrichissement : ajouter les données IA à chaque question
           const aiQuestions = Array.isArray(aiEx.questions) ? aiEx.questions : [];
           aiQuestions.forEach((aiQ) => {
             const match = target.exerciseResult.questions.find((q) => String(q.number) === String(aiQ.number));
             if (!match) return;
+
+            // Fusion des champs pédagogiques
+            if (aiQ.explanation) match.explanation = aiQ.explanation;
+            if (Array.isArray(aiQ.steps) && aiQ.steps.length > 0) match.steps = aiQ.steps;
+            if (aiQ.concept) match.concept = aiQ.concept;
+            if (aiQ.whyWrong) match.whyWrong = aiQ.whyWrong;
+            if (aiQ.commonMistake) match.commonMistake = aiQ.commonMistake;
+            if (aiQ.toReview) match.toReview = aiQ.toReview;
+            if (aiQ.betterMethod) match.betterMethod = aiQ.betterMethod;
+            if (aiQ.feedback) match.feedback = aiQ.feedback;
+            if (aiQ.correctAnswer && !match.correctAnswer) match.correctAnswer = aiQ.correctAnswer;
+
+            // Points pour questions ouvertes
             if (match.status === 'pending') {
               match.points = Number(aiQ.points) || 0;
               match.status = aiQ.status || (match.points > 0 ? 'correct' : 'wrong');
@@ -963,15 +978,13 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
                 target.exerciseResult.correctAnswers++;
               }
             }
-            match.feedback = aiQ.feedback || match.feedback;
-            match.betterMethod = aiQ.betterMethod || match.betterMethod;
-            match.toReview = aiQ.toReview || match.toReview;
-            if (aiQ.correctAnswer) match.correctAnswer = aiQ.correctAnswer;
           });
+
           if (aiEx.explanation) target.exerciseResult.explanation = aiEx.explanation;
           if (aiEx.advice) target.exerciseResult.advice = aiEx.advice;
         });
       }
+
       if (Array.isArray(aiResult?.revisionTopics)) deterministicResults.revisionTopics = aiResult.revisionTopics;
       if (aiResult?.globalFeedback) deterministicResults.globalFeedback = aiResult.globalFeedback;
     } catch (error) {
@@ -980,15 +993,54 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
         r.textQuestions.forEach((tq) => {
           tq.questionResult.status = 'unanswered';
           tq.questionResult.feedback = 'Correction IA temporairement indisponible.';
+          tq.questionResult.explanation = 'Nous n\'avons pas pu corriger cette question. Réessaie plus tard.';
         });
       });
     }
   }
 
+  // ═══ CALCUL FINAL DU SCORE (BLINDÉ) ═══
   const finalExercises = deterministicResults.map((r) => r.exerciseResult);
-  const rawScore = finalExercises.reduce((sum, ex) => sum + ex.score, 0);
-  const score = Math.min(20, Math.round(rawScore * 100) / 100);
-  const percentage = Math.round((score / 20) * 100);
+
+  // Recalcul du score à partir des questions individuelles
+  let rawScore = 0;
+  let maxPossibleScore = 0;
+
+  finalExercises.forEach((ex) => {
+    ex.score = 0;
+    ex.maxScore = 0;
+    ex.correctAnswers = 0;
+
+    ex.questions.forEach((q) => {
+      const qMax = Number(q.maxPoints) || 1.33;
+      const qPoints = Math.max(0, Math.min(qMax, Number(q.points) || 0));
+
+      q.points = round2(qPoints);
+      q.maxPoints = round2(qMax);
+
+      ex.score += qPoints;
+      ex.maxScore += qMax;
+
+      if (q.status === 'correct') ex.correctAnswers++;
+    });
+
+    ex.score = round2(ex.score);
+    ex.maxScore = round2(ex.maxScore);
+
+    rawScore += ex.score;
+    maxPossibleScore += ex.maxScore;
+  });
+
+  // Ramener à 20 : (score obtenu / score max possible) × 20
+  let finalScore;
+  if (maxPossibleScore > 0) {
+    finalScore = (rawScore / maxPossibleScore) * TOTAL_POINTS;
+  } else {
+    finalScore = 0;
+  }
+
+  finalScore = round2(Math.max(0, Math.min(TOTAL_POINTS, finalScore)));
+  const percentage = Math.round((finalScore / TOTAL_POINTS) * 100);
 
   let grade = 'Insuffisant';
   if (percentage >= 90) grade = 'Excellent';
@@ -996,6 +1048,14 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
   else if (percentage >= 70) grade = 'Bien';
   else if (percentage >= 60) grade = 'Assez bien';
   else if (percentage >= 50) grade = 'Passable';
+
+  // Recalculer les scores individuels des exercices (ramenés sur 20 proportionnellement)
+  finalExercises.forEach((ex) => {
+    if (maxPossibleScore > 0) {
+      ex.score = round2((ex.score / ex.maxScore) * (ex.maxScore / maxPossibleScore * TOTAL_POINTS));
+      ex.maxScore = round2(ex.maxScore / maxPossibleScore * TOTAL_POINTS);
+    }
+  });
 
   const revisionTopics = deterministicResults.revisionTopics || [];
   if (!revisionTopics.length) {
@@ -1005,11 +1065,20 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
   }
 
   const globalFeedback = deterministicResults.globalFeedback || {
-    strengths: [], weaknesses: [],
+    strengths: [],
+    weaknesses: [],
     encouragement: percentage >= 70 ? 'Bon travail global !' : 'Continue tes efforts.'
   };
 
-  return { score, totalScore: 20, percentage, grade, exercises: finalExercises, revisionTopics, globalFeedback };
+  return {
+    score: finalScore,
+    totalScore: TOTAL_POINTS,
+    percentage,
+    grade,
+    exercises: finalExercises,
+    revisionTopics,
+    globalFeedback
+  };
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1031,7 +1100,7 @@ async function saveExamResult(uid, body, result) {
     chapter: body.exam.chapter || 'all',
     chapterTitle: selected?.title || 'Examen',
     score: Number(result?.score || 0),
-    totalScore: 20,
+    totalScore: TOTAL_POINTS,
     percentage: Number(result?.percentage || 0),
     grade: result?.grade || null,
     result: { ...result, exercises: result?.exercises || [] },
@@ -1078,6 +1147,10 @@ async function loadNotebookContext(uid, subject, chapterId, chapterTitle) {
   const { db } = getAdminServices();
   const notebookKey = subject;
   if (!notebookKey) return null;
+
+  function normalizeText(str) {
+    return String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+  }
 
   let chapterData = null;
   let actualChapterId = chapterId;
@@ -1250,7 +1323,6 @@ module.exports = async function handler(request, response) {
       const providers = getProviders();
       if (!providers.length) throw new Error('provider_missing');
 
-      // Chargement contexte cahier
       let notebookContext = null;
       if (body.notebookContext && (body.notebookContext.chapterId || body.notebookContext.chapterTitle)) {
         try {
@@ -1268,13 +1340,11 @@ module.exports = async function handler(request, response) {
       const genResult = await generateWithFallback(prompt, body.subject);
       let exam = genResult.exam;
 
-      // Post-traitement LaTeX
       exam = deepClean(exam);
 
       // Sauvegarde dans le pool
       await saveExercisesToPool(exam, body.subject, body.difficulty, verifiedUser.uid);
 
-      // Métadonnées
       exam.chapter = body.chapter;
       exam.fromNotebook = Boolean(notebookContext);
       exam.notebookSectionsCount = notebookContext?.sectionsCount || 0;
@@ -1290,13 +1360,11 @@ module.exports = async function handler(request, response) {
         try { await releaseFreeGeneration(verifiedUser.uid, reservation.usageDate); } catch (_) {}
       }
 
-      // ⚡ FALLBACK POOL
       const pooled = await buildExamFromPool(body);
       if (pooled) {
         return response.status(200).json({ success: true, exam: pooled, fallback: true, source: 'pool' });
       }
 
-      // ⚡ AUCUN CONTENU
       return response.status(200).json({
         success: true,
         exam: await buildUnavailableExam(body),
@@ -1321,7 +1389,7 @@ module.exports = async function handler(request, response) {
       return response.status(200).json({
         success: true,
         result: {
-          score: 0, totalScore: 20, percentage: 0, grade: 'Indéterminé',
+          score: 0, totalScore: TOTAL_POINTS, percentage: 0, grade: 'Indéterminé',
           exercises: [], revisionTopics: [],
           globalFeedback: { strengths: [], weaknesses: [], encouragement: 'Correction indisponible.' }
         }
