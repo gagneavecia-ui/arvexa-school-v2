@@ -1,8 +1,7 @@
 // ================================================================
-// API RÉVISEUR v5.0 — ARVEXA School
-// Fan-out parallèle + base JSON + pool Firestore
+// API RÉVISEUR v5.1 — ARVEXA School
+// Fan-out parallèle + base JSON + pool Firestore + Historique Premium
 // 6 profils : scientifique / svt / philosophie / histoire / francais / langue
-// Enrichissement pédagogique maximal pour réussite BAC
 // ================================================================
 
 const fs = require('fs');
@@ -11,7 +10,8 @@ const path = require('path');
 module.exports.config = { maxDuration: 90 };
 
 const WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS_PER_WINDOW = 30;
+const MAX_REQUESTS_PER_WINDOW_LIGHT = 60;
+const MAX_REQUESTS_PER_WINDOW_HEAVY = 30;
 const requestLog = new Map();
 
 const FREE_REVISEUR_LIMIT = 2;
@@ -19,6 +19,8 @@ const FREE_REVISEUR_LIMIT = 2;
 const ALLOWED_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie', 'svt', 'philosophie', 'histoire', 'geographie']);
 const ALLOWED_MODES = new Set(['fiche', 'flashcard']);
 const ALLOWED_ACTIONS = new Set(['generate', 'quiz', 'exercises', 'listSessions', 'loadSession', 'deleteSession']);
+const LIGHT_ACTIONS = new Set(['listSessions', 'loadSession', 'deleteSession']);
+const PREMIUM_ACTIONS = new Set(['listSessions', 'loadSession']);
 
 const MAX_TOKENS = {
   FICHE: 8000,
@@ -30,7 +32,6 @@ const MAX_TOKENS = {
 const NOTION_BATCH_SIZE = 4;
 const MAX_BATCHES = 8;
 const POOL_COLLECTION = 'reviseurPool';
-const MAX_POOL_SIZE_PER_SUBJECT = 500;
 
 const KNOWLEDGE_MEMORY_CACHE = new Map();
 let adminServices = null;
@@ -65,7 +66,7 @@ function getAdminServices() {
 }
 
 // ════════════════════════════════════════════════════════════════
-// BASE DE CONNAISSANCES (bac-*.json)
+// BASE DE CONNAISSANCES
 // ════════════════════════════════════════════════════════════════
 function loadKnowledgeBase(subject) {
   if (KNOWLEDGE_MEMORY_CACHE.has(subject)) return KNOWLEDGE_MEMORY_CACHE.get(subject);
@@ -126,12 +127,13 @@ function clientIp(request) {
   return String(request.headers['x-forwarded-for'] || request.socket?.remoteAddress || 'unknown').split(',')[0].trim();
 }
 
-function rateLimited(ip) {
+function rateLimited(ip, maxRequests) {
+  const limit = typeof maxRequests === 'number' ? maxRequests : MAX_REQUESTS_PER_WINDOW_HEAVY;
   const now = Date.now();
   const recent = (requestLog.get(ip) || []).filter((t) => now - t < WINDOW_MS);
   recent.push(now);
   requestLog.set(ip, recent);
-  return recent.length > MAX_REQUESTS_PER_WINDOW;
+  return recent.length > limit;
 }
 
 function jsonError(response, status, error, code) {
@@ -215,19 +217,14 @@ const UNICODE_TO_LATEX = {
 
 function replaceUnicodeMath(text) {
   if (!text || typeof text !== 'string') return text;
-  let result = text;
-  // Ne remplacer QUE si la chaîne contient déjà des $ ou des \ (indice de contexte LaTeX)
-  // Sinon risque de casser du texte français normal
-  for (const [unicode, latex] of Object.entries(UNICODE_TO_LATEX)) {
-    result = result.split(unicode).join(latex);
-  }
-  return result;
+  let r = text;
+  for (const [u, l] of Object.entries(UNICODE_TO_LATEX)) r = r.split(u).join(l);
+  return r;
 }
 
 function wrapOrphanLatex(text) {
   if (!text || typeof text !== 'string') return text;
   if (text.includes('$')) return text;
-
   let r = text;
   r = r.replace(/(\\[a-zA-Z]+(?:\{[^}]*\}){1,3})/g, ' $$$1$$ ');
   r = r.replace(/(\\[a-zA-Z]+)(?![a-zA-Z{]|\$)/g, ' $$$1$$ ');
@@ -238,30 +235,25 @@ function wrapOrphanLatex(text) {
 
 function escapeHtmlOutsideLatex(text) {
   if (!text || typeof text !== 'string') return text;
-  // Échapper < > & HORS des $...$
   const parts = text.split(/(\$\$[^$]+\$\$|\$[^$]+\$)/g);
   return parts.map((part, i) => {
-    if (i % 2 === 1) return part;  // bloc LaTeX préservé
+    if (i % 2 === 1) return part;
     return part.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }).join('');
 }
 
 function cleanText(text) {
   if (!text || typeof text !== 'string') return text;
-  let r = text;
-  r = replaceUnicodeMath(r);
-  r = wrapOrphanLatex(r);
-  r = escapeHtmlOutsideLatex(r);
-  return r;
+  return escapeHtmlOutsideLatex(wrapOrphanLatex(replaceUnicodeMath(text)));
 }
 
 function deepClean(obj) {
   if (typeof obj === 'string') return cleanText(obj);
   if (Array.isArray(obj)) return obj.map(deepClean);
   if (obj && typeof obj === 'object') {
-    const cleaned = {};
-    for (const k in obj) cleaned[k] = deepClean(obj[k]);
-    return cleaned;
+    const c = {};
+    for (const k in obj) c[k] = deepClean(obj[k]);
+    return c;
   }
   return obj;
 }
@@ -331,7 +323,9 @@ function getProviders() {
   return providers;
 }
 
-async function callProvider(provider, prompt, maxTokens = 4000, temperature = 0.15) {
+async function callProvider(provider, prompt, maxTokens, temperature) {
+  if (!maxTokens) maxTokens = 4000;
+  if (typeof temperature !== 'number') temperature = 0.15;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 20000);
   try {
@@ -381,7 +375,7 @@ async function callProvider(provider, prompt, maxTokens = 4000, temperature = 0.
   }
 }
 
-async function generateWithCascade(prompt, validator, maxTokens = 4000, temperature = 0.15, taskName = 'task') {
+async function generateWithCascade(prompt, validator, maxTokens, temperature, taskName) {
   const providers = getProviders();
   if (!providers.length) throw new Error('provider_missing');
 
@@ -414,17 +408,14 @@ async function generateWithCascade(prompt, validator, maxTokens = 4000, temperat
 }
 
 // ════════════════════════════════════════════════════════════════
-// POOL FIRESTORE (fallback intelligent)
+// POOL FIRESTORE
 // ════════════════════════════════════════════════════════════════
 async function saveSessionToPool(subject, chapter, mode, session, uid) {
   try {
     const { db, FieldValue } = getAdminServices();
     const ref = db.collection(POOL_COLLECTION).doc();
     await ref.set({
-      subject,
-      chapter,
-      mode,
-      session,
+      subject, chapter, mode, session,
       source: 'ai',
       generatedBy: uid,
       createdAt: FieldValue.serverTimestamp(),
@@ -449,19 +440,14 @@ async function buildSessionFromPool(subject, chapter, mode) {
 
     const allSessions = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-    // Filtrer par chapitre (exact ou proche)
     const chapterTarget = normalizeText(chapter);
     let matching = allSessions.filter((s) => normalizeText(s.chapter) === chapterTarget);
-    if (matching.length === 0) {
-      matching = allSessions;  // élargir si pas de match
-    }
+    if (matching.length === 0) matching = allSessions;
 
-    // Choix aléatoire pondéré : favoriser les peu utilisés
     matching.sort((a, b) => (a.usedCount || 0) - (b.usedCount || 0));
     const top = matching.slice(0, Math.max(1, Math.ceil(matching.length / 3)));
     const picked = top[Math.floor(Math.random() * top.length)];
 
-    // Incrémenter usedCount
     await db.collection(POOL_COLLECTION).doc(picked.id).update({
       usedCount: (picked.usedCount || 0) + 1,
       lastUsedAt: new Date()
@@ -495,9 +481,7 @@ async function buildQuizFromPool(subject, chapter, count) {
 
     const picked = shuffle(allQuestions).slice(0, count);
     return { quiz: picked, source: 'pool' };
-  } catch (e) {
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 async function buildUnavailableSession(chapterTitle, mode) {
@@ -508,7 +492,7 @@ async function buildUnavailableSession(chapterTitle, mode) {
     flashcards: [],
     quiz: [],
     unavailable: true,
-    message: `Le contenu pour "${chapterTitle}" n'est pas disponible pour le moment. Aucun contenu n'est en cache et l'IA est temporairement indisponible. Merci de réessayer dans quelques minutes.`
+    message: `Le contenu pour "${chapterTitle}" n'est pas disponible pour le moment. Réessaie dans quelques minutes.`
   };
 }
 
@@ -521,17 +505,13 @@ RÈGLES LATEX — OBLIGATOIRES ET STRICTES
 ═══════════════════════════════════════════════════════════════
 1. TOUTE formule mathématique DOIT être entre $...$ (inline) ou $$...$$ (display).
 2. INTERDIT ABSOLU d'écrire du LaTeX brut sans $.
-   ❌ FAUX  : "v = \\sqrt{2gh}"
-   ✅ JUSTE : "$v = \\sqrt{2gh}$"
 3. INTERDIT ABSOLU d'utiliser des symboles Unicode mathématiques :
-   π → $\\pi$   |  √ → $\\sqrt{}$  |  × → $\\times$
-   ÷ → $\\div$ |  ≤ → $\\leq$     |  ≥ → $\\geq$
-   ≠ → $\\neq$ |  ∞ → $\\infty$   |  → → $\\to$
-   ∈ → $\\in$  |  ∑ → $\\sum$     |  ∫ → $\\int$
-   Δ → $\\Delta$ | ² → $^2$      |  ³ → $^3$
-4. Unités : utiliser \\, (petit espace) : "$9{,}81\\,\\text{m/s}^2$"
-5. Fractions : TOUJOURS $\\frac{...}{...}$
-6. Vecteurs : $\\vec{u}$, $\\overrightarrow{AB}$
+   π → $\\pi$, √ → $\\sqrt{}$, × → $\\times$, ÷ → $\\div$, ≤ → $\\leq$,
+   ≥ → $\\geq$, ≠ → $\\neq$, ∞ → $\\infty$, → → $\\to$, ∈ → $\\in$,
+   ∑ → $\\sum$, ∫ → $\\int$, Δ → $\\Delta$, ² → $^2$, ³ → $^3$
+4. Unités : $9{,}81\\,\\text{m/s}^2$
+5. Fractions : $\\frac{...}{...}$
+6. Vecteurs : $\\vec{u}$
 7. Ensembles : $\\mathbb{R}$, $\\mathbb{N}$, $\\mathbb{C}$
 `;
 
@@ -547,13 +527,6 @@ cet élève de :
   3. Reconnaître les pièges du BAC
   4. Appliquer les méthodes pas à pas
   5. Réussir l'examen, même en apprenant la veille
-
-Tu joues le rôle d'un psychologue pédagogique :
-  - Tu anticipes ce que l'élève va mal comprendre
-  - Tu expliques POURQUOI chaque notion existe
-  - Tu donnes des exemples CONCRETS et CHIFFRÉS
-  - Tu signales les erreurs CLASSIQUES du BAC
-  - Tu crées des MNÉMOTECHNIQUES faciles à retenir
 `;
 
 function serializeNotion(notion, index) {
@@ -619,31 +592,11 @@ ${notionsSerialized}
 CE QUE TU DOIS GÉNÉRER POUR CHAQUE NOTION
 ═══════════════════════════════════════════════════════════════
 1. COMPRENDRE (4-6 phrases)
-   - Intuition : pourquoi cette notion existe
-   - Définition formelle
-   - Pourquoi c'est important pour le BAC
-
-2. FORMULES (avec complétion)
-   - Toutes les formules essentielles (utilise celles fournies + complète)
-   - Chaque formule : latex + condition + usage pratique
-
+2. FORMULES (latex + condition + usage)
 3. MÉTHODE PAS À PAS (3-7 étapes)
-   - La démarche exacte face à un exercice
-   - Actions concrètes et numérotées
-
-4. EXEMPLE RÉSOLU (chiffré et complet)
-   - Énoncé clair
-   - Étapes détaillées
-   - Résultat mis en évidence
-   - Astuce utilisée
-
+4. EXEMPLE RÉSOLU (chiffré, complet)
 5. PIÈGE DU BAC
-   - Le piège le plus fréquent
-   - Comment l'éviter
-   - Un exemple concret
-
 6. ASTUCE MNÉMOTECHNIQUE
-   - Phrase courte et facile à retenir
 
 ${LATEX_RULES}
 
@@ -652,34 +605,22 @@ FORMAT JSON ATTENDU
 ═══════════════════════════════════════════════════════════════
 {
   "chapterTitle": "${chapterTitle}",
-  "keyPoints": ["3 à 5 points clés du chapitre"],
+  "keyPoints": ["3 à 5 points clés"],
   "sections": [
     {
       "notionId": "id-exact-fourni",
       "notionTitle": "Titre exact",
-      "comprendre": "Explication intuitive + formelle (4-6 phrases)",
-      "formules": [
-        { "latex": "$z = a + bi$", "condition": "$a, b \\in \\mathbb{R}$", "usage": "Écriture canonique" }
-      ],
-      "methode": { "title": "Méthode", "steps": ["Étape 1", "Étape 2", "Étape 3"] },
-      "exempleResolu": {
-        "enonce": "Énoncé complet",
-        "etapes": ["Étape 1", "Étape 2", "Étape 3"],
-        "conclusion": "Résultat final"
-      },
-      "piegeBAC": { "trap": "Erreur classique", "solution": "Comment l'éviter" },
-      "astuce": "Mnémo court"
+      "comprendre": "Explication (4-6 phrases)",
+      "formules": [{ "latex": "$...$", "condition": "...", "usage": "..." }],
+      "methode": { "title": "Méthode", "steps": ["...", "..."] },
+      "exempleResolu": { "enonce": "...", "etapes": ["..."], "conclusion": "..." },
+      "piegeBAC": { "trap": "...", "solution": "..." },
+      "astuce": "..."
     }
-  ],
-  "examTraps": [{ "trap": "Piège global", "solution": "Solution" }],
-  "commonMistakes": ["Erreur 1", "Erreur 2"]
+  ]
 }
 
-CONTRAINTES :
-- EXACTEMENT ${N} sections (une par notion fournie)
-- Qualité maximale : cette fiche peut être la SEULE ressource de l'élève
-- Chaque notion : au moins 250 mots de contenu total
-- Réponds UNIQUEMENT avec le JSON`;
+CONTRAINTES : EXACTEMENT ${N} sections · Qualité maximale · Réponds UNIQUEMENT avec le JSON`;
 }
 
 function buildFlashcardsPrompt(subjectLabel, chapterTitle, notions) {
@@ -698,41 +639,19 @@ NOTIONS À COUVRIR
 ═══════════════════════════════════════════════════════════════
 ${notionsSerialized}
 
-═══════════════════════════════════════════════════════════════
-RÈGLES DES FLASHCARDS
-═══════════════════════════════════════════════════════════════
-- 5 flashcards par notion
-- Chaque flashcard doit avoir une question CLAIRE et une réponse CONCISE
-- Types à varier :
-  • "definition" : qu'est-ce que c'est ?
-  • "formule" : quelle est la formule ?
-  • "methode" : comment on applique ?
-  • "piege" : quel est le piège ?
-  • "application" : exemple concret
+RÈGLES : 5 flashcards par notion · Types variés (definition, formule, methode, piege, application)
 
 ${LATEX_RULES}
 
-═══════════════════════════════════════════════════════════════
-FORMAT JSON ATTENDU
-═══════════════════════════════════════════════════════════════
+FORMAT JSON :
 {
   "chapterTitle": "${chapterTitle}",
   "flashcards": [
-    {
-      "notionId": "id",
-      "type": "definition",
-      "question": "...",
-      "answer": "...",
-      "hint": null,
-      "difficulty": 1
-    }
+    { "notionId": "id", "type": "definition", "question": "...", "answer": "...", "hint": null, "difficulty": 1 }
   ]
 }
 
-CONTRAINTES :
-- EXACTEMENT ${total} flashcards
-- Réponses : une phrase complète, jamais "Voir cours"
-- Réponds UNIQUEMENT avec le JSON`;
+CONTRAINTES : EXACTEMENT ${total} flashcards · Réponses complètes (jamais "Voir cours") · Réponds UNIQUEMENT avec le JSON`;
 }
 
 function buildQuizPrompt(subjectLabel, chapterTitle, notions, level, questionCount, seed) {
@@ -744,34 +663,24 @@ ${PEDAGOGY_RULES}
 
 MISSION : Génère un QUIZ de ${questionCount} questions pour "${chapterTitle}" (${subjectLabel}).
 
-SEED : ${seed} (utilise ce seed pour varier les questions)
+SEED : ${seed} (utilise ce seed pour varier)
 
 ═══════════════════════════════════════════════════════════════
 NOTIONS À COUVRIR
 ═══════════════════════════════════════════════════════════════
 ${notionsSerialized}
 
-═══════════════════════════════════════════════════════════════
-RÈGLES DU QUIZ
-═══════════════════════════════════════════════════════════════
-- Niveau demandé : ${level}/4
-- 4 options par question (A, B, C, D)
-- UNE SEULE bonne réponse
-- Options FAUSSES plausibles (pas "aucune de ces réponses" par défaut)
-- Explication obligatoire pour chaque bonne réponse
-- Varie les notions couvertes
+RÈGLES : Niveau ${level}/4 · 4 options A/B/C/D · Options fausses plausibles
 
 ${LATEX_RULES}
 
-═══════════════════════════════════════════════════════════════
-FORMAT JSON ATTENDU
-═══════════════════════════════════════════════════════════════
+FORMAT JSON :
 {
   "quiz": [
     {
       "notionId": "id",
       "level": 1,
-      "question": "Question claire",
+      "question": "...",
       "options": [
         { "id": "A", "text": "..." },
         { "id": "B", "text": "..." },
@@ -779,14 +688,12 @@ FORMAT JSON ATTENDU
         { "id": "D", "text": "..." }
       ],
       "correctAnswer": "A",
-      "explanation": "Explication pédagogique"
+      "explanation": "..."
     }
   ]
 }
 
-CONTRAINTES :
-- EXACTEMENT ${questionCount} questions
-- Réponds UNIQUEMENT avec le JSON`;
+CONTRAINTES : EXACTEMENT ${questionCount} questions · Réponds UNIQUEMENT avec le JSON`;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -809,7 +716,7 @@ function validateQuiz(data) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// GÉNÉRATION PAR LOTS (fan-out parallèle)
+// GÉNÉRATION PAR LOTS
 // ════════════════════════════════════════════════════════════════
 async function generateFicheByBatches(subjectLabel, chapterTitle, notions) {
   const batches = chunk(notions, NOTION_BATCH_SIZE).slice(0, MAX_BATCHES);
@@ -833,7 +740,6 @@ async function generateFicheByBatches(subjectLabel, chapterTitle, notions) {
     }
   });
 
-  // Si des lots manquent → signaler
   if (missingBatches.length > 0) {
     console.warn(`[REVISEUR] ${missingBatches.length} lot(s) en échec`);
   }
@@ -904,21 +810,43 @@ module.exports = async function handler(request, response) {
     response.setHeader('Allow', 'POST');
     return jsonError(response, 405, 'Méthode non autorisée.');
   }
-  if (rateLimited(clientIp(request))) return jsonError(response, 429, 'Trop de demandes.');
+
+  const body = request.body && typeof request.body === 'object' ? request.body : {};
+  const action = body.action || 'generate';
+  const isLight = LIGHT_ACTIONS.has(action);
+  const rateLimit = isLight ? MAX_REQUESTS_PER_WINDOW_LIGHT : MAX_REQUESTS_PER_WINDOW_HEAVY;
+
+  if (rateLimited(clientIp(request), rateLimit)) {
+    return jsonError(response, 429, isLight
+      ? 'Trop de requêtes. Patiente quelques secondes.'
+      : 'Trop de demandes. Réessaie dans une minute.');
+  }
 
   let user;
   try { user = await verifyFirebaseToken(request); }
   catch (e) { return jsonError(response, 503, 'Service indisponible.'); }
   if (!user) return jsonError(response, 401, 'Connexion requise.', 'AUTH_REQUIRED');
 
-  const body = request.body && typeof request.body === 'object' ? request.body : {};
-  const action = body.action || 'generate';
-
   if (!ALLOWED_ACTIONS.has(action)) return jsonError(response, 400, 'Action invalide.');
 
-  // ═══════════════════════════════════════════════════════════
-  // HISTORIQUE : LISTER LES SESSIONS
-  // ═══════════════════════════════════════════════════════════
+  // ═══ VÉRIFICATION PREMIUM ═══
+  if (PREMIUM_ACTIONS.has(action)) {
+    try {
+      const { db } = getAdminServices();
+      const userSnap = await db.collection('users').doc(user.uid).get();
+      if (!userSnap.exists) {
+        return jsonError(response, 404, 'Profil utilisateur introuvable.');
+      }
+      if (!isPremiumUser(userSnap.data())) {
+        return jsonError(response, 403, 'L\'historique est réservé aux comptes Premium.', 'PREMIUM_REQUIRED');
+      }
+    } catch (e) {
+      console.error('[HISTORIQUE] Premium check failed:', e.message);
+      return jsonError(response, 503, 'Service temporairement indisponible.');
+    }
+  }
+
+  // ═══ HISTORIQUE : LISTER ═══
   if (action === 'listSessions') {
     try {
       const { db } = getAdminServices();
@@ -949,9 +877,7 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // HISTORIQUE : CHARGER UNE SESSION
-  // ═══════════════════════════════════════════════════════════
+  // ═══ HISTORIQUE : CHARGER ═══
   if (action === 'loadSession') {
     if (!body.sessionId) return jsonError(response, 400, 'sessionId requis.');
     try {
@@ -979,9 +905,7 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // HISTORIQUE : SUPPRIMER UNE SESSION
-  // ═══════════════════════════════════════════════════════════
+  // ═══ HISTORIQUE : SUPPRIMER ═══
   if (action === 'deleteSession') {
     if (!body.sessionId) return jsonError(response, 400, 'sessionId requis.');
     try {
@@ -994,9 +918,7 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // GÉNÉRATION & AUTRES
-  // ═══════════════════════════════════════════════════════════
+  // ═══ GÉNÉRATION & AUTRES ═══
   if (!ALLOWED_SUBJECTS.has(body.subject)) return jsonError(response, 400, 'Matière invalide.');
   if (typeof body.chapter !== 'string' || body.chapter.length > 100) return jsonError(response, 400, 'Chapitre invalide.');
 
@@ -1011,7 +933,7 @@ module.exports = async function handler(request, response) {
   }[body.subject] || body.subject;
   const chapterTitle = chapterData?.titre || body.chapter;
 
-  console.log(`[REVISEUR v5] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
+  console.log(`[REVISEUR v5.1] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
 
   // Quota (uniquement pour generate)
   let reservation = null;
@@ -1042,34 +964,29 @@ module.exports = async function handler(request, response) {
       let session;
       let source = 'ai';
 
-      // 1. TENTATIVE IA
       try {
         if (hasKnowledge) {
           session = isFlashcard
             ? await generateFlashcardsByBatches(subjectLabel, chapterTitle, mandatoryNotions)
             : await generateFicheByBatches(subjectLabel, chapterTitle, mandatoryNotions);
         } else {
-          // Pas de base JSON → on tente quand même l'IA avec le titre seul
           session = isFlashcard
             ? await generateFlashcardsByBatches(subjectLabel, chapterTitle, [{ id: 'chapter', titre: chapterTitle, description: '' }])
             : await generateFicheByBatches(subjectLabel, chapterTitle, [{ id: 'chapter', titre: chapterTitle, description: '' }]);
         }
 
-        // Si le résultat est vide → fallback pool
         if (!session || (isFlashcard && session.flashcards?.length === 0) || (!isFlashcard && session.sections?.length === 0)) {
           throw new Error('empty_session');
         }
       } catch (aiError) {
         console.warn('[REVISEUR] IA échouée:', aiError.message);
 
-        // 2. FALLBACK POOL
         const pooled = await buildSessionFromPool(body.subject, body.chapter, body.mode);
         if (pooled) {
           session = pooled.session;
           source = 'pool';
           console.log('[REVISEUR] ✅ Fallback pool utilisé');
         } else {
-          // 3. AUCUN CONTENU DISPONIBLE
           if (reservation?.reserved && !reservation?.premium) {
             try { await releaseFreeGeneration(user.uid, reservation.usageDate); } catch (_) {}
           }
@@ -1082,14 +999,12 @@ module.exports = async function handler(request, response) {
         }
       }
 
-      // Post-traitement LaTeX
       session = deepClean(session);
 
-      // 4. SAUVEGARDE EN POOL (si IA a généré)
+      // Sauvegarde en pool + historique
       if (source === 'ai') {
         await saveSessionToPool(body.subject, body.chapter, body.mode, session, user.uid);
 
-        // Sauvegarde aussi dans l'historique utilisateur
         try {
           const { db, FieldValue } = getAdminServices();
           await db.collection('users').doc(user.uid).collection('reviseurSessions').add({
@@ -1150,14 +1065,13 @@ module.exports = async function handler(request, response) {
             success: true,
             quiz: [],
             source: 'unavailable',
-            message: 'Quiz indisponible pour le moment. Réessaye plus tard.'
+            message: 'Quiz indisponible pour le moment.'
           });
         }
       }
 
       quizData = deepClean(quizData);
 
-      // Sauvegarde en historique (uniquement si IA a généré)
       if (source === 'ai') {
         try {
           const { db, FieldValue } = getAdminServices();
