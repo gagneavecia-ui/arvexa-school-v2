@@ -1623,6 +1623,223 @@
         transition-duration: 0.01ms !important;
       }
     }
+
+    /* ═══════════════════════════════════════════════════════════
+   CORRECTION DÉTAILLÉE PAR QUESTION
+   ═══════════════════════════════════════════════════════════ */
+.question-detail {
+  padding: 20px 22px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-card);
+  margin-bottom: 14px;
+}
+.question-detail.q-correct { border-left: 3px solid var(--success-light); }
+.question-detail.q-wrong { border-left: 3px solid var(--danger-light); }
+.question-detail.q-unanswered { border-left: 3px solid var(--text-muted); opacity: 0.85; }
+
+.qd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.qd-number {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-light);
+}
+.qd-number .q-icon { font-size: 16px; }
+.qd-points {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(224, 184, 74, 0.1);
+  color: var(--accent-bright);
+  border: 1px solid rgba(224, 184, 74, 0.2);
+}
+.qd-points.full { background: rgba(58, 182, 126, 0.15); color: #7ce0aa; border-color: rgba(58, 182, 126, 0.3); }
+.qd-points.zero { background: rgba(215, 101, 74, 0.15); color: #ff9a84; border-color: rgba(215, 101, 74, 0.3); }
+
+/* Énoncé */
+.qd-statement {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 2px solid var(--accent);
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--text-light);
+  margin-bottom: 14px;
+}
+.qd-statement-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-bright);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Réponses côte à côte */
+.qd-answers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+@media (max-width: 620px) {
+  .qd-answers { grid-template-columns: 1fr; }
+}
+
+.qd-answer-box {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.015);
+}
+.qd-answer-box.student { border-color: rgba(224, 184, 74, 0.15); }
+.qd-answer-box.correct { border-color: rgba(58, 182, 126, 0.25); background: rgba(58, 182, 126, 0.04); }
+
+.qd-answer-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+.qd-answer-box.student .qd-answer-label { color: var(--accent-bright); }
+.qd-answer-box.correct .qd-answer-label { color: #7ce0aa; }
+
+.qd-answer-text {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-light);
+  line-height: 1.55;
+  word-break: break-word;
+}
+.qd-answer-text.muted {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* Sections pédagogiques */
+.qd-section {
+  padding: 14px 16px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.qd-section:last-child { margin-bottom: 0; }
+
+.qd-section-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qd-section.explanation {
+  background: rgba(74, 175, 224, 0.05);
+  border-left: 3px solid #4AAFE0;
+}
+.qd-section.explanation .qd-section-label { color: #4AAFE0; }
+
+.qd-section.steps {
+  background: rgba(224, 184, 74, 0.04);
+  border-left: 3px solid var(--accent-bright);
+}
+.qd-section.steps .qd-section-label { color: var(--accent-bright); }
+.qd-section.steps ol {
+  padding-left: 22px;
+  margin: 0;
+  counter-reset: step;
+  list-style: none;
+}
+.qd-section.steps li {
+  position: relative;
+  padding-left: 26px;
+  padding-bottom: 8px;
+  counter-increment: step;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-body);
+}
+.qd-section.steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(224, 184, 74, 0.15);
+  color: var(--accent-bright);
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qd-section.concept {
+  background: rgba(155, 89, 182, 0.05);
+  border-left: 3px solid #b07cd0;
+}
+.qd-section.concept .qd-section-label { color: #b07cd0; }
+
+.qd-section.why-wrong {
+  background: rgba(215, 101, 74, 0.05);
+  border-left: 3px solid #ff9a84;
+}
+.qd-section.why-wrong .qd-section-label { color: #ff9a84; }
+
+.qd-section.review {
+  background: rgba(74, 175, 224, 0.04);
+  border-left: 3px solid #4AAFE0;
+}
+.qd-section.review .qd-section-label { color: #4AAFE0; }
+
+.qd-section.mistake {
+  background: rgba(212, 160, 23, 0.05);
+  border-left: 3px solid #fbbf24;
+}
+.qd-section.mistake .qd-section-label { color: #fbbf24; }
+
+.qd-section.tip {
+  background: rgba(58, 182, 126, 0.05);
+  border-left: 3px solid #7ce0aa;
+}
+.qd-section.tip .qd-section-label { color: #7ce0aa; }
+
+.qd-section.feedback {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-soft);
+}
+.qd-section.feedback .qd-section-label { color: var(--text-dim); }
+.qd-section.feedback .qd-feedback-text {
+  font-size: 13.5px;
+  color: var(--text-body);
+  font-style: italic;
+}
+
+.katex { font-size: 1.05em; }
+.katex-display { margin: 10px 0; overflow-x: auto; padding: 4px 0; }
   </style>
 </head>
 <body>
@@ -1854,29 +2071,30 @@
     </section>
 
     <!-- VUE 6 : RÉSULTATS -->
-    <section class="view" id="resultsView" aria-labelledby="resultsTitle">
-      <div class="panel">
-        <div class="eyebrow">Correction</div>
-        <h2 id="resultsTitle">Résultats de l'examen</h2>
+  <!-- VUE 6 : RÉSULTATS -->
+<section class="view" id="resultsView" aria-labelledby="resultsTitle">
+  <div class="panel">
+    <div class="eyebrow">Correction détaillée</div>
+    <h2 id="resultsTitle">Résultats de l'examen</h2>
 
-        <div class="result-summary">
-          <div class="metric">
-            <small>Note</small>
-            <strong id="resultScore">-- / 20</strong>
-          </div>
-          <div class="metric">
-            <small>Pourcentage</small>
-            <strong id="resultPercent">-- %</strong>
-          </div>
-        </div>
-
-        <div id="resultsDetails"></div>
-
-        <div class="actions">
-          <button class="btn primary" id="newExamButton" type="button">Nouvel examen</button>
-        </div>
+    <div class="result-summary">
+      <div class="metric">
+        <small>Note</small>
+        <strong id="resultScore">-- / 20</strong>
       </div>
-    </section>
+      <div class="metric">
+        <small>Pourcentage</small>
+        <strong id="resultPercent">-- %</strong>
+      </div>
+    </div>
+
+    <div id="resultsDetails"></div>
+
+    <div class="actions">
+      <button class="btn primary" id="newExamButton" type="button">Nouvel examen</button>
+    </div>
+  </div>
+</section>
 
     <!-- VUE 7 : HISTORIQUE -->
     <section class="view" id="historyView" aria-labelledby="historyTitle">
@@ -2796,67 +3014,283 @@
     return '💪 À revoir';
   }
 
-  function showResults(result) {
-    state.lastResult = result;
-    var score = Math.max(0, Math.min(20, Number((result && result.score) || 0)));
-    var percentage = Number((result && result.percentage) || Math.round((score / 20) * 100));
-    var grade = (result && result.grade) || getGrade(percentage);
+function showResults(result) {
+  state.lastResult = result;
+  var score = Math.max(0, Math.min(20, Number((result && result.score) || 0)));
+  var percentage = Number((result && result.percentage) || Math.round((score / 20) * 100));
+  var grade = (result && result.grade) || getGrade(percentage);
 
-    $('resultScore').textContent = score.toFixed(2) + ' / 20';
-    $('resultPercent').textContent = percentage + ' %';
+  $('resultScore').textContent = score.toFixed(2) + ' / 20';
+  $('resultPercent').textContent = percentage + ' %';
 
-    var details = $('resultsDetails');
-    details.replaceChildren();
+  var details = $('resultsDetails');
+  details.replaceChildren();
 
-    var banner = document.createElement('div');
-    banner.className = 'grade-banner grade-' + getGradeClass(percentage);
-    banner.innerHTML =
-      '<div class="grade-emoji">' + getGradeEmoji(percentage) + '</div>' +
-      '<div class="grade-info">' +
-      '<div class="grade-title">' + escapeHtml(grade) + '</div>' +
-      '<div class="grade-sub">' + escapeHtml((result && result.globalFeedback && result.globalFeedback.encouragement) || 'Continue tes efforts !') + '</div>' +
-      '</div>';
-    details.appendChild(banner);
+  // ─── Bandeau global ───
+  var banner = document.createElement('div');
+  banner.className = 'grade-banner grade-' + getGradeClass(percentage);
+  banner.innerHTML =
+    '<div class="grade-emoji">' + getGradeEmoji(percentage) + '</div>' +
+    '<div class="grade-info">' +
+    '<div class="grade-title">' + escapeHtml(grade) + '</div>' +
+    '<div class="grade-sub">' + escapeHtml((result && result.globalFeedback && result.globalFeedback.encouragement) || 'Continue tes efforts !') + '</div>' +
+    '</div>';
+  details.appendChild(banner);
 
-    var exercises = (result && Array.isArray(result.exercises)) ? result.exercises : [];
-    if (exercises.length > 0) {
-      var recap = document.createElement('div');
-      recap.className = 'recap-section';
-      recap.innerHTML = '<h3 class="recap-title">📚 Récapitulatif des exercices</h3>';
-      exercises.forEach(function (exercise, idx) {
-        var percent = exercise.maxScore > 0 ? (exercise.score / exercise.maxScore) * 100 : 0;
-        var icon = percent >= 75 ? '✅' : percent >= 50 ? '⚠️' : '❌';
-        var card = document.createElement('button');
-        card.className = 'exercise-card';
-        card.type = 'button';
-        card.innerHTML =
-          '<div class="exercise-card-icon">' + icon + '</div>' +
-          '<div class="exercise-card-body">' +
-          '<div class="exercise-card-title">Exercice ' + (exercise.number || (idx + 1)) + (exercise.title ? ' — ' + escapeHtml(exercise.title) : '') + '</div>' +
-          '<div class="exercise-card-meta">' + Number(exercise.score || 0).toFixed(2) + ' / ' + Number(exercise.maxScore || 6.67).toFixed(2) + ' pts · ' + (exercise.correctAnswers || 0) + '/' + (exercise.totalQuestions || 5) + ' correctes</div>' +
-          '<div class="exercise-card-progress"><div class="exercise-card-fill" style="width:' + percent + '%;background:' + getProgressColor(percent) + '"></div></div>' +
-          '</div>' +
-          '<div class="exercise-card-arrow">→</div>';
-        card.addEventListener('click', function () { showExerciseDetail(exercise, idx); });
-        recap.appendChild(card);
-      });
-      details.appendChild(recap);
+  // ─── Message d'encouragement personnalisé ───
+  if (result && result.globalFeedback) {
+    var gf = result.globalFeedback;
+    var hasStrengths = Array.isArray(gf.strengths) && gf.strengths.length > 0;
+    var hasWeaknesses = Array.isArray(gf.weaknesses) && gf.weaknesses.length > 0;
+
+    if (hasStrengths || hasWeaknesses) {
+      var gfCard = document.createElement('div');
+      gfCard.className = 'recap-section';
+      var gfHtml = '<h3 class="recap-title">📊 Bilan personnalisé</h3>';
+
+      if (hasStrengths) {
+        gfHtml += '<div class="qd-section tip"><div class="qd-section-label">✅ Tes points forts</div>';
+        gfHtml += '<ul style="padding-left:20px;margin:0;">';
+        gf.strengths.forEach(function (s) { gfHtml += '<li>' + escapeHtml(s) + '</li>'; });
+        gfHtml += '</ul></div>';
+      }
+
+      if (hasWeaknesses) {
+        gfHtml += '<div class="qd-section why-wrong"><div class="qd-section-label">⚠️ À améliorer</div>';
+        gfHtml += '<ul style="padding-left:20px;margin:0;">';
+        gf.weaknesses.forEach(function (w) { gfHtml += '<li>' + escapeHtml(w) + '</li>'; });
+        gfHtml += '</ul></div>';
+      }
+
+      gfCard.innerHTML = gfHtml;
+      details.appendChild(gfCard);
     }
-
-    if (result && Array.isArray(result.revisionTopics) && result.revisionTopics.length > 0) {
-      var topics = document.createElement('div');
-      topics.className = 'topics-section';
-      var topicsHtml = '<h3 class="topics-title">📖 Points à revoir en priorité</h3><ul class="topics-list">';
-      result.revisionTopics.forEach(function (t) { topicsHtml += '<li>' + escapeHtml(t) + '</li>'; });
-      topicsHtml += '</ul>';
-      topics.innerHTML = topicsHtml;
-      details.appendChild(topics);
-    }
-
-    showView('resultsView');
-    renderMath($('resultsView'));
   }
 
+  // ─── Récapitulatif des exercices ───
+  var exercises = (result && Array.isArray(result.exercises)) ? result.exercises : [];
+  if (exercises.length > 0) {
+    var recap = document.createElement('div');
+    recap.className = 'recap-section';
+    recap.innerHTML = '<h3 class="recap-title">📚 Détail des exercices</h3>';
+
+    exercises.forEach(function (exercise, idx) {
+      var percent = exercise.maxScore > 0 ? (exercise.score / exercise.maxScore) * 100 : 0;
+      var icon = percent >= 75 ? '✅' : percent >= 50 ? '⚠️' : '❌';
+
+      var card = document.createElement('button');
+      card.className = 'exercise-card';
+      card.type = 'button';
+      card.innerHTML =
+        '<div class="exercise-card-icon">' + icon + '</div>' +
+        '<div class="exercise-card-body">' +
+        '<div class="exercise-card-title">Exercice ' + (exercise.number || (idx + 1)) + (exercise.title ? ' — ' + escapeHtml(exercise.title) : '') + '</div>' +
+        '<div class="exercise-card-meta">' + Number(exercise.score || 0).toFixed(2) + ' / ' + Number(exercise.maxScore || 6.67).toFixed(2) + ' pts · ' + (exercise.correctAnswers || 0) + '/' + (exercise.totalQuestions || 5) + ' correctes</div>' +
+        '<div class="exercise-card-progress"><div class="exercise-card-fill" style="width:' + percent + '%;background:' + getProgressColor(percent) + '"></div></div>' +
+        '</div>' +
+        '<div class="exercise-card-arrow">→</div>';
+      card.addEventListener('click', function () { showExerciseDetail(exercise, idx); });
+      recap.appendChild(card);
+    });
+    details.appendChild(recap);
+  }
+
+  // ─── Sujets à revoir en priorité ───
+  if (result && Array.isArray(result.revisionTopics) && result.revisionTopics.length > 0) {
+    var topics = document.createElement('div');
+    topics.className = 'topics-section';
+    var topicsHtml = '<h3 class="topics-title">📖 Points à revoir en priorité</h3><ul class="topics-list">';
+    result.revisionTopics.forEach(function (t) { topicsHtml += '<li>' + escapeHtml(t) + '</li>'; });
+    topicsHtml += '</ul>';
+    topics.innerHTML = topicsHtml;
+    details.appendChild(topics);
+  }
+
+  showView('resultsView');
+  renderMath($('resultsView'));
+}
+
+// ════════════════════════════════════════════════════════════════
+// DÉTAIL D'UN EXERCICE — Version enrichie
+// ════════════════════════════════════════════════════════════════
+function showExerciseDetail(exercise, exerciseIndex) {
+  var details = $('resultsDetails');
+  details.replaceChildren();
+  var percent = exercise.maxScore > 0 ? (exercise.score / exercise.maxScore) * 100 : 0;
+  var icon = percent >= 75 ? '✅' : percent >= 50 ? '⚠️' : '❌';
+
+  // ─── Header ───
+  var header = document.createElement('div');
+  header.className = 'exercise-detail-header';
+  header.innerHTML =
+    '<button class="back-btn-detail" id="backToRecapBtn"><i class="fas fa-arrow-left"></i> Retour</button>' +
+    '<div class="exercise-detail-title">' +
+    '<div class="exercise-detail-icon">' + icon + '</div>' +
+    '<div><h3>Exercice ' + (exercise.number || (exerciseIndex + 1)) + (exercise.title ? ' — ' + escapeHtml(exercise.title) : '') + '</h3>' +
+    '<div class="exercise-detail-meta">' + Number(exercise.score || 0).toFixed(2) + ' / ' + Number(exercise.maxScore || 6.67).toFixed(2) + ' pts · ' + (exercise.correctAnswers || 0) + '/' + (exercise.totalQuestions || 5) + ' correctes</div>' +
+    '</div></div>';
+  details.appendChild(header);
+
+  // ─── Questions ───
+  var questions = Array.isArray(exercise.questions) ? exercise.questions : [];
+  if (questions.length === 0) {
+    var empty = document.createElement('p');
+    empty.className = 'lead';
+    empty.textContent = 'Aucun détail disponible.';
+    details.appendChild(empty);
+  } else {
+    questions.forEach(function (q, idx) {
+      var qEl = document.createElement('div');
+      qEl.className = 'question-detail q-' + (q.status || 'pending');
+
+      var qIcon = q.status === 'correct' ? '✅' : q.status === 'wrong' ? '❌' : '⏭️';
+      var pointsClass = q.status === 'correct' ? 'full' : (Number(q.points) > 0 ? '' : 'zero');
+
+      var html = '';
+
+      // ─── Header question ───
+      html +=
+        '<div class="qd-header">' +
+        '<div class="qd-number"><span class="q-icon">' + qIcon + '</span> Question ' + escapeHtml(q.number || (idx + 1)) + '</div>' +
+        '<div class="qd-points ' + pointsClass + '">' + Number(q.points || 0).toFixed(2) + ' / ' + Number(q.maxPoints || 1.33).toFixed(2) + ' pt</div>' +
+        '</div>';
+
+      // ─── Énoncé ───
+      if (q.questionText) {
+        html +=
+          '<div class="qd-statement">' +
+          '<div class="qd-statement-label"><i class="fas fa-question-circle"></i> Énoncé</div>' +
+          '<div>' + escapeHtml(q.questionText) + '</div>' +
+          '</div>';
+      }
+
+      // ─── Réponses côte à côte ───
+      html += '<div class="qd-answers">';
+
+      // Réponse élève
+      html += '<div class="qd-answer-box student">';
+      html += '<div class="qd-answer-label">✍️ Ta réponse</div>';
+      if (q.status === 'unanswered' || !q.studentAnswer) {
+        html += '<div class="qd-answer-text muted">Pas de réponse</div>';
+      } else {
+        html += '<div class="qd-answer-text">' + escapeHtml(String(q.studentAnswer)) + '</div>';
+      }
+      html += '</div>';
+
+      // Bonne réponse
+      if (q.correctAnswer) {
+        html += '<div class="qd-answer-box correct">';
+        html += '<div class="qd-answer-label">✅ Bonne réponse</div>';
+        html += '<div class="qd-answer-text">' + escapeHtml(String(q.correctAnswer)) + '</div>';
+        html += '</div>';
+      }
+
+      html += '</div>';
+
+      // ─── Notion testée ───
+      if (q.concept) {
+        html +=
+          '<div class="qd-section concept">' +
+          '<div class="qd-section-label"><i class="fas fa-brain"></i> Notion testée</div>' +
+          '<div>' + escapeHtml(q.concept) + '</div>' +
+          '</div>';
+      }
+
+      // ─── Explication complète ───
+      if (q.explanation) {
+        html +=
+          '<div class="qd-section explanation">' +
+          '<div class="qd-section-label"><i class="fas fa-lightbulb"></i> Explication</div>' +
+          '<div>' + escapeHtml(q.explanation) + '</div>' +
+          '</div>';
+      }
+
+      // ─── Étapes du calcul ───
+      if (Array.isArray(q.steps) && q.steps.length > 0) {
+        html +=
+          '<div class="qd-section steps">' +
+          '<div class="qd-section-label"><i class="fas fa-list-ol"></i> Étapes du calcul</div>' +
+          '<ol>' +
+          q.steps.map(function (s) { return '<li>' + escapeHtml(s) + '</li>'; }).join('') +
+          '</ol>' +
+          '</div>';
+      }
+
+      // ─── Pourquoi tu as raté ───
+      if (q.whyWrong && q.status !== 'correct') {
+        html +=
+          '<div class="qd-section why-wrong">' +
+          '<div class="qd-section-label"><i class="fas fa-times-circle"></i> Pourquoi tu as raté</div>' +
+          '<div>' + escapeHtml(q.whyWrong) + '</div>' +
+          '</div>';
+      }
+
+      // ─── Erreur classique ───
+      if (q.commonMistake) {
+        html +=
+          '<div class="qd-section mistake">' +
+          '<div class="qd-section-label"><i class="fas fa-triangle-exclamation"></i> Erreur classique</div>' +
+          '<div>' + escapeHtml(q.commonMistake) + '</div>' +
+          '</div>';
+      }
+
+      // ─── À revoir ───
+      if (q.toReview) {
+        html +=
+          '<div class="qd-section review">' +
+          '<div class="qd-section-label"><i class="fas fa-book-open"></i> À revoir</div>' +
+          '<div>' + escapeHtml(q.toReview) + '</div>' +
+          '</div>';
+      }
+
+      // ─── Astuce (betterMethod) ───
+      if (q.betterMethod) {
+        html +=
+          '<div class="qd-section tip">' +
+          '<div class="qd-section-label"><i class="fas fa-star"></i> Astuce bonus</div>' +
+          '<div>' + escapeHtml(q.betterMethod) + '</div>' +
+          '</div>';
+      }
+
+      // ─── Feedback ───
+      if (q.feedback) {
+        html +=
+          '<div class="qd-section feedback">' +
+          '<div class="qd-section-label"><i class="fas fa-comment-dots"></i> Commentaire</div>' +
+          '<div class="qd-feedback-text">' + escapeHtml(q.feedback) + '</div>' +
+          '</div>';
+      }
+
+      qEl.innerHTML = html;
+      details.appendChild(qEl);
+    });
+  }
+
+  // ─── Bilan de l'exercice ───
+  if (exercise.explanation) {
+    var expl = document.createElement('div');
+    expl.className = 'exercise-explanation';
+    expl.innerHTML = '<div class="explanation-label">📝 Bilan de l\'exercice</div><div class="explanation-text">' + escapeHtml(exercise.explanation) + '</div>';
+    details.appendChild(expl);
+  }
+
+  if (exercise.advice) {
+    var advice = document.createElement('div');
+    advice.className = 'exercise-explanation';
+    advice.innerHTML = '<div class="explanation-label">🎯 Conseil</div><div class="explanation-text">' + escapeHtml(exercise.advice) + '</div>';
+    details.appendChild(advice);
+  }
+
+  renderMath(details);
+
+  var backBtn = document.getElementById('backToRecapBtn');
+  if (backBtn) {
+    backBtn.addEventListener('click', function () {
+      showResults(state.lastResult);
+    });
+  }
+}
+    
   function showExerciseDetail(exercise, exerciseIndex) {
     var details = $('resultsDetails');
     details.replaceChildren();
