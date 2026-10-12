@@ -93,6 +93,13 @@
     }
     .brand span { color: var(--accent-bright); font-style: italic; }
 
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
     .connection {
       color: var(--text-muted);
       font-size: 12px;
@@ -113,6 +120,30 @@
       background: var(--success-light);
       box-shadow: 0 0 8px var(--success-light);
     }
+
+    .history-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 24px;
+      border: 1px solid rgba(224, 184, 74, 0.25);
+      background: rgba(224, 184, 74, 0.08);
+      color: var(--accent-bright);
+      font-weight: 700;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .history-btn:hover {
+      background: rgba(224, 184, 74, 0.15);
+      border-color: rgba(224, 184, 74, 0.4);
+      transform: translateY(-1px);
+    }
+    .history-btn i { font-size: 13px; }
 
     .panel {
       background: var(--bg-card);
@@ -630,384 +661,145 @@
       border: 1px solid rgba(224, 122, 95, 0.25);
     }
 
-    .exam-top {
-      position: sticky;
-      top: 0;
-      z-index: 4;
-      background: rgba(10, 10, 10, 0.94);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      padding: 12px 0;
-      margin-bottom: 18px;
-      border-bottom: 1px solid var(--border-soft);
-    }
-    .exam-topline {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .timer {
-      color: var(--accent-bright);
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-      font-family: var(--font-serif);
-      font-size: 22px;
-      letter-spacing: 0.02em;
-      padding: 4px 14px;
-      border-radius: 12px;
-      background: rgba(184, 134, 11, 0.08);
-      border: 1px solid rgba(184, 134, 11, 0.15);
-    }
-    .timer.urgent {
-      color: var(--danger-light);
-      background: rgba(184, 92, 58, 0.1);
-      border-color: rgba(184, 92, 58, 0.25);
-      animation: pulseTimer 1.5s ease-in-out infinite;
-    }
-    @keyframes pulseTimer {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-    .progress {
-      height: 4px;
-      border-radius: 10px;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.06);
-      margin-top: 12px;
-    }
-    .progress span {
-      display: block;
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent-bright));
-      transition: width 0.3s ease;
+    /* ============================================================
+       SPINNER — Chargement sur bouton
+       ============================================================ */
+    .btn-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(10, 10, 10, 0.25);
+      border-top-color: #0A0A0A;
+      border-radius: 50%;
+      animation: btnSpin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
     }
 
-    .exercise-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      margin-bottom: 14px;
-    }
-    .exercise-head h3 {
-      font-size: 19px;
-      color: var(--text-light);
-      margin-bottom: 2px;
-      letter-spacing: -0.01em;
-    }
-    .exercise-head small {
-      color: var(--text-muted);
-      font-size: 12px;
-      display: block;
-      margin-top: 2px;
-    }
-    .points {
-      color: var(--accent-bright);
-      font-weight: 800;
-      white-space: nowrap;
-      font-size: 13px;
-      padding: 4px 12px;
-      border-radius: 12px;
-      background: rgba(184, 134, 11, 0.08);
-      border: 1px solid rgba(184, 134, 11, 0.15);
+    .btn-spinner.light {
+      border-color: rgba(255, 255, 255, 0.2);
+      border-top-color: var(--accent-bright);
     }
 
-    .statement {
-      color: var(--text-body);
-      white-space: pre-wrap;
-      margin: 0 0 22px;
-      font-size: 14.5px;
-      line-height: 1.75;
-      padding: 16px 18px;
-      border-radius: var(--radius-sm);
-      background: rgba(0, 0, 0, 0.25);
-      border-left: 3px solid var(--accent);
-      overflow-wrap: break-word;
+    @keyframes btnSpin {
+      to { transform: rotate(360deg); }
     }
 
-    .question {
-      border-top: 1px solid var(--border-soft);
-      padding: 18px 0 0;
-      margin-top: 18px;
-    }
-    .question-title {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      font-weight: 700;
-      color: var(--text-light);
-      font-size: 14.5px;
-      line-height: 1.6;
-      align-items: flex-start;
-    }
-    .question-title .points {
-      padding: 2px 10px;
-      font-size: 11.5px;
-      border-radius: 10px;
-      flex-shrink: 0;
+    .btn.loading,
+    .subject-card-btn.loading {
+      pointer-events: none;
+      opacity: 0.85;
+      cursor: wait;
     }
 
-    .answer {
-      margin-top: 12px;
-      min-height: 92px;
-      width: 100%;
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius-sm);
-      background: rgba(0, 0, 0, 0.3);
-      color: var(--text-light);
-      padding: 12px 14px;
-      font-size: 14px;
-      line-height: 1.6;
-      font-family: var(--font-body);
-      resize: vertical;
-      outline: none;
-      transition: var(--transition-fast);
-    }
-    .answer:focus {
-      border-color: var(--accent-bright);
-      box-shadow: 0 0 0 3px rgba(224, 184, 74, 0.1);
-      background: rgba(184, 134, 11, 0.02);
-    }
-    .answer::placeholder { color: var(--text-muted); }
-
-    .answer-options {
-      display: grid;
-      gap: 8px;
-      margin-top: 12px;
-    }
-    .answer-option {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 12px 14px;
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius-sm);
-      background: rgba(0, 0, 0, 0.25);
-      cursor: pointer;
-      transition: var(--transition-fast);
-      font-size: 14px;
-      color: var(--text-body);
-      line-height: 1.5;
-    }
-    .answer-option:hover {
-      border-color: rgba(224, 184, 74, 0.3);
-      background: rgba(224, 184, 74, 0.04);
-    }
-    .answer-option:has(input:checked) {
-      border-color: var(--accent-bright);
-      background: rgba(224, 184, 74, 0.1);
-      color: var(--text-light);
-    }
-    .answer-option input {
-      width: auto;
-      margin-top: 4px;
-      accent-color: var(--accent-bright);
-      flex-shrink: 0;
-    }
-
-    .result-summary {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin: 20px 0;
-    }
-    .metric {
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius);
-      padding: 18px;
-      background: var(--bg-card);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      text-align: center;
-      transition: var(--transition);
-    }
-    .metric:hover {
-      border-color: rgba(184, 134, 11, 0.2);
-      transform: translateY(-2px);
-    }
-    .metric small {
-      display: block;
-      color: var(--text-muted);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-    .metric strong {
-      display: block;
-      color: var(--accent-bright);
-      font-size: 28px;
-      font-family: var(--font-serif);
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-    }
-
-    .grade-banner {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 20px 22px;
-      border-radius: var(--radius);
-      margin-bottom: 20px;
-      border: 1px solid var(--border-soft);
-    }
-    .grade-banner.grade-success {
-      background: linear-gradient(135deg, rgba(58, 138, 95, 0.12), rgba(58, 138, 95, 0.04));
-      border-color: rgba(58, 138, 95, 0.3);
-    }
-    .grade-banner.grade-warning {
-      background: linear-gradient(135deg, rgba(224, 184, 74, 0.12), rgba(224, 184, 74, 0.04));
-      border-color: rgba(224, 184, 74, 0.3);
-    }
-    .grade-banner.grade-danger {
-      background: linear-gradient(135deg, rgba(215, 101, 74, 0.12), rgba(215, 101, 74, 0.04));
-      border-color: rgba(215, 101, 74, 0.3);
-    }
-    .grade-banner .grade-emoji {
-      font-size: 44px;
-      line-height: 1;
-      flex-shrink: 0;
-    }
-    .grade-banner .grade-info {
-      flex: 1;
-      min-width: 0;
-    }
-    .grade-banner .grade-title {
-      font-family: var(--font-serif);
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text-light);
-      margin-bottom: 4px;
-      letter-spacing: -0.01em;
-    }
-    .grade-banner .grade-sub {
-      font-size: 13.5px;
-      color: var(--text-dim);
-      line-height: 1.55;
-    }
-
-    .recap-section { margin-bottom: 24px; }
-    .recap-title {
-      font-family: var(--font-serif);
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-light);
-      margin-bottom: 14px;
-      letter-spacing: -0.01em;
-    }
-
-    .exercise-card {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      width: 100%;
-      padding: 16px 18px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border-soft);
-      background: var(--bg-card);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      margin-bottom: 10px;
-      cursor: pointer;
-      transition: var(--transition);
-      text-align: left;
-      font-family: inherit;
-      color: inherit;
-    }
-    .exercise-card:hover {
-      border-color: rgba(224, 184, 74, 0.3);
-      background: rgba(224, 184, 74, 0.04);
-      transform: translateX(3px);
-    }
-    .exercise-card-icon {
-      font-size: 24px;
-      line-height: 1;
-      flex-shrink: 0;
-      width: 32px;
-      text-align: center;
-    }
-    .exercise-card-body { flex: 1; min-width: 0; }
-    .exercise-card-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-light);
-      margin-bottom: 4px;
-    }
-    .exercise-card-meta {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-    }
-    .exercise-card-progress {
-      height: 4px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.06);
-      overflow: hidden;
-    }
-    .exercise-card-fill {
-      height: 100%;
-      border-radius: 4px;
-      transition: width 0.3s ease;
-    }
-    .exercise-card-arrow {
-      color: var(--text-muted);
-      font-size: 16px;
-      flex-shrink: 0;
-      transition: var(--transition);
-    }
-    .exercise-card:hover .exercise-card-arrow {
-      color: var(--accent-bright);
-      transform: translateX(4px);
-    }
-
-    .topics-section {
-      margin-top: 24px;
-      padding: 20px;
-      border-radius: var(--radius);
-      background: rgba(74, 175, 224, 0.06);
-      border: 1px solid rgba(74, 175, 224, 0.2);
-    }
-    .topics-title {
-      font-family: var(--font-serif);
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--info);
-      margin-bottom: 12px;
-    }
-    .topics-list {
-      list-style: none;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin: 0;
-    }
-    .topics-list li {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      font-size: 13.5px;
-      color: var(--text-body);
-      line-height: 1.55;
-    }
-    .topics-list li::before {
-      content: '→';
-      color: var(--info);
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    .exercise-detail-header { margin-bottom: 20px; }
-    .back-btn-detail {
+    .subject-card-btn {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
+      padding: 12px 22px;
+      border-radius: 30px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+      color: #0A0A0A;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 16px rgba(184, 134, 11, 0.2);
+      min-height: 44px;
+      min-width: 120px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .subject-card-btn:hover:not(.loading) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(184, 134, 11, 0.35);
+    }
+
+    .subject-card-btn:active:not(.loading) {
+      transform: scale(0.97);
+    }
+
+    .subject-card-btn.loading {
+      background: rgba(255, 255, 255, 0.06);
+      box-shadow: none;
+      color: var(--text-dim);
+    }
+
+    .subject-card-btn.loading .btn-spinner {
+      border-color: rgba(224, 184, 74, 0.2);
+      border-top-color: var(--accent-bright);
+    }
+
+    .start-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 10, 0.75);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .start-overlay.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .start-overlay .overlay-spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(224, 184, 74, 0.15);
+      border-top-color: var(--accent-bright);
+      border-radius: 50%;
+      animation: btnSpin 0.9s linear infinite;
+    }
+
+    .start-overlay .overlay-text {
+      color: var(--text-light);
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-align: center;
+      padding: 0 20px;
+      max-width: 400px;
+    }
+
+    /* ============================================================
+       HISTORIQUE
+       ============================================================ */
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .history-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .history-title h2 {
+      font-size: clamp(20px, 3.5vw, 26px);
+    }
+    .back-header-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       padding: 8px 14px;
-      border-radius: var(--radius-sm);
+      border-radius: 20px;
       border: 1px solid var(--border-soft);
       background: transparent;
       color: var(--text-dim);
@@ -1016,195 +808,533 @@
       cursor: pointer;
       transition: var(--transition);
       font-family: inherit;
-      margin-bottom: 16px;
     }
-    .back-btn-detail:hover {
+    .back-header-btn:hover {
+      border-color: var(--border-gold);
       color: var(--text-light);
-      border-color: var(--accent-bright);
-      background: rgba(184, 134, 11, 0.06);
     }
-    .exercise-detail-title {
-      display: flex;
-      align-items: center;
-      gap: 14px;
+    .back-header-btn i { font-size: 12px; }
+
+    .history-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
     }
-    .exercise-detail-icon {
-      font-size: 32px;
-      line-height: 1;
-      flex-shrink: 0;
+    .summary-card {
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(224, 184, 74, 0.06), rgba(26, 58, 42, 0.04));
+      border: 1px solid rgba(224, 184, 74, 0.15);
+      text-align: center;
     }
-    .exercise-detail-title h3 {
-      font-family: var(--font-serif);
-      font-size: 20px;
+    .summary-card .s-label {
+      font-size: 11px;
       font-weight: 700;
-      color: var(--text-light);
-      margin: 0 0 4px;
-      letter-spacing: -0.01em;
-    }
-    .exercise-detail-meta {
-      font-size: 13px;
       color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .summary-card .s-value {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent-bright);
+      line-height: 1.2;
     }
 
-    .question-detail {
+    .history-filters {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      scrollbar-width: none;
+    }
+    .history-filters::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-dim);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+    .filter-chip:hover { border-color: rgba(224, 184, 74, 0.25); }
+    .filter-chip.active {
+      background: rgba(224, 184, 74, 0.12);
+      border-color: rgba(224, 184, 74, 0.3);
+      color: var(--accent-bright);
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .history-card {
       padding: 18px 20px;
       border-radius: var(--radius);
-      border: 1px solid var(--border-soft);
       background: var(--bg-card);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      margin-bottom: 12px;
+      border: 1px solid var(--border-soft);
+      cursor: pointer;
       transition: var(--transition);
-    }
-    .question-detail:hover { border-color: rgba(224, 184, 74, 0.2); }
-    .question-detail.q-correct { border-color: rgba(69, 180, 125, 0.25); }
-    .question-detail.q-wrong { border-color: rgba(215, 101, 74, 0.25); }
-    .question-detail.q-unanswered { border-color: var(--border-soft); opacity: 0.9; }
-
-    .question-header {
-      display: flex;
-      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
       align-items: center;
-      margin-bottom: 12px;
-      gap: 10px;
-      flex-wrap: wrap;
     }
-    .question-number {
+    .history-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--accent), var(--accent-bright));
+    }
+    .history-card:hover {
+      border-color: rgba(224, 184, 74, 0.3);
+      transform: translateX(4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+    .history-card-body { min-width: 0; }
+    .history-card-title {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 6px;
+      line-height: 1.3;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    .history-card-sub {
+      font-size: 12.5px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-light);
+      flex-wrap: wrap;
     }
-    .question-number .q-icon { font-size: 16px; }
-    .question-points {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--accent-bright);
+    .history-card-sub .dot {
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+    .history-card-date {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .history-card-date i { font-size: 10px; }
+    .history-card-score {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .history-card-score .score-value {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .history-card-score .score-value.excellent { color: var(--success-light); }
+    .history-card-score .score-value.bien { color: var(--accent-bright); }
+    .history-card-score .score-value.passable { color: var(--warning); }
+    .history-card-score .score-value.faible { color: var(--danger-light); }
+    .history-card-score .score-badge {
+      display: inline-block;
       padding: 3px 10px;
-      border-radius: 12px;
-      background: rgba(224, 184, 74, 0.1);
-      border: 1px solid rgba(224, 184, 74, 0.2);
-      white-space: nowrap;
+      border-radius: 10px;
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
-    .q-wrong .question-points {
-      color: #ff9a84;
-      background: rgba(215, 101, 74, 0.1);
-      border-color: rgba(215, 101, 74, 0.2);
+    .history-card-score .score-badge.excellent {
+      background: rgba(58, 182, 126, 0.15);
+      color: var(--success-light);
     }
-    .q-correct .question-points {
-      color: #7ce0aa;
-      background: rgba(69, 180, 125, 0.1);
-      border-color: rgba(69, 180, 125, 0.2);
+    .history-card-score .score-badge.bien {
+      background: rgba(224, 184, 74, 0.15);
+      color: var(--accent-bright);
+    }
+    .history-card-score .score-badge.passable {
+      background: rgba(212, 160, 23, 0.15);
+      color: var(--warning);
+    }
+    .history-card-score .score-badge.faible {
+      background: rgba(224, 122, 95, 0.15);
+      color: var(--danger-light);
     }
 
-    .question-text {
+    .history-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .history-empty i {
+      font-size: 48px;
+      opacity: 0.3;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .history-empty h3 {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .history-empty p {
+      font-size: 13.5px;
+      max-width: 320px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Modale détail */
+    .history-detail-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+    @media (min-width: 768px) {
+      .history-detail-overlay {
+        align-items: center;
+        padding: 20px;
+      }
+    }
+    .history-detail-overlay.show { display: flex; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .history-detail-sheet {
+      width: 100%;
+      max-width: 720px;
+      max-height: 92vh;
+      overflow-y: auto;
+      background: var(--bg-surface);
+      border-radius: 22px 22px 0 0;
+      border-top: 1px solid var(--border-gold);
+      padding: 28px 20px;
+      padding-bottom: calc(28px + var(--safe-bottom));
+      position: relative;
+      animation: slideUp 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    @media (min-width: 768px) {
+      .history-detail-sheet {
+        border-radius: var(--radius);
+        padding: 32px 28px;
+      }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .history-detail-sheet::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
+      border-radius: 22px 22px 0 0;
+    }
+    @media (min-width: 768px) {
+      .history-detail-sheet::before { border-radius: var(--radius) var(--radius) 0 0; }
+    }
+
+    .history-detail-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: var(--transition);
+      z-index: 2;
+    }
+    .history-detail-close:hover {
+      color: var(--text-light);
+      border-color: var(--border-gold);
+    }
+
+    .detail-head {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-soft);
+      margin-bottom: 20px;
+    }
+    .detail-head .dh-subject {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent-bright);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+    }
+    .detail-head h2 {
+      font-size: clamp(20px, 4vw, 26px);
+      margin-bottom: 14px;
+    }
+    .detail-head .dh-score {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      font-family: var(--font-serif);
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .detail-head .dh-score.excellent { color: var(--success-light); }
+    .detail-head .dh-score.bien { color: var(--accent-bright); }
+    .detail-head .dh-score.passable { color: var(--warning); }
+    .detail-head .dh-score.faible { color: var(--danger-light); }
+    .detail-head .dh-score small {
+      font-size: 18px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+    .detail-head .dh-meta {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 12px;
+      font-size: 12.5px;
+      color: var(--text-dim);
+      flex-wrap: wrap;
+    }
+    .detail-head .dh-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .detail-head .dh-meta i { color: var(--accent-bright); font-size: 11px; }
+
+    .detail-exercise {
+      margin-bottom: 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.02);
+      overflow: hidden;
+    }
+    .detail-exercise-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: var(--transition);
+      flex-wrap: wrap;
+    }
+    .detail-exercise-head:hover {
+      background: rgba(224, 184, 74, 0.04);
+    }
+    .detail-exercise-title {
+      font-family: var(--font-serif);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+    .detail-exercise-title .ex-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .detail-exercise-score {
+      font-family: var(--font-serif);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent-bright);
+      white-space: nowrap;
+    }
+    .detail-exercise-toggle {
+      color: var(--text-muted);
+      font-size: 12px;
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+    .detail-exercise.open .detail-exercise-toggle {
+      transform: rotate(180deg);
+      color: var(--accent-bright);
+    }
+    .detail-exercise-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .detail-exercise.open .detail-exercise-body {
+      max-height: 8000px;
+    }
+    .detail-exercise-content {
+      padding: 0 18px 18px;
+      border-top: 1px solid var(--border-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-top: 16px;
+    }
+
+    .detail-question {
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-soft);
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .detail-question.q-correct {
+      border-color: rgba(69, 180, 125, 0.25);
+      background: rgba(69, 180, 125, 0.04);
+    }
+    .detail-question.q-wrong {
+      border-color: rgba(215, 101, 74, 0.25);
+      background: rgba(215, 101, 74, 0.04);
+    }
+    .detail-question.q-unanswered {
+      opacity: 0.85;
+    }
+
+    .dq-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .dq-number {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dq-number .q-icon { font-size: 14px; }
+    .dq-points {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-dim);
+    }
+    .q-correct .dq-points {
+      background: rgba(69, 180, 125, 0.15);
+      color: var(--success-light);
+    }
+    .q-wrong .dq-points {
+      background: rgba(215, 101, 74, 0.15);
+      color: #ff9a84;
+    }
+
+    .dq-text {
       font-size: 14px;
       line-height: 1.65;
       color: var(--text-body);
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
-    .question-text strong { color: var(--accent-bright); font-weight: 700; }
 
-    .answers-row {
+    .dq-answers {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-bottom: 12px;
     }
-    .answer-block {
-      padding: 12px 14px;
-      border-radius: var(--radius-sm);
+    @media (max-width: 520px) {
+      .dq-answers { grid-template-columns: 1fr; }
+    }
+    .dq-block {
+      padding: 10px 12px;
+      border-radius: 8px;
       border: 1px solid var(--border-soft);
       background: rgba(255, 255, 255, 0.02);
     }
-    .answer-block .answer-label {
-      font-size: 11px;
+    .dq-block .dq-label {
+      font-size: 10.5px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       color: var(--text-muted);
     }
-    .answer-block.student-answer .answer-label { color: var(--accent-bright); }
-    .answer-block.correct-answer .answer-label { color: #7ce0aa; }
-    .answer-block .answer-value {
-      font-size: 14px;
+    .dq-block.student .dq-label { color: var(--accent-bright); }
+    .dq-block.correct .dq-label { color: var(--success-light); }
+    .dq-block .dq-value {
+      font-size: 13.5px;
       font-weight: 600;
       color: var(--text-light);
       word-break: break-word;
     }
-    .answer-block .answer-value.unanswered {
+    .dq-block .dq-value.unanswered {
       color: var(--text-muted);
       font-style: italic;
       font-weight: 400;
     }
 
-    .feedback-block,
-    .method-block,
-    .review-block {
-      padding: 12px 14px;
-      border-radius: var(--radius-sm);
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border-soft);
-      margin-bottom: 10px;
-    }
-    .feedback-block:last-child,
-    .method-block:last-child,
-    .review-block:last-child { margin-bottom: 0; }
-
-    .feedback-text {
-      font-size: 13.5px;
-      line-height: 1.65;
+    .dq-feedback {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(74, 175, 224, 0.06);
+      border-left: 3px solid var(--info);
+      font-size: 13px;
+      line-height: 1.6;
       color: var(--text-body);
-    }
-    .method-label,
-    .review-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 6px;
-    }
-    .method-label { color: var(--accent-bright); }
-    .method-text {
-      font-size: 13.5px;
-      line-height: 1.65;
-      color: var(--text-body);
-    }
-    .review-label { color: var(--info); }
-    .review-text {
-      font-size: 13.5px;
-      line-height: 1.65;
-      color: var(--text-body);
-    }
-
-    .exercise-explanation {
-      margin-top: 20px;
-      padding: 18px 20px;
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border-soft);
-    }
-    .explanation-label {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--accent-bright);
       margin-bottom: 8px;
     }
-    .explanation-text {
-      font-size: 14px;
-      line-height: 1.65;
+    .dq-review {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(212, 160, 23, 0.06);
+      border-left: 3px solid var(--warning);
+      font-size: 13px;
+      line-height: 1.6;
       color: var(--text-body);
     }
+    .dq-review strong { color: var(--warning); }
 
+    .detail-actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .detail-actions .btn { flex: 1; min-width: 140px; }
+
+    /* Modale de confirmation */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      z-index: 20;
+      z-index: 200;
       display: none;
       place-items: center;
       padding: 18px;
@@ -1213,7 +1343,6 @@
       -webkit-backdrop-filter: blur(10px);
     }
     .modal-backdrop.show { display: grid; animation: fadeIn 0.25s ease; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .modal {
       max-width: 440px;
@@ -1424,6 +1553,31 @@
     }
     .btn-later:hover { color: var(--text-light); }
 
+    .toast {
+      position: fixed;
+      top: calc(var(--safe-top) + 16px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: rgba(20, 22, 20, 0.96);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(224, 184, 74, 0.3);
+      color: var(--text-light);
+      font-size: 13px;
+      z-index: 300;
+      opacity: 0;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+      max-width: 90vw;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { border-color: rgba(215, 101, 74, 0.4); }
+    .toast.success { border-color: rgba(69, 180, 125, 0.4); }
+
     .katex { color: inherit; font-size: 1.05em; }
     .katex-display {
       max-width: 100%;
@@ -1451,6 +1605,8 @@
       .exercise-detail-title h3 { font-size: 17px; }
       .question-detail { padding: 14px 16px; }
       .timer { font-size: 18px; padding: 3px 10px; }
+      .history-btn span { display: none; }
+      .history-btn { padding: 10px 14px; }
     }
 
     @media (max-width: 380px) {
@@ -1458,7 +1614,7 @@
       .btn { font-size: 13px; padding: 10px 14px; }
       h1 { font-size: 26px; }
       h2 { font-size: 21px; }
-      .metric strong { font-size: 24px; }
+      .history-card-score .score-value { font-size: 20px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1470,10 +1626,25 @@
   </style>
 </head>
 <body>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       OVERLAY DE DÉMARRAGE
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="start-overlay" id="startOverlay">
+    <div class="overlay-spinner"></div>
+    <div class="overlay-text" id="startOverlayText">Préparation de ton examen...</div>
+  </div>
+
   <main class="shell">
     <header>
       <a class="brand" href="index.html">ARVEX<span>A School</span></a>
-      <div class="connection" id="connectionState">Vérification...</div>
+      <div class="header-right">
+        <button class="history-btn" id="historyBtn" type="button">
+          <i class="fas fa-clock-rotate-left"></i>
+          <span>Historique</span>
+        </button>
+        <div class="connection" id="connectionState">Vérification...</div>
+      </div>
     </header>
 
     <!-- VUE 1 : CONFIGURATION -->
@@ -1706,9 +1877,37 @@
         </div>
       </div>
     </section>
+
+    <!-- VUE 7 : HISTORIQUE -->
+    <section class="view" id="historyView" aria-labelledby="historyTitle">
+      <div class="panel">
+        <div class="history-header">
+          <div class="history-title">
+            <button class="back-header-btn" id="backFromHistory" type="button">
+              <i class="fas fa-arrow-left"></i> Retour
+            </button>
+            <h2 id="historyTitle">Mes examens</h2>
+          </div>
+          <button class="back-header-btn" id="refreshHistory" type="button">
+            <i class="fas fa-rotate"></i> Actualiser
+          </button>
+        </div>
+
+        <div class="history-summary" id="historySummary"></div>
+
+        <div class="history-filters" id="historyFilters"></div>
+
+        <div class="history-list" id="historyList">
+          <div class="loading-steps" style="margin-top:20px;">
+            <div class="loader-spinner"></div>
+            <div class="loading-status active">Chargement de l'historique...</div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <!-- MODALES -->
+  <!-- MODALE CONFIRMATION FIN -->
   <div class="modal-backdrop" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
     <div class="modal">
       <h3 id="confirmTitle">Terminer l'examen ?</h3>
@@ -1720,6 +1919,7 @@
     </div>
   </div>
 
+  <!-- MODALE REPRISE -->
   <div class="modal-backdrop" id="resumeModal" role="dialog" aria-modal="true" aria-labelledby="resumeTitle">
     <div class="modal">
       <div class="resume-modal-content">
@@ -1734,6 +1934,24 @@
     </div>
   </div>
 
+  <!-- MODALE SUPPRESSION HISTORIQUE -->
+  <div class="modal-backdrop" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+    <div class="modal">
+      <h3 id="deleteTitle">Supprimer cet examen ?</h3>
+      <p>Cet examen sera définitivement retiré de ton historique. Tu ne pourras plus consulter son détail.</p>
+      <div class="actions">
+        <button class="btn secondary" id="cancelDeleteBtn" type="button">Annuler</button>
+        <button class="btn danger" id="confirmDeleteBtn" type="button">Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE DÉTAIL HISTORIQUE -->
+  <div class="history-detail-overlay" id="historyDetailOverlay">
+    <div class="history-detail-sheet" id="historyDetailSheet"></div>
+  </div>
+
+  <!-- POPUP PREMIUM -->
   <div class="premium-popup-overlay" id="premiumPopup" role="dialog" aria-modal="true" aria-labelledby="premiumTitle">
     <div class="premium-popup">
       <button class="popup-close" id="popupCloseBtn" type="button" aria-label="Fermer"><i class="fas fa-times"></i></button>
@@ -1755,6 +1973,8 @@
     </div>
   </div>
 
+  <div class="toast" id="toast"><i class="fas fa-info-circle"></i><span id="toastText"></span></div>
+
   <script type="importmap">
   {
     "imports": {
@@ -1766,12 +1986,6 @@
   </script>
 
   <script type="module">
-  // ═══════════════════════════════════════════════════════════════
-  // EXAM — Mode examen BAC
-  // ⚡ 7 matières : maths, physique, chimie, svt, philo, histoire, geo
-  // ⚡ v3.3 — Sans backticks, clés harmonisées avec api/exam.js
-  // ═══════════════════════════════════════════════════════════════
-
   import { initializeApp } from 'firebase/app';
   import { getAuth, onAuthStateChanged, getIdToken } from 'firebase/auth';
   import {
@@ -1801,119 +2015,19 @@
     SESSION_TTL_HOURS: 24
   };
 
-  // ⚡ CHAPTERS — 7 matières, clés minuscules
   var CHAPTERS = {
-    'mathematiques': [
-      'Nombres complexes',
-      'Similitudes planes directes',
-      'Calcul de probabilités',
-      'Variable aléatoire',
-      'Fonction numérique',
-      'Fonction logarithme',
-      'Fonction exponentielle',
-      'Calcul intégral',
-      'Équations différentielles',
-      'Suites numériques',
-      'Statistiques'
-    ],
-    'physique': [
-      'Cinématique',
-      'Mouvement rectiligne',
-      'Mouvement dans le champ de pesanteur',
-      'Mouvement des particules chargées',
-      'Oscillateurs mécaniques',
-      'Généralités sur les ondes',
-      'Mouvement vibratoire',
-      'Superposition des ondes',
-      'Interférence lumineuse',
-      'Champ magnétique',
-      'Force de Laplace',
-      'Force de Lorentz',
-      'Induction magnétique',
-      'Auto-induction',
-      'Circuit LC',
-      'Circuit RLC',
-      'Radioactivité'
-    ],
-    'chimie': [
-      'Solutions aqueuses et leur pH',
-      'Acide fort, base forte',
-      'Acide faible, base faible',
-      'Couples acide/base et classification',
-      'Réaction acido-basique et solution tampon',
-      'Alcools',
-      'Acides carboxyliques et ses dérivés',
-      'Amines et amides',
-      'Acides α-aminés et protéines'
-    ],
-    'svt': [
-      'Notion de l\'IG',
-      'Nature chimique et structure de l\'IG',
-      'La reproduction conforme',
-      'Cycle cellulaire',
-      'Protéines',
-      'Synthèse des protéines',
-      'Reproduction sexuée',
-      'Brassage des gènes',
-      'Transmission des caractères',
-      'Anomalies chromosomiques',
-      'Tissus nerveux',
-      'Messages nerveux',
-      'La glycémie',
-      'Appareils génitaux',
-      'Régulation des organes génitaux',
-      'Fécondation à la nidation',
-      'Régulation des naissances',
-      'Le soi et le non soi',
-      'Réponses immunitaires',
-      'VIH/SIDA'
-    ],
-    'philosophie': [
-      'Conscience - Inconscient',
-      'Les passions',
-      'Autrui',
-      'Travail',
-      'Histoire',
-      'Religion',
-      'Science et technique',
-      'Le langage',
-      'La vérité',
-      'Espace - temps',
-      'État',
-      'La justice',
-      'La liberté'
-    ],
-    'histoire': [
-      'Les causes de la Seconde Guerre mondiale',
-      'Le déroulement de la Seconde Guerre mondiale',
-      'L\'Afrique dans la guerre',
-      'Le bilan de la Seconde Guerre mondiale',
-      'Les conditions de la lutte de libération',
-      'La libération de l\'Algérie',
-      'La décolonisation en AOF',
-      'Les problèmes des pays décolonisés'
-    ],
-    'geographie': [
-      'Les aspects physiques',
-      'Étude humaine',
-      'L\'agriculture',
-      'L\'élevage',
-      'La pêche',
-      'L\'industrie et l\'artisanat',
-      'La communication et le transport',
-      'Le commerce',
-      'Le tourisme'
-    ]
+    'mathematiques': ['Nombres complexes','Similitudes planes directes','Calcul de probabilités','Variable aléatoire','Fonction numérique','Fonction logarithme','Fonction exponentielle','Calcul intégral','Équations différentielles','Suites numériques','Statistiques'],
+    'physique': ['Cinématique','Mouvement rectiligne','Mouvement dans le champ de pesanteur','Mouvement des particules chargées','Oscillateurs mécaniques','Généralités sur les ondes','Mouvement vibratoire','Superposition des ondes','Interférence lumineuse','Champ magnétique','Force de Laplace','Force de Lorentz','Induction magnétique','Auto-induction','Circuit LC','Circuit RLC','Radioactivité'],
+    'chimie': ['Solutions aqueuses et leur pH','Acide fort, base forte','Acide faible, base faible','Couples acide/base et classification','Réaction acido-basique et solution tampon','Alcools','Acides carboxyliques et ses dérivés','Amines et amides','Acides α-aminés et protéines'],
+    'svt': ['Notion de l\'IG','Nature chimique et structure de l\'IG','La reproduction conforme','Cycle cellulaire','Protéines','Synthèse des protéines','Reproduction sexuée','Brassage des gènes','Transmission des caractères','Anomalies chromosomiques','Tissus nerveux','Messages nerveux','La glycémie','Appareils génitaux','Régulation des organes génitaux','Fécondation à la nidation','Régulation des naissances','Le soi et le non soi','Réponses immunitaires','VIH/SIDA'],
+    'philosophie': ['Conscience - Inconscient','Les passions','Autrui','Travail','Histoire','Religion','Science et technique','Le langage','La vérité','Espace - temps','État','La justice','La liberté'],
+    'histoire': ['Les causes de la Seconde Guerre mondiale','Le déroulement de la Seconde Guerre mondiale','L\'Afrique dans la guerre','Le bilan de la Seconde Guerre mondiale','Les conditions de la lutte de libération','La libération de l\'Algérie','La décolonisation en AOF','Les problèmes des pays décolonisés'],
+    'geographie': ['Les aspects physiques','Étude humaine','L\'agriculture','L\'élevage','La pêche','L\'industrie et l\'artisanat','La communication et le transport','Le commerce','Le tourisme']
   };
 
   var SUBJECT_LABELS = {
-    'mathematiques': 'Mathématiques',
-    'physique': 'Physique',
-    'chimie': 'Chimie',
-    'svt': 'SVT',
-    'philosophie': 'Philosophie',
-    'histoire': 'Histoire',
-    'geographie': 'Géographie'
+    'mathematiques': 'Mathématiques', 'physique': 'Physique', 'chimie': 'Chimie',
+    'svt': 'SVT', 'philosophie': 'Philosophie', 'histoire': 'Histoire', 'geographie': 'Géographie'
   };
 
   var GENERATION_STEPS = ['genStep1', 'genStep2', 'genStep3', 'genStep4', 'genStep5'];
@@ -1930,7 +2044,10 @@
     timerId: null,
     submitting: false,
     lastResult: null,
-    notebookContext: null
+    notebookContext: null,
+    historyExams: [],
+    historyFilter: 'all',
+    currentDetailExamId: null
   };
 
   var $ = function (id) { return document.getElementById(id); };
@@ -1967,11 +2084,30 @@
   }
 
   function showView(id) {
-    ['configView', 'loadingView', 'subjectsView', 'examView', 'loadingCorrectionView', 'resultsView']
+    ['configView', 'loadingView', 'subjectsView', 'examView', 'loadingCorrectionView', 'resultsView', 'historyView']
       .forEach(function (v) { $(v).classList.toggle('active', v === id); });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function showToast(message, type) {
+    var toast = $('toast');
+    $('toastText').textContent = message;
+    toast.className = 'toast show ' + (type || '');
+    var icon = toast.querySelector('i');
+    if (icon) {
+      icon.className = type === 'success' ? 'fas fa-check-circle'
+        : type === 'error' ? 'fas fa-exclamation-circle'
+        : 'fas fa-info-circle';
+    }
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(function () {
+      toast.classList.remove('show');
+    }, 3200);
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // CUSTOM SELECT
+  // ════════════════════════════════════════════════════════════
   function CustomSelect(element) {
     this.element = element;
     this.name = element.dataset.name;
@@ -1980,7 +2116,6 @@
     this.optionsContainer = element.querySelector('.custom-select-options');
     this.options = [];
     this.value = null;
-    this.focusedIndex = -1;
     this.isOpen = false;
     this.init();
   }
@@ -2003,9 +2138,7 @@
         self.select(opt.dataset.value);
       });
     });
-    if (!this.value && this.options.length > 0) {
-      this.select(this.options[0].dataset.value, true);
-    }
+    if (!this.value && this.options.length > 0) this.select(this.options[0].dataset.value, true);
   };
 
   CustomSelect.prototype.setOptions = function (options) {
@@ -2015,12 +2148,8 @@
       var div = document.createElement('div');
       div.className = 'custom-select-option';
       div.dataset.value = opt.value;
-      div.setAttribute('role', 'option');
-      if (opt.prefix) {
-        div.innerHTML = '<span class="option-prefix">' + escapeHtml(opt.prefix) + '</span> ' + escapeHtml(opt.label);
-      } else {
-        div.textContent = opt.label;
-      }
+      if (opt.prefix) div.innerHTML = '<span class="option-prefix">' + escapeHtml(opt.prefix) + '</span> ' + escapeHtml(opt.label);
+      else div.textContent = opt.label;
       self.optionsContainer.appendChild(div);
     });
     this.value = null;
@@ -2034,41 +2163,26 @@
       if (this.options[i].dataset.value === String(value)) { selected = this.options[i]; break; }
     }
     if (!selected) return;
-
     var prefix = selected.querySelector('.option-prefix');
     var prefixHTML = prefix ? prefix.outerHTML : '';
     var label = selected.textContent.replace(prefix ? prefix.textContent : '', '').trim();
     this.valueEl.innerHTML = prefixHTML + ' <span>' + escapeHtml(label) + '</span>';
-
-    this.options.forEach(function (o) {
-      o.classList.toggle('selected', o.dataset.value === String(value));
-    });
+    this.options.forEach(function (o) { o.classList.toggle('selected', o.dataset.value === String(value)); });
     this.close();
-
-    if (!silent) {
-      this.element.dispatchEvent(new CustomEvent('change', {
-        detail: { name: this.name, value: this.value }
-      }));
-    }
+    if (!silent) this.element.dispatchEvent(new CustomEvent('change', { detail: { name: this.name, value: this.value } }));
   };
 
   CustomSelect.prototype.toggle = function () { this.isOpen ? this.close() : this.open(); };
-
   CustomSelect.prototype.open = function () {
-    document.querySelectorAll('.custom-select.open').forEach(function (el) {
-      if (el !== this.element) el.classList.remove('open');
-    }, this);
     this.element.classList.add('open');
     this.trigger.setAttribute('aria-expanded', 'true');
     this.isOpen = true;
   };
-
   CustomSelect.prototype.close = function () {
     this.element.classList.remove('open');
     this.trigger.setAttribute('aria-expanded', 'false');
     this.isOpen = false;
   };
-
   CustomSelect.prototype.getValue = function () { return this.value; };
 
   var selects = { subject: null, level: null, chapter: null, difficulty: null, duration: null };
@@ -2079,12 +2193,10 @@
     selects.chapter = new CustomSelect($('chapterSelect'));
     selects.difficulty = new CustomSelect($('difficultySelect'));
     selects.duration = new CustomSelect($('durationSelect'));
-
     selects.subject.select('mathematiques', true);
     selects.level.select('Terminale D', true);
     selects.difficulty.select('medium', true);
     selects.duration.select('60', true);
-
     updateChapters();
     selects.subject.element.addEventListener('change', updateChapters);
   }
@@ -2130,9 +2242,8 @@
       }
 
       if (preSubject) {
-        var exists = Array.prototype.slice.call(
-          document.querySelectorAll('#subjectSelect .custom-select-option')
-        ).some(function (o) { return o.dataset.value === preSubject; });
+        var exists = Array.prototype.slice.call(document.querySelectorAll('#subjectSelect .custom-select-option'))
+          .some(function (o) { return o.dataset.value === preSubject; });
         if (exists) {
           selects.subject.select(preSubject, true);
           updateChapters();
@@ -2141,15 +2252,10 @@
 
       if (preChapter) {
         setTimeout(function () {
-          var chapterOptions = Array.prototype.slice.call(
-            document.querySelectorAll('#chapterOptions .custom-select-option')
-          );
-
+          var chapterOptions = Array.prototype.slice.call(document.querySelectorAll('#chapterOptions .custom-select-option'));
           var normalize = function (s) {
-            return String(s || '').toLowerCase().normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+            return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
           };
-
           var target = normalize(preChapter);
           var match = null;
           for (var i = 0; i < chapterOptions.length; i++) {
@@ -2158,19 +2264,13 @@
           if (!match && target.length > 3) {
             for (var j = 0; j < chapterOptions.length; j++) {
               var v = normalize(chapterOptions[j].dataset.value);
-              if (v.length > 3 && (v.indexOf(target) !== -1 || target.indexOf(v) !== -1)) {
-                match = chapterOptions[j]; break;
-              }
+              if (v.length > 3 && (v.indexOf(target) !== -1 || target.indexOf(v) !== -1)) { match = chapterOptions[j]; break; }
             }
           }
-          if (match && match.dataset.value !== 'all') {
-            selects.chapter.select(match.dataset.value, true);
-          }
+          if (match && match.dataset.value !== 'all') selects.chapter.select(match.dataset.value, true);
         }, 150);
       }
-    } catch (e) {
-      console.warn('[EXAM] Prefill error:', e.message);
-    }
+    } catch (e) { console.warn('[EXAM] Prefill error:', e.message); }
   }
 
   function resetSteps(steps) {
@@ -2182,34 +2282,23 @@
 
   function activateStep(stepId, statusEl, label) {
     document.querySelectorAll('.loading-step').forEach(function (s) {
-      if (s.id === stepId) {
-        s.classList.add('active');
-        s.classList.remove('done');
-      } else if (s.classList.contains('active')) {
-        s.classList.remove('active');
-        s.classList.add('done');
-      }
+      if (s.id === stepId) { s.classList.add('active'); s.classList.remove('done'); }
+      else if (s.classList.contains('active')) { s.classList.remove('active'); s.classList.add('done'); }
     });
-    if (statusEl) {
-      statusEl.textContent = label;
-      statusEl.classList.add('active');
-    }
+    if (statusEl) { statusEl.textContent = label; statusEl.classList.add('active'); }
   }
 
   function finishAllSteps(steps, statusEl, finalLabel) {
     steps.forEach(function (id) {
       var el = $(id);
-      if (el) {
-        el.classList.remove('active');
-        el.classList.add('done');
-      }
+      if (el) { el.classList.remove('active'); el.classList.add('done'); }
     });
-    if (statusEl) {
-      statusEl.textContent = finalLabel || 'Terminé !';
-      statusEl.classList.remove('active');
-    }
+    if (statusEl) { statusEl.textContent = finalLabel || 'Terminé !'; statusEl.classList.remove('active'); }
   }
 
+  // ════════════════════════════════════════════════════════════
+  // SESSION ACTIVE
+  // ════════════════════════════════════════════════════════════
   async function saveActiveSession() {
     if (!state.user || !state.selectedSubject) return;
     try {
@@ -2246,7 +2335,7 @@
         return null;
       }
       return data;
-    } catch (e) { console.warn('Load session error:', e.message); return null; }
+    } catch (e) { return null; }
   }
 
   var saveSessionTimer = null;
@@ -2274,6 +2363,9 @@
     return exam;
   }
 
+  // ════════════════════════════════════════════════════════════
+  // GÉNÉRATION
+  // ════════════════════════════════════════════════════════════
   $('configForm').addEventListener('submit', generateExam);
 
   async function generateExam(event) {
@@ -2329,12 +2421,20 @@
       }
       if (response.status === 429) throw new Error('RATE_LIMIT');
       if (!response.ok) {
-        console.error('[EXAM] Erreur serveur:', response.status, payload);
         throw new Error((payload && (payload.error || payload.message)) || ('Erreur serveur ' + response.status));
       }
 
       activateStep('genStep4', statusEl, 'Vérification des questions...');
       await sleep(800);
+
+      // ⚡ Cas particulier : contenu indisponible
+      if (payload.exam && payload.exam.unavailable) {
+        showView('configView');
+        setStatus('configStatus',
+          payload.exam.message || 'Le service est temporairement indisponible. Réessaye dans quelques minutes.',
+          'error');
+        return;
+      }
 
       state.exam = normalizeExam(payload);
       state.answers = {};
@@ -2389,11 +2489,45 @@
         '<span>' + (Math.round(points * 100) / 100 || state.exam.totalPoints) + '/20 points</span>' +
         '</div>';
 
+      // ⚡ Bouton avec spinner intégré
       var btn = document.createElement('button');
-      btn.className = 'btn primary';
+      btn.className = 'subject-card-btn';
       btn.type = 'button';
-      btn.textContent = 'Commencer';
-      btn.addEventListener('click', function () { startExam(subject); });
+
+      var spinner = document.createElement('span');
+      spinner.className = 'btn-spinner';
+      spinner.style.display = 'none';
+
+      var textSpan = document.createElement('span');
+      textSpan.className = 'btn-text';
+      textSpan.textContent = 'Commencer';
+
+      btn.appendChild(spinner);
+      btn.appendChild(textSpan);
+
+      btn.addEventListener('click', function () {
+        // Désactiver tous les boutons (anti double-clic)
+        var allBtns = list.querySelectorAll('.subject-card-btn');
+        allBtns.forEach(function (b) {
+          b.classList.add('loading');
+          b.disabled = true;
+        });
+
+        spinner.style.display = 'inline-block';
+
+        // Afficher l'overlay plein écran
+        var overlay = document.getElementById('startOverlay');
+        var overlayText = document.getElementById('startOverlayText');
+        if (overlay) {
+          overlay.classList.add('show');
+          if (overlayText) {
+            overlayText.textContent = 'Préparation de : ' + (subject.title || ('Sujet ' + (index + 1)));
+          }
+        }
+
+        startExam(subject);
+      });
+
       card.appendChild(btn);
       list.appendChild(card);
     });
@@ -2405,8 +2539,31 @@
     state.answers = {};
     state.startedAt = Date.now();
     state.remainingSeconds = Math.max(60, Number(state.exam.duration) * 60);
-    await saveActiveSession();
+
+    try {
+      await saveActiveSession();
+    } catch (e) {
+      console.warn('[EXAM] Sauvegarde session échouée :', e.message);
+    }
+
     $('examTitle').textContent = subject.title || 'Sujet';
+
+    // Petit délai minimum pour que la transition soit visible
+    await sleep(300);
+
+    // Masquer l'overlay
+    var overlay = document.getElementById('startOverlay');
+    if (overlay) overlay.classList.remove('show');
+
+    // Reset les boutons
+    document.querySelectorAll('.subject-card-btn').forEach(function (b) {
+      b.classList.remove('loading');
+      b.disabled = false;
+    });
+    document.querySelectorAll('.subject-card-btn .btn-spinner').forEach(function (s) {
+      s.style.display = 'none';
+    });
+
     showView('examView');
     renderExercise();
     startTimer();
@@ -2446,29 +2603,28 @@
       wrapper.appendChild(title);
 
       if (Array.isArray(question.options) && question.options.length === 4) {
-  var options = document.createElement('div');
-  options.className = 'answer-options';
-  var letters = ['A', 'B', 'C', 'D'];
-  question.options.forEach(function (opt, oIdx) {
-    var letter = (opt && opt.id) ? String(opt.id).toUpperCase().slice(0, 1) : letters[oIdx];
-    var optText = (opt && (opt.text || opt.label)) ? (opt.text || opt.label) : String(opt || '');
-    var label = document.createElement('label');
-    label.className = 'answer-option';
-    var input = document.createElement('input');
-    input.type = 'radio';
-    input.name = key;
-    input.value = letter;
-    input.checked = state.answers[key] === letter;
-    input.addEventListener('change', function () { saveAnswer(key, letter); });
-    var text = document.createElement('span');
-    text.textContent = letter + '. ' + optText;
-    label.appendChild(input);
-    label.appendChild(text);
-    options.appendChild(label);
-  });
-  wrapper.appendChild(options);
-}
-      else {
+        var options = document.createElement('div');
+        options.className = 'answer-options';
+        var letters = ['A', 'B', 'C', 'D'];
+        question.options.forEach(function (opt, oIdx) {
+          var letter = (opt && opt.id) ? String(opt.id).toUpperCase().slice(0, 1) : letters[oIdx];
+          var optText = (opt && (opt.text || opt.label)) ? (opt.text || opt.label) : String(opt || '');
+          var label = document.createElement('label');
+          label.className = 'answer-option';
+          var input = document.createElement('input');
+          input.type = 'radio';
+          input.name = key;
+          input.value = letter;
+          input.checked = state.answers[key] === letter;
+          input.addEventListener('change', function () { saveAnswer(key, letter); });
+          var text = document.createElement('span');
+          text.textContent = letter + '. ' + optText;
+          label.appendChild(input);
+          label.appendChild(text);
+          options.appendChild(label);
+        });
+        wrapper.appendChild(options);
+      } else {
         var isNumber = question.type === 'number';
         var input = document.createElement(isNumber ? 'input' : 'textarea');
         input.className = 'answer';
@@ -2563,7 +2719,12 @@
       var responsePromise = fetch('/api/exam', {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify({ action: 'correct', exam: state.exam, subjectId: state.selectedSubject.id, answers: state.answers })
+        body: JSON.stringify({
+          action: 'correct',
+          exam: state.exam,
+          subjectId: state.selectedSubject.id,
+          answers: state.answers
+        })
       });
       await sleep(1500);
 
@@ -2572,7 +2733,6 @@
       var payload = await response.json().catch(function () { return null; });
 
       if (!response.ok) {
-        console.error('[EXAM] Erreur correction:', response.status, payload);
         throw new Error((payload && (payload.error || payload.message)) || ('Erreur correction ' + response.status));
       }
 
@@ -2620,6 +2780,20 @@
     if (percent >= 75) return 'linear-gradient(90deg, #45b47d, #6fd99a)';
     if (percent >= 50) return 'linear-gradient(90deg, #E0B84A, #F0CC65)';
     return 'linear-gradient(90deg, #d7654a, #e88a72)';
+  }
+
+  function scoreClass(score) {
+    if (score >= 16) return 'excellent';
+    if (score >= 12) return 'bien';
+    if (score >= 10) return 'passable';
+    return 'faible';
+  }
+  function scoreBadge(score) {
+    if (score >= 16) return '🏆 Excellent';
+    if (score >= 14) return '🎉 Très bien';
+    if (score >= 12) return '✅ Bien';
+    if (score >= 10) return '📚 Passable';
+    return '💪 À revoir';
   }
 
   function showResults(result) {
@@ -2818,6 +2992,386 @@
     };
   }
 
+  // ════════════════════════════════════════════════════════════
+  // HISTORIQUE
+  // ════════════════════════════════════════════════════════════
+  $('historyBtn').addEventListener('click', openHistory);
+  $('backFromHistory').addEventListener('click', function () {
+    showView('configView');
+  });
+  $('refreshHistory').addEventListener('click', function () {
+    loadHistory();
+  });
+
+  function openHistory() {
+    showView('historyView');
+    if (state.historyExams.length === 0) {
+      loadHistory();
+    } else {
+      renderHistory();
+    }
+  }
+
+  async function loadHistory() {
+    var list = $('historyList');
+    list.innerHTML = '<div class="loading-steps" style="margin-top:20px;"><div class="loader-spinner"></div><div class="loading-status active">Chargement de l\'historique...</div></div>';
+    $('historySummary').innerHTML = '';
+
+    try {
+      var token = await getIdToken(state.user);
+      var response = await fetch('/api/exam', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify({ action: 'listExams', limit: 100 })
+      });
+
+      var payload = await response.json().catch(function () { return null; });
+
+      if (!response.ok || !payload || !payload.success) {
+        throw new Error((payload && payload.error) || 'Impossible de charger l\'historique.');
+      }
+
+      state.historyExams = Array.isArray(payload.exams) ? payload.exams : [];
+      renderHistory();
+    } catch (e) {
+      console.error('History load error:', e);
+      list.innerHTML =
+        '<div class="history-empty">' +
+        '<i class="fas fa-exclamation-triangle"></i>' +
+        '<h3>Erreur de chargement</h3>' +
+        '<p>' + escapeHtml(e.message || 'Réessaye plus tard.') + '</p>' +
+        '</div>';
+    }
+  }
+
+  function renderHistory() {
+    var exams = state.historyExams;
+
+    // Filtres
+    var subjects = [];
+    exams.forEach(function (e) {
+      if (e.subjectKey && subjects.indexOf(e.subjectKey) === -1) subjects.push(e.subjectKey);
+    });
+
+    var filters = $('historyFilters');
+    filters.innerHTML = '';
+
+    var allChip = document.createElement('button');
+    allChip.type = 'button';
+    allChip.className = 'filter-chip' + (state.historyFilter === 'all' ? ' active' : '');
+    allChip.textContent = 'Toutes (' + exams.length + ')';
+    allChip.addEventListener('click', function () {
+      state.historyFilter = 'all';
+      renderHistory();
+    });
+    filters.appendChild(allChip);
+
+    subjects.forEach(function (subj) {
+      var count = exams.filter(function (e) { return e.subjectKey === subj; }).length;
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'filter-chip' + (state.historyFilter === subj ? ' active' : '');
+      chip.textContent = (SUBJECT_LABELS[subj] || subj) + ' (' + count + ')';
+      chip.addEventListener('click', function () {
+        state.historyFilter = subj;
+        renderHistory();
+      });
+      filters.appendChild(chip);
+    });
+
+    // Résumé
+    var filtered = state.historyFilter === 'all'
+      ? exams
+      : exams.filter(function (e) { return e.subjectKey === state.historyFilter; });
+
+    var summary = $('historySummary');
+    if (filtered.length > 0) {
+      var totalScore = filtered.reduce(function (sum, e) { return sum + (e.score || 0); }, 0);
+      var avg = totalScore / filtered.length;
+
+      summary.innerHTML =
+        '<div class="summary-card">' +
+        '<div class="s-label">Examens</div>' +
+        '<div class="s-value">' + filtered.length + '</div>' +
+        '</div>' +
+        '<div class="summary-card">' +
+        '<div class="s-label">Moyenne</div>' +
+        '<div class="s-value">' + avg.toFixed(1) + '/20</div>' +
+        '</div>';
+    } else {
+      summary.innerHTML = '';
+    }
+
+    // Liste
+    var list = $('historyList');
+    list.innerHTML = '';
+
+    if (filtered.length === 0) {
+      list.innerHTML =
+        '<div class="history-empty">' +
+        '<i class="fas fa-clipboard-list"></i>' +
+        '<h3>Aucun examen</h3>' +
+        '<p>' + (exams.length === 0
+          ? 'Tu n\'as pas encore passé d\'examen. Lance ton premier depuis l\'onglet Configuration.'
+          : 'Aucun examen pour cette matière.') + '</p>' +
+        '</div>';
+      return;
+    }
+
+    filtered.forEach(function (exam) {
+      var card = document.createElement('div');
+      card.className = 'history-card';
+
+      var date = exam.createdAt ? new Date(exam.createdAt) : null;
+      var dateStr = date
+        ? date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+        : '';
+
+      var cls = scoreClass(exam.score);
+
+      card.innerHTML =
+        '<div class="history-card-body">' +
+        '<div class="history-card-title">' + escapeHtml(exam.chapterTitle || exam.examTitle || 'Examen') + '</div>' +
+        '<div class="history-card-sub">' +
+        escapeHtml(exam.subject || '—') +
+        (exam.examTitle ? ' <span class="dot"></span> ' + escapeHtml(exam.examTitle) : '') +
+        '</div>' +
+        '<div class="history-card-date"><i class="fas fa-calendar"></i> ' + escapeHtml(dateStr) + '</div>' +
+        '</div>' +
+        '<div class="history-card-score">' +
+        '<div class="score-value ' + cls + '">' + Number(exam.score).toFixed(1) + '</div>' +
+        '<div class="score-badge ' + cls + '">' + scoreBadge(exam.score) + '</div>' +
+        '</div>';
+
+      card.addEventListener('click', function () { openExamDetail(exam.id); });
+      list.appendChild(card);
+    });
+  }
+
+  async function openExamDetail(examId) {
+    state.currentDetailExamId = examId;
+    var overlay = $('historyDetailOverlay');
+    var sheet = $('historyDetailSheet');
+    sheet.innerHTML = '<div class="loading-steps" style="margin-top:20px;"><div class="loader-spinner"></div><div class="loading-status active">Chargement du détail...</div></div>';
+    overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    try {
+      var token = await getIdToken(state.user);
+      var response = await fetch('/api/exam', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify({ action: 'loadExam', examId: examId })
+      });
+
+      var payload = await response.json().catch(function () { return null; });
+      if (!response.ok || !payload || !payload.success) {
+        throw new Error((payload && payload.error) || 'Impossible de charger.');
+      }
+
+      renderExamDetail(payload.exam);
+    } catch (e) {
+      console.error('Detail load error:', e);
+      sheet.innerHTML =
+        '<div class="history-empty">' +
+        '<i class="fas fa-exclamation-triangle"></i>' +
+        '<h3>Erreur</h3>' +
+        '<p>' + escapeHtml(e.message || 'Réessaye plus tard.') + '</p>' +
+        '<button class="btn secondary" style="margin-top:20px;" onclick="document.getElementById(\'historyDetailOverlay\').classList.remove(\'show\');document.body.style.overflow=\'\';"><i class="fas fa-times"></i> Fermer</button>' +
+        '</div>';
+    }
+  }
+
+  function renderExamDetail(exam) {
+    var sheet = $('historyDetailSheet');
+    var cls = scoreClass(exam.score);
+    var date = exam.createdAt ? new Date(exam.createdAt) : null;
+    var dateStr = date
+      ? date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      : '';
+
+    var exercises = (exam.result && Array.isArray(exam.result.exercises)) ? exam.result.exercises : [];
+
+    var html = '';
+
+    html += '<button class="history-detail-close" id="detailCloseBtn" type="button"><i class="fas fa-times"></i></button>';
+
+    html += '<div class="detail-head">';
+    html += '<div class="dh-subject">' + escapeHtml(exam.subject || '—') + '</div>';
+    html += '<h2>' + escapeHtml(exam.chapterTitle || exam.examTitle || 'Examen') + '</h2>';
+    html += '<div class="dh-score ' + cls + '">' + Number(exam.score).toFixed(2) + ' <small>/ ' + Number(exam.totalScore || 20) + '</small></div>';
+    html += '<div class="dh-meta">';
+    if (exam.percentage !== undefined) html += '<span><i class="fas fa-percent"></i> ' + exam.percentage + '%</span>';
+    if (exam.grade) html += '<span><i class="fas fa-award"></i> ' + escapeHtml(exam.grade) + '</span>';
+    if (dateStr) html += '<span><i class="fas fa-calendar"></i> ' + escapeHtml(dateStr) + '</span>';
+    html += '</div>';
+    html += '</div>';
+
+    if (exercises.length === 0) {
+      html += '<p class="lead" style="text-align:center;">Aucun détail disponible pour cet examen.</p>';
+    } else {
+      exercises.forEach(function (ex, idx) {
+        var exPercent = ex.maxScore > 0 ? (ex.score / ex.maxScore) * 100 : 0;
+        var exIcon = exPercent >= 75 ? '✅' : exPercent >= 50 ? '⚠️' : '❌';
+
+        html += '<div class="detail-exercise" data-ex-index="' + idx + '">';
+        html += '<div class="detail-exercise-head">';
+        html += '<div class="detail-exercise-title"><span class="ex-icon">' + exIcon + '</span> Exercice ' + (ex.number || (idx + 1)) + (ex.title ? ' — ' + escapeHtml(ex.title) : '') + '</div>';
+        html += '<div class="detail-exercise-score">' + Number(ex.score || 0).toFixed(2) + ' / ' + Number(ex.maxScore || 6.67).toFixed(2) + '</div>';
+        html += '<div class="detail-exercise-toggle"><i class="fas fa-chevron-down"></i></div>';
+        html += '</div>';
+
+        html += '<div class="detail-exercise-body">';
+        html += '<div class="detail-exercise-content">';
+
+        var questions = Array.isArray(ex.questions) ? ex.questions : [];
+        questions.forEach(function (q, qIdx) {
+          var qCls = q.status === 'correct' ? 'q-correct'
+                   : q.status === 'wrong' ? 'q-wrong'
+                   : 'q-unanswered';
+          var qIcon = q.status === 'correct' ? '✅' : q.status === 'wrong' ? '❌' : '⏭️';
+
+          html += '<div class="detail-question ' + qCls + '">';
+          html += '<div class="dq-head">';
+          html += '<div class="dq-number"><span class="q-icon">' + qIcon + '</span> Question ' + escapeHtml(q.number || (qIdx + 1)) + '</div>';
+          html += '<div class="dq-points">' + Number(q.points || 0).toFixed(2) + ' / ' + Number(q.maxPoints || 1.33).toFixed(2) + ' pt</div>';
+          html += '</div>';
+
+          if (q.questionText) {
+            html += '<div class="dq-text">' + escapeHtml(q.questionText) + '</div>';
+          }
+
+          html += '<div class="dq-answers">';
+
+          if (q.status === 'unanswered' || !q.studentAnswer) {
+            html += '<div class="dq-block student"><div class="dq-label">✍️ Ta réponse</div><div class="dq-value unanswered">Aucune réponse</div></div>';
+          } else {
+            html += '<div class="dq-block student"><div class="dq-label">✍️ Ta réponse</div><div class="dq-value">' + escapeHtml(String(q.studentAnswer)) + '</div></div>';
+          }
+
+          if (q.correctAnswer && q.status !== 'correct') {
+            html += '<div class="dq-block correct"><div class="dq-label">✅ Bonne réponse</div><div class="dq-value">' + escapeHtml(String(q.correctAnswer)) + '</div></div>';
+          }
+
+          html += '</div>';
+
+          if (q.feedback) {
+            html += '<div class="dq-feedback">' + escapeHtml(q.feedback) + '</div>';
+          }
+          if (q.betterMethod) {
+            html += '<div class="dq-feedback"><strong>💡 Astuce :</strong> ' + escapeHtml(q.betterMethod) + '</div>';
+          }
+          if (q.toReview) {
+            html += '<div class="dq-review"><strong>📖 À revoir :</strong> ' + escapeHtml(q.toReview) + '</div>';
+          }
+
+          html += '</div>';
+        });
+
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+      });
+    }
+
+    html += '<div class="detail-actions">';
+    html += '<button class="btn danger" id="detailDeleteBtn" type="button"><i class="fas fa-trash"></i> Supprimer</button>';
+    html += '<button class="btn secondary" id="detailClose2Btn" type="button"><i class="fas fa-times"></i> Fermer</button>';
+    html += '</div>';
+
+    sheet.innerHTML = html;
+
+    // Events
+    document.getElementById('detailCloseBtn').addEventListener('click', closeExamDetail);
+    document.getElementById('detailClose2Btn').addEventListener('click', closeExamDetail);
+    document.getElementById('detailDeleteBtn').addEventListener('click', function () {
+      openDeleteConfirm(examId);
+    });
+
+    // Accordion
+    sheet.querySelectorAll('.detail-exercise-head').forEach(function (head) {
+      head.addEventListener('click', function () {
+        var parent = head.closest('.detail-exercise');
+        parent.classList.toggle('open');
+      });
+    });
+
+    // Ouvrir le premier exercice par défaut
+    var first = sheet.querySelector('.detail-exercise');
+    if (first) first.classList.add('open');
+
+    // Rendu KaTeX
+    renderMath(sheet);
+  }
+
+  function closeExamDetail() {
+    $('historyDetailOverlay').classList.remove('show');
+    document.body.style.overflow = '';
+    state.currentDetailExamId = null;
+  }
+
+  var pendingDeleteId = null;
+  function openDeleteConfirm(examId) {
+    pendingDeleteId = examId;
+    $('deleteModal').classList.add('show');
+  }
+  function closeDeleteConfirm() {
+    pendingDeleteId = null;
+    $('deleteModal').classList.remove('show');
+  }
+
+  $('cancelDeleteBtn').addEventListener('click', closeDeleteConfirm);
+  $('deleteModal').addEventListener('click', function (e) {
+    if (e.target === $('deleteModal')) closeDeleteConfirm();
+  });
+
+  $('confirmDeleteBtn').addEventListener('click', async function () {
+    if (!pendingDeleteId) return;
+    var btn = $('confirmDeleteBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader" style="display:inline-block;"></span> Suppression...';
+
+    try {
+      var token = await getIdToken(state.user);
+      var response = await fetch('/api/exam', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify({ action: 'deleteExam', examId: pendingDeleteId })
+      });
+
+      var payload = await response.json().catch(function () { return null; });
+      if (!response.ok || !payload || !payload.success) {
+        throw new Error((payload && payload.error) || 'Erreur suppression.');
+      }
+
+      // Retirer de la liste locale
+      state.historyExams = state.historyExams.filter(function (e) { return e.id !== pendingDeleteId; });
+
+      closeDeleteConfirm();
+      closeExamDetail();
+      renderHistory();
+      showToast('Examen supprimé', 'success');
+    } catch (e) {
+      console.error('Delete error:', e);
+      showToast(e.message || 'Erreur suppression.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-trash"></i> Supprimer';
+    }
+  });
+
+  // ════════════════════════════════════════════════════════════
+  // ÉVÉNEMENTS
+  // ════════════════════════════════════════════════════════════
   $('backConfigButton').addEventListener('click', function () { showView('configView'); });
   $('previousButton').addEventListener('click', goPrevious);
   $('nextButton').addEventListener('click', goNext);
@@ -2854,9 +3408,14 @@
     if (e.key === 'Escape') {
       if ($('premiumPopup').classList.contains('show')) hidePremiumPopup();
       if ($('confirmModal').classList.contains('show')) closeConfirmModal();
+      if ($('deleteModal').classList.contains('show')) closeDeleteConfirm();
+      if ($('historyDetailOverlay').classList.contains('show')) closeExamDetail();
     }
   });
 
+  // ════════════════════════════════════════════════════════════
+  // AUTH
+  // ════════════════════════════════════════════════════════════
   onAuthStateChanged(auth, async function (user) {
     if (!user) {
       window.location.replace('auth-choice.html');
@@ -2870,7 +3429,7 @@
   });
 
   initSelects();
-  console.log('ARVEXA — Mode examen v3.3 (7 matières, sans backticks)');
+  console.log('ARVEXA — Mode examen v4.0 (spinner + historique)');
   </script>
 </body>
 </html>
