@@ -1,5 +1,5 @@
 // ================================================================
-// API PROGRESS v8.0 — ARVEXA School
+// API PROGRESS v8.1 — ARVEXA School
 // Cahier intelligent multi-profils + fan-out IA
 // 6 profils : scientifique / svt / philosophie / histoire-geo /
 //             francais / langue
@@ -19,6 +19,9 @@ var ALLOWED_SUBJECTS = new Set([
   'mathematiques', 'physique', 'chimie', 'svt',
   'philosophie', 'histoire', 'geographie'
 ]);
+
+// ⚡ Version tableau pour les itérations (map/forEach/filter)
+var ALLOWED_SUBJECTS_ARRAY = Array.from(ALLOWED_SUBJECTS);
 
 var SUBJECT_INFO = {
   mathematiques: { label: 'Mathématiques',  profile: 'scientific' },
@@ -1288,9 +1291,8 @@ async function markDailyActivity(uid, inc = {}) {
 async function getDashboard(uid) {
   const { db } = getAdminServices();
 
-  
-  const subjectKeys = Array.from(ALLOWED_SUBJECTS);
-  const chaptersPromises = ALLOWED_SUBJECTS.map((subjectKey) =>
+  // ⚡ Utilise ALLOWED_SUBJECTS_ARRAY (tableau) pour .map()
+  const chaptersPromises = ALLOWED_SUBJECTS_ARRAY.map((subjectKey) =>
     db
       .collection('users').doc(uid)
       .collection('notebooks').doc(subjectKey)
@@ -1312,7 +1314,8 @@ async function getDashboard(uid) {
   let totalChapters = 0;
   let totalSections = 0;
 
-   subjectKeys.forEach((subjectKey, index) => {
+  // ⚡ Utilise ALLOWED_SUBJECTS_ARRAY (tableau) pour .forEach()
+  ALLOWED_SUBJECTS_ARRAY.forEach((subjectKey, index) => {
     const chaptersSnap = chaptersResults[index];
     const info = SUBJECT_INFO[subjectKey];
 
@@ -1420,6 +1423,7 @@ async function computeStreak(uid) {
 
 async function listChapters(uid, body) {
   const { subject } = body;
+  // ⚡ .has() fonctionne sur Set
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
 
   const { db } = getAdminServices();
@@ -1791,7 +1795,7 @@ module.exports = async function handler(request, response) {
   const action = body.action;
   const uid = user.uid;
 
-  console.log(`[PROGRESS v8] ${action} | uid=${uid.slice(0, 8)}`);
+  console.log(`[PROGRESS v8.1] ${action} | uid=${uid.slice(0, 8)}`);
 
   try {
     switch (action) {
@@ -1809,7 +1813,7 @@ module.exports = async function handler(request, response) {
         return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[PROGRESS v8] "${action}" failed:`, error.message);
+    console.error(`[PROGRESS v8.1] "${action}" failed:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
