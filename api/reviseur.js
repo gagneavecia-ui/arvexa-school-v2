@@ -1,5 +1,5 @@
 // ================================================================
-// API RÉVISEUR v5.1 — ARVEXA School
+// API RÉVISEUR v5.2 — ARVEXA School
 // Fan-out parallèle + base JSON + pool Firestore + Historique Premium
 // 6 profils : scientifique / svt / philosophie / histoire / francais / langue
 // ================================================================
@@ -7,7 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 
-module.exports.config = { maxDuration: 90 };
+module.exports.config = { maxDuration: 120 };
 
 const WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW_LIGHT = 60;
@@ -30,8 +30,10 @@ const MAX_TOKENS = {
 };
 
 const NOTION_BATCH_SIZE = 4;
-const MAX_BATCHES = 8;
+const MAX_BATCHES_PER_WAVE = 8;
+const GLOBAL_TIME_BUDGET_MS = 100000;
 const POOL_COLLECTION = 'reviseurPool';
+const KB_CACHE_TTL_MS = 10 * 60 * 1000;
 
 const KNOWLEDGE_MEMORY_CACHE = new Map();
 let adminServices = null;
@@ -69,7 +71,12 @@ function getAdminServices() {
 // BASE DE CONNAISSANCES
 // ════════════════════════════════════════════════════════════════
 function loadKnowledgeBase(subject) {
-  if (KNOWLEDGE_MEMORY_CACHE.has(subject)) return KNOWLEDGE_MEMORY_CACHE.get(subject);
+  if (KNOWLEDGE_MEMORY_CACHE.has(subject)) {
+    const entry = KNOWLEDGE_MEMORY_CACHE.get(subject);
+    if (entry && (Date.now() - entry.cachedAt) < KB_CACHE_TTL_MS) {
+      return entry.data;
+    }
+  }
 
   const filename = `bac-${subject}.json`;
   const candidates = [
@@ -84,8 +91,21 @@ function loadKnowledgeBase(subject) {
       if (fs.existsSync(filePath)) {
         const raw = fs.readFileSync(filePath, 'utf-8');
         const data = JSON.parse(raw);
+
+        // Validation structure
+        if (!data || !Array.isArray(data.chapitres)) {
+          throw new Error('structure_invalid');
+        }
+
+        // Nettoyage des notions invalides
+        data.chapitres.forEach((ch) => {
+          if (Array.isArray(ch.notions)) {
+            ch.notions = ch.notions.filter((n) => n && n.id && n.titre);
+          }
+        });
+
         console.log(`[REVISEUR] ✅ Base chargée : ${filename}`);
-        KNOWLEDGE_MEMORY_CACHE.set(subject, data);
+        KNOWLEDGE_MEMORY_CACHE.set(subject, { data, cachedAt: Date.now() });
         return data;
       }
     } catch (error) {
@@ -94,7 +114,7 @@ function loadKnowledgeBase(subject) {
   }
 
   console.warn(`[REVISEUR] Base absente : ${filename}`);
-  KNOWLEDGE_MEMORY_CACHE.set(subject, null);
+  // Ne pas cacher null → permet un rechargement si la base est ajoutée
   return null;
 }
 
@@ -235,7 +255,7 @@ function wrapOrphanLatex(text) {
 
 function escapeHtmlOutsideLatex(text) {
   if (!text || typeof text !== 'string') return text;
-  const parts = text.split(/(\$\$[^$]+\$\$|\$[^$]+\$)/g);
+  const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$)/g);
   return parts.map((part, i) => {
     if (i % 2 === 1) return part;
     return part.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -327,7 +347,7 @@ async function callProvider(provider, prompt, maxTokens, temperature) {
   if (!maxTokens) maxTokens = 4000;
   if (typeof temperature !== 'number') temperature = 0.15;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
+  const timeout = setTimeout(() => controller.abort(), 25000);
   try {
     console.log(`[AI] ${provider.name} | prompt: ${prompt.length} car | max_tokens: ${maxTokens}`);
 
@@ -375,19 +395,15 @@ async function callProvider(provider, prompt, maxTokens, temperature) {
   }
 }
 
-async function generateWithCascade(prompt, validator, maxTokens, temperature, taskName) {
+async function generateWithCascade(prompt, validator, maxTokens, temperature, taskName, deadline) {
   const providers = getProviders();
   if (!providers.length) throw new Error('provider_missing');
 
-  const startTime = Date.now();
-  const TIME_BUDGET_MS = 80000;
-
   const errors = [];
   for (const provider of providers) {
-    const elapsed = Date.now() - startTime;
-    if (elapsed > TIME_BUDGET_MS) {
+    if (deadline && Date.now() > deadline) {
       errors.push('time_budget_exceeded');
-      console.warn(`[AI] ${taskName} — budget temps épuisé (${elapsed}ms)`);
+      console.warn(`[AI] ${taskName} — budget temps épuisé`);
       break;
     }
 
@@ -448,12 +464,23 @@ async function buildSessionFromPool(subject, chapter, mode) {
     const top = matching.slice(0, Math.max(1, Math.ceil(matching.length / 3)));
     const picked = top[Math.floor(Math.random() * top.length)];
 
+    // Validation de la session pool
+    const sess = picked.session;
+    const valid = mode === 'flashcard'
+      ? (Array.isArray(sess?.flashcards) && sess.flashcards.length > 0)
+      : (Array.isArray(sess?.sections) && sess.sections.length > 0);
+
+    if (!valid) {
+      console.warn('[POOL] Session pool invalide, ignorée');
+      return null;
+    }
+
     await db.collection(POOL_COLLECTION).doc(picked.id).update({
       usedCount: (picked.usedCount || 0) + 1,
       lastUsedAt: new Date()
     }).catch(() => {});
 
-    return { session: picked.session, source: 'pool', poolId: picked.id };
+    return { session: sess, source: 'pool', poolId: picked.id };
   } catch (e) {
     console.warn('[POOL] Erreur lecture:', e.message);
     return null;
@@ -477,9 +504,17 @@ async function buildQuizFromPool(subject, chapter, count) {
       if (Array.isArray(q.session?.quiz)) allQuestions.push(...q.session.quiz);
     });
 
-    if (allQuestions.length < count) return null;
+    // Validation côté serveur
+    const validQuestions = allQuestions.filter((q) =>
+      q &&
+      typeof q.question === 'string' && q.question.trim() &&
+      Array.isArray(q.options) && q.options.length === 4 &&
+      ['A', 'B', 'C', 'D'].includes(String(q.correctAnswer || '').toUpperCase())
+    );
 
-    const picked = shuffle(allQuestions).slice(0, count);
+    if (validQuestions.length < count) return null;
+
+    const picked = shuffle(validQuestions).slice(0, count);
     return { quiz: picked, source: 'pool' };
   } catch (e) { return null; }
 }
@@ -716,36 +751,55 @@ function validateQuiz(data) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// GÉNÉRATION PAR LOTS
+// GÉNÉRATION PAR VAGUES SÉQUENTIELLES
 // ════════════════════════════════════════════════════════════════
-async function generateFicheByBatches(subjectLabel, chapterTitle, notions) {
-  const batches = chunk(notions, NOTION_BATCH_SIZE).slice(0, MAX_BATCHES);
-
-  const results = await Promise.allSettled(
-    batches.map(async (batch, i) => {
-      const prompt = buildFichePrompt(subjectLabel, chapterTitle, batch);
-      const { data } = await generateWithCascade(prompt, validateFiche, MAX_TOKENS.FICHE, 0.15, `fiche-batch-${i + 1}`);
-      return { batch, data };
-    })
-  );
-
+async function generateFicheByWaves(subjectLabel, chapterTitle, notions, deadline) {
+  const allBatches = chunk(notions, NOTION_BATCH_SIZE);
   const allSections = [];
-  const missingBatches = [];
+  let waveIndex = 0;
+  let missingBatches = 0;
+  let extra = {};
 
-  results.forEach((r, i) => {
-    if (r.status === 'fulfilled' && r.value?.data?.sections) {
-      allSections.push(...r.value.data.sections);
-    } else {
-      missingBatches.push(batches[i]);
+  while (waveIndex * MAX_BATCHES_PER_WAVE < allBatches.length) {
+    if (Date.now() > deadline) {
+      console.warn(`[REVISEUR] Budget temps épuisé, ${allBatches.length - waveIndex * MAX_BATCHES_PER_WAVE} lots non traités`);
+      missingBatches += allBatches.length - waveIndex * MAX_BATCHES_PER_WAVE;
+      break;
     }
-  });
 
-  if (missingBatches.length > 0) {
-    console.warn(`[REVISEUR] ${missingBatches.length} lot(s) en échec`);
+    const waveBatches = allBatches.slice(
+      waveIndex * MAX_BATCHES_PER_WAVE,
+      (waveIndex + 1) * MAX_BATCHES_PER_WAVE
+    );
+
+    const results = await Promise.allSettled(
+      waveBatches.map(async (batch, i) => {
+        const prompt = buildFichePrompt(subjectLabel, chapterTitle, batch);
+        const { data } = await generateWithCascade(
+          prompt, validateFiche, MAX_TOKENS.FICHE, 0.15,
+          `fiche-wave${waveIndex}-batch${i + 1}`, deadline
+        );
+        return { batch, data };
+      })
+    );
+
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled' && r.value?.data?.sections) {
+        allSections.push(...r.value.data.sections);
+        if (Object.keys(extra).length === 0 && r.value.data) {
+          extra = r.value.data;
+        }
+      } else {
+        missingBatches++;
+      }
+    });
+
+    waveIndex++;
   }
 
-  const firstValid = results.find((r) => r.status === 'fulfilled' && r.value?.data);
-  const extra = firstValid?.value?.data || {};
+  if (missingBatches > 0) {
+    console.warn(`[REVISEUR] ${missingBatches} lot(s) en échec`);
+  }
 
   return {
     chapterTitle,
@@ -753,39 +807,64 @@ async function generateFicheByBatches(subjectLabel, chapterTitle, notions) {
     keyPoints: extra.keyPoints || notions.slice(0, 5).map((n) => n.titre),
     examTraps: extra.examTraps || [],
     commonMistakes: extra.commonMistakes || [],
-    partial: missingBatches.length > 0
+    partial: missingBatches > 0
   };
 }
 
-async function generateFlashcardsByBatches(subjectLabel, chapterTitle, notions) {
-  const batches = chunk(notions, NOTION_BATCH_SIZE).slice(0, MAX_BATCHES);
-
-  const results = await Promise.allSettled(
-    batches.map(async (batch, i) => {
-      const prompt = buildFlashcardsPrompt(subjectLabel, chapterTitle, batch);
-      const { data } = await generateWithCascade(prompt, validateFlashcards, MAX_TOKENS.FLASHCARDS, 0.15, `flashcards-batch-${i + 1}`);
-      return { batch, data };
-    })
-  );
-
+async function generateFlashcardsByWaves(subjectLabel, chapterTitle, notions, deadline) {
+  const allBatches = chunk(notions, NOTION_BATCH_SIZE);
   const allCards = [];
-  results.forEach((r) => {
-    if (r.status === 'fulfilled' && r.value?.data?.flashcards) {
-      allCards.push(...r.value.data.flashcards);
+  let waveIndex = 0;
+
+  while (waveIndex * MAX_BATCHES_PER_WAVE < allBatches.length) {
+    if (Date.now() > deadline) {
+      console.warn(`[REVISEUR] Budget temps épuisé (flashcards)`);
+      break;
     }
-  });
+
+    const waveBatches = allBatches.slice(
+      waveIndex * MAX_BATCHES_PER_WAVE,
+      (waveIndex + 1) * MAX_BATCHES_PER_WAVE
+    );
+
+    const results = await Promise.allSettled(
+      waveBatches.map(async (batch, i) => {
+        const prompt = buildFlashcardsPrompt(subjectLabel, chapterTitle, batch);
+        const { data } = await generateWithCascade(
+          prompt, validateFlashcards, MAX_TOKENS.FLASHCARDS, 0.15,
+          `flashcards-wave${waveIndex}-batch${i + 1}`, deadline
+        );
+        return { batch, data };
+      })
+    );
+
+    results.forEach((r) => {
+      if (r.status === 'fulfilled' && r.value?.data?.flashcards) {
+        allCards.push(...r.value.data.flashcards);
+      }
+    });
+
+    waveIndex++;
+  }
 
   return { chapterTitle, flashcards: allCards };
 }
 
-async function generateQuizByBatches(subjectLabel, chapterTitle, notions, level, totalCount, seed) {
-  const countPerBatch = Math.max(3, Math.ceil(totalCount / 2));
-  const batches = chunk(notions, NOTION_BATCH_SIZE).slice(0, 2);
+async function generateQuizByBatches(subjectLabel, chapterTitle, notions, level, totalCount, seed, deadline) {
+  const notionBatches = chunk(notions, NOTION_BATCH_SIZE);
+  const batchCount = Math.min(2, notionBatches.length);
+  if (batchCount === 0) return null;
+
+  const countPerBatch = Math.max(3, Math.ceil(totalCount / batchCount));
+  const batches = notionBatches.slice(0, batchCount);
 
   const results = await Promise.allSettled(
     batches.map(async (batch, i) => {
       const prompt = buildQuizPrompt(subjectLabel, chapterTitle, batch, level, countPerBatch, seed);
-      const { data } = await generateWithCascade(prompt, validateQuiz, MAX_TOKENS.QUIZ, 0.6, `quiz-batch-${i + 1}`);
+      const { data } = await generateWithCascade(
+        prompt, validateQuiz, MAX_TOKENS.QUIZ, 0.6,
+        `quiz-batch-${i + 1}`, deadline
+      );
       return { batch, data };
     })
   );
@@ -922,6 +1001,13 @@ module.exports = async function handler(request, response) {
   if (!ALLOWED_SUBJECTS.has(body.subject)) return jsonError(response, 400, 'Matière invalide.');
   if (typeof body.chapter !== 'string' || body.chapter.length > 100) return jsonError(response, 400, 'Chapitre invalide.');
 
+  // ⚡ Valider le mode AVANT la réservation de quota
+  if (action === 'generate') {
+    if (!ALLOWED_MODES.has(body.mode)) {
+      return jsonError(response, 400, 'Mode invalide.');
+    }
+  }
+
   const knowledgeBase = loadKnowledgeBase(body.subject);
   const chapterData = knowledgeBase ? findChapter(knowledgeBase, body.chapter) : null;
   const mandatoryNotions = chapterData ? getMandatoryNotions(chapterData) : [];
@@ -933,7 +1019,7 @@ module.exports = async function handler(request, response) {
   }[body.subject] || body.subject;
   const chapterTitle = chapterData?.titre || body.chapter;
 
-  console.log(`[REVISEUR v5.1] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
+  console.log(`[REVISEUR v5.2] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
 
   // Quota (uniquement pour generate)
   let reservation = null;
@@ -955,27 +1041,40 @@ module.exports = async function handler(request, response) {
   try {
     // ═══ ACTION : GENERATE ═══
     if (action === 'generate') {
-      if (!ALLOWED_MODES.has(body.mode)) {
-        if (reservation?.reserved) { try { await releaseFreeGeneration(user.uid, reservation.usageDate); } catch (_) {} }
-        return jsonError(response, 400, 'Mode invalide.');
-      }
-
       const isFlashcard = body.mode === 'flashcard';
+      const includeFlashcards = body.includeFlashcards === true;
+      const deadline = Date.now() + GLOBAL_TIME_BUDGET_MS;
+
       let session;
       let source = 'ai';
 
       try {
         if (hasKnowledge) {
           session = isFlashcard
-            ? await generateFlashcardsByBatches(subjectLabel, chapterTitle, mandatoryNotions)
-            : await generateFicheByBatches(subjectLabel, chapterTitle, mandatoryNotions);
+            ? await generateFlashcardsByWaves(subjectLabel, chapterTitle, mandatoryNotions, deadline)
+            : await generateFicheByWaves(subjectLabel, chapterTitle, mandatoryNotions, deadline);
         } else {
+          const fakeNotions = [{ id: 'chapter', titre: chapterTitle, description: '' }];
           session = isFlashcard
-            ? await generateFlashcardsByBatches(subjectLabel, chapterTitle, [{ id: 'chapter', titre: chapterTitle, description: '' }])
-            : await generateFicheByBatches(subjectLabel, chapterTitle, [{ id: 'chapter', titre: chapterTitle, description: '' }]);
+            ? await generateFlashcardsByWaves(subjectLabel, chapterTitle, fakeNotions, deadline)
+            : await generateFicheByWaves(subjectLabel, chapterTitle, fakeNotions, deadline);
         }
 
-        if (!session || (isFlashcard && session.flashcards?.length === 0) || (!isFlashcard && session.sections?.length === 0)) {
+        // 1 crédit : fiche + flashcards
+        if (!isFlashcard && includeFlashcards && hasKnowledge) {
+          try {
+            const flashDeadline = Date.now() + Math.max(15000, deadline - Date.now());
+            const flash = await generateFlashcardsByWaves(subjectLabel, chapterTitle, mandatoryNotions, flashDeadline);
+            if (flash && Array.isArray(flash.flashcards) && flash.flashcards.length > 0) {
+              session.flashcards = flash.flashcards;
+            }
+          } catch (e) {
+            console.warn('[REVISEUR] Flashcards bonus échouées:', e.message);
+          }
+        }
+
+        if (!session || (isFlashcard && (!Array.isArray(session.flashcards) || session.flashcards.length === 0)) ||
+            (!isFlashcard && (!Array.isArray(session.sections) || session.sections.length === 0))) {
           throw new Error('empty_session');
         }
       } catch (aiError) {
@@ -986,17 +1085,26 @@ module.exports = async function handler(request, response) {
           session = pooled.session;
           source = 'pool';
           console.log('[REVISEUR] ✅ Fallback pool utilisé');
-        } else {
-          if (reservation?.reserved && !reservation?.premium) {
-            try { await releaseFreeGeneration(user.uid, reservation.usageDate); } catch (_) {}
-          }
-          return response.status(200).json({
-            success: true,
-            session: await buildUnavailableSession(chapterTitle, body.mode),
-            source: 'unavailable',
-            quota: reservation?.premium ? { type: 'premium', unlimited: true } : { type: 'free', used: reservation?.used, limit: FREE_REVISEUR_LIMIT }
-          });
         }
+      }
+
+      // ⚡ Vérification session vide APRÈS le fallback pool
+      const sessionIsEmpty = !session ||
+        (isFlashcard && (!Array.isArray(session.flashcards) || session.flashcards.length === 0)) ||
+        (!isFlashcard && (!Array.isArray(session.sections) || session.sections.length === 0));
+
+      if (sessionIsEmpty) {
+        if (reservation?.reserved && !reservation?.premium) {
+          try { await releaseFreeGeneration(user.uid, reservation.usageDate); } catch (_) {}
+        }
+        return response.status(200).json({
+          success: true,
+          session: await buildUnavailableSession(chapterTitle, body.mode),
+          source: 'unavailable',
+          quota: reservation?.premium
+            ? { type: 'premium', unlimited: true }
+            : { type: 'free', used: reservation?.used, limit: FREE_REVISEUR_LIMIT }
+        });
       }
 
       session = deepClean(session);
@@ -1034,7 +1142,9 @@ module.exports = async function handler(request, response) {
           generatedAt: new Date().toISOString()
         },
         source,
-        quota: reservation?.premium ? { type: 'premium', unlimited: true } : { type: 'free', used: reservation?.used, limit: FREE_REVISEUR_LIMIT }
+        quota: reservation?.premium
+          ? { type: 'premium', unlimited: true }
+          : { type: 'free', used: reservation?.used, limit: FREE_REVISEUR_LIMIT }
       });
     }
 
@@ -1043,13 +1153,14 @@ module.exports = async function handler(request, response) {
       const count = Math.min(20, Math.max(5, Number(body.count) || 5));
       const level = Number(body.difficulty) || 2;
       const seed = hashString(Date.now() + '_' + user.uid + '_' + Math.random());
+      const deadline = Date.now() + GLOBAL_TIME_BUDGET_MS;
 
       let quizData;
       let source = 'ai';
 
       try {
         if (hasKnowledge) {
-          quizData = await generateQuizByBatches(subjectLabel, chapterTitle, mandatoryNotions, level, count, seed);
+          quizData = await generateQuizByBatches(subjectLabel, chapterTitle, mandatoryNotions, level, count, seed, deadline);
           if (!quizData || !quizData.quiz || quizData.quiz.length === 0) throw new Error('empty_quiz');
         } else {
           throw new Error('no_knowledge_base');
