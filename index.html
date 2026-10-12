@@ -13,6 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <script src="register-sw.js" defer></script>
   <script src="register-fcm-sw.js" defer></script>
+  <script src="bac-date.js"></script>
 
   <style>
     /* ============================================================
@@ -1723,11 +1724,17 @@
   // COMPTE À REBOURS
   // ================================================================
   function getExamDate() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const juneThisYear = new Date(year, 5, 1);
-    if (now < juneThisYear) return juneThisYear;
-    return new Date(year + 1, 5, 1);
+  // ⚡ Délègue à bac-date.js (source unique de vérité)
+  if (typeof window.ARVEXA_getExamDate === 'function') {
+    return window.ARVEXA_getExamDate();
+  }
+
+  // Fallback de secours (si bac-date.js n'est pas chargé)
+  const now = new Date();
+  const year = now.getFullYear();
+  const juneThisYear = new Date(year, 5, 1);
+  if (now < juneThisYear) return juneThisYear;
+  return new Date(year + 1, 5, 1);
   }
 
   function getSchoolYearStart(examDate) {
