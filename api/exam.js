@@ -1,19 +1,22 @@
 // ================================================================
-// API EXAM v5.0 — ARVEXA School
+// API EXAM v5.1 — ARVEXA School
 // Mode examen 100% IA + Pool Firestore + Correction pédagogique
-// 7 matières · 2 sujets générés · 1 joué · Note sur 20
+// Historique Premium · Rate limit adaptatif
 // ================================================================
 
 module.exports.config = { maxDuration: 90 };
 
 const WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS_PER_WINDOW = 3;
+const MAX_REQUESTS_PER_WINDOW_LIGHT = 60;   // Actions légères (listExams, loadExam, deleteExam)
+const MAX_REQUESTS_PER_WINDOW_HEAVY = 3;    // Actions lourdes (generate, correct)
 const requestLog = new Map();
 
 const ALLOWED_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie', 'svt', 'philosophie', 'histoire', 'geographie']);
 const ALLOWED_DIFFICULTIES = new Set(['easy', 'medium', 'hard', 'bac']);
 const ALLOWED_DURATIONS = new Set([30, 60, 90, 120, 180]);
 const ALLOWED_ACTIONS = new Set(['generate', 'correct', 'listExams', 'loadExam', 'deleteExam']);
+const LIGHT_ACTIONS = new Set(['listExams', 'loadExam', 'deleteExam']);
+const PREMIUM_ACTIONS = new Set(['listExams', 'loadExam']);  // 🔒 Premium requis
 const REQUIRED_EXERCISES = 3;
 const QUESTIONS_PER_EXERCISE = 5;
 const TOTAL_POINTS = 20;
@@ -61,12 +64,13 @@ function clientIp(request) {
   return String(request.headers['x-forwarded-for'] || request.socket?.remoteAddress || 'unknown').split(',')[0].trim();
 }
 
-function rateLimited(ip) {
+function rateLimited(ip, maxRequests) {
+  const limit = typeof maxRequests === 'number' ? maxRequests : MAX_REQUESTS_PER_WINDOW_HEAVY;
   const now = Date.now();
   const recent = (requestLog.get(ip) || []).filter((t) => now - t < WINDOW_MS);
   recent.push(now);
   requestLog.set(ip, recent);
-  return recent.length > MAX_REQUESTS_PER_WINDOW;
+  return recent.length > limit;
 }
 
 function jsonError(response, status, error, code) {
@@ -952,13 +956,11 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
           const target = deterministicResults[exIdx];
           if (!target) return;
 
-          // Enrichissement : ajouter les données IA à chaque question
           const aiQuestions = Array.isArray(aiEx.questions) ? aiEx.questions : [];
           aiQuestions.forEach((aiQ) => {
             const match = target.exerciseResult.questions.find((q) => String(q.number) === String(aiQ.number));
             if (!match) return;
 
-            // Fusion des champs pédagogiques
             if (aiQ.explanation) match.explanation = aiQ.explanation;
             if (Array.isArray(aiQ.steps) && aiQ.steps.length > 0) match.steps = aiQ.steps;
             if (aiQ.concept) match.concept = aiQ.concept;
@@ -969,7 +971,6 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
             if (aiQ.feedback) match.feedback = aiQ.feedback;
             if (aiQ.correctAnswer && !match.correctAnswer) match.correctAnswer = aiQ.correctAnswer;
 
-            // Points pour questions ouvertes
             if (match.status === 'pending') {
               match.points = Number(aiQ.points) || 0;
               match.status = aiQ.status || (match.points > 0 ? 'correct' : 'wrong');
@@ -999,10 +1000,9 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
     }
   }
 
-  // ═══ CALCUL FINAL DU SCORE (BLINDÉ) ═══
+  // CALCUL FINAL DU SCORE (BLINDÉ)
   const finalExercises = deterministicResults.map((r) => r.exerciseResult);
 
-  // Recalcul du score à partir des questions individuelles
   let rawScore = 0;
   let maxPossibleScore = 0;
 
@@ -1031,7 +1031,6 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
     maxPossibleScore += ex.maxScore;
   });
 
-  // Ramener à 20 : (score obtenu / score max possible) × 20
   let finalScore;
   if (maxPossibleScore > 0) {
     finalScore = (rawScore / maxPossibleScore) * TOTAL_POINTS;
@@ -1049,7 +1048,6 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
   else if (percentage >= 60) grade = 'Assez bien';
   else if (percentage >= 50) grade = 'Passable';
 
-  // Recalculer les scores individuels des exercices (ramenés sur 20 proportionnellement)
   finalExercises.forEach((ex) => {
     if (maxPossibleScore > 0) {
       ex.score = round2((ex.score / ex.maxScore) * (ex.maxScore / maxPossibleScore * TOTAL_POINTS));
@@ -1218,17 +1216,45 @@ module.exports = async function handler(request, response) {
     response.setHeader('Allow', 'POST');
     return jsonError(response, 405, 'Méthode non autorisée.');
   }
-  if (rateLimited(clientIp(request))) {
-    return jsonError(response, 429, 'Trop de tentatives.');
+
+  // Rate limit adaptatif selon l'action
+  const body = request.body && typeof request.body === 'object' ? request.body : {};
+  const action = body.action || 'generate';
+  const isLight = LIGHT_ACTIONS.has(action);
+  const rateLimit = isLight ? MAX_REQUESTS_PER_WINDOW_LIGHT : MAX_REQUESTS_PER_WINDOW_HEAVY;
+
+  if (rateLimited(clientIp(request), rateLimit)) {
+    return jsonError(response, 429, isLight
+      ? 'Trop de requêtes. Patiente quelques secondes.'
+      : 'Trop de tentatives. Attends une minute.');
   }
 
   const verifiedUser = await verifyFirebaseToken(request).catch(() => null);
   if (!verifiedUser) return jsonError(response, 401, 'Connexion requise.', 'AUTH_REQUIRED');
 
-  const body = request.body && typeof request.body === 'object' ? request.body : {};
-  const action = body.action || 'generate';
-
   if (!ALLOWED_ACTIONS.has(action)) return jsonError(response, 400, 'Action invalide.');
+
+  // ═══ VÉRIFICATION PREMIUM POUR L'HISTORIQUE ═══
+  if (PREMIUM_ACTIONS.has(action)) {
+    try {
+      const { db } = getAdminServices();
+      const userSnap = await db.collection('users').doc(verifiedUser.uid).get();
+      if (!userSnap.exists) {
+        return jsonError(response, 404, 'Profil utilisateur introuvable.');
+      }
+      if (!isPremiumUser(userSnap.data())) {
+        return jsonError(
+          response,
+          403,
+          'L\'historique des examens est réservé aux comptes Premium.',
+          'PREMIUM_REQUIRED'
+        );
+      }
+    } catch (e) {
+      console.error('[HISTORIQUE] Premium check failed:', e.message);
+      return jsonError(response, 503, 'Service temporairement indisponible.');
+    }
+  }
 
   // ═══ HISTORIQUE : LISTER ═══
   if (action === 'listExams') {
@@ -1292,7 +1318,7 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══ HISTORIQUE : SUPPRIMER ═══
+  // ═══ HISTORIQUE : SUPPRIMER (autorisé même sans Premium) ═══
   if (action === 'deleteExam') {
     if (!body.examId) return jsonError(response, 400, 'examId requis.');
     try {
@@ -1342,7 +1368,6 @@ module.exports = async function handler(request, response) {
 
       exam = deepClean(exam);
 
-      // Sauvegarde dans le pool
       await saveExercisesToPool(exam, body.subject, body.difficulty, verifiedUser.uid);
 
       exam.chapter = body.chapter;
