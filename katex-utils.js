@@ -1,5 +1,5 @@
 // ================================================================
-// KATEX UTILS v2.0 — ARVEXA School
+// KATEX UTILS v2.1 — ARVEXA School
 // Rendu mathématique robuste, global, auto-injecté
 // Utilisé par TOUTES les pages d'ARVEXA
 // ================================================================
@@ -86,8 +86,8 @@
       text = text.split(symbol).join(unicodeMap[symbol]);
     });
 
-    // Fractions textuelles
-    text = text.replace(/\b(\d+)\s*\/\s*(\d+)\b/g, '\\frac{$1}{$2}');
+    // ⚡ SUPPRESSION de la regex \d+/\d+ → \frac
+    // Cette transformation cassait les textes français ("3/4 des élèves")
 
     // Exposants textuels
     text = text.replace(/([a-zA-Z0-9])\^(\d+)/g, '$1^{$2}');
@@ -206,7 +206,7 @@
         throwOnError: false,
         errorColor: '#ff9a84',
         strict: false,
-        trust: true,
+        trust: false,          // ⚡ Sécurité : désactivé (pas de \href, \url, \includegraphics)
         maxSize: 50,
         maxExpand: 1000,
         macros: { ...MACROS, ...(options.macros || {}) },
@@ -353,5 +353,5 @@
     initAutoRender();
   }
 
-  console.log('📐 KaTeXUtils v2.0 chargé');
+  console.log('📐 KaTeXUtils v2.1 chargé');
 })();
