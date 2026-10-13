@@ -903,7 +903,7 @@ Réponds UNIQUEMENT avec le JSON.`
 // ═══ HISTOIRE-GÉO ═══
 function buildHistoryPrompts({ subjectLabel, rawInput }) {
   const baseContext = `Matière : ${subjectLabel}
-  ═══════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════
 CONTENU DE LA SECTION FOURNIE PAR L'ÉLÈVE
 ═══════════════════════════════════════════════════════════════
 ${rawInput}
@@ -1282,8 +1282,7 @@ Réponds UNIQUEMENT avec le JSON.`
     }
   ];
 }
-  
-  
+
 // ────────────────────────────────────────────────────────────────
 // SÉLECTION DU PROFIL
 // ────────────────────────────────────────────────────────────────
@@ -1920,7 +1919,6 @@ async function deleteSection(uid, body) {
     updatedAt: FieldValue.serverTimestamp()
   }, { merge: true });
 
-  
   return { success: true };
 }
 
