@@ -1692,12 +1692,16 @@ async function renderNotebooksView() {
       </div>
 
       <div class="streak-card">
-        <div class="streak-icon">🔥</div>
-        <div class="streak-content">
-          <div class="streak-value">${streak.current} jour${streak.current > 1 ? 's' : ''} d'affilée</div>
-          <div class="streak-label">${totalSections} section${totalSections > 1 ? 's' : ''} · ${totalChapters} chapitre${totalChapters > 1 ? 's' : ''}</div>
-        </div>
-      </div>
+  <div class="streak-icon">⏱️</div>
+  <div class="streak-content">
+    <div class="streak-value">${studyTime.formatted.total} d'étude</div>
+    <div class="streak-label">
+      ${studyTime.formatted.week} cette semaine
+      ${studyTime.todayMinutes > 0 ? `· ${studyTime.formatted.today} aujourd'hui` : ''}
+      · ${totalSections} section${totalSections > 1 ? 's' : ''}
+    </div>
+  </div>
+</div>
 
       <div class="section-title"><i class="fas fa-book"></i> Mes matières <span class="count">${ALL_SUBJECT_KEYS.length}</span></div>
       <div class="subjects-grid">${subjectCards}</div>
@@ -1733,8 +1737,11 @@ async function renderNotebookView(params) {
   try {
     const data = await callApi('listChapters', { subject });
     const chapters = data.chapters || [];
-    const totalSections = chapters.reduce((s, c) => s + (c.sectionsCount || 0), 0);
-
+    const totalSections = data.summary.totalSections || 0;
+const totalChapters = data.summary.totalChapters || 0;
+const streak = data.streak || { current: 0 };
+const studyTime = data.studyTime || { formatted: { total: '0 min', week: '0 min', today: '0 min' }, totalMinutes: 0 };
+    
     const listHtml = chapters.length === 0
       ? `<div class="empty-state" style="padding:30px 20px;">
            <div class="icon"><i class="fas fa-book"></i></div>
@@ -2978,7 +2985,109 @@ onAuthStateChanged(auth, async (user) => {
   if (!window.location.hash) {
     window.history.replaceState(null, '', '#/notebooks');
   }
+  cacheToken();
 });
+
+  // ═══════════════════════════════════════════════════════════════
+// TRACKING TEMPS D'ÉTUDE
+// ═══════════════════════════════════════════════════════════════
+let studySessionStart = Date.now();
+let studyLastSync = Date.now();
+const STUDY_SYNC_INTERVAL_MS = 2 * 60 * 1000;   // 2 minutes
+const STUDY_MAX_SESSION_MS = 60 * 60 * 1000;    // 1 heure max par session
+
+async function syncStudyTime(reason = 'heartbeat') {
+  if (!state.user) return;
+
+  const now = Date.now();
+  const elapsed = now - studyLastSync;
+  const minutes = Math.floor(elapsed / 60000);
+
+  // On envoie au moins 1 minute pour éviter du bruit
+  if (minutes < 1) return;
+
+  // Cap à 120 min par envoi (limite serveur)
+  const minutesToSend = Math.min(120, minutes);
+
+  // Reset du curseur immédiatement pour éviter double-envoi
+  studyLastSync = now;
+
+  try {
+    await callApi('trackStudyTime', { minutes: minutesToSend });
+    console.log(`[STUDY] +${minutesToSend} min (${reason})`);
+  } catch (e) {
+    // En cas d'échec, on remet le curseur en arrière pour retenter plus tard
+    studyLastSync = now - (minutesToSend * 60000);
+    console.warn('[STUDY] sync failed:', e.message);
+  }
+}
+
+// Heartbeat : envoie le temps toutes les 2 minutes
+setInterval(() => {
+  if (document.visibilityState === 'visible') {
+    syncStudyTime('heartbeat');
+  }
+}, STUDY_SYNC_INTERVAL_MS);
+
+// Envoi à la fermeture
+window.addEventListener('beforeunload', () => {
+  const elapsed = Date.now() - studyLastSync;
+  const minutes = Math.floor(elapsed / 60000);
+  if (minutes >= 1 && state.user) {
+    // Envoi synchrone via navigator.sendBeacon pour garantir l'arrivée
+    try {
+      const token = state.user.getIdToken ? null : null;
+      // ⚡ sendBeacon ne permet pas d'Authorization header facilement,
+      // donc on utilise fetch avec keepalive:true (supporté Chrome 66+, Firefox 76+)
+      const payload = JSON.stringify({
+        action: 'trackStudyTime',
+        minutes: Math.min(120, minutes)
+      });
+
+      // Récupérer le token en cache (déjà obtenu précédemment)
+      const cachedToken = sessionStorage.getItem('arvexa_id_token');
+      if (cachedToken) {
+        fetch('/api/progress', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${cachedToken}`
+          },
+          body: payload,
+          keepalive: true
+        });
+      }
+    } catch (e) {
+      // Silencieux
+    }
+  }
+});
+
+// Envoi quand l'onglet perd le focus (minimisé, changé d'app sur mobile)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    syncStudyTime('hidden');
+  }
+});
+
+// Reset au retour au premier plan
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    studyLastSync = Date.now();
+  }
+});
+
+// Cache du token pour beforeunload
+async function cacheToken() {
+  if (!state.user) return;
+  try {
+    const token = await getIdToken(state.user);
+    sessionStorage.setItem('arvexa_id_token', token);
+  } catch (_) {}
+}
+
+// Rafraîchir le token toutes les 30 min (avant expiration 1h Firebase)
+setInterval(cacheToken, 30 * 60 * 1000);
 
 console.log('ARVEXA — Mon cahier v8.0 — Correctifs P0/P1/P2');
 </script>
