@@ -38,7 +38,7 @@ const MAX_CONTENT_LENGTH = 15000;
 const  FREE_SECTION_LIMIT = 5 ;
 const  GLOBAL_AI_TIME_BUDGET_MS = 80000 ;
 
-soit  adminServices = null ;
+var adminServices = null ;
 
 // ───────────────────────────────────────────────────────────
 // ADMINISTRATEUR FIREBASE
