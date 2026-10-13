@@ -1,7 +1,7 @@
 // ================================================================
-// KATEX UTILS v2.1 — ARVEXA School
+// KATEX UTILS v2.2 — ARVEXA School
 // Rendu mathématique robuste, global, auto-injecté
-// Utilisé par TOUTES les pages d'ARVEXA
+// + Détection LaTeX orphelin (commandes connues)
 // ================================================================
 
 (function () {
@@ -36,6 +36,61 @@
   };
 
   // ═══════════════════════════════════════════════════════════════
+  // ✅ FIX 1.1 — Commandes LaTeX connues (détection orphelin)
+  // ═══════════════════════════════════════════════════════════════
+  const KNOWN_LATEX_COMMANDS = new Set([
+    // Grec
+    'alpha','beta','gamma','delta','epsilon','varepsilon','zeta','eta','theta','vartheta',
+    'iota','kappa','lambda','mu','nu','xi','pi','rho','sigma','varsigma','tau','upsilon',
+    'phi','varphi','chi','psi','omega','Gamma','Delta','Theta','Lambda','Xi','Pi','Sigma',
+    'Upsilon','Phi','Psi','Omega',
+    // Opérateurs
+    'times','div','pm','mp','cdot','cdotp','ast','star','bullet','circ','oplus','otimes','odot',
+    // Relations
+    'leq','geq','neq','approx','equiv','cong','sim','simeq','propto','ll','gg',
+    // Ensembles
+    'in','notin','ni','subset','supset','subseteq','supseteq','cup','cap','emptyset',
+    'forall','exists','nexists','neg','wedge','vee',
+    // Grands opérateurs
+    'sum','prod','int','oint','partial','nabla','infty','aleph','ell','hbar',
+    // Fonctions
+    'sin','cos','tan','cot','sec','csc','arcsin','arccos','arctan','sinh','cosh','tanh',
+    'log','ln','exp','lim','max','min','det','mod','gcd','lcm',
+    // Structures
+    'frac','dfrac','tfrac','cfrac','sqrt','binom','choose','pmod','bmod','operatorname',
+    // Délimiteurs
+    'left','right','big','Big','bigg','Bigg','langle','rangle','lceil','rceil','lfloor','rfloor',
+    'Vert','vert','parallel','nparallel','perp',
+    // Décorations
+    'overline','underline','vec','hat','bar','dot','ddot','tilde','widehat','widetilde',
+    // Environnements
+    'begin','end',
+    // Espacement
+    'quad','qquad','hspace','vspace',
+    // Typographie
+    'text','mathrm','mathbf','mathit','mathbb','mathcal','mathfrak','displaystyle','textstyle',
+    // Divers
+    'ldots','cdots','vdots','ddots','prime','backprime','degree','celsius',
+    // Flèches
+    'to','leftarrow','rightarrow','leftrightarrow','uparrow','downarrow','updownarrow',
+    'Rightarrow','Leftarrow','Leftrightarrow','Longrightarrow','Longleftarrow','Longleftrightarrow',
+    'mapsto','hookrightarrow','hookleftarrow','nearrow','searrow','swarrow','nwarrow',
+    'rightleftharpoons','leftrightharpoons','longrightarrow','longleftarrow',
+    'implies','impliedby','iff','leqslant','geqslant','varnothing','setminus',
+    'dagger','ddagger'
+  ]);
+
+  function containsKnownLatex(text) {
+    if (!text) return false;
+    const re = /\\([a-zA-Z]+)/g;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      if (KNOWN_LATEX_COMMANDS.has(m[1])) return true;
+    }
+    return false;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   // DÉLIMITEURS ÉTENDUS
   // ═══════════════════════════════════════════════════════════════
   const DELIMITERS = [
@@ -60,7 +115,6 @@
     if (!input || typeof input !== 'string') return '';
     let text = String(input);
 
-    // Symboles Unicode → LaTeX
     const unicodeMap = {
       '×': '\\times', '÷': '\\div',
       '−': '-', '–': '-', '—': '-',
@@ -86,29 +140,21 @@
       text = text.split(symbol).join(unicodeMap[symbol]);
     });
 
-    // ⚡ SUPPRESSION de la regex \d+/\d+ → \frac
-    // Cette transformation cassait les textes français ("3/4 des élèves")
-
-    // Exposants textuels
     text = text.replace(/([a-zA-Z0-9])\^(\d+)/g, '$1^{$2}');
     text = text.replace(/([a-zA-Z0-9])_(\d+)/g, '$1_{$2}');
 
-    // Racines
     text = text.replace(/sqrt\(([^)]+)\)/g, '\\sqrt{$1}');
 
-    // Fonctions trigonométriques
     const funcs = ['sin', 'cos', 'tan', 'cot', 'sec', 'csc', 'arcsin', 'arccos', 'arctan', 'sinh', 'cosh', 'tanh'];
     funcs.forEach((fn) => {
       const regex = new RegExp(`(?<![\\\\a-zA-Z])${fn}\\s*\\(`, 'g');
       text = text.replace(regex, `\\${fn}(`);
     });
 
-    // ln, log, exp
     text = text.replace(/(?<![\\a-zA-Z])ln\s*\(/g, '\\ln(');
     text = text.replace(/(?<![\\a-zA-Z])log\s*\(/g, '\\log(');
     text = text.replace(/(?<![\\a-zA-Z])exp\s*\(/g, '\\exp(');
 
-    // Limites
     text = text.replace(/lim\s+([a-zA-Z])\s*(?:→|\\to|->)\s*([^\s,;)]+)/g, '\\lim_{$1 \\to $2}');
 
     return text;
@@ -121,11 +167,8 @@
     if (!text || typeof text !== 'string') return '';
     let result = text;
 
-    // \( ... \) → $ ... $
     result = result.replace(/\\\((.+?)\\\)/gs, '$$$1$$');
-    // \[ ... \] → $$ ... $$
     result = result.replace(/\\\[(.+?)\\\]/gs, '$$$$$1$$$$');
-    // Corriger doubles délimiteurs
     result = result.replace(/\$\$\$+/g, '$$');
 
     return result;
@@ -138,15 +181,11 @@
     if (!text || typeof text !== 'string') return '';
     let cleaned = text;
 
-    // Retirer blocs code markdown
     cleaned = cleaned.replace(/```(?:json|latex|math)?\s*/gi, '');
     cleaned = cleaned.replace(/```/g, '');
-
-    // Retirer HTML dangereux
     cleaned = cleaned.replace(/<script[\s\S]*?<\/script>/gi, '');
     cleaned = cleaned.replace(/<style[\s\S]*?<\/style>/gi, '');
 
-    // Normaliser LaTeX
     cleaned = normalizeLatex(cleaned);
     cleaned = fixDelimiters(cleaned);
 
@@ -171,7 +210,6 @@
       }
     }
 
-    // Vérifier parents
     let parent = node.parentElement;
     let depth = 0;
     while (parent && depth < 5) {
@@ -206,7 +244,7 @@
         throwOnError: false,
         errorColor: '#ff9a84',
         strict: false,
-        trust: false,          // ⚡ Sécurité : désactivé (pas de \href, \url, \includegraphics)
+        trust: false,
         maxSize: 50,
         maxExpand: 1000,
         macros: { ...MACROS, ...(options.macros || {}) },
@@ -226,7 +264,6 @@
     if (!root) return;
     requestAnimationFrame(() => {
       renderKaTeX(root);
-      // Double check pour injections tardives
       setTimeout(() => renderKaTeX(root), 250);
     });
   }
@@ -237,17 +274,19 @@
   function renderMath(root) {
     const element = root || document.body;
 
-    // Normaliser les nœuds texte
     try {
       const walker = document.createTreeWalker(
         element,
         NodeFilter.SHOW_TEXT,
         {
+          // ✅ FIX 1.3 — Accepter les commandes LaTeX orphelines connues
           acceptNode: (node) => {
             if (shouldIgnoreNode(node.parentElement)) return NodeFilter.FILTER_REJECT;
             const text = node.textContent;
             if (!text || !text.trim()) return NodeFilter.FILTER_REJECT;
-            if (/\$|\\\(|\\\[/.test(text)) return NodeFilter.FILTER_ACCEPT;
+            if (/\$|\\\(|\\\[/.test(text) || containsKnownLatex(text)) {
+              return NodeFilter.FILTER_ACCEPT;
+            }
             return NodeFilter.FILTER_REJECT;
           }
         }
@@ -269,10 +308,11 @@
   // ═══════════════════════════════════════════════════════════════
   let observerTimer = null;
 
+  // ✅ FIX 1.2 — Détection élargie aux commandes LaTeX connues
   function hasLatexContent(node) {
     if (!node || node.nodeType !== 1) return false;
     const text = node.textContent || '';
-    return text.includes('$') || text.includes('\\(') || text.includes('\\[');
+    return /\$|\\\(|\\\[/.test(text) || containsKnownLatex(text);
   }
 
   function initAutoRender() {
@@ -298,7 +338,6 @@
 
       if (targets.size === 0) return;
 
-      // Debounce
       if (observerTimer) clearTimeout(observerTimer);
       observerTimer = setTimeout(() => {
         targets.forEach((target) => {
@@ -329,10 +368,11 @@
     renderMathSafe,
     renderKaTeX,
     initAutoRender,
+    containsKnownLatex,
     MACROS,
     DELIMITERS,
+    KNOWN_LATEX_COMMANDS,
 
-    // Raccourci pour désactiver l'auto-render
     disableAutoRender: () => {
       window.__arvexaKatexDisabled = true;
       if (window.__arvexaKatexObserver) {
@@ -353,5 +393,5 @@
     initAutoRender();
   }
 
-  console.log('📐 KaTeXUtils v2.1 chargé');
+  console.log('📐 KaTeXUtils v2.2 chargé');
 })();
