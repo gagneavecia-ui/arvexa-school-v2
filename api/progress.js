@@ -1,9 +1,7 @@
 // ================================================================
-// API PROGRESS v8.2 — ARVEXA School
+// API PROGRESS v8.3 — ARVEXA School
 // Cahier intelligent multi-profils + fan-out IA
-// 6 profils : scientifique / svt / philosophie / histoire-geo /
-//             francais / langue
-// Sans images, sans Vrai/Faux
+// Tracking temps d'étude + correctifs robustesse IA
 // ================================================================
 
 module.exports.config = { maxDuration: 120 };
@@ -20,7 +18,6 @@ var ALLOWED_SUBJECTS = new Set([
   'philosophie', 'histoire', 'geographie'
 ]);
 
-// ⚡ Version tableau pour les itérations (map/forEach/filter)
 var ALLOWED_SUBJECTS_ARRAY = Array.from(ALLOWED_SUBJECTS);
 
 var SUBJECT_INFO = {
@@ -35,78 +32,78 @@ var SUBJECT_INFO = {
 const MIN_CONTENT_LENGTH = 40;
 const MAX_CONTENT_LENGTH = 15000;
 
-const  FREE_SECTION_LIMIT = 5 ;
-const  GLOBAL_AI_TIME_BUDGET_MS = 80000 ;
+const FREE_SECTION_LIMIT = 5;
+const GLOBAL_AI_TIME_BUDGET_MS = 45000;
 
-var adminServices = null ;
+let adminServices = null;
 
-// ───────────────────────────────────────────────────────────
-// ADMINISTRATEUR FIREBASE
-// ───────────────────────────────────────────────────────────
-function  getAdminServices ( )  {
-  si  ( adminServices )  retourner  adminServices ;
+// ────────────────────────────────────────────────────────────────
+// FIREBASE ADMIN
+// ────────────────────────────────────────────────────────────────
+function getAdminServices() {
+  if (adminServices) return adminServices;
 
-  const  credentials = process . env . FIREBASE_ADMIN_CREDENTIALS ;
-  if  ( ! credentials || ! credentials . trim ( ) )  throw  new  Error ( 'firebase_admin_not_configured' ) ;
+  const credentials = process.env.FIREBASE_ADMIN_CREDENTIALS;
+  if (!credentials || !credentials.trim()) throw new Error('firebase_admin_not_configured');
 
-  laissez  serviceAccount ;
-  try  {  serviceAccount = JSON.parse ( credentials ) ; }​​
-  catch  ( e )  {  throw  new  Error ( 'firebase_admin_invalid_json' ) ; }
+  let serviceAccount;
+  try { serviceAccount = JSON.parse(credentials); }
+  catch (e) { throw new Error('firebase_admin_invalid_json'); }
 
-  si  ( ! serviceAccount . project_id || ! serviceAccount . private_key )  {
-    lancer  une nouvelle  erreur ( 'firebase_admin_invalid_credentials' ) ;
+  if (!serviceAccount.project_id || !serviceAccount.private_key) {
+    throw new Error('firebase_admin_invalid_credentials');
   }
 
-  const  admin = require ( 'firebase-admin' ) ;
-  si  ( ! admin . apps . length )  {
-    admin.initializeApp ( { credential : admin.credential.cert ( serviceAccount ) } ) ;​​​​​​  
+  const admin = require('firebase-admin');
+  if (!admin.apps.length) {
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
   }
 
   adminServices = {
-    auth : admin . auth ( ) ,
-    base de données : admin.firestore ( ) ,
-    Valeur du champ : admin.firestore.ValeurDuChamp ,​​
-    Horodatage : admin.firestore.Horodatage​​​​
-  } ;
-  renvoyer  adminServices ;
+    auth: admin.auth(),
+    db: admin.firestore(),
+    FieldValue: admin.firestore.FieldValue,
+    Timestamp: admin.firestore.Timestamp
+  };
+  return adminServices;
 }
 
-// ───────────────────────────────────────────────────────────
-// AIDE
-// ───────────────────────────────────────────────────────────
-fonction  clientIp ( requête )  {
-  renvoie  String ( request.headers [ ' x - forwarded -for' ] || request.socket ? .remoteAddress || ' unknown ' )
-    .split ( ' , ' ) [ 0 ] .trim ( ) ;
+// ────────────────────────────────────────────────────────────────
+// HELPERS
+// ────────────────────────────────────────────────────────────────
+function clientIp(request) {
+  return String(request.headers['x-forwarded-for'] || request.socket?.remoteAddress || 'unknown')
+    .split(',')[0].trim();
 }
 
-fonction  rateLimited ( ip )  {
-  const  now = Date . now ( ) ;
-  const  recent = ( requestLog . get ( ip ) || [ ] ) . filter ( ( t ) => now - t < WINDOW_MS ) ;
-  récent . pousser ( maintenant ) ;
-  requestLog.set ( ip , recent ) ;​​
-  retourner  recent . longueur > MAX_REQUESTS_PER_WINDOW ;
+function rateLimited(ip) {
+  const now = Date.now();
+  const recent = (requestLog.get(ip) || []).filter((t) => now - t < WINDOW_MS);
+  recent.push(now);
+  requestLog.set(ip, recent);
+  return recent.length > MAX_REQUESTS_PER_WINDOW;
 }
 
-fonction  jsonError ( réponse , statut , erreur , code )  {
-  renvoyer  la réponse.statut ( statut ) .json ( {​​
-    succès : faux ,
-    erreur ,
-    ... ( code ? {  code  } : { } )
-  } ) ;
+function jsonError(response, status, error, code) {
+  return response.status(status).json({
+    success: false,
+    error,
+    ...(code ? { code } : {})
+  });
 }
 
-fonction  applyCors ( requête , réponse )  {
-  const  ALLOWED_ORIGINS = [
-    'https://arvexaschool.vercel.app' ,
-    'https://admin-89.vercel.app' ,
-    'http://localhost:3000' ,
+function applyCors(request, response) {
+  const ALLOWED_ORIGINS = [
+    'https://arvexaschool.vercel.app',
+    'https://admin-89.vercel.app',
+    'http://localhost:3000',
     'http://localhost:5000'
-  ] ;
-  const  origin = request . headers . origin || '' ;
-  si  ( ALLOWED_ORIGINS . includes ( origin ) )  {
-    réponse . setHeader ( 'Access-Control-Allow-Origin' , origin ) ;
+  ];
+  const origin = request.headers.origin || '';
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    response.setHeader('Access-Control-Allow-Origin', origin);
   }
-  réponse.setHeader ( 'Variable' , ' Origine ' ) ;
+  response.setHeader('Vary', 'Origin');
   response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   response.setHeader('Access-Control-Max-Age', '86400');
@@ -178,6 +175,15 @@ function isMeaningfulContent(text) {
   return words.length >= 5;
 }
 
+function formatMinutes(totalMin) {
+  if (!totalMin || totalMin < 1) return '0 min';
+  if (totalMin < 60) return `${totalMin} min`;
+  const hours = Math.floor(totalMin / 60);
+  const minutes = totalMin % 60;
+  if (minutes === 0) return `${hours} h`;
+  return `${hours} h ${String(minutes).padStart(2, '0')}`;
+}
+
 // ────────────────────────────────────────────────────────────────
 // NORMALISATION DES ENTRÉES CLAVIER
 // ────────────────────────────────────────────────────────────────
@@ -241,19 +247,15 @@ function getProviders() {
   ].filter((p) => Boolean(p.key));
 }
 
-// ⚡ Réparation JSON basique pour réponses tronquées ou légèrement malformées
 function repairJson(str) {
   if (!str || typeof str !== 'string') return null;
 
   let s = String(str).trim();
 
-  // Retirer les backticks markdown
   s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
 
-  // Tentative directe
   try { return JSON.parse(s); } catch (_) {}
 
-  // Extraire entre la première { et la dernière }
   const firstBrace = s.indexOf('{');
   const lastBrace = s.lastIndexOf('}');
   if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return null;
@@ -262,7 +264,6 @@ function repairJson(str) {
 
   try { return JSON.parse(candidate); } catch (_) {}
 
-  // Fermer les accolades/crochets manquants (JSON tronqué)
   let open = 0, openBrackets = 0;
   let inString = false, escape = false;
   for (const ch of candidate) {
@@ -285,9 +286,15 @@ function repairJson(str) {
 
 async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 4000, deadline }) {
   const controller = new AbortController();
-  // ⚡ Timeout par provider : 60s max
-  const remaining = deadline ? Math.max(5000, deadline - Date.now()) : 60000;
-  const timeoutMs = Math.min(60000, remaining);
+
+  const timeouts = {
+    'Groq': 15000,
+    'OpenRouter': 20000,
+    'Mistral': 8000
+  };
+  const baseTimeout = timeouts[provider.name] || 15000;
+  const remaining = deadline ? Math.max(5000, deadline - Date.now()) : baseTimeout;
+  const timeoutMs = Math.min(baseTimeout, remaining);
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
@@ -325,10 +332,8 @@ async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 40
 
     const cleaned = String(rawContent).replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
 
-    // ⚡ Tentative normale
     try { return JSON.parse(cleaned); }
     catch (_) {
-      // ⚡ Tentative avec réparation
       const repaired = repairJson(cleaned);
       if (repaired) {
         console.warn(`[AI] ${provider.name} — JSON réparé avec succès`);
@@ -343,6 +348,8 @@ async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 40
 }
 
 function distributeTasks(tasks, providers) {
+  if (providers.length === 0) return [];
+
   return tasks.map((task, i) => ({
     ...task,
     provider: providers[i % providers.length]
@@ -358,7 +365,6 @@ async function runParallelTasks(tasks, providers, deadline) {
     )
   );
 
-  // Fallback pour les tâches échouées
   return await Promise.all(
     results.map(async (r, i) => {
       if (r.status === 'fulfilled') {
@@ -367,14 +373,12 @@ async function runParallelTasks(tasks, providers, deadline) {
 
       const errMsg = String(r.reason?.message || '');
 
-      // Ne pas tenter le fallback si erreur structurelle
       const isStructural = errMsg.includes('JSON') || errMsg.includes('structure');
       if (isStructural) {
         console.warn(`[FAN-OUT] Tâche "${tasks[i].name}" : erreur structurelle, pas de fallback`);
         return { status: 'rejected', error: r.reason, task: tasks[i], provider: 'none' };
       }
 
-      // Ne pas tenter le fallback si la deadline est proche
       if (deadline && Date.now() > deadline - 10000) {
         console.warn(`[FAN-OUT] Tâche "${tasks[i].name}" : deadline proche, pas de fallback`);
         return { status: 'rejected', error: r.reason, task: tasks[i], provider: 'none' };
@@ -464,12 +468,12 @@ RÈGLE DE PÉRIMÈTRE STRICT (TRÈS IMPORTANTE) :
 `.trim();
 
 const JSON_STRICT_RULES = `
-⚠️ RÈGLE JSON STRICTE :
+RÈGLE JSON STRICTE :
 - Réponds UNIQUEMENT avec un objet JSON valide.
 - Pas de texte avant ou après le JSON.
 - Pas de markdown (pas de \`\`\`json).
 - Échappe correctement les guillemets doubles dans les chaînes (\\").
-- Utilise des apostrophes droites (') et non typographiques (‘ ’).
+- Utilise des apostrophes droites (') et non typographiques.
 - Maximum 5 éléments dans les tableaux longs (parts, questions, etc.).
 `.trim();
 
@@ -899,7 +903,7 @@ Réponds UNIQUEMENT avec le JSON.`
 // ═══ HISTOIRE-GÉO ═══
 function buildHistoryPrompts({ subjectLabel, rawInput }) {
   const baseContext = `Matière : ${subjectLabel}
-═══════════════════════════════════════════════════════════════
+  ═══════════════════════════════════════════════════════════════
 CONTENU DE LA SECTION FOURNIE PAR L'ÉLÈVE
 ═══════════════════════════════════════════════════════════════
 ${rawInput}
@@ -1278,7 +1282,8 @@ Réponds UNIQUEMENT avec le JSON.`
     }
   ];
 }
-
+  
+  
 // ────────────────────────────────────────────────────────────────
 // SÉLECTION DU PROFIL
 // ────────────────────────────────────────────────────────────────
@@ -1296,8 +1301,6 @@ function getPromptsForProfile(profile, context) {
 
 // ────────────────────────────────────────────────────────────────
 // POST-TRAITEMENT
-// ⚠️ IMPORTANT : le serveur ne fait QUE normaliser le LaTeX.
-// L'échappement HTML est fait côté client (safeText).
 // ────────────────────────────────────────────────────────────────
 function wrapOrphanLatex(text) {
   if (!text || typeof text !== 'string') return text;
@@ -1412,6 +1415,73 @@ async function markDailyActivity(uid, inc = {}) {
   }, { merge: true });
 }
 
+// ────────────────────────────────────────────────────────────────
+// TRACKING TEMPS D'ÉTUDE
+// ────────────────────────────────────────────────────────────────
+async function trackStudyTime(uid, body) {
+  const minutes = Math.min(120, Math.max(1, Math.round(Number(body.minutes) || 0)));
+  if (minutes <= 0) return { success: true, skipped: true };
+
+  const { db, FieldValue } = getAdminServices();
+  const today = todayKey();
+  const ref = db.collection('users').doc(uid).collection('dailyActivity').doc(today);
+
+  await ref.set({
+    date: today,
+    studyMinutes: FieldValue.increment(minutes),
+    lastAt: FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  return { success: true, addedMinutes: minutes };
+}
+
+async function computeStudyTime(uid) {
+  const { db } = getAdminServices();
+  let snap;
+  try {
+    snap = await db.collection('users').doc(uid).collection('dailyActivity')
+      .orderBy('date', 'desc').limit(365).get();
+  } catch (e) {
+    console.warn('[PROGRESS] computeStudyTime failed:', e.message);
+    return {
+      totalMinutes: 0,
+      totalHours: 0,
+      todayMinutes: 0,
+      weekMinutes: 0,
+      formatted: { total: '0 min', week: '0 min', today: '0 min' }
+    };
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekAgoKey = weekAgo.toISOString().slice(0, 10);
+
+  let totalMinutes = 0;
+  let todayMinutes = 0;
+  let weekMinutes = 0;
+
+  snap.docs.forEach((d) => {
+    const data = d.data();
+    const minutes = Number(data.studyMinutes || 0);
+    totalMinutes += minutes;
+    if (data.date === today) todayMinutes += minutes;
+    if (data.date >= weekAgoKey) weekMinutes += minutes;
+  });
+
+  return {
+    totalMinutes,
+    totalHours: Math.round((totalMinutes / 60) * 10) / 10,
+    todayMinutes,
+    weekMinutes,
+    formatted: {
+      total: formatMinutes(totalMinutes),
+      week: formatMinutes(weekMinutes),
+      today: formatMinutes(todayMinutes)
+    }
+  };
+}
+
 // ═══════════════════════════════════════════════════════════════
 // ACTIONS
 // ═══════════════════════════════════════════════════════════════
@@ -1430,14 +1500,13 @@ async function getDashboard(uid) {
   );
 
   const streakPromise = computeStreak(uid);
-
   const studyTimePromise = computeStudyTime(uid);
 
-const [chaptersResults, streak, studyTime] = await Promise.all([
-  Promise.all(chaptersPromises),
-  streakPromise,
-  studyTimePromise
-]);
+  const [chaptersResults, streak, studyTime] = await Promise.all([
+    Promise.all(chaptersPromises),
+    streakPromise,
+    studyTimePromise
+  ]);
 
   const subjects = [];
   let totalChapters = 0;
@@ -1503,13 +1572,13 @@ const [chaptersResults, streak, studyTime] = await Promise.all([
   }
 
   return {
-  success: true,
-  summary: { subjectsCount: subjects.length, totalChapters, totalSections },
-  streak,
-  studyTime,
-  subjects,
-  recentActivity
-};
+    success: true,
+    summary: { subjectsCount: subjects.length, totalChapters, totalSections },
+    streak,
+    studyTime,
+    subjects,
+    recentActivity
+  };
 }
 
 async function computeStreak(uid) {
@@ -1548,80 +1617,6 @@ async function computeStreak(uid) {
   });
 
   return { current, best };
-}
-
-async function computeStudyTime(uid) {
-  const { db } = getAdminServices();
-  let snap;
-  try {
-    snap = await db.collection('users').doc(uid).collection('dailyActivity')
-      .orderBy('date', 'desc').limit(365).get();
-  } catch (e) {
-    console.warn('[PROGRESS] computeStudyTime failed:', e.message);
-    return {
-      totalMinutes: 0,
-      totalHours: 0,
-      todayMinutes: 0,
-      weekMinutes: 0,
-      formatted: { total: '0 min', week: '0 min', today: '0 min' }
-    };
-  }
-
-  const today = new Date().toISOString().slice(0, 10);
-  const weekAgo = new Date();
-  weekAgo.setDate(weekAgo.getDate() - 7);
-  const weekAgoKey = weekAgo.toISOString().slice(0, 10);
-
-  let totalMinutes = 0;
-  let todayMinutes = 0;
-  let weekMinutes = 0;
-
-  snap.docs.forEach((d) => {
-    const data = d.data();
-    const minutes = Number(data.studyMinutes || 0);
-    totalMinutes += minutes;
-    if (data.date === today) todayMinutes += minutes;
-    if (data.date >= weekAgoKey) weekMinutes += minutes;
-  });
-
-  return {
-    totalMinutes,
-    totalHours: Math.round((totalMinutes / 60) * 10) / 10,
-    todayMinutes,
-    weekMinutes,
-    formatted: {
-      total: formatMinutes(totalMinutes),
-      week: formatMinutes(weekMinutes),
-      today: formatMinutes(todayMinutes)
-    }
-  };
-}
-
-// ⚡ Formatage humain : "45 min", "2 h 15", "12 h 30"
-function formatMinutes(totalMin) {
-  if (!totalMin || totalMin < 1) return '0 min';
-  if (totalMin < 60) return `${totalMin} min`;
-  const hours = Math.floor(totalMin / 60);
-  const minutes = totalMin % 60;
-  if (minutes === 0) return `${hours} h`;
-  return `${hours} h ${String(minutes).padStart(2, '0')}`;
-}
-
-async function trackStudyTime(uid, body) {
-  const minutes = Math.min(120, Math.max(1, Math.round(Number(body.minutes) || 0)));
-  if (minutes <= 0) return { success: true, skipped: true };
-
-  const { db, FieldValue } = getAdminServices();
-  const today = todayKey();
-  const ref = db.collection('users').doc(uid).collection('dailyActivity').doc(today);
-
-  await ref.set({
-    date: today,
-    studyMinutes: FieldValue.increment(minutes),
-    lastAt: FieldValue.serverTimestamp()
-  }, { merge: true });
-
-  return { success: true, addedMinutes: minutes };
 }
 
 async function listChapters(uid, body) {
@@ -1786,21 +1781,19 @@ async function createSection(uid, body) {
     const deadline = Date.now() + GLOBAL_AI_TIME_BUDGET_MS;
     const results = await runParallelTasks(tasks, providers, deadline);
 
-    // ⚡ Log détaillé : quelle tâche a réussi / échoué
     results.forEach((r) => {
       if (r.status === 'fulfilled') {
-        console.log(`[FAN-OUT] ✅ ${r.task.name} (via ${r.provider})`);
+        console.log(`[FAN-OUT] OK ${r.task.name} (via ${r.provider})`);
       } else {
-        console.error(`[FAN-OUT] ❌ ${r.task.name} — raison: ${r.error?.message || 'unknown'}`);
+        console.error(`[FAN-OUT] FAIL ${r.task.name} - raison: ${r.error?.message || 'unknown'}`);
       }
     });
 
     analysis = mergeAnalysis(results, profile);
     analysis = deepClean(analysis);
 
-    // ⚡ Fallback spécifique : explanation jamais null
     if (!analysis.explanation || typeof analysis.explanation !== 'object') {
-      console.warn('[FAN-OUT] explanation manquant → fallback minimal');
+      console.warn('[FAN-OUT] explanation manquant -> fallback minimal');
       analysis.explanation = {
         sectionTitle: analysis.sectionTitle || 'Section',
         understanding: 'L\'explication pédagogique n\'a pas pu être générée pour cette section. Les questions et QCM restent disponibles ci-dessous.',
@@ -1808,10 +1801,9 @@ async function createSection(uid, body) {
       };
     }
 
-    // ⚡ Vérification globale
     const hasContent = analysis.explanation || analysis.questions.length > 0;
     if (!hasContent) {
-      console.warn('[FAN-OUT] Tout a échoué → fallback complet');
+      console.warn('[FAN-OUT] Tout a échoué -> fallback complet');
       analysis = buildFallbackAnalysis({ rawInput: normalizedInput, profile });
     }
   } catch (err) {
@@ -1928,6 +1920,7 @@ async function deleteSection(uid, body) {
     updatedAt: FieldValue.serverTimestamp()
   }, { merge: true });
 
+  
   return { success: true };
 }
 
@@ -2018,28 +2011,26 @@ module.exports = async function handler(request, response) {
   const action = body.action;
   const uid = user.uid;
 
-  console.log(`[PROGRESS v8.2] ${action} | uid=${uid.slice(0, 8)}`);
+  console.log(`[PROGRESS v8.3] ${action} | uid=${uid.slice(0, 8)}`);
 
   try {
-    
-  switch (action) {
-  case 'getDashboard':     return response.status(200).json(await getDashboard(uid));
-  case 'listChapters':     return response.status(200).json(await listChapters(uid, body));
-  case 'createChapter':    return response.status(200).json(await createChapter(uid, body));
-  case 'getChapter':       return response.status(200).json(await getChapter(uid, body));
-  case 'createSection':    return response.status(200).json(await createSection(uid, body));
-  case 'getSection':       return response.status(200).json(await getSection(uid, body));
-  case 'updateNotes':      return response.status(200).json(await updateNotes(uid, body));
-  case 'deleteSection':    return response.status(200).json(await deleteSection(uid, body));
-  case 'deleteChapter':    return response.status(200).json(await deleteChapter(uid, body));
-  case 'getFullLesson':    return response.status(200).json(await getFullLesson(uid, body));
-  case 'trackStudyTime':   return response.status(200).json(await trackStudyTime(uid, body));
-  default:
-    return jsonError(response, 400, `Action inconnue : "${action}"`);
-  }
-    
+    switch (action) {
+      case 'getDashboard':     return response.status(200).json(await getDashboard(uid));
+      case 'listChapters':     return response.status(200).json(await listChapters(uid, body));
+      case 'createChapter':    return response.status(200).json(await createChapter(uid, body));
+      case 'getChapter':       return response.status(200).json(await getChapter(uid, body));
+      case 'createSection':    return response.status(200).json(await createSection(uid, body));
+      case 'getSection':       return response.status(200).json(await getSection(uid, body));
+      case 'updateNotes':      return response.status(200).json(await updateNotes(uid, body));
+      case 'deleteSection':    return response.status(200).json(await deleteSection(uid, body));
+      case 'deleteChapter':    return response.status(200).json(await deleteChapter(uid, body));
+      case 'getFullLesson':    return response.status(200).json(await getFullLesson(uid, body));
+      case 'trackStudyTime':   return response.status(200).json(await trackStudyTime(uid, body));
+      default:
+        return jsonError(response, 400, `Action inconnue : "${action}"`);
+    }
   } catch (error) {
-    console.error(`[PROGRESS v8.2] "${action}" failed:`, error.message);
+    console.error(`[PROGRESS v8.3] "${action}" failed:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
