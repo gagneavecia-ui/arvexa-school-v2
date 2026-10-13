@@ -43,7 +43,7 @@ var adminServices = null ;
 // ───────────────────────────────────────────────────────────
 // ADMINISTRATEUR FIREBASE
 // ───────────────────────────────────────────────────────────
-fonction  getAdminServices ( )  {
+function  getAdminServices ( )  {
   si  ( adminServices )  retourner  adminServices ;
 
   const  credentials = process . env . FIREBASE_ADMIN_CREDENTIALS ;
