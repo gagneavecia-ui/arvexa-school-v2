@@ -4,7 +4,7 @@
 // Les correctifs prennent effet dès le prochain chargement.
 // ================================================================
 
-const CACHE_VERSION = 'arvexa-v7.0.0';
+const CACHE_VERSION = 'arvexa-v8.0.0';
 const CACHE_SHELL = 'arvexa-shell-v7';
 const CACHE_COURS = 'arvexa-cours-v7';
 const CACHE_IMAGES = 'arvexa-images-v7';
@@ -42,7 +42,8 @@ const PRECACHE_SHELL = [
   './manifest.json',
   './icon.png',
   './arv-progress.html',
-  './katex-utils.js'
+  './katex-utils.js',
+  './bac-date.js'
 ];
 
 // ================================================================
