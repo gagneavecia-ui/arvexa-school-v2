@@ -1228,10 +1228,39 @@ main {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.katex { font-size: 1.05em; color: inherit; }
-.katex-display { margin: 8px 0; overflow-x: auto; padding: 4px 0; }
-.katex-error { color: #ff9a84 !important; }
-
+ .katex {
+  font-size: 1.05em;
+  color: inherit;
+  font-family: KaTeX_Main, "Times New Roman", serif;
+}
+.katex-display {
+  margin: 10px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px 2px;
+  -webkit-overflow-scrolling: touch;
+  text-align: center;
+}
+.katex-display > .katex { white-space: nowrap; }
+.katex-error {
+  color: #ff9a84 !important;
+  background: rgba(255, 154, 132, 0.08);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.formula-block {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.part-explanation,
+.block-body,
+.qa-answer-text,
+.qcm-question,
+.qcm-explanation {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+  
 @media (max-width: 520px) {
   main { padding: 16px 12px 50px; }
   .greeting h1 { font-size: 22px; }
@@ -1370,6 +1399,9 @@ const state = {
 
 const $ = (id) => document.getElementById(id);
 
+// ═══════════════════════════════════════════════════════════════
+// ✅ FIX 3.1 — safeText épargne le LaTeX ($...$ et $$...$$)
+// ═══════════════════════════════════════════════════════════════
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = String(text || '');
@@ -1379,22 +1411,31 @@ function escapeHtml(text) {
 function safeText(text) {
   let s = String(text || '');
   s = s.replace(/&amp;(lt|gt|quot|amp|#39);/g, '&$1;');
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Découper pour ne PAS échapper les formules LaTeX
+  const parts = s.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$)/g);
+  return parts.map((part, i) => {
+    if (i % 2 === 1) return part;  // segment LaTeX : intact
+    return part.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }).join('');
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ✅ FIX 3.2 — renderKaTeX simplifié, resetKaTeX supprimée
+// ═══════════════════════════════════════════════════════════════
 let katexAttempts = 0;
 function isKatexReady() { return typeof renderMathInElement === 'function'; }
 
 function renderKaTeX(root) {
   if (!root) return;
-  if (root.dataset.katexDone === '1') return;
 
+  // Déléguer à katex-utils (gère environnements, macros, orphelins)
   if (window.KaTeXUtils?.renderMath) {
     window.KaTeXUtils.renderMath(root);
-    root.dataset.katexDone = '1';
     return;
   }
 
+  // Fallback : KaTeX natif
   if (!isKatexReady()) {
     if (katexAttempts++ < 60) setTimeout(() => renderKaTeX(root), 100);
     return;
@@ -1406,24 +1447,22 @@ function renderKaTeX(root) {
       delimiters: [
         { left: '$$', right: '$$', display: true },
         { left: '\\[', right: '\\]', display: true },
-        { left: '$', right: '$', display: false },
+        { left: '$',  right: '$',  display: false },
         { left: '\\(', right: '\\)', display: false }
       ],
+      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option'],
+      ignoredClasses: ['no-katex', 'katex-ignore', 'katex'],
       throwOnError: false,
       errorColor: '#ff9a84',
       strict: false,
       trust: false
     });
-    root.dataset.katexDone = '1';
   } catch (e) {
     console.error('[KaTeX]', e);
   }
 }
 
-function resetKaTeX(root) {
-  if (!root) return;
-  root.dataset.katexDone = '';
-}
+// ✅ resetKaTeX SUPPRIMÉE — elle causait des incohérences de flag.
 
 function showToast(message, type = 'info', duration = 3000) {
   const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
@@ -1580,6 +1619,9 @@ function navigate(view, params = {}, replace = false) {
   applyRoute({ view, params });
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ✅ FIX 3.3 — applyRoute sans resetKaTeX
+// ═══════════════════════════════════════════════════════════════
 function applyRoute(route) {
   state.view = route.view;
   state.params = route.params || {};
@@ -1588,7 +1630,7 @@ function applyRoute(route) {
   const target = $(`view-${route.view}`);
   if (target) {
     target.classList.add('active');
-    resetKaTeX(target);
+    // ✅ FIX 3.3 — resetKaTeX supprimé (n'existe plus)
   }
 
   updateHeader();
@@ -1979,8 +2021,9 @@ async function renderSectionView(params) {
     const container = $('analysisContainer');
     container.innerHTML = renderAnalysis(a, profile);
 
+    // ✅ FIX 3.2 — rendu KaTeX unique et propre
     requestAnimationFrame(() => {
-      setTimeout(() => renderKaTeX(el), 0);
+      setTimeout(() => renderKaTeX(container), 0);
     });
 
     $('expandRawBtn')?.addEventListener('click', () => {
@@ -1990,17 +2033,23 @@ async function renderSectionView(params) {
       span.textContent = raw.classList.contains('expanded') ? 'Réduire' : 'Voir tout';
     });
 
+    // ✅ FIX 3.4 — Handler Q/R avec flag local, pas de re-render
     el.querySelectorAll('.qa-item').forEach((item) => {
       item.querySelector('.qa-question').addEventListener('click', () => {
         item.classList.toggle('open');
         if (item.classList.contains('open')) {
           const inner = item.querySelector('.qa-answer-inner');
-          resetKaTeX(inner);
-          setTimeout(() => renderKaTeX(inner), 100);
+          if (inner && inner.dataset.rendered !== '1') {
+            setTimeout(() => {
+              renderKaTeX(inner);
+              inner.dataset.rendered = '1';
+            }, 100);
+          }
         }
       });
     });
 
+    // ✅ FIX 3.5 — Handler QCM : rendu unique de l'explication
     el.querySelectorAll('.qcm-item').forEach((qcm) => {
       const correct = qcm.dataset.correct;
       const options = qcm.querySelectorAll('.qcm-option');
@@ -2015,8 +2064,13 @@ async function renderSectionView(params) {
             if (o.dataset.letter === correct) o.classList.add('correct');
             else if (o.dataset.letter === letter) o.classList.add('wrong');
           });
-          if (explanation) explanation.classList.add('show');
-          renderKaTeX(qcm);
+          if (explanation) {
+            explanation.classList.add('show');
+            if (explanation.dataset.rendered !== '1') {
+              renderKaTeX(explanation);
+              explanation.dataset.rendered = '1';
+            }
+          }
         });
       });
     });
@@ -2232,6 +2286,7 @@ function renderStructure(structure, profile) {
           ${structure.formulas.map((f) => {
             let latex = String(f.latex || '');
             if (latex && !latex.includes('$')) latex = `$$${latex}$$`;
+            // ✅ safeText préserve maintenant les $...$
             return `
               <div class="formula-block">
                 <div>${safeText(latex)}</div>
@@ -3056,7 +3111,7 @@ onAuthStateChanged(auth, async (user) => {
   cacheToken();
 });
 
-console.log('ARVEXA — Mon cahier v8.3 — Tracking temps d\'étude');
+console.log('ARVEXA — Mon cahier v8.4 — LaTeX corrigé');
 </script>
 </body>
 </html>
