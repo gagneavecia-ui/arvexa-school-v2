@@ -256,29 +256,47 @@ function wrapOrphanLatex(text) {
   }).join('');
 }
 
-// Sous-fonction : encadre les blocs LaTeX dans un segment de texte pur
+// ✅ FIX 2.1 — Environnements préservés + filtrage aux commandes connues
 function wrapSegmentLatex(segment) {
   if (!segment) return segment;
   if (!/\\[a-zA-Z]/.test(segment)) return segment;
 
-  // Étape A : identifier et encadrer chaque commande LaTeX avec ses arguments
-  // Regex qui capture une commande, ses arguments {}, ses indices/exposants
-  let r = segment.replace(
-    /(\\[a-zA-Z]+(?:\s*\{[^}]*\})*)((?:\s*[_^]\s*(?:\{[^}]*\}|[a-zA-Z0-9]))*)/g,
-    (match, cmd, scripts) => {
-      if (!cmd) return match;
-      return ` $${cmd}${scripts || ''}$ `;
+  let r = segment;
+
+  // ÉTAPE 0 : préserver les environnements complets AVANT tout le reste
+  r = r.replace(
+    /\\begin\{([a-zA-Z*]+)\}([\s\S]*?)\\end\{\1\}/g,
+    (match) => ` $$${match}$$ `
+  );
+
+  // ÉTAPE A : commandes avec arguments (filtrées sur commandes connues)
+  const KNOWN_CMDS = new Set([
+    ...NO_ARG_LATEX_COMMANDS,
+    'frac', 'sqrt', 'dfrac', 'tfrac', 'cfrac',
+    'text', 'mathrm', 'mathbf', 'mathit', 'mathbb', 'mathcal', 'mathfrak',
+    'left', 'right', 'big', 'Big', 'bigg', 'Bigg',
+    'overline', 'underline', 'vec', 'hat', 'bar', 'dot', 'ddot', 'tilde',
+    'binom', 'choose', 'pmod', 'bmod', 'operatorname',
+    'sinh', 'cosh', 'tanh', 'arcsin', 'arccos', 'arctan',
+    'lg', 'log', 'ln', 'exp',
+    'quad', 'qquad', 'hspace', 'vspace'
+  ]);
+
+  r = r.replace(
+    /(\\[a-zA-Z]+)((?:\s*\{[^}]*\})*)((?:\s*[_^]\s*(?:\{[^}]*\}|[a-zA-Z0-9]))*)/g,
+    (match, cmd, args, scripts) => {
+      if (!KNOWN_CMDS.has(cmd.slice(1))) return match;
+      return ` $${cmd}${args || ''}${scripts || ''}$ `;
     }
   );
 
-  // Étape B : encadrer aussi les variables avec exposants/indices isolés
-  // Ex : x^{2} sans \cmd devant
+  // ÉTAPE B : variables avec exposants/indices isolés
   r = r.replace(
     /(?:^|\s)([a-zA-Z]\s*[_^]\s*(?:\{[^}]*\}|[a-zA-Z0-9]))(?=\s|$|[.,;:!?])/g,
     (match, expr) => match.replace(expr, `$${expr.trim()}$`)
   );
 
-  // Étape C : fusionner les $...$ adjacents séparés par des opérateurs
+  // ÉTAPE C : fusionner les $...$ adjacents
   for (let iteration = 0; iteration < 5; iteration++) {
     const before = r;
     r = r.replace(
@@ -288,19 +306,18 @@ function wrapSegmentLatex(segment) {
     if (before === r) break;
   }
 
-  // Étape D : nettoyer les $ inutiles
+  // ÉTAPE D : nettoyer les $ inutiles
   r = r.replace(/\$\s*\$/g, ' ');
   r = r.replace(/\$\s+/g, '$');
   r = r.replace(/\s+\$/g, '$');
 
-  // Étape E : espaces multiples
+  // ÉTAPE E : espaces multiples
   r = r.replace(/\s+/g, ' ');
   r = r.replace(/\s+([.,;:!?])/g, '$1');
 
   return r;
 }
 
-// ─── Nettoyage d'une formule déjà délimitée ─────────────────
 function cleanFormulaContent(formula) {
   if (!formula || typeof formula !== 'string') return formula;
 
@@ -321,10 +338,9 @@ function cleanFormulaContent(formula) {
   // Fixer les commandes collées
   inner = fixCommandSpacing(inner);
 
-  // Nettoyer les doubles délimiteurs internes (accidentels)
-  inner = inner.replace(/\$\$/g, '');
-  inner = inner.replace(/\$/g, '');
-
+// ✅ FIX 2.2 — Ne supprimer que les $ orphelins en bord
+inner = inner.replace(/^\$+/, '').replace(/\$+$/, '');
+  
   return open + inner + close;
 }
 
