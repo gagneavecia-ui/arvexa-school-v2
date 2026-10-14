@@ -1630,12 +1630,22 @@
 
     const userRef = doc(db, 'users', user.uid);
 
-    unsubscribeUser = onSnapshot(userRef,
+       unsubscribeUser = onSnapshot(userRef,
       (docSnap) => {
         const cached = getCachedUserData(user.uid);
 
         if (docSnap.exists()) {
           const data = docSnap.data();
+
+          if (data.accountStatus === 'blocked' || data.accountStatus === 'paused') {
+            if (unsubscribeUser) unsubscribeUser();
+            clearSession();
+            signOut(auth).then(() => {
+              window.location.replace('login.html');
+            });
+            return;
+          }
+
           saveUserDataToCache(data, user.uid);
           renderProfile(data);
         } else if (cached) {
