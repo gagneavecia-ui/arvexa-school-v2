@@ -2451,12 +2451,22 @@
       unsubscribeUser = null;
     }
     const userRef = doc(db, 'users', user.uid);
-    unsubscribeUser = onSnapshot(userRef,
+       unsubscribeUser = onSnapshot(userRef,
       (docSnap) => {
         const cached = getCachedUserData(user.uid);
 
         if (docSnap.exists()) {
           userData = docSnap.data();
+
+          if (userData.accountStatus === 'blocked' || userData.accountStatus === 'paused') {
+            if (unsubscribeUser) unsubscribeUser();
+            clearSession();
+            signOut(auth).then(() => {
+              window.location.replace('login.html');
+            });
+            return;
+          }
+
           saveUserDataToCache(userData, user.uid);
           renderUserData(userData);
           showDashboard();
