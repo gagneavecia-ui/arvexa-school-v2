@@ -1777,6 +1777,7 @@ const PAYMENT_METHODS = {
 const SESSION_KEY = 'arvexa_session';
 const USER_DATA_KEY = 'arvexa_user_data';
 const LAST_UID_KEY = 'arvexa_last_uid';
+const RENEW_FLAG_KEY = 'arvexa_renew_intent';
 
 function saveSession(user) {
   if (!user) return;
@@ -2004,15 +2005,26 @@ function routeToScreen(data) {
   userData = data;
   const state = getUserState(data);
 
+  // ⚡ Si l'utilisateur a explicitement demandé à se réabonner, on respecte son choix
+  try {
+    const renewIntent = localStorage.getItem(RENEW_FLAG_KEY);
+    if (renewIntent === 'true' && state === 'expired') {
+      showScreen('free');
+      return;
+    }
+  } catch (e) {}
+
   switch (state) {
     case 'pending':
       renderPendingScreen(data);
       showScreen('pending');
       break;
     case 'premium':
-      renderPremiumScreen(data);
-      showScreen('premium');
-      break;
+  // ⚡ Premium rétabli : on efface l'intention de renouvellement
+  try { localStorage.removeItem(RENEW_FLAG_KEY); } catch (e) {}
+  renderPremiumScreen(data);
+  showScreen('premium');
+  break;
     case 'expired':
       renderExpiredScreen(data);
       showScreen('expired');
@@ -2345,10 +2357,13 @@ async function sendToWhatsApp() {
   const waUrl = 'https://wa.me/' + SUPPORT_WHATSAPP + '?text=' + encodedMessage;
   window.open(waUrl, '_blank', 'noopener,noreferrer');
 
-  // 4) Mettre à jour l'affichage vers l'écran "pending"
+    // 4) Mettre à jour l'affichage vers l'écran "pending"
   setTimeout(() => {
     closeModal();
     isSubscribing = false;
+
+    // ⚡ L'utilisateur a entamé une nouvelle démarche, on efface l'intention
+    try { localStorage.removeItem(RENEW_FLAG_KEY); } catch (e) {}
 
     if (userData) {
       userData.subscriptionStatus = 'pending';
@@ -2359,6 +2374,7 @@ async function sendToWhatsApp() {
       userData.subscriptionRequestDate = new Date();
       userData.subscriptionPaymentMethod = selectedPaymentMethod;
     }
+
     renderPendingScreen(userData || {});
     showScreen('pending');
   }, 600);
