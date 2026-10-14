@@ -1535,12 +1535,19 @@
     }
   }
 
-  // ⚡ Si le profil n'a pas pu être créé après 3 essais, on nettoie
-  if (!profileSaved) {
-    console.error('Impossible de créer le profil après 3 tentatives. Suppression du compte Auth...');
-    try { await user.delete(); } catch (e) {}
-    throw new Error('PROFILE_CREATION_FAILED');
-  }
+      if (!profileSaved) {
+        console.error('Impossible de créer le profil après 3 tentatives.');
+        try {
+          await user.delete();
+        } catch (deleteErr) {
+          try {
+            const pending = JSON.parse(localStorage.getItem('arvexa_pending_cleanup') || '[]');
+            pending.push({ uid: user.uid, email: emailValue, at: Date.now() });
+            localStorage.setItem('arvexa_pending_cleanup', JSON.stringify(pending));
+          } catch (e) {}
+        }
+        throw new Error('PROFILE_CREATION_FAILED');
+      }
 
     // ⚡ Notifier les admins (push FCM)
 try {
