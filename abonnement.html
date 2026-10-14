@@ -1546,9 +1546,9 @@
         </div>
 
         <div class="pending-actions">
-          <a href="abonnement.html" class="btn-action primary" onclick="location.reload()">
+          <button type="button" class="btn-action primary" id="renewBtn">
             <i class="fas fa-redo"></i> Renouveler mon abonnement
-          </a>
+          </button>
           <a href="https://wa.me/22798064667" target="_blank" class="btn-action secondary">
             <i class="fab fa-whatsapp"></i> Contacter le support
           </a>
@@ -1777,6 +1777,7 @@ const PAYMENT_METHODS = {
 const SESSION_KEY = 'arvexa_session';
 const USER_DATA_KEY = 'arvexa_user_data';
 const LAST_UID_KEY = 'arvexa_last_uid';
+// ⚡ Drapeau persistant "je veux me réabonner"
 const RENEW_FLAG_KEY = 'arvexa_renew_intent';
 
 function saveSession(user) {
@@ -2005,11 +2006,18 @@ function routeToScreen(data) {
   userData = data;
   const state = getUserState(data);
 
-  // ⚡ Si l'utilisateur a explicitement demandé à se réabonner, on respecte son choix
+  // ⚡ Si l'utilisateur a explicitement demandé à se réabonner,
+  //    on respecte son choix tant qu'il n'a pas entamé de nouvelle démarche.
   try {
     const renewIntent = localStorage.getItem(RENEW_FLAG_KEY);
     if (renewIntent === 'true' && state === 'expired') {
       showScreen('free');
+      // Préremplir les champs si on a les données
+      if (data && fullNameInput) {
+        const fullName = data.fullName || ((data.firstName || '') + ' ' + (data.lastName || '')).trim();
+        if (fullName && !fullNameInput.value) fullNameInput.value = fullName;
+        if (data.phone && !whatsappInput.value) whatsappInput.value = data.phone;
+      }
       return;
     }
   } catch (e) {}
@@ -2020,11 +2028,11 @@ function routeToScreen(data) {
       showScreen('pending');
       break;
     case 'premium':
-  // ⚡ Premium rétabli : on efface l'intention de renouvellement
-  try { localStorage.removeItem(RENEW_FLAG_KEY); } catch (e) {}
-  renderPremiumScreen(data);
-  showScreen('premium');
-  break;
+      // ⚡ Premium rétabli : on efface l'intention de renouvellement
+      try { localStorage.removeItem(RENEW_FLAG_KEY); } catch (e) {}
+      renderPremiumScreen(data);
+      showScreen('premium');
+      break;
     case 'expired':
       renderExpiredScreen(data);
       showScreen('expired');
@@ -2357,12 +2365,12 @@ async function sendToWhatsApp() {
   const waUrl = 'https://wa.me/' + SUPPORT_WHATSAPP + '?text=' + encodedMessage;
   window.open(waUrl, '_blank', 'noopener,noreferrer');
 
-    // 4) Mettre à jour l'affichage vers l'écran "pending"
+  // 4) Mettre à jour l'affichage vers l'écran "pending"
   setTimeout(() => {
     closeModal();
     isSubscribing = false;
 
-    // ⚡ L'utilisateur a entamé une nouvelle démarche, on efface l'intention
+    // ⚡ L'utilisateur a entamé une nouvelle démarche, on efface l'intention de renouvellement
     try { localStorage.removeItem(RENEW_FLAG_KEY); } catch (e) {}
 
     if (userData) {
@@ -2374,7 +2382,6 @@ async function sendToWhatsApp() {
       userData.subscriptionRequestDate = new Date();
       userData.subscriptionPaymentMethod = selectedPaymentMethod;
     }
-
     renderPendingScreen(userData || {});
     showScreen('pending');
   }, 600);
@@ -2534,10 +2541,19 @@ modal.addEventListener('click', (e) => {
 
 confirmBtn.addEventListener('click', sendToWhatsApp);
 
+// ⚡ Bouton "Renouveler" — affiche l'écran d'abonnement classique
+document.getElementById('renewBtn')?.addEventListener('click', () => {
+  try { localStorage.setItem(RENEW_FLAG_KEY, 'true'); } catch (e) {}
+  showScreen('free');
+});
+
 // ================================================================
 // DÉCONNEXION
 // ================================================================
+let isRedirecting = false;
+
 async function performLogout() {
+  isRedirecting = true;
   if (unsubscribeUser) unsubscribeUser();
   clearSession();
   try { await signOut(auth); } catch (e) {}
@@ -2578,31 +2594,21 @@ function loadUserData(user) {
 
   const userRef = doc(db, 'users', user.uid);
 
-     unsubscribeUser = onSnapshot(userRef,
-      (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-
-          if (data.accountStatus === 'blocked' || data.accountStatus === 'paused') {
-            if (unsubscribeUser) unsubscribeUser();
-            clearSession();
-            signOut(auth).then(() => {
-              window.location.replace('login.html');
-            });
-            return;
-          }
-
-          saveUserDataToCache(data, user.uid);
-          routeToScreen(data);
+  unsubscribeUser = onSnapshot(userRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        saveUserDataToCache(data, user.uid);
+        routeToScreen(data);
+      } else {
+        const cached = getCachedUserData(user.uid);
+        if (cached) {
+          routeToScreen(cached);
         } else {
-          const cached = getCachedUserData(user.uid);
-          if (cached) {
-            routeToScreen(cached);
-          } else {
-            showScreen('free');
-          }
+          showScreen('free');
         }
-      },
+      }
+    },
     (error) => {
       const cached = getCachedUserData(user.uid);
       if (cached) {
@@ -2617,7 +2623,6 @@ function loadUserData(user) {
 // ================================================================
 // AUTH ROBUSTE — Anti-flash
 // ================================================================
-let isRedirecting = false;
 let isAuthResolved = false;
 let graceTimer = null;
 let maxTimer = null;
@@ -2726,7 +2731,7 @@ initAuthGuard(async (user) => {
 // ================================================================
 updateDisplay();
 
-console.log('🚀 ARVEXA — Abonnement (avec notifications admin)');
+console.log('🚀 ARVEXA — Abonnement (avec notifications admin + renouvellement corrigé)');
 </script>
 </body>
 </html>
