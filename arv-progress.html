@@ -1089,115 +1089,6 @@ main {
 .btn-full.loading .spinner { display: block; }
 .btn-full.loading .btn-text, .btn-full.loading .btn-icon { display: none; }
 
-.premium-modal {
-  width: 100%; max-width: 400px;
-  background: #141414;
-  border: 1px solid rgba(224, 184, 74, 0.3);
-  border-radius: 18px;
-  padding: 28px 24px 22px;
-  text-align: center;
-  position: relative;
-  animation: popIn 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-}
-.premium-modal::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  border-radius: 18px 18px 0 0;
-  background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
-}
-.premium-modal .premium-icon {
-  width: 62px; height: 62px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(224, 184, 74, 0.15), rgba(184, 134, 11, 0.08));
-  border: 2px solid rgba(224, 184, 74, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 16px;
-  font-size: 28px;
-  animation: crownPulse 2s ease-in-out infinite;
-}
-@keyframes crownPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(224, 184, 74, 0.3); }
-  50% { box-shadow: 0 0 20px 6px rgba(224, 184, 74, 0.12); }
-}
-.premium-modal h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-light);
-  margin-bottom: 8px;
-}
-.premium-modal h2 span {
-  color: var(--accent-bright);
-  font-style: italic;
-}
-.premium-modal p {
-  font-size: 13.5px;
-  color: var(--text-dim);
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-.premium-modal p strong { color: var(--accent-bright); }
-.premium-modal .premium-features {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 22px;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.premium-modal .premium-features li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13.5px;
-  color: var(--text-body);
-}
-.premium-modal .premium-features li i {
-  color: var(--accent-bright);
-  font-size: 13px;
-  flex-shrink: 0;
-}
-.premium-modal .btn-premium-subscribe {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 15px 20px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent-bright), var(--accent));
-  color: #0A0A0A;
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: var(--transition);
-  font-family: inherit;
-  border: none;
-  box-shadow: 0 4px 16px rgba(184, 134, 11, 0.3);
-}
-.premium-modal .btn-premium-subscribe:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(184, 134, 11, 0.4);
-}
-.premium-modal .btn-premium-later {
-  display: block;
-  width: 100%;
-  padding: 11px;
-  margin-top: 8px;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 13px;
-  cursor: pointer;
-  font-family: inherit;
-}
-.premium-modal .btn-premium-later:hover { color: var(--text-dim); }
-
 .toast-container {
   position: fixed; top: calc(var(--safe-top) + 16px); left: 50%;
   transform: translateX(-50%); z-index: 9999;
@@ -1228,7 +1119,7 @@ main {
   to { opacity: 1; transform: translateY(0); }
 }
 
- .katex {
+.katex {
   font-size: 1.05em;
   color: inherit;
   font-family: KaTeX_Main, "Times New Roman", serif;
@@ -1260,7 +1151,7 @@ main {
   overflow-wrap: break-word;
   word-break: break-word;
 }
-  
+
 @media (max-width: 520px) {
   main { padding: 16px 12px 50px; }
   .greeting h1 { font-size: 22px; }
@@ -1272,7 +1163,6 @@ main {
   .block { padding: 13px 15px; }
   .part { padding: 15px 15px 14px; }
   .modal { padding: 20px 16px; padding-bottom: calc(20px + var(--safe-bottom)); }
-  .premium-modal { padding: 24px 20px 18px; }
   .cta-exam { padding: 14px 15px; }
   .cta-exam > i:first-child { font-size: 20px; }
   .cta-exam-title { font-size: 13.5px; }
@@ -1289,6 +1179,312 @@ main {
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(184, 134, 11, 0.25); border-radius: 10px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   ARVEXA — POP-UP PREMIUM UNIVERSEL
+   Version 10 — Réduite · Bouton unique
+   ═══════════════════════════════════════════════════════════════ */
+
+.arvexa-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.30s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.arvexa-popup-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+.arvexa-popup {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  margin: auto;
+  padding: 30px 26px 22px;
+  border: 1px solid rgba(224, 184, 74, 0.20);
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse 120% 70% at 50% -10%, rgba(224, 184, 74, 0.10) 0%, transparent 65%),
+    radial-gradient(ellipse 100% 50% at 50% 110%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
+    linear-gradient(165deg, #171717 0%, #0b0b0b 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 0 60px rgba(224, 184, 74, 0.08),
+    0 24px 60px rgba(0, 0, 0, 0.70),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: scale(0.94) translateY(20px);
+  transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-align: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+.arvexa-popup-overlay.show .arvexa-popup {
+  transform: scale(1) translateY(0);
+}
+.arvexa-popup::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(224, 184, 74, 0.4) 20%,
+    #E0B84A 50%,
+    rgba(224, 184, 74, 0.4) 80%,
+    transparent 100%);
+  opacity: 0.9;
+  z-index: 2;
+}
+.arvexa-popup::after {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(224, 184, 74, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(6px);
+}
+.arvexa-popup-close {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.03);
+  color: #6A6A5A;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 4;
+  -webkit-tap-highlight-color: transparent;
+}
+.arvexa-popup-close:hover {
+  background: rgba(224, 184, 74, 0.12);
+  color: #E0B84A;
+  transform: rotate(90deg) scale(1.05);
+}
+.arvexa-popup-close:active {
+  transform: rotate(90deg) scale(0.95);
+}
+.arvexa-popup-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
+  border: 1px solid rgba(224, 184, 74, 0.28);
+  color: #E0B84A;
+  font-size: 26px;
+  margin: 0 auto 16px;
+  position: relative;
+  z-index: 1;
+  animation: arvexaCrownPulse 3s ease-in-out infinite;
+  box-shadow:
+    0 0 20px rgba(224, 184, 74, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+@keyframes arvexaCrownPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 20px rgba(224, 184, 74, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow:
+      0 0 34px rgba(224, 184, 74, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+}
+.arvexa-popup-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #F5F0E8;
+  line-height: 1.25;
+  margin: 0 0 10px;
+  letter-spacing: -0.015em;
+  position: relative;
+  z-index: 1;
+}
+.arvexa-popup-title em {
+  color: #E0B84A;
+  font-style: italic;
+  font-weight: 700;
+}
+.arvexa-popup-message {
+  font-size: 13.5px;
+  color: #8A8A7A;
+  line-height: 1.6;
+  margin: 0 auto 20px;
+  max-width: 280px;
+  position: relative;
+  z-index: 1;
+}
+.arvexa-popup-message strong {
+  color: #E0B84A;
+  font-weight: 700;
+}
+.arvexa-popup-benefits {
+  display: none;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 22px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  z-index: 1;
+}
+.arvexa-popup-benefits span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  font-size: 11px;
+  color: #8A8A7A;
+  line-height: 1.35;
+  text-align: center;
+  font-weight: 500;
+}
+.arvexa-popup-benefits span::before {
+  content: '✓';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(224, 184, 74, 0.10);
+  border: 1px solid rgba(224, 184, 74, 0.22);
+  color: #E0B84A;
+  font-weight: 800;
+  font-size: 11px;
+  line-height: 1;
+}
+@media (min-width: 600px) {
+  .arvexa-popup-benefits { display: grid; }
+}
+.arvexa-popup-actions {
+  display: flex;
+  position: relative;
+  z-index: 1;
+}
+.arvexa-popup-actions .arvexa-popup-btn {
+  flex: 1;
+  width: 100%;
+}
+.arvexa-popup-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 13px 18px;
+  min-height: 48px;
+  border-radius: 100px;
+  border: none;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.arvexa-popup-btn.primary {
+  background: linear-gradient(135deg, #E0B84A 0%, #B8860B 100%);
+  color: #0A0A0A;
+  box-shadow: 0 4px 16px rgba(224, 184, 74, 0.28);
+}
+.arvexa-popup-btn.primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.30) 50%,
+    transparent 100%);
+  transform: skewX(-20deg);
+  transition: left 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+  pointer-events: none;
+}
+.arvexa-popup-btn.primary:hover::before { left: 130%; }
+.arvexa-popup-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
+}
+.arvexa-popup-btn.primary:active { transform: translateY(0) scale(0.97); }
+.arvexa-popup-btn.primary i { font-size: 12px; }
+@media (max-width: 599px) {
+  .arvexa-popup-overlay { padding: 16px; }
+  .arvexa-popup { max-width: 100%; padding: 28px 22px 20px; border-radius: 20px; }
+  .arvexa-popup-icon { width: 56px; height: 56px; font-size: 24px; margin-bottom: 14px; }
+  .arvexa-popup-title { font-size: 21px; }
+  .arvexa-popup-message { font-size: 13.5px; margin-bottom: 18px; }
+  .arvexa-popup-btn { min-height: 46px; font-size: 13.5px; }
+}
+@media (max-width: 380px) {
+  .arvexa-popup-overlay { padding: 12px; }
+  .arvexa-popup { padding: 24px 18px 16px; border-radius: 18px; }
+  .arvexa-popup::before { left: 24%; right: 24%; }
+  .arvexa-popup-icon { width: 50px; height: 50px; font-size: 21px; margin-bottom: 12px; }
+  .arvexa-popup-title { font-size: 19px; }
+  .arvexa-popup-message { font-size: 13px; margin-bottom: 16px; }
+  .arvexa-popup-btn { min-height: 44px; font-size: 13px; padding: 12px 14px; }
+  .arvexa-popup-close { width: 28px; height: 28px; top: 10px; right: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arvexa-popup,
+  .arvexa-popup-overlay,
+  .arvexa-popup-icon,
+  .arvexa-popup-btn {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+.arvexa-popup-btn:focus-visible,
+.arvexa-popup-close:focus-visible {
+  outline: 2px solid #E0B84A;
+  outline-offset: 3px;
+}
 </style>
 </head>
 <body>
@@ -1324,6 +1520,43 @@ main {
 
 <div class="modal-backdrop" id="modalBackdrop"></div>
 <div class="toast-container" id="toastContainer"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     POP-UP PREMIUM UNIVERSEL — Cahier
+     ═══════════════════════════════════════════════════════════ -->
+<div class="arvexa-popup-overlay" id="premiumOverlay">
+  <div class="arvexa-popup" role="dialog" aria-modal="true" aria-labelledby="premiumPopupTitle">
+
+    <button class="arvexa-popup-close" id="premiumClose" aria-label="Fermer">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <i class="fas fa-crown arvexa-popup-icon"></i>
+
+    <h2 class="arvexa-popup-title" id="premiumPopupTitle">
+      Limite de sections <em>atteinte</em>
+    </h2>
+
+    <p class="arvexa-popup-message">
+      Tu as utilisé tes <strong>5 sections gratuites</strong> ce mois-ci.
+      Passe à Premium pour analyser tes cours sans limite.
+    </p>
+
+    <div class="arvexa-popup-benefits">
+      <span>Sections illimitées</span>
+      <span>Analyses IA complètes</span>
+      <span>Accès illimité</span>
+    </div>
+
+    <div class="arvexa-popup-actions">
+      <a href="abonnement.html" class="arvexa-popup-btn primary">
+        <i class="fas fa-crown"></i>
+        Découvrir Premium
+      </a>
+    </div>
+
+  </div>
+</div>
 
 <script type="importmap">
 { "imports": {
@@ -1400,7 +1633,7 @@ const state = {
 const $ = (id) => document.getElementById(id);
 
 // ═══════════════════════════════════════════════════════════════
-// ✅ FIX 3.1 — safeText épargne le LaTeX ($...$ et $$...$$)
+// SAFE TEXT — épargne le LaTeX ($...$ et $$...$$)
 // ═══════════════════════════════════════════════════════════════
 function escapeHtml(text) {
   const div = document.createElement('div');
@@ -1412,57 +1645,20 @@ function safeText(text) {
   let s = String(text || '');
   s = s.replace(/&amp;(lt|gt|quot|amp|#39);/g, '&$1;');
 
-  // Découper pour ne PAS échapper les formules LaTeX
   const parts = s.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$)/g);
   return parts.map((part, i) => {
-    if (i % 2 === 1) return part;  // segment LaTeX : intact
+    if (i % 2 === 1) return part;
     return part.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }).join('');
 }
 
 // ═══════════════════════════════════════════════════════════════
-// ✅ FIX 3.2 — renderKaTeX simplifié, resetKaTeX supprimée
+// RENDU KaTeX — délégué à katex-utils.js (MutationObserver global)
 // ═══════════════════════════════════════════════════════════════
-let katexAttempts = 0;
-function isKatexReady() { return typeof renderMathInElement === 'function'; }
-
-function renderKaTeX(root) {
-  if (!root) return;
-
-  // Déléguer à katex-utils (gère environnements, macros, orphelins)
-  if (window.KaTeXUtils?.renderMath) {
-    window.KaTeXUtils.renderMath(root);
-    return;
-  }
-
-  // Fallback : KaTeX natif
-  if (!isKatexReady()) {
-    if (katexAttempts++ < 60) setTimeout(() => renderKaTeX(root), 100);
-    return;
-  }
-  katexAttempts = 0;
-
-  try {
-    renderMathInElement(root, {
-      delimiters: [
-        { left: '$$', right: '$$', display: true },
-        { left: '\\[', right: '\\]', display: true },
-        { left: '$',  right: '$',  display: false },
-        { left: '\\(', right: '\\)', display: false }
-      ],
-      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option'],
-      ignoredClasses: ['no-katex', 'katex-ignore', 'katex'],
-      throwOnError: false,
-      errorColor: '#ff9a84',
-      strict: false,
-      trust: false
-    });
-  } catch (e) {
-    console.error('[KaTeX]', e);
-  }
-}
-
-// ✅ resetKaTeX SUPPRIMÉE — elle causait des incohérences de flag.
+// Le rendu est déclenché automatiquement par katex-utils.js à chaque
+// ajout de contenu contenant du LaTeX dans le DOM.
+// Aucun appel manuel nécessaire : c'est plus fiable et ça évite les
+// doubles rendus qui causaient des formules instables.
 
 function showToast(message, type = 'info', duration = 3000) {
   const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
@@ -1602,12 +1798,16 @@ function routeFromHash() {
 }
 
 function hashFromRoute(view, params) {
+  const p = params || {};
   switch (view) {
     case 'notebooks': return '#/notebooks';
-    case 'notebook': return `#/notebook/${params.subject}`;
-    case 'chapter': return `#/chapter/${params.subject}/${params.chapterId}`;
-    case 'section': return `#/section/${params.subject}/${params.chapterId}/${params.sectionId}`;
-    case 'lesson': return `#/lesson/${params.subject}/${params.chapterId}`;
+    case 'notebook': return p.subject ? `#/notebook/${p.subject}` : '#/notebooks';
+    case 'chapter': return (p.subject && p.chapterId)
+      ? `#/chapter/${p.subject}/${p.chapterId}` : '#/notebooks';
+    case 'section': return (p.subject && p.chapterId && p.sectionId)
+      ? `#/section/${p.subject}/${p.chapterId}/${p.sectionId}` : '#/notebooks';
+    case 'lesson': return (p.subject && p.chapterId)
+      ? `#/lesson/${p.subject}/${p.chapterId}` : '#/notebooks';
     default: return '#/notebooks';
   }
 }
@@ -1619,19 +1819,13 @@ function navigate(view, params = {}, replace = false) {
   applyRoute({ view, params });
 }
 
-// ═══════════════════════════════════════════════════════════════
-// ✅ FIX 3.3 — applyRoute sans resetKaTeX
-// ═══════════════════════════════════════════════════════════════
 function applyRoute(route) {
   state.view = route.view;
   state.params = route.params || {};
 
   document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
   const target = $(`view-${route.view}`);
-  if (target) {
-    target.classList.add('active');
-    // ✅ FIX 3.3 — resetKaTeX supprimé (n'existe plus)
-  }
+  if (target) target.classList.add('active');
 
   updateHeader();
   updateBackButton();
@@ -2020,11 +2214,7 @@ async function renderSectionView(params) {
 
     const container = $('analysisContainer');
     container.innerHTML = renderAnalysis(a, profile);
-
-    // ✅ FIX 3.2 — rendu KaTeX unique et propre
-    requestAnimationFrame(() => {
-      setTimeout(() => renderKaTeX(container), 0);
-    });
+    // Rendu KaTeX automatique (katex-utils.js MutationObserver)
 
     $('expandRawBtn')?.addEventListener('click', () => {
       const raw = $('rawInput');
@@ -2033,23 +2223,14 @@ async function renderSectionView(params) {
       span.textContent = raw.classList.contains('expanded') ? 'Réduire' : 'Voir tout';
     });
 
-    // ✅ FIX 3.4 — Handler Q/R avec flag local, pas de re-render
+    // Handler Q/R — le rendu KaTeX est automatique
     el.querySelectorAll('.qa-item').forEach((item) => {
       item.querySelector('.qa-question').addEventListener('click', () => {
         item.classList.toggle('open');
-        if (item.classList.contains('open')) {
-          const inner = item.querySelector('.qa-answer-inner');
-          if (inner && inner.dataset.rendered !== '1') {
-            setTimeout(() => {
-              renderKaTeX(inner);
-              inner.dataset.rendered = '1';
-            }, 100);
-          }
-        }
       });
     });
 
-    // ✅ FIX 3.5 — Handler QCM : rendu unique de l'explication
+    // Handler QCM — l'explication est déjà rendue automatiquement
     el.querySelectorAll('.qcm-item').forEach((qcm) => {
       const correct = qcm.dataset.correct;
       const options = qcm.querySelectorAll('.qcm-option');
@@ -2064,13 +2245,7 @@ async function renderSectionView(params) {
             if (o.dataset.letter === correct) o.classList.add('correct');
             else if (o.dataset.letter === letter) o.classList.add('wrong');
           });
-          if (explanation) {
-            explanation.classList.add('show');
-            if (explanation.dataset.rendered !== '1') {
-              renderKaTeX(explanation);
-              explanation.dataset.rendered = '1';
-            }
-          }
+          if (explanation) explanation.classList.add('show');
         });
       });
     });
@@ -2286,7 +2461,6 @@ function renderStructure(structure, profile) {
           ${structure.formulas.map((f) => {
             let latex = String(f.latex || '');
             if (latex && !latex.includes('$')) latex = `$$${latex}$$`;
-            // ✅ safeText préserve maintenant les $...$
             return `
               <div class="formula-block">
                 <div>${safeText(latex)}</div>
@@ -2692,9 +2866,7 @@ async function renderLessonView(params) {
       ${sectionsHtml}
     `;
 
-    requestAnimationFrame(() => {
-      setTimeout(() => renderKaTeX(el), 0);
-    });
+    // Rendu KaTeX automatique (katex-utils.js MutationObserver)
 
     $('goToExamLessonBtn')?.addEventListener('click', function () {
       var subj = $('goToExamLessonBtn').dataset.subject;
@@ -2769,31 +2941,32 @@ function confirmDelete({ title, message, onConfirm }) {
   });
 }
 
+// ═══════════════════════════════════════════════════════════════
+// POP-UP PREMIUM UNIVERSEL
+// ═══════════════════════════════════════════════════════════════
 function showPremiumModal() {
-  openModal(`
-    <div class="premium-modal">
-      <div class="premium-icon">👑</div>
-      <h2>Passe à <span>Premium</span></h2>
-      <p>Tu as utilisé tes <strong>5 sections gratuites</strong> ce mois-ci.</p>
-
-      <ul class="premium-features">
-        <li><i class="fas fa-check-circle"></i> Sections illimitées (au lieu de 5/mois)</li>
-        <li><i class="fas fa-check-circle"></i> Analyses IA sans limite</li>
-        <li><i class="fas fa-check-circle"></i> Accès illimité à tous les outils</li>
-        <li><i class="fas fa-check-circle"></i> Examens complets</li>
-      </ul>
-
-      <a href="abonnement.html" class="btn-premium-subscribe">
-        <i class="fas fa-crown"></i>
-        <span>S'abonner maintenant</span>
-      </a>
-      <button class="btn-premium-later" id="premiumLaterBtn">Plus tard</button>
-    </div>
-  `, { center: true });
-
-  $('premiumLaterBtn')?.addEventListener('click', closeModal);
+  const overlay = $('premiumOverlay');
+  if (overlay) overlay.classList.add('show');
 }
 
+function hidePremiumModal() {
+  const overlay = $('premiumOverlay');
+  if (overlay) overlay.classList.remove('show');
+}
+
+$('premiumClose')?.addEventListener('click', hidePremiumModal);
+$('premiumOverlay')?.addEventListener('click', (e) => {
+  if (e.target === $('premiumOverlay')) hidePremiumModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && $('premiumOverlay')?.classList.contains('show')) {
+    hidePremiumModal();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// MODALE NOUVEAU CHAPITRE
+// ═══════════════════════════════════════════════════════════════
 function openNewChapterModal(subject) {
   const info = SUBJECTS[subject];
 
@@ -2844,6 +3017,9 @@ function openNewChapterModal(subject) {
   setTimeout(() => input.focus(), 200);
 }
 
+// ═══════════════════════════════════════════════════════════════
+// MODALE AJOUT SECTION
+// ═══════════════════════════════════════════════════════════════
 function openAddSectionModal(subject, chapterId) {
   const info = SUBJECTS[subject];
 
@@ -3111,7 +3287,7 @@ onAuthStateChanged(auth, async (user) => {
   cacheToken();
 });
 
-console.log('ARVEXA — Mon cahier v8.4 — LaTeX corrigé');
+console.log('ARVEXA — Mon cahier v9.0 — KaTeX délégué + pop-up universel');
 </script>
 </body>
 </html>
