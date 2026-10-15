@@ -1124,412 +1124,91 @@
       font-weight: 700;
     }
 
-    /* ═══════════════════════════════════════════════════════════════════
-   ARVEXA — POP-UP PREMIUM UNIVERSEL
-   Version 10 — Réduite · Bouton unique
-   Un seul design pour toutes les pages · Contenu adapté par page
-   ═══════════════════════════════════════════════════════════════════ */
-
-/* ─────────────────────────────────────────────────────────────
-   1. OVERLAY
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: grid;
-  place-items: center;
-  padding: 18px;
-  background: rgba(0, 0, 0, 0.82);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.30s cubic-bezier(0.4, 0, 0.2, 1),
-              visibility 0.30s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
-.arvexa-popup-overlay.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   2. CARTE
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup {
-  position: relative;
-  width: 100%;
-  max-width: 360px;
-  margin: auto;
-  padding: 30px 26px 22px;
-  border: 1px solid rgba(224, 184, 74, 0.20);
-  border-radius: 22px;
-  background:
-    radial-gradient(ellipse 120% 70% at 50% -10%, rgba(224, 184, 74, 0.10) 0%, transparent 65%),
-    radial-gradient(ellipse 100% 50% at 50% 110%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
-    linear-gradient(165deg, #171717 0%, #0b0b0b 100%);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.02),
-    0 0 60px rgba(224, 184, 74, 0.08),
-    0 24px 60px rgba(0, 0, 0, 0.70),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transform: scale(0.94) translateY(20px);
-  transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
-  text-align: center;
-  overflow: hidden;
-  isolation: isolate;
-}
-.arvexa-popup-overlay.show .arvexa-popup {
-  transform: scale(1) translateY(0);
-}
-
-.arvexa-popup::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 20%;
-  right: 20%;
-  height: 2px;
-  border-radius: 0 0 4px 4px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(224, 184, 74, 0.4) 20%,
-    #E0B84A 50%,
-    rgba(224, 184, 74, 0.4) 80%,
-    transparent 100%);
-  opacity: 0.9;
-  z-index: 2;
-}
-
-.arvexa-popup::after {
-  content: '';
-  position: absolute;
-  top: -50px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 160px;
-  height: 100px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(224, 184, 74, 0.18) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-  filter: blur(6px);
-}
-
-/* ─────────────────────────────────────────────────────────────
-   3. BOUTON FERMER
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-close {
-  position: absolute;
-  top: 13px;
-  right: 13px;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.03);
-  color: #6A6A5A;
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-  z-index: 4;
-  -webkit-tap-highlight-color: transparent;
-}
-.arvexa-popup-close:hover {
-  background: rgba(224, 184, 74, 0.12);
-  color: #E0B84A;
-  transform: rotate(90deg) scale(1.05);
-}
-.arvexa-popup-close:active {
-  transform: rotate(90deg) scale(0.95);
-}
-
-/* ─────────────────────────────────────────────────────────────
-   4. ICÔNE
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
-  border: 1px solid rgba(224, 184, 74, 0.28);
-  color: #E0B84A;
-  font-size: 26px;
-  margin: 0 auto 16px;
-  position: relative;
-  z-index: 1;
-  animation: arvexaCrownPulse 3s ease-in-out infinite;
-  box-shadow:
-    0 0 20px rgba(224, 184, 74, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-@keyframes arvexaCrownPulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow:
-      0 0 20px rgba(224, 184, 74, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-  50% {
-    transform: scale(1.04);
-    box-shadow:
-      0 0 34px rgba(224, 184, 74, 0.32),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   5. TITRE
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-title {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: #F5F0E8;
-  line-height: 1.25;
-  margin: 0 0 10px;
-  letter-spacing: -0.015em;
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-title em {
-  color: #E0B84A;
-  font-style: italic;
-  font-weight: 700;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   6. MESSAGE
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-message {
-  font-size: 13.5px;
-  color: #8A8A7A;
-  line-height: 1.6;
-  margin: 0 auto 20px;
-  max-width: 280px;
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-message strong {
-  color: #E0B84A;
-  font-weight: 700;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   7. BÉNÉFICES (desktop)
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-benefits {
-  display: none;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 22px;
-  padding: 14px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-benefits span {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-  font-size: 11px;
-  color: #8A8A7A;
-  line-height: 1.35;
-  text-align: center;
-  font-weight: 500;
-}
-.arvexa-popup-benefits span::before {
-  content: '✓';
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(224, 184, 74, 0.10);
-  border: 1px solid rgba(224, 184, 74, 0.22);
-  color: #E0B84A;
-  font-weight: 800;
-  font-size: 11px;
-  line-height: 1;
-}
-
-@media (min-width: 600px) {
-  .arvexa-popup-benefits {
-    display: grid;
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   8. ACTION (bouton unique)
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-actions {
-  display: flex;
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-actions .arvexa-popup-btn {
-  flex: 1;
-  width: 100%;
-}
-
-.arvexa-popup-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 13px 18px;
-  min-height: 48px;
-  border-radius: 100px;
-  border: none;
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  position: relative;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.arvexa-popup-btn.primary {
-  background: linear-gradient(135deg, #E0B84A 0%, #B8860B 100%);
-  color: #0A0A0A;
-  box-shadow: 0 4px 16px rgba(224, 184, 74, 0.28);
-}
-.arvexa-popup-btn.primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -120%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.30) 50%,
-    transparent 100%);
-  transform: skewX(-20deg);
-  transition: left 0.7s cubic-bezier(0.25, 1, 0.5, 1);
-  pointer-events: none;
-}
-.arvexa-popup-btn.primary:hover::before {
-  left: 130%;
-}
-.arvexa-popup-btn.primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
-}
-.arvexa-popup-btn.primary:active {
-  transform: translateY(0) scale(0.97);
-}
-.arvexa-popup-btn.primary i {
-  font-size: 12px;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   9. RESPONSIVE
-   ───────────────────────────────────────────────────────────── */
-@media (max-width: 599px) {
-  .arvexa-popup-overlay {
-    padding: 16px;
-  }
-  .arvexa-popup {
-    max-width: 100%;
-    padding: 28px 22px 20px;
-    border-radius: 20px;
-  }
-  .arvexa-popup-icon {
-    width: 56px;
-    height: 56px;
-    font-size: 24px;
-    margin-bottom: 14px;
-  }
-  .arvexa-popup-title {
-    font-size: 21px;
-  }
-  .arvexa-popup-message {
-    font-size: 13.5px;
-    margin-bottom: 18px;
-  }
-  .arvexa-popup-btn {
-    min-height: 46px;
-    font-size: 13.5px;
-  }
-}
-
-@media (max-width: 380px) {
-  .arvexa-popup-overlay {
-    padding: 12px;
-  }
-  .arvexa-popup {
-    padding: 24px 18px 16px;
-    border-radius: 18px;
-  }
-  .arvexa-popup::before {
-    left: 24%;
-    right: 24%;
-  }
-  .arvexa-popup-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 21px;
-    margin-bottom: 12px;
-  }
-  .arvexa-popup-title {
-    font-size: 19px;
-  }
-  .arvexa-popup-message {
-    font-size: 13px;
-    margin-bottom: 16px;
-  }
-  .arvexa-popup-btn {
-    min-height: 44px;
-    font-size: 13px;
-    padding: 12px 14px;
-  }
-  .arvexa-popup-close {
-    width: 28px;
-    height: 28px;
-    top: 10px;
-    right: 10px;
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   10. ACCESSIBILITÉ
-   ───────────────────────────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  .arvexa-popup,
-  .arvexa-popup-overlay,
-  .arvexa-popup-icon,
-  .arvexa-popup-btn {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-.arvexa-popup-btn:focus-visible,
-.arvexa-popup-close:focus-visible {
-  outline: 2px solid #E0B84A;
-  outline-offset: 3px;
-                         }
+    /* ═══ ÉCRAN PREMIUM ═══ */
+    .premium-lock-screen {
+      text-align: center;
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .premium-lock-icon {
+      width: 100px; height: 100px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(184, 134, 11, 0.18), rgba(26, 58, 42, 0.1));
+      border: 2px solid rgba(224, 184, 74, 0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 44px;
+      animation: crownPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes crownPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(224, 184, 74, 0.3); transform: scale(1); }
+      50% { box-shadow: 0 0 30px 10px rgba(224, 184, 74, 0.15); transform: scale(1.03); }
+    }
+    .premium-lock-screen h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(22px, 5vw, 30px);
+      font-weight: 700;
+      color: var(--text-light);
+      line-height: 1.2;
+      max-width: 500px;
+    }
+    .premium-lock-screen h1 em { color: var(--accent-bright); font-style: italic; }
+    .premium-lock-screen p {
+      color: var(--text-dim);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 460px;
+    }
+    .premium-lock-screen p strong { color: var(--accent-bright); font-weight: 700; }
+    .premium-features-list {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 400px;
+      text-align: left;
+    }
+    .premium-features-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-soft);
+      font-size: 14px;
+      color: var(--text-body);
+    }
+    .premium-features-list li i {
+      color: var(--accent-bright);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .premium-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 32px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+      color: #0A0A0A;
+      font-weight: 700;
+      font-size: 15px;
+      text-decoration: none;
+      transition: var(--transition);
+      box-shadow: 0 8px 24px rgba(184, 134, 11, 0.25);
+      margin-top: 12px;
+    }
+    .premium-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(184, 134, 11, 0.4);
+    }
+    .premium-cta i { font-size: 14px; }
 
     /* ═══ EMPTY / UNAVAILABLE ═══ */
     .empty-state {
@@ -1689,81 +1368,7 @@
     }
     .scroll-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
 
-    /* ═══ PREMIUM POPUP ═══ */
-    .premium-popup-overlay {
-      position: fixed; inset: 0;
-      z-index: 100;
-      display: grid; place-items: center;
-      padding: 16px;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(16px);
-      opacity: 0; visibility: hidden;
-      transition: opacity 0.25s ease, visibility 0.25s ease;
-    }
-    .premium-popup-overlay.show { opacity: 1; visibility: visible; }
-    .premium-popup {
-      position: relative;
-      width: min(100%, 400px);
-      padding: 26px 22px 20px;
-      border: 1px solid var(--accent);
-      border-radius: 12px;
-      background: #161616;
-      transform: scale(0.94);
-      transition: transform 0.3s ease;
-    }
-    .premium-popup-overlay.show .premium-popup { transform: scale(1); }
-    .popup-close {
-      position: absolute;
-      top: 10px; right: 10px;
-      width: 30px; height: 30px;
-      border: 1px solid var(--border-soft);
-      border-radius: 8px;
-      background: transparent;
-      color: var(--text-muted);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px;
-      font-family: inherit;
-    }
-    .popup-icon { display: block; text-align: center; font-size: 40px; margin-bottom: 6px; }
-    .premium-popup h2 {
-      text-align: center;
-      font-size: 20px;
-      margin-bottom: 6px;
-      font-family: 'Playfair Display', serif;
-    }
-    .premium-popup h2 span { color: var(--accent-bright); font-style: italic; }
-    .popup-subtitle {
-      color: var(--text-dim);
-      text-align: center;
-      font-size: 13px;
-      line-height: 1.6;
-      margin: 0 0 16px;
-    }
-    .popup-subtitle strong { color: var(--accent-bright); }
-    .popup-buttons { display: flex; flex-direction: column; gap: 8px; }
-    .btn-subscribe {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 12px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
-      color: #0A0A0A;
-      font-weight: 700;
-      text-decoration: none;
-      font-size: 14px;
-      font-family: inherit;
-    }
-    .btn-later {
-      padding: 9px;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 13px;
-      font-family: inherit;
-    }
-
+    /* ═══ KaTeX ═══ */
     .katex { font-size: 1.05em; }
     .katex-display { margin: 8px 0; overflow-x: auto; padding: 4px 0; }
 
@@ -1785,6 +1390,312 @@
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
       }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       ARVEXA — POP-UP PREMIUM UNIVERSEL
+       Version 10 — Réduite · Bouton unique
+       ═══════════════════════════════════════════════════════════════ */
+
+    .arvexa-popup-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(16px) saturate(120%);
+      -webkit-backdrop-filter: blur(16px) saturate(120%);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.30s cubic-bezier(0.4, 0, 0.2, 1),
+                  visibility 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+    .arvexa-popup-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .arvexa-popup {
+      position: relative;
+      width: 100%;
+      max-width: 360px;
+      margin: auto;
+      padding: 30px 26px 22px;
+      border: 1px solid rgba(224, 184, 74, 0.20);
+      border-radius: 22px;
+      background:
+        radial-gradient(ellipse 120% 70% at 50% -10%, rgba(224, 184, 74, 0.10) 0%, transparent 65%),
+        radial-gradient(ellipse 100% 50% at 50% 110%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
+        linear-gradient(165deg, #171717 0%, #0b0b0b 100%);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.02),
+        0 0 60px rgba(224, 184, 74, 0.08),
+        0 24px 60px rgba(0, 0, 0, 0.70),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transform: scale(0.94) translateY(20px);
+      transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .arvexa-popup-overlay.show .arvexa-popup {
+      transform: scale(1) translateY(0);
+    }
+    .arvexa-popup::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20%;
+      right: 20%;
+      height: 2px;
+      border-radius: 0 0 4px 4px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(224, 184, 74, 0.4) 20%,
+        #E0B84A 50%,
+        rgba(224, 184, 74, 0.4) 80%,
+        transparent 100%);
+      opacity: 0.9;
+      z-index: 2;
+    }
+    .arvexa-popup::after {
+      content: '';
+      position: absolute;
+      top: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 160px;
+      height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(224, 184, 74, 0.18) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(6px);
+    }
+    .arvexa-popup-close {
+      position: absolute;
+      top: 13px;
+      right: 13px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.03);
+      color: #6A6A5A;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+      z-index: 4;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .arvexa-popup-close:hover {
+      background: rgba(224, 184, 74, 0.12);
+      color: #E0B84A;
+      transform: rotate(90deg) scale(1.05);
+    }
+    .arvexa-popup-close:active {
+      transform: rotate(90deg) scale(0.95);
+    }
+    .arvexa-popup-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
+      border: 1px solid rgba(224, 184, 74, 0.28);
+      color: #E0B84A;
+      font-size: 26px;
+      margin: 0 auto 16px;
+      position: relative;
+      z-index: 1;
+      animation: arvexaCrownPulse 3s ease-in-out infinite;
+      box-shadow:
+        0 0 20px rgba(224, 184, 74, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    @keyframes arvexaCrownPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow:
+          0 0 20px rgba(224, 184, 74, 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+      50% {
+        transform: scale(1.04);
+        box-shadow:
+          0 0 34px rgba(224, 184, 74, 0.32),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+    }
+    .arvexa-popup-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #F5F0E8;
+      line-height: 1.25;
+      margin: 0 0 10px;
+      letter-spacing: -0.015em;
+      position: relative;
+      z-index: 1;
+    }
+    .arvexa-popup-title em {
+      color: #E0B84A;
+      font-style: italic;
+      font-weight: 700;
+    }
+    .arvexa-popup-message {
+      font-size: 13.5px;
+      color: #8A8A7A;
+      line-height: 1.6;
+      margin: 0 auto 20px;
+      max-width: 280px;
+      position: relative;
+      z-index: 1;
+    }
+    .arvexa-popup-message strong {
+      color: #E0B84A;
+      font-weight: 700;
+    }
+    .arvexa-popup-benefits {
+      display: none;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 22px;
+      padding: 14px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
+      z-index: 1;
+    }
+    .arvexa-popup-benefits span {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 6px;
+      font-size: 11px;
+      color: #8A8A7A;
+      line-height: 1.35;
+      text-align: center;
+      font-weight: 500;
+    }
+    .arvexa-popup-benefits span::before {
+      content: '✓';
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(224, 184, 74, 0.10);
+      border: 1px solid rgba(224, 184, 74, 0.22);
+      color: #E0B84A;
+      font-weight: 800;
+      font-size: 11px;
+      line-height: 1;
+    }
+    @media (min-width: 600px) {
+      .arvexa-popup-benefits { display: grid; }
+    }
+    .arvexa-popup-actions {
+      display: flex;
+      position: relative;
+      z-index: 1;
+    }
+    .arvexa-popup-actions .arvexa-popup-btn {
+      flex: 1;
+      width: 100%;
+    }
+    .arvexa-popup-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 13px 18px;
+      min-height: 48px;
+      border-radius: 100px;
+      border: none;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .arvexa-popup-btn.primary {
+      background: linear-gradient(135deg, #E0B84A 0%, #B8860B 100%);
+      color: #0A0A0A;
+      box-shadow: 0 4px 16px rgba(224, 184, 74, 0.28);
+    }
+    .arvexa-popup-btn.primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -120%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.30) 50%,
+        transparent 100%);
+      transform: skewX(-20deg);
+      transition: left 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+      pointer-events: none;
+    }
+    .arvexa-popup-btn.primary:hover::before { left: 130%; }
+    .arvexa-popup-btn.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
+    }
+    .arvexa-popup-btn.primary:active { transform: translateY(0) scale(0.97); }
+    .arvexa-popup-btn.primary i { font-size: 12px; }
+    @media (max-width: 599px) {
+      .arvexa-popup-overlay { padding: 16px; }
+      .arvexa-popup { max-width: 100%; padding: 28px 22px 20px; border-radius: 20px; }
+      .arvexa-popup-icon { width: 56px; height: 56px; font-size: 24px; margin-bottom: 14px; }
+      .arvexa-popup-title { font-size: 21px; }
+      .arvexa-popup-message { font-size: 13.5px; margin-bottom: 18px; }
+      .arvexa-popup-btn { min-height: 46px; font-size: 13.5px; }
+    }
+    @media (max-width: 380px) {
+      .arvexa-popup-overlay { padding: 12px; }
+      .arvexa-popup { padding: 24px 18px 16px; border-radius: 18px; }
+      .arvexa-popup::before { left: 24%; right: 24%; }
+      .arvexa-popup-icon { width: 50px; height: 50px; font-size: 21px; margin-bottom: 12px; }
+      .arvexa-popup-title { font-size: 19px; }
+      .arvexa-popup-message { font-size: 13px; margin-bottom: 16px; }
+      .arvexa-popup-btn { min-height: 44px; font-size: 13px; padding: 12px 14px; }
+      .arvexa-popup-close { width: 28px; height: 28px; top: 10px; right: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .arvexa-popup,
+      .arvexa-popup-overlay,
+      .arvexa-popup-icon,
+      .arvexa-popup-btn {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    .arvexa-popup-btn:focus-visible,
+    .arvexa-popup-close:focus-visible {
+      outline: 2px solid #E0B84A;
+      outline-offset: 3px;
     }
   </style>
 </head>
@@ -2077,37 +1988,42 @@
 
   <button class="scroll-top" id="scrollTop" type="button" aria-label="Haut de page"><i class="fas fa-arrow-up"></i></button>
 
-<!-- ===== POP-UP PREMIUM UNIVERSEL ===== -->
-<div class="arvexa-popup-overlay" id="premiumOverlay">
-  <div class="arvexa-popup" role="dialog" aria-modal="true">
+  <!-- ═══════════════════════════════════════════════════════
+       POP-UP PREMIUM UNIVERSEL — Réviseur
+       ═══════════════════════════════════════════════════════ -->
+  <div class="arvexa-popup-overlay" id="premiumOverlay">
+    <div class="arvexa-popup" role="dialog" aria-modal="true" aria-labelledby="premiumPopupTitle">
 
-    <button class="arvexa-popup-close" id="premiumClose" aria-label="Fermer">
-      <i class="fas fa-times"></i>
-    </button>
+      <button class="arvexa-popup-close" id="premiumClose" aria-label="Fermer">
+        <i class="fas fa-times"></i>
+      </button>
 
-    <i class="fas fa-crown arvexa-popup-icon"></i>
+      <i class="fas fa-crown arvexa-popup-icon"></i>
 
-    <h2 class="arvexa-popup-title">Limite de révisions <em>atteinte</em></h2>
+      <h2 class="arvexa-popup-title" id="premiumPopupTitle">
+        Limite de révisions <em>atteinte</em>
+      </h2>
 
-    <p class="arvexa-popup-message">
-      Tu as utilisé tes révisions gratuites. Passe à Premium pour réviser sans limite.
-    </p>
+      <p class="arvexa-popup-message" id="premiumMessage">
+        Tu as utilisé tes <strong>2 révisions gratuites</strong>.
+        Passe à Premium pour réviser sans limite.
+      </p>
 
-    <div class="arvexa-popup-benefits">
-      <span>Révisions illimitées</span>
-      <span>Fiches complètes</span>
-      <span>Quiz avancés</span>
+      <div class="arvexa-popup-benefits">
+        <span>Révisions illimitées</span>
+        <span>Fiches complètes</span>
+        <span>Quiz avancés</span>
+      </div>
+
+      <div class="arvexa-popup-actions">
+        <a href="abonnement.html" class="arvexa-popup-btn primary">
+          <i class="fas fa-crown"></i>
+          Découvrir Premium
+        </a>
+      </div>
+
     </div>
-
-    <div class="arvexa-popup-actions">
-      <a href="abonnement.html" class="arvexa-popup-btn primary">
-        <i class="fas fa-crown"></i>
-        Découvrir Premium
-      </a>
-    </div>
-
   </div>
-</div>
 
   <div class="toast" id="toast">
     <i class="fas fa-info-circle"></i>
@@ -2269,13 +2185,12 @@
     flashRatings: {},
     quiz: [],
     quizAnswers: {},
-    isGenerating: false
+    isGenerating: false,
+    isGeneratingQuiz: false
   };
 
   const $ = (id) => document.getElementById(id);
   const views = ['configView','loadingView','loadingFlashView','loadingQuizView','ficheView','flashcardView','quizView','resultsView'];
-
-  let katexAttempts = 0;
 
   // ═══════════════════════════════════════════════════════════════
   // UTILITAIRES TEXTE
@@ -2321,36 +2236,6 @@
     const div = document.createElement('div');
     div.textContent = toPlainText(text);
     return div.innerHTML;
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // RENDU KATEX
-  // Si KaTeXUtils est disponible, on lui délègue (MutationObserver gère le reste).
-  // Sinon fallback local.
-  // ═══════════════════════════════════════════════════════════════
-  function renderKaTeX(root) {
-    if (!root) return;
-    if (window.KaTeXUtils?.renderMath) {
-      // Délégué au module global qui a déjà un MutationObserver
-      window.KaTeXUtils.renderMath(root);
-      return;
-    }
-    if (typeof renderMathInElement !== 'function') {
-      if (katexAttempts++ < 10) setTimeout(() => renderKaTeX(root), 200);
-      return;
-    }
-    katexAttempts = 0;
-    try {
-      renderMathInElement(root, {
-        delimiters: [
-          { left: '$$', right: '$$', display: true },
-          { left: '\\[', right: '\\]', display: true },
-          { left: '$', right: '$', display: false },
-          { left: '\\(', right: '\\)', display: false }
-        ],
-        throwOnError: false, errorColor: '#ff9a84', strict: false, trust: false
-      });
-    } catch (e) {}
   }
 
   function showView(id) {
@@ -2494,7 +2379,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // FICHE
+  // FICHE — SUBMIT
   // ═══════════════════════════════════════════════════════════════
   $('configForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -2616,6 +2501,9 @@
   }
 
   async function generateQuiz() {
+    if (state.isGeneratingQuiz) return;
+    state.isGeneratingQuiz = true;
+
     showView('loadingQuizView');
     resetSteps('qz');
 
@@ -2664,6 +2552,8 @@
       console.error('[REVISEUR] Quiz erreur:', err);
       showView('configView');
       setStatus('configStatus', err.message || 'Erreur réseau. Réessaie.', 'error');
+    } finally {
+      state.isGeneratingQuiz = false;
     }
   }
 
@@ -2717,8 +2607,7 @@
 
     sections.forEach((sec, i) => container.appendChild(buildNotionCard(sec, i)));
 
-    renderKaTeX(container);
-
+    // Rendu KaTeX automatique (katex-utils.js MutationObserver)
     const first = container.querySelector('.notion-card');
     if (first) setTimeout(() => toggleNotion(first), 200);
   }
@@ -2849,10 +2738,7 @@
     const open = card.classList.contains('open');
     document.querySelectorAll('.notion-card.open').forEach((o) => { if (o !== card) o.classList.remove('open'); });
     card.classList.toggle('open', !open);
-    if (!open) {
-      const body = card.querySelector('.notion-content');
-      if (body) setTimeout(() => renderKaTeX(body), 150);
-    }
+    // Rendu KaTeX automatique (le contenu est déjà dans le DOM)
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -2884,8 +2770,7 @@
     $('flashcardTrackFill').style.width = `${((state.currentFlashIndex) / state.flashcards.length) * 100}%`;
     $('flashcardEl').classList.remove('flipped');
     $('flashFeedback').classList.remove('show');
-    renderKaTeX($('flashFront'));
-    renderKaTeX($('flashBack'));
+    // Rendu KaTeX automatique via MutationObserver
   }
 
   let flipTimer = null;
@@ -2963,6 +2848,8 @@
       container.appendChild(div);
     });
 
+    // Rendu KaTeX automatique via MutationObserver
+
     container.querySelectorAll('.quiz-option').forEach((opt) => {
       opt.addEventListener('click', () => {
         const i = parseInt(opt.dataset.qindex);
@@ -2980,14 +2867,13 @@
         if (explTxt) {
           exp.innerHTML = `<strong>💡</strong> ${safeText(explTxt)}`;
           exp.classList.add('show');
-          renderKaTeX(exp);
+          // Rendu KaTeX automatique
         }
         const answered = Object.keys(state.quizAnswers).length;
         $('validateQuizBtn').disabled = answered < state.quiz.length;
         $('quizProgress').style.width = `${(answered / state.quiz.length) * 100}%`;
       });
     });
-    renderKaTeX(container);
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -3031,7 +2917,7 @@
   $('newFlashBtn').addEventListener('click', () => { syncModeFromChips(); showView('configView'); });
   $('restartBtn').addEventListener('click', () => { syncModeFromChips(); showView('configView'); });
 
-  // ⚡ 1 crédit : réutiliser les flashcards déjà générées avec la fiche
+  // ⚡ Réutiliser les flashcards déjà générées avec la fiche
   $('startFlashcardsBtn').addEventListener('click', async () => {
     if (state.currentSession?.flashcards?.length > 0) {
       state.flashcards = state.currentSession.flashcards;
@@ -3055,12 +2941,30 @@
   }, { passive: true });
   $('scrollTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
+  // ═══════════════════════════════════════════════════════════════
+  // POP-UP PREMIUM UNIVERSEL
+  // ═══════════════════════════════════════════════════════════════
   function showPremiumPopup(used, limit) {
-    if (used && limit) $('premiumSubtitle').innerHTML = `Tu as utilisé tes <strong>${limit} essais gratuits</strong>. Passe à Premium.`;
+    const msgEl = $('premiumMessage');
+    if (used && limit && msgEl) {
+      msgEl.innerHTML = `Tu as utilisé tes <strong>${limit} révisions gratuites</strong>. Passe à Premium pour réviser sans limite.`;
+    }
     $('premiumOverlay').classList.add('show');
   }
-  $('premiumClose').addEventListener('click', () => $('premiumOverlay').classList.remove('show'));
-  $('premiumOverlay').addEventListener('click', (e) => { if (e.target === $('premiumOverlay')) $('premiumOverlay').classList.remove('show'); });
+
+  function hidePremiumPopup() {
+    $('premiumOverlay').classList.remove('show');
+  }
+
+  $('premiumClose')?.addEventListener('click', hidePremiumPopup);
+  $('premiumOverlay')?.addEventListener('click', (e) => {
+    if (e.target === $('premiumOverlay')) hidePremiumPopup();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('premiumOverlay')?.classList.contains('show')) {
+      hidePremiumPopup();
+    }
+  });
 
   // ═══════════════════════════════════════════════════════════════
   // AUTH
@@ -3096,13 +3000,7 @@
 
   initCustomSelects();
   initChips();
-    document.addEventListener("DOMContentLoaded", () => {
-    const el = document.getElementById("idDeLElementCible");
-    if (el) {
-        el.innerHTML = "contenu";
-    }
-});
-  console.log('🎓 ARVEXA — Réviseur v6.1');
+  console.log('🎓 ARVEXA — Réviseur v7.0 — KaTeX délégué + pop-up universel');
   </script>
 </body>
 </html>
