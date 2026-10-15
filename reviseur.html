@@ -3096,6 +3096,12 @@
 
   initCustomSelects();
   initChips();
+    document.addEventListener("DOMContentLoaded", () => {
+    const el = document.getElementById("idDeLElementCible");
+    if (el) {
+        el.innerHTML = "contenu";
+    }
+});
   console.log('🎓 ARVEXA — Réviseur v6.1');
   </script>
 </body>
