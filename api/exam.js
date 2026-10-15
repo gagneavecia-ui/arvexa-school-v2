@@ -355,14 +355,25 @@ async function buildExamFromPool(config) {
     const { db, FieldValue } = getAdminServices();
     const snap = await db.collection(POOL_COLLECTION)
       .where('subject', '==', config.subject)
-      .limit(100)
+      .limit(200)
       .get();
 
     if (snap.empty) return null;
 
     const allEx = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    let filtered = allEx.filter((e) => e.difficulty === config.difficulty);
-    if (filtered.length < 6) filtered = allEx;
+
+    // ═══ Priorité 1 : filtrer par chapitre demandé ═══
+    let poolEx = allEx;
+    if (config.chapter && config.chapter !== 'all') {
+      const byChapter = allEx.filter((e) => e.chapter === config.chapter);
+      if (byChapter.length >= 6) {
+        poolEx = byChapter;
+      }
+    }
+
+    // ═══ Priorité 2 : filtrer par difficulté ═══
+    let filtered = poolEx.filter((e) => e.difficulty === config.difficulty);
+    if (filtered.length < 6) filtered = poolEx;
 
     const consolidation = filtered.filter((e) => e.level === 'consolidation');
     const approfondissement = filtered.filter((e) => e.level === 'approfondissement');
