@@ -2180,22 +2180,30 @@
   }
 
   async function checkExistingFcmToken(user) {
-    if (!messaging) return;
-    if (Notification.permission !== 'granted') return;
-    try {
-      const swRegistration = window.arvexaFcmRegistration
-        ? await window.arvexaFcmRegistration
-        : await navigator.serviceWorker.getRegistration('./firebase-cloud-messaging-push-scope');
-      if (!swRegistration) return;
-      const token = await getToken(messaging, {
-        vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: swRegistration
-      });
-      if (token) {
-        fcmToken = token;
-        await saveFcmToken(token);
-      }
-    } catch (e) {}
+  // ⚡ Double garde : messaging + Notification API
+  if (!messaging) return;
+  if (typeof Notification === 'undefined') return;
+  if (Notification.permission !== 'granted') return;
+
+  try {
+    const swRegistration = window.arvexaFcmRegistration
+      ? await window.arvexaFcmRegistration
+      : await navigator.serviceWorker.getRegistration('./firebase-cloud-messaging-push-scope');
+    if (!swRegistration) return;
+
+    const token = await getToken(messaging, {
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: swRegistration
+    });
+
+    if (token) {
+      fcmToken = token;
+      await saveFcmToken(token);
+    }
+  } catch (e) {
+    // Silencieux : FCM est optionnel
+    console.warn('[FCM] checkExisting failed:', e.message);
+  }
   }
 
   // ================================================================
