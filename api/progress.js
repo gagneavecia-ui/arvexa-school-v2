@@ -821,88 +821,28 @@ function mergeAnalysis(results, profile) {
 // RÈGLES COMMUNES
 // ────────────────────────────────────────────────────────────────
 const LATEX_RULES = `
-═══════════════════════════════════════════════════════════════
-RÈGLE LATEX — OBLIGATOIRE
-═══════════════════════════════════════════════════════════════
-1. Toute formule mathématique DOIT être entre $...$ (inline) ou $$...$$ (display).
-2. INTERDIT : LaTeX brut sans $ (ex : "v = \\\\sqrt{x}" doit devenir "$v = \\\\sqrt{x}$").
-3. INTERDIT : symboles Unicode mathématiques bruts.
-   → Utilise \\\\pi, \\\\sqrt{}, ^2, \\\\leq, \\\\geq, \\\\infty, \\\\to, \\\\times, \\\\cdot, \\\\neq, \\\\in, \\\\sum, \\\\int, \\\\Delta, \\\\alpha, \\\\beta, \\\\theta, \\\\lambda, \\\\mu.
-4. Ajoute un espace après une commande LaTeX sans argument (ex : "\\\\cdot mol", PAS "\\\\cdotmol").
-
-═══════════════════════════════════════════════════════════════
-RÈGLE UNITÉS — TRÈS IMPORTANTE
-═══════════════════════════════════════════════════════════════
-5. N'écris JAMAIS une unité avec exposant à l'intérieur de \\\\text{...}.
-   ❌ \\\\text{g\\\\,mol^{-1}}
-   ❌ \\\\text{mol,L^{-1}}
-   ✅ \\\\text{g}\\\\,\\\\text{mol}^{-1}
-   ✅ \\\\text{mol}\\\\,\\\\text{L}^{-1}
-   ✅ \\\\text{g} \\\\cdot \\\\text{mol}^{-1}
-
-6. Les exposants (-1, 2, 3) doivent toujours être HORS de \\\\text{...}.
-   ❌ \\\\text{L^{-1}}    ✅ \\\\text{L}^{-1}
-
-7. Ne mélange pas plusieurs unités dans un seul \\\\text{...}.
-   ❌ \\\\text{kg\\\\,m/s^2}
-   ✅ \\\\text{kg}\\\\,\\\\text{m}/\\\\text{s}^2
-
-═══════════════════════════════════════════════════════════════
-RÈGLE ACCENTS FRANÇAIS
-═══════════════════════════════════════════════════════════════
-8. N'utilise JAMAIS les accents LaTeX (\\\\'e, \\\\\`a, \\\\^o, \\\\c{c}).
-   Écris directement : é, è, à, â, ê, î, ô, û, ç, ù, ï, ë.
-   ❌ "D\\\\'eterminer la masse"    ✅ "Déterminer la masse"
-
-═══════════════════════════════════════════════════════════════
-EXEMPLES DE FORMULES CORRECTES
-═══════════════════════════════════════════════════════════════
-- M(\\\\text{H}_2\\\\text{SO}_4) = 98\\\\ \\\\text{g}\\\\,\\\\text{mol}^{-1}
-- C = \\\\frac{n}{V} \\\\quad \\\\text{en } \\\\text{mol} \\\\cdot \\\\text{L}^{-1}
-- c = 3{,}00 \\\\times 10^{8}\\\\ \\\\text{m}\\\\,\\\\text{s}^{-1}
+RÈGLE LATEX — OBLIGATOIRE :
+- Toute formule mathématique DOIT être entre $...$ (inline) ou $$...$$ (display).
+- INTERDIT : LaTeX brut sans $ (ex : "v = \\sqrt{x}" doit devenir "$v = \\sqrt{x}$").
+- INTERDIT : symboles Unicode mathématiques bruts (π, √, ², ≤, ≥, ∞, →, ×, ·, ≠, ∈, ∑, ∫, Δ).
+- Ajoute TOUJOURS un espace après une commande LaTeX sans argument (ex : "\\cdotp mol", pas "\\cdotpmol").
+- Utilise \\cdot ou \\cdotp (avec espace) pour le point médian : "g \\cdot mol^{-1}".
 `.trim();
 
 const PERIMETER_RULES = `
-═══════════════════════════════════════════════════════════════
-RÈGLE DE PÉRIMÈTRE ET DE FIABILITÉ — ABSOLUE
-═══════════════════════════════════════════════════════════════
-1. Tu travailles UNIQUEMENT sur la section fournie par l'élève.
-2. Le texte de l'élève est la SOURCE PRINCIPALE. Tu ne remplaces pas
-   son cours par une autre version.
-3. INTERDICTION d'inventer une notion, une date, une expérience,
-   un chiffre, un résultat ou une conclusion absent du cours.
-4. Si une information nécessaire manque dans le cours, tu restes
-   PRUDENT : tu ne la fabriques pas. Tu peux signaler son absence.
-5. Tu ne présentes JAMAIS une hypothèse comme un fait établi.
-6. Tu ne reproduis PAS aveuglément une erreur scientifique présente
-   dans le cours. Si tu détectes une erreur :
-   - tu la signales clairement dans un champ "warning" (si le schéma
-     le permet) ;
-   - tu fournis la correction UNIQUEMENT si elle est certaine ;
-   - tu ne réécris pas tout le cours pour une seule erreur.
-7. Tu distingues toujours :
-   - ce qui est OBSERVÉ (fait) ;
-   - ce qui est INTERPRÉTÉ (explication) ;
-   - ce qui est CONCLU (résultat).
-8. Tu utilises un français clair, sans jargon non expliqué.
-9. Tu évites les répétitions inutiles d'une même idée.
-10. Tu respectes scrupuleusement le schéma JSON demandé.
+RÈGLE DE PÉRIMÈTRE STRICT :
+- Tu travailles UNIQUEMENT sur la section fournie par l'élève.
+- INTERDICTION de mentionner ou d'utiliser une connaissance externe au texte fourni.
 `.trim();
 
 const JSON_STRICT_RULES = `
-═══════════════════════════════════════════════════════════════
-RÈGLE JSON STRICTE
-═══════════════════════════════════════════════════════════════
-1. Réponds UNIQUEMENT avec un objet JSON valide.
-2. Pas de texte avant ou après le JSON.
-3. Pas de markdown (\`\`\`).
-4. Échappe correctement les guillemets doubles dans les chaînes.
-5. Utilise des apostrophes droites (') et non typographiques (’).
-6. Si un champ n'est pas documenté dans le cours, tu le renvoies
-   comme une chaîne vide "" ou un tableau vide [] selon le type.
-   JAMAIS de valeur inventée pour combler un champ vide.
-7. Respecte STRICTEMENT les types attendus (chaîne, tableau, objet).
-8. Ne renomme AUCUNE clé du schéma.
+RÈGLE JSON STRICTE :
+- Réponds UNIQUEMENT avec un objet JSON valide.
+- Pas de texte avant ou après le JSON.
+- Pas de markdown (\`\`\`).
+- Échappe correctement les guillemets doubles dans les chaînes (\\").
+- Utilise des apostrophes droites (') et non typographiques.
+- Maximum 5 éléments dans les tableaux longs (parts, questions, etc.).
 `.trim();
 
 // ────────────────────────────────────────────────────────────────
@@ -1062,7 +1002,7 @@ ${rawInput}
   return [
     {
       name: 'extraction',
-      maxTokens: 2000,
+      maxTokens: 1500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Analyse cette section de SVT.
 
@@ -1070,30 +1010,14 @@ ${baseContext}
 
 ${PERIMETER_RULES}
 
-RÈGLE SVT SPÉCIFIQUE :
-- Priorise les MÉCANISMES, les RELATIONS, les ÉTAPES et les DÉFINITIONS.
-- Identifie séparément les EXPÉRIENCES décrites : protocole, observations,
-  interprétation, conclusion (uniquement si présentes dans le texte).
-- PAS de formules mathématiques inventées.
-
-Extrait UNIQUEMENT ce qui est présent dans la section.
+RÈGLE SVT : PAS de formules. Priorise mécanismes, relations, étapes, définitions.
 
 Format JSON :
 {
-  "sectionTitle": "Titre court (max 60 caractères)",
-  "mainConcepts": ["concept 1", "concept 2"],
+  "sectionTitle": "...",
+  "mainConcepts": ["..."],
   "terms": [{"term": "...", "definition": "..."}],
-  "mechanisms": ["mécanisme 1", "mécanisme 2"],
-  "experiments": [
-    {
-      "name": "Nom ou titre court",
-      "protocol": "Protocole observé (si présent)",
-      "observations": "Ce qui a été observé (si présent)",
-      "interpretation": "Ce que ça signifie (si présent)",
-      "conclusion": "Conclusion tirée (si présente)"
-    }
-  ],
-  "warnings": ["Signale ici toute erreur ou contradiction scientifique détectée dans le cours. Sinon []"]
+  "mechanisms": ["mécanisme 1"]
 }
 
 ${JSON_STRICT_RULES}
@@ -1103,53 +1027,39 @@ Réponds UNIQUEMENT avec le JSON.`
     {
       name: 'explanation',
       maxTokens: 5000,
-      systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Tu es professeur de SVT au BAC au Niger. Explique cette section à un élève qui découvre.
+      systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
+      userPrompt: `Tu es professeur de SVT. Explique cette section comme à un élève qui découvre.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
 
-RÈGLES PÉDAGOGIQUES SVT :
-- Chaque notion est EXPLIQUÉE en français simple, avec des phrases complètes.
-- Pour chaque MÉCANISME : décris-le étape par étape.
-- Pour chaque RELATION : identifie les éléments liés (A → B, cause → conséquence).
-- Pour chaque EXPÉRIENCE présente dans le cours, tu présentes dans cet ordre :
-  1) le protocole (que fait-on ?) ;
-  2) les observations (que voit-on ?) ;
-  3) l'interprétation (que signifie-ce ?) ;
-  4) la conclusion (que retient-on ?).
-  Si une de ces parties est absente du cours, tu ne l'inventes PAS.
-  Tu peux écrire "non précisé dans le cours".
-- Utilise les termes biologiques précis MAIS explique-les entre parenthèses.
-- Ne résume pas à outrance : chaque idée importante doit être comprise.
-- Ne recopie pas le texte brut : reformule pour expliquer.
+RÈGLES SVT :
+- Explication EN FRANÇAIS simple.
+- Décris chaque MÉCANISME étape par étape.
+- Explique les RELATIONS (organe A → organe B).
+- Utilise des termes biologiques précis MAIS explique-les.
 
 Format JSON :
 {
   "sectionTitle": "...",
-  "understanding": "Ce que l'élève doit comprendre, en 3-4 phrases.",
+  "understanding": "...",
   "parts": [
     {
-      "partTitle": "Partie 1",
-      "mainIdea": "Idée principale de cette partie.",
-      "simpleExplanation": "Explication pédagogique (3-6 phrases).",
+      "partTitle": "...",
+      "mainIdea": "...",
+      "simpleExplanation": "...",
       "terms": [{"term": "...", "meaning": "..."}],
-      "mechanism": {"description": "...", "steps": ["Étape 1", "Étape 2"]},
-      "relations": ["A → B", "Cause → Conséquence"],
-      "experiments": [
-        {
-          "name": "...",
-          "protocol": "...",
-          "observations": "...",
-          "interpretation": "...",
-          "conclusion": "..."
-        }
-      ],
-      "toRemember": "Ce qu'il faut retenir en une phrase."
+      "mechanism": {"description": "...", "steps": ["Étape 1"]},
+      "relations": ["relation 1"],
+      "toRemember": "..."
     }
   ]
 }
+
+CONTRAINTES :
+- Maximum 5 parties (parts).
+- Chaque simpleExplanation : 3 à 6 phrases.
 
 ${JSON_STRICT_RULES}
 
@@ -1157,31 +1067,19 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'structure',
-      maxTokens: 3500,
+      maxTokens: 3000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Structure de façon CONCISE cette section de SVT.
+      userPrompt: `Structure cette section de SVT.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
 
-RÈGLES STRUCTURE SVT :
-- Ne recopie PAS l'explication : synthétise.
-- Ne invente AUCUN mécanisme, AUCUNE conséquence, AUCUNE classification.
-- Distingue clairement : étapes (ordre d'exécution) / relations (liens entre
-  éléments) / conséquences (résultats produits).
-- PAS de formules mathématiques.
+PAS de formules.
 
 Format JSON :
 {
-  "mechanisms": [
-    {
-      "name": "Nom du mécanisme",
-      "steps": ["Étape 1", "Étape 2"],
-      "relations": ["A → B"],
-      "consequences": ["Résultat 1"]
-    }
-  ],
+  "mechanisms": [{"name": "...", "steps": ["..."], "relations": ["..."], "consequences": ["..."]}],
   "definitions": [{"term": "...", "definition": "..."}],
   "classifications": [{"category": "...", "items": ["..."]}]
 }
@@ -1192,7 +1090,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'questions',
-      maxTokens: 4500,
+      maxTokens: 4000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère une banque de questions de SVT sur cette section UNIQUEMENT.
 
@@ -1200,29 +1098,11 @@ ${baseContext}
 
 ${PERIMETER_RULES}
 
-RÈGLES DES QUESTIONS :
-- Varie les NIVEAUX COGNITIFS :
-  · Niveau 1 → mémorisation (définitions, termes)
-  · Niveau 2 → compréhension (explication d'un mécanisme, d'une relation)
-  · Niveau 3 → interprétation (analyse d'une expérience, déduction)
-- 2 à 3 questions par notion importante. Pas de quota forcé.
-- Évite de reformuler 3 fois la même question.
-- Chaque réponse doit être UNE PHRASE COMPLÈTE, précise et scientifiquement exacte.
-- Le champ "mustHave" liste les éléments INDISPENSABLES dans la réponse.
+2-3 questions par notion importante.
 
 Format JSON :
 {
-  "questions": [
-    {
-      "id": "q1",
-      "level": 1,
-      "type": "definition",
-      "question": "...",
-      "answer": "Une phrase complète.",
-      "mustHave": ["terme précis 1", "terme précis 2"],
-      "importance": 1
-    }
-  ]
+  "questions": [{"id": "q1", "level": 1, "type": "definition", "question": "...", "answer": "...", "mustHave": ["..."], "importance": 1}]
 }
 
 ${JSON_STRICT_RULES}
@@ -1231,40 +1111,17 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'qcm',
-      maxTokens: 3500,
+      maxTokens: 3000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Génère des QCM de SVT sur cette section UNIQUEMENT.
+      userPrompt: `QCM de SVT sur cette section UNIQUEMENT.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
 
-RÈGLES QCM :
-- 4 options A/B/C/D distinctes et plausibles.
-- UNE SEULE option correcte. Les 3 autres sont fausses sans ambiguïté.
-- Évite les indices involontaires (jamais "toutes les réponses" ni
-  "aucune de ces réponses").
-- Évite les distracteurs absurdes : chaque distracteur doit être une
-  erreur plausible qu'un élève pourrait faire.
-- L'explication justifie clairement POURQUOI la bonne réponse est correcte
-  et pourquoi les autres sont fausses.
-- Si tu n'es pas CERTAIN de la réponse correcte, NE GÉNÈRE PAS la question.
-
 Format JSON :
 {
-  "qcm": [
-    {
-      "question": "...",
-      "options": [
-        {"id": "A", "text": "..."},
-        {"id": "B", "text": "..."},
-        {"id": "C", "text": "..."},
-        {"id": "D", "text": "..."}
-      ],
-      "correct": "A",
-      "explanation": "Pourquoi A est correcte et pourquoi B/C/D sont fausses."
-    }
-  ]
+  "qcm": [{"question": "...", "options": [{"id":"A","text":"..."},{"id":"B","text":"..."},{"id":"C","text":"..."},{"id":"D","text":"..."}], "correct": "A", "explanation": "..."}]
 }
 
 ${JSON_STRICT_RULES}
