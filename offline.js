@@ -88,32 +88,8 @@
   // INDICATEUR
   // ================================================================
   function createIndicator() {
-    if (indicatorEl) return indicatorEl;
-
-    const actions = document.querySelector('.header-actions')
-      || document.querySelector('.header-right')
-      || document.querySelector('.site-header');
-
-    if (!actions) return null;
-
-    indicatorEl = document.createElement('button');
-    indicatorEl.id = 'arvexaOfflineIndicator';
-    indicatorEl.className = 'arvexa-offline-indicator';
-    indicatorEl.type = 'button';
-    indicatorEl.setAttribute('aria-label', 'Statut de connexion');
-    indicatorEl.title = 'Statut de connexion';
-    indicatorEl.innerHTML = '<i class="fas fa-wifi"></i>';
-
-    indicatorEl.addEventListener('click', () => {
-      if (!navigator.onLine) {
-        showToast('📶 Hors ligne — contenu en cache', 'error');
-      } else {
-        showToast('✅ Connecté', 'success');
-      }
-    });
-
-    actions.insertBefore(indicatorEl, actions.firstChild);
-    return indicatorEl;
+  // ⚡ Indicateur Wi-Fi désactivé (demande client)
+  return null;
   }
 
   // ================================================================
