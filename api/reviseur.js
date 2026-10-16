@@ -1,8 +1,8 @@
 // ================================================================
-// API RÉVISEUR v5.4 — ARVEXA School
+// API RÉVISEUR v5.5 — ARVEXA School
 // Fan-out parallèle + base JSON + pool Firestore + Historique Premium
-// 6 profils : scientifique / svt / philosophie / histoire / francais / langue
-// Corrections : providers nettoyés + rate limit Groq géré
+// Providers : OpenRouter (principal) + Groq (fallback)
+// Corrections : retry intelligent + détection Request too large
 // ================================================================
 
 const fs = require('fs');
@@ -23,6 +23,7 @@ const ALLOWED_ACTIONS = new Set(['generate', 'quiz', 'exercises', 'listSessions'
 const LIGHT_ACTIONS = new Set(['listSessions', 'loadSession', 'deleteSession']);
 const PREMIUM_ACTIONS = new Set(['listSessions', 'loadSession']);
 
+// ✅ MAX_TOKENS adaptés : OpenRouter supporte de gros prompts, Groq a 8000 TPM
 const MAX_TOKENS = {
   FICHE: 8000,
   FLASHCARDS: 4000,
@@ -30,11 +31,11 @@ const MAX_TOKENS = {
   EXERCISES: 8000
 };
 
-// ✅ RÉDUIT de 8 → 2 pour éviter le rate limit Groq (8000 TPM)
 const NOTION_BATCH_SIZE = 4;
+// ✅ Vagues de 2 (compatible Groq fallback)
 const MAX_BATCHES_PER_WAVE = 2;
-const WAVE_PAUSE_MS = 2000;  // ✅ Pause entre vagues pour rate limit
-const RATE_LIMIT_RETRY_MS = 15000;  // ✅ Attente après rate limit
+const WAVE_PAUSE_MS = 2000;
+const MAX_RETRIES_PER_BATCH = 2;
 const GLOBAL_TIME_BUDGET_MS = 100000;
 const POOL_COLLECTION = 'reviseurPool';
 const KB_CACHE_TTL_MS = 10 * 60 * 1000;
@@ -95,10 +96,7 @@ function loadKnowledgeBase(subject) {
       if (fs.existsSync(filePath)) {
         const raw = fs.readFileSync(filePath, 'utf-8');
         const data = JSON.parse(raw);
-
-        if (!data || !Array.isArray(data.chapitres)) {
-          throw new Error('structure_invalid');
-        }
+        if (!data || !Array.isArray(data.chapitres)) throw new Error('structure_invalid');
 
         data.chapitres.forEach((ch) => {
           if (Array.isArray(ch.notions)) {
@@ -228,13 +226,28 @@ function isValidQuizQuestion(q) {
     ['A', 'B', 'C', 'D'].includes(String(q.correctAnswer || '').toUpperCase());
 }
 
-// ✅ Détecte si une erreur est un rate limit (retry possible)
-function isRateLimitError(error) {
-  const msg = String(error?.message || '').toLowerCase();
+// ✅ Parse le délai de retry depuis un message Groq : "Please try again in 43.3125s"
+function parseRetryDelayMs(errorMessage) {
+  const match = String(errorMessage || '').match(/try again in ([\d.]+)\s*s/i);
+  if (!match) return 0;
+  const seconds = parseFloat(match[1]);
+  if (!Number.isFinite(seconds) || seconds <= 0 || seconds > 120) return 0;
+  return Math.ceil(seconds * 1000) + 1000;  // +1s de marge
+}
+
+// ✅ Détecte si l'erreur est un rate limit temporaire (retry utile)
+function isRetryableRateLimit(errorMessage) {
+  const msg = String(errorMessage || '').toLowerCase();
+  if (msg.includes('request too large')) return false;  // ❌ Définitif, retry inutile
   return msg.includes('rate limit') ||
          msg.includes('rate_limit') ||
          msg.includes('too many requests') ||
          msg.includes('429');
+}
+
+// ✅ Détecte "Request too large" (erreur définitive, ne pas retry)
+function isRequestTooLarge(errorMessage) {
+  return String(errorMessage || '').toLowerCase().includes('request too large');
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -333,21 +346,32 @@ async function releaseFreeGeneration(uid, usageDate) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// FOURNISSEURS IA — ✅ NETTOYÉ
+// FOURNISSEURS IA — v5.5
 // ════════════════════════════════════════════════════════════════
-// Seuls les modèles qui fonctionnent réellement :
-// - Groq/gpt-oss-120b (meilleur)
-// - Groq/gpt-oss-20b (fallback, plus rapide)
-//
-// Retirés car cassés :
-// - Groq/llama-3.3-70b-versatile (n'existe plus)
-// - Groq/llama-3.1-8b-instant (n'existe plus)
-// - OpenRouter/inkling:free (inaccessible via API)
-// - OpenRouter/dots3:free (modèle invalide)
-// - OpenRouter/inkling-small:free (inaccessible via API)
+// Ordre :
+// 1. OpenRouter gpt-oss-120b:free (principal, 20 RPM, 1000/jour avec $10)
+// 2. Groq gpt-oss-120b (fallback 1, 8000 TPM, rapide)
+// 3. Groq gpt-oss-20b (fallback 2, plus léger)
+// ════════════════════════════════════════════════════════════════
 function getProviders() {
   const providers = [];
 
+  // 🥇 PRINCIPAL : OpenRouter gpt-oss-120b:free
+  if (process.env.OPENROUTER_API_KEY) {
+    providers.push({
+      name: 'OpenRouter/gpt-oss-120b:free',
+      key: process.env.OPENROUTER_API_KEY,
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      model: 'openai/gpt-oss-120b:free',
+      jsonMode: true,
+      headers: {
+        'HTTP-Referer': process.env.APP_ORIGIN || 'https://arvexaschool.vercel.app',
+        'X-Title': 'ARVEXA Reviseur'
+      }
+    });
+  }
+
+  // 🥈 FALLBACK 1 : Groq gpt-oss-120b
   if (process.env.GROQ_API_KEY) {
     providers.push(
       {
@@ -358,6 +382,7 @@ function getProviders() {
         jsonMode: true,
         headers: {}
       },
+      // 🥉 FALLBACK 2 : Groq gpt-oss-20b
       {
         name: 'Groq/gpt-oss-20b',
         key: process.env.GROQ_API_KEY,
@@ -377,7 +402,7 @@ async function callProvider(provider, prompt, maxTokens, temperature) {
   if (typeof temperature !== 'number') temperature = 0.15;
 
   const controller = new AbortController();
-  // ✅ Timeout élargi à 30s pour laisser respirer Groq
+  // ✅ Timeout 30s (OpenRouter est parfois plus lent que Groq)
   const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
@@ -405,9 +430,15 @@ async function callProvider(provider, prompt, maxTokens, temperature) {
     if (!result.ok) {
       const msg = data?.error?.message || data?.message || `HTTP ${result.status}`;
       const err = new Error(`${provider.name}: ${msg}`);
-      // ✅ Marquer si c'est un rate limit
+      err.status = result.status;
+      // ✅ Marquer si c'est un rate limit temporaire (retry utile)
       if (result.status === 429 || /rate limit/i.test(msg)) {
         err.isRateLimit = true;
+        err.retryDelayMs = parseRetryDelayMs(msg);
+      }
+      // ✅ Marquer si c'est "Request too large" (définitif)
+      if (/request too large/i.test(msg)) {
+        err.isRequestTooLarge = true;
       }
       throw err;
     }
@@ -432,14 +463,14 @@ async function callProvider(provider, prompt, maxTokens, temperature) {
   }
 }
 
-// ✅ Génère avec cascade + retry intelligent sur rate limit
+// ✅ Génération avec cascade + retry intelligent + délais dynamiques
 async function generateWithCascade(prompt, validator, maxTokens, temperature, taskName, deadline) {
   const providers = getProviders();
   if (!providers.length) throw new Error('provider_missing');
 
   const errors = [];
-  const rateLimitedProviders = [];
 
+  // Passe 1 : essayer tous les providers dans l'ordre
   for (const provider of providers) {
     if (deadline && Date.now() > deadline) {
       errors.push('time_budget_exceeded');
@@ -458,21 +489,26 @@ async function generateWithCascade(prompt, validator, maxTokens, temperature, ta
     } catch (error) {
       errors.push(`${provider.name}: ${error.message}`);
       console.warn(`[AI] ❌ ${taskName} → ${provider.name}: ${error.message}`);
-      if (error.isRateLimit) {
-        rateLimitedProviders.push(provider.name);
+
+      // ✅ Si "Request too large" → inutile de retry ce provider, passer au suivant
+      if (error.isRequestTooLarge) {
+        console.warn(`[AI] ${taskName} → ${provider.name} : Request too large (définitif, pas de retry)`);
+        continue;
       }
     }
   }
 
-  // ✅ Si TOUS les providers ont échoué par rate limit, retry une fois après attente
-  if (rateLimitedProviders.length === providers.length && deadline && Date.now() < deadline - RATE_LIMIT_RETRY_MS) {
-    console.log(`[AI] ${taskName} — tous rate-limited, attente ${RATE_LIMIT_RETRY_MS}ms puis retry...`);
-    await sleep(RATE_LIMIT_RETRY_MS);
+  // Passe 2 : si on a le temps, retry avec le délai exact suggéré par Groq
+  for (let attempt = 0; attempt < MAX_RETRIES_PER_BATCH; attempt++) {
+    if (deadline && Date.now() > deadline - 10000) break;
 
+    // Essayer chaque provider une fois de plus
+    let didSomething = false;
     for (const provider of providers) {
-      if (Date.now() > deadline) break;
+      if (deadline && Date.now() > deadline - 5000) break;
+
       try {
-        console.log(`[AI] ${taskName} → retry ${provider.name}...`);
+        console.log(`[AI] ${taskName} → retry ${provider.name} (tentative ${attempt + 2})...`);
         const data = await callProvider(provider, prompt, maxTokens, temperature);
         if (!validator || validator(data)) {
           console.log(`[AI] ✅ ${taskName} → ${provider.name} (retry)`);
@@ -480,8 +516,19 @@ async function generateWithCascade(prompt, validator, maxTokens, temperature, ta
         }
       } catch (error) {
         console.warn(`[AI] ❌ ${taskName} → retry ${provider.name}: ${error.message}`);
+
+        // ✅ Attendre le délai EXACT suggéré par Groq avant de retenter
+        if (error.isRateLimit && error.retryDelayMs > 0) {
+          const waitMs = Math.min(error.retryDelayMs, 45000); // Max 45s
+          if (deadline && Date.now() + waitMs > deadline) break;
+
+          console.log(`[AI] ${taskName} — attente ${waitMs}ms (délai Groq suggéré)`);
+          await sleep(waitMs);
+          didSomething = true;
+        }
       }
     }
+    if (!didSomething) break;
   }
 
   throw new Error('all_providers_failed: ' + errors.join(' | '));
@@ -808,7 +855,7 @@ function validateQuiz(data) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// GÉNÉRATION PAR VAGUES SÉQUENTIELLES — ✅ Vagues de 2 max
+// GÉNÉRATION PAR VAGUES SÉQUENTIELLES
 // ════════════════════════════════════════════════════════════════
 async function generateFicheByWaves(subjectLabel, chapterTitle, notions, deadline) {
   const allBatches = chunk(notions, NOTION_BATCH_SIZE);
@@ -853,9 +900,8 @@ async function generateFicheByWaves(subjectLabel, chapterTitle, notions, deadlin
 
     waveIndex++;
 
-    // ✅ Pause entre vagues pour laisser le rate limit se réinitialiser
     if (waveIndex * MAX_BATCHES_PER_WAVE < allBatches.length && Date.now() < deadline - WAVE_PAUSE_MS) {
-      console.log(`[REVISEUR] Pause ${WAVE_PAUSE_MS}ms entre vagues (rate limit Groq)`);
+      console.log(`[REVISEUR] Pause ${WAVE_PAUSE_MS}ms entre vagues`);
       await sleep(WAVE_PAUSE_MS);
     }
   }
@@ -909,7 +955,6 @@ async function generateFlashcardsByWaves(subjectLabel, chapterTitle, notions, de
 
     waveIndex++;
 
-    // ✅ Pause entre vagues
     if (waveIndex * MAX_BATCHES_PER_WAVE < allBatches.length && Date.now() < deadline - WAVE_PAUSE_MS) {
       await sleep(WAVE_PAUSE_MS);
     }
@@ -976,7 +1021,6 @@ module.exports = async function handler(request, response) {
 
   if (!ALLOWED_ACTIONS.has(action)) return jsonError(response, 400, 'Action invalide.');
 
-  // ═══ VÉRIFICATION PREMIUM ═══
   if (PREMIUM_ACTIONS.has(action)) {
     try {
       const { db } = getAdminServices();
@@ -993,7 +1037,6 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══ HISTORIQUE : LISTER ═══
   if (action === 'listSessions') {
     try {
       const { db } = getAdminServices();
@@ -1024,7 +1067,6 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══ HISTORIQUE : CHARGER ═══
   if (action === 'loadSession') {
     if (!body.sessionId) return jsonError(response, 400, 'sessionId requis.');
     try {
@@ -1052,7 +1094,6 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══ HISTORIQUE : SUPPRIMER ═══
   if (action === 'deleteSession') {
     if (!body.sessionId) return jsonError(response, 400, 'sessionId requis.');
     try {
@@ -1065,7 +1106,6 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══ GÉNÉRATION & AUTRES ═══
   if (!ALLOWED_SUBJECTS.has(body.subject)) return jsonError(response, 400, 'Matière invalide.');
   if (typeof body.chapter !== 'string' || body.chapter.length > 100) return jsonError(response, 400, 'Chapitre invalide.');
 
@@ -1086,7 +1126,7 @@ module.exports = async function handler(request, response) {
   }[body.subject] || body.subject;
   const chapterTitle = chapterData?.titre || body.chapter;
 
-  console.log(`[REVISEUR v5.4] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
+  console.log(`[REVISEUR v5.5] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
 
   let reservation = null;
   if (action === 'generate') {
@@ -1105,7 +1145,6 @@ module.exports = async function handler(request, response) {
   }
 
   try {
-    // ═══ ACTION : GENERATE ═══
     if (action === 'generate') {
       const isFlashcard = body.mode === 'flashcard';
       const includeFlashcards = body.includeFlashcards === true;
@@ -1211,7 +1250,6 @@ module.exports = async function handler(request, response) {
       });
     }
 
-    // ═══ ACTION : QUIZ ═══
     if (action === 'quiz') {
       const count = Math.min(20, Math.max(5, Number(body.count) || 5));
       const level = Math.min(4, Math.max(1, Number(body.difficulty) || 2));
@@ -1265,7 +1303,6 @@ module.exports = async function handler(request, response) {
       return response.status(200).json({ success: true, quiz: validQuiz, source, seed });
     }
 
-    // ═══ ACTION : EXERCISES ═══
     if (action === 'exercises') {
       return response.status(200).json({ success: true, exercises: [], source: 'unavailable' });
     }
