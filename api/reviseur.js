@@ -1,7 +1,7 @@
 // ================================================================
-// API RÉVISEUR v6.0 — ARVEXA School
-// Fan-out parallèle + base JSON + pool Firestore + Historique Premium
-// Providers : Gemini (principal) + Groq (fallback)
+// API RÉVISEUR v7.0 — ARVEXA School
+// Génération progressive + Cahier persistant
+// Providers : OpenRouter (principal) + Groq (fallback)
 // ================================================================
 
 const fs = require('fs');
@@ -16,26 +16,39 @@ const requestLog = new Map();
 
 const FREE_REVISEUR_LIMIT = 2;
 
+// ✅ Nouvelle config : génération progressive
+const INITIAL_NOTIONS_COUNT = 4;       // Première génération
+const FOLLOWUP_NOTIONS_COUNT = 3;      // Générations suivantes
+const MAX_NOTIONS_PER_BATCH = 4;       // Max par appel IA
+
 const ALLOWED_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie', 'svt', 'philosophie', 'histoire', 'geographie']);
 const ALLOWED_MODES = new Set(['fiche', 'flashcard']);
-const ALLOWED_ACTIONS = new Set(['generate', 'quiz', 'exercises', 'listSessions', 'loadSession', 'deleteSession']);
-const LIGHT_ACTIONS = new Set(['listSessions', 'loadSession', 'deleteSession']);
+
+const ALLOWED_ACTIONS = new Set([
+  'loadCahier',           // Charger le cahier complet (GRATUIT)
+  'loadNotion',           // Voir une notion précise (GRATUIT)
+  'generateInitial',      // Première génération (4 notions)
+  'generateMore',         // Générer plus (3 notions)
+  'deleteNotion',         // Supprimer une notion
+  'quiz',                 // Quiz
+  // Compatibilité anciennes actions
+  'generate', 'listSessions', 'loadSession', 'deleteSession'
+]);
+
+const LIGHT_ACTIONS = new Set([
+  'loadCahier', 'loadNotion', 'deleteNotion',
+  'listSessions', 'loadSession', 'deleteSession'
+]);
 const PREMIUM_ACTIONS = new Set(['listSessions', 'loadSession']);
 
 const MAX_TOKENS = {
-  FICHE: 8000,
-  FLASHCARDS: 4000,
-  QUIZ: 4000,
-  EXERCISES: 8000
+  NOTIONS_BATCH: 6000,    // Une génération de 3-4 notions
+  QUIZ: 4000
 };
 
-const NOTION_BATCH_SIZE = 4;
-// ✅ Vagues de 2 (compatible Gemini et Groq)
-const MAX_BATCHES_PER_WAVE = 2;
-const WAVE_PAUSE_MS = 1500;
-const MAX_RETRIES_PER_BATCH = 2;
-const GLOBAL_TIME_BUDGET_MS = 100000;
+const GLOBAL_TIME_BUDGET_MS = 90000;
 const POOL_COLLECTION = 'reviseurPool';
+const CAHIER_COLLECTION = 'reviseurCahier';
 const KB_CACHE_TTL_MS = 10 * 60 * 1000;
 
 const KNOWLEDGE_MEMORY_CACHE = new Map();
@@ -188,12 +201,6 @@ function hashString(str) {
   return Math.abs(hash).toString(36);
 }
 
-function chunk(array, size) {
-  const result = [];
-  for (let i = 0; i < array.length; i += size) result.push(array.slice(i, i + size));
-  return result;
-}
-
 function toISO(v) {
   if (!v) return null;
   if (typeof v.toDate === 'function') return v.toDate().toISOString();
@@ -224,7 +231,6 @@ function isValidQuizQuestion(q) {
     ['A', 'B', 'C', 'D'].includes(String(q.correctAnswer || '').toUpperCase());
 }
 
-// ✅ Parse le délai de retry depuis un message Groq
 function parseRetryDelayMs(errorMessage) {
   const match = String(errorMessage || '').match(/try again in ([\d.]+)\s*s/i);
   if (!match) return 0;
@@ -249,8 +255,7 @@ function isDefinitiveError(errorMessage) {
   return msg.includes('request too large') ||
          msg.includes('model is unavailable') ||
          msg.includes('does not exist') ||
-         msg.includes('is not a valid model') ||
-         msg.includes('is only available on agentic harnesses');
+         msg.includes('is not a valid model');
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -349,43 +354,41 @@ async function releaseFreeGeneration(uid, usageDate) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// FOURNISSEURS IA — v6.0
-// ════════════════════════════════════════════════════════════════
-// Ordre :
-// 1. Gemini 2.0 Flash Exp (principal) — 15 req/min, 1M tokens/jour
-// 2. Groq gpt-oss-120b (fallback 1) — rapide
-// 3. Groq gpt-oss-20b (fallback 2) — léger
+// FOURNISSEURS IA — v7.0
+// OpenRouter (principal) + Groq (fallback)
 // ════════════════════════════════════════════════════════════════
 function getProviders() {
   const providers = [];
 
-  // 🥇 PRINCIPAL : Google Gemini
-  if (process.env.GEMINI_API_KEY) {
+  // 🥇 PRINCIPAL : OpenRouter
+  if (process.env.OPENROUTER_API_KEY) {
     providers.push({
-      name: 'Gemini/2.0-flash',
-      type: 'gemini',
-      key: process.env.GEMINI_API_KEY,
-      endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent',
-      model: 'gemini-2.0-flash-exp',
-      jsonMode: true
+      name: 'OpenRouter/gpt-oss-120b',
+      key: process.env.OPENROUTER_API_KEY,
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      model: 'openai/gpt-oss-120b',
+      jsonMode: true,
+      headers: {
+        'HTTP-Referer': process.env.APP_ORIGIN || 'https://arvexaschool.vercel.app',
+        'X-Title': 'ARVEXA Reviseur'
+      }
     });
   }
 
-  // 🥈🥉 FALLBACK : Groq
+  // 🥈 FALLBACK 1 : Groq gpt-oss-120b
   if (process.env.GROQ_API_KEY) {
     providers.push(
       {
         name: 'Groq/gpt-oss-120b',
-        type: 'openai',
         key: process.env.GROQ_API_KEY,
         endpoint: 'https://api.groq.com/openai/v1/chat/completions',
         model: 'openai/gpt-oss-120b',
         jsonMode: true,
         headers: {}
       },
+      // 🥉 FALLBACK 2 : Groq gpt-oss-20b
       {
         name: 'Groq/gpt-oss-20b',
-        type: 'openai',
         key: process.env.GROQ_API_KEY,
         endpoint: 'https://api.groq.com/openai/v1/chat/completions',
         model: 'openai/gpt-oss-20b',
@@ -398,75 +401,10 @@ function getProviders() {
   return providers;
 }
 
-// ✅ Appel Gemini (format spécifique)
-async function callGemini(provider, prompt, maxTokens, temperature) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+async function callProvider(provider, prompt, maxTokens, temperature) {
+  if (!maxTokens) maxTokens = 4000;
+  if (typeof temperature !== 'number') temperature = 0.15;
 
-  try {
-    console.log(`[AI] ${provider.name} | prompt: ${prompt.length} car | max_tokens: ${maxTokens}`);
-
-    const body = {
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: prompt }]
-        }
-      ],
-      generationConfig: {
-        temperature: temperature,
-        maxOutputTokens: maxTokens,
-        responseMimeType: 'application/json'
-      }
-    };
-
-    const url = `${provider.endpoint}?key=${provider.key}`;
-
-    const result = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: controller.signal
-    });
-
-    const data = await result.json().catch(() => null);
-
-    if (!result.ok) {
-      const msg = data?.error?.message || `HTTP ${result.status}`;
-      const err = new Error(`${provider.name}: ${msg}`);
-      err.status = result.status;
-      if (result.status === 429 || /quota|rate limit/i.test(msg)) {
-        err.isRateLimit = true;
-        err.retryDelayMs = 5000;
-      }
-      if (/quota exceeded|limit/i.test(msg) && !/rate limit/i.test(msg)) {
-        err.isRateLimit = true;
-      }
-      throw err;
-    }
-
-    const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!content) throw new Error(`${provider.name}: réponse vide`);
-
-    console.log(`[AI] ${provider.name} — réponse: ${content.length} car`);
-
-    const cleaned = String(content).replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-
-    let parsed;
-    try { parsed = JSON.parse(cleaned); }
-    catch (e) {
-      console.warn(`[AI] ${provider.name} — JSON invalide. Début: ${cleaned.slice(0, 200)}`);
-      throw new Error(`${provider.name}: JSON invalide`);
-    }
-
-    return parsed;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-// ✅ Appel OpenAI-compatible (Groq, etc.)
-async function callOpenAICompatible(provider, prompt, maxTokens, temperature) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
 
@@ -500,9 +438,7 @@ async function callOpenAICompatible(provider, prompt, maxTokens, temperature) {
         err.isRateLimit = true;
         err.retryDelayMs = parseRetryDelayMs(msg);
       }
-      if (/request too large/i.test(msg)) {
-        err.isRequestTooLarge = true;
-      }
+      if (/request too large/i.test(msg)) err.isRequestTooLarge = true;
       throw err;
     }
 
@@ -526,29 +462,15 @@ async function callOpenAICompatible(provider, prompt, maxTokens, temperature) {
   }
 }
 
-// ✅ Dispatcher : appelle le bon format selon le provider
-async function callProvider(provider, prompt, maxTokens, temperature) {
-  if (!maxTokens) maxTokens = 4000;
-  if (typeof temperature !== 'number') temperature = 0.15;
-
-  if (provider.type === 'gemini') {
-    return callGemini(provider, prompt, maxTokens, temperature);
-  }
-  return callOpenAICompatible(provider, prompt, maxTokens, temperature);
-}
-
-// ✅ Génération avec cascade intelligente
 async function generateWithCascade(prompt, validator, maxTokens, temperature, taskName, deadline) {
   const providers = getProviders();
   if (!providers.length) throw new Error('provider_missing');
 
   const errors = [];
 
-  // Passe 1 : essayer tous les providers dans l'ordre
   for (const provider of providers) {
     if (deadline && Date.now() > deadline) {
       errors.push('time_budget_exceeded');
-      console.warn(`[AI] ${taskName} — budget temps épuisé`);
       break;
     }
 
@@ -564,37 +486,22 @@ async function generateWithCascade(prompt, validator, maxTokens, temperature, ta
       errors.push(`${provider.name}: ${error.message}`);
       console.warn(`[AI] ❌ ${taskName} → ${provider.name}: ${error.message}`);
 
-      // ✅ Si erreur définitive → passer au suivant immédiatement
       if (isDefinitiveError(error.message) || error.isRequestTooLarge) {
-        console.warn(`[AI] ${taskName} → ${provider.name} : erreur définitive`);
         continue;
       }
-    }
-  }
 
-  // Passe 2 : retry avec délai dynamique
-  for (let attempt = 0; attempt < MAX_RETRIES_PER_BATCH; attempt++) {
-    if (deadline && Date.now() > deadline - 10000) break;
-
-    for (const provider of providers) {
-      if (deadline && Date.now() > deadline - 5000) break;
-
-      try {
-        console.log(`[AI] ${taskName} → retry ${provider.name} (tentative ${attempt + 2})...`);
-        const data = await callProvider(provider, prompt, maxTokens, temperature);
-        if (!validator || validator(data)) {
-          console.log(`[AI] ✅ ${taskName} → ${provider.name} (retry)`);
-          return { data, provider: provider.name };
-        }
-      } catch (error) {
-        console.warn(`[AI] ❌ ${taskName} → retry ${provider.name}: ${error.message}`);
-
-        if (error.isRateLimit && error.retryDelayMs > 0) {
-          const waitMs = Math.min(error.retryDelayMs, 30000);
-          if (deadline && Date.now() + waitMs > deadline) break;
-
-          console.log(`[AI] ${taskName} — attente ${waitMs}ms`);
-          await sleep(waitMs);
+      if (error.isRateLimit && error.retryDelayMs > 0 && deadline && Date.now() + error.retryDelayMs < deadline) {
+        const waitMs = Math.min(error.retryDelayMs, 20000);
+        console.log(`[AI] ${taskName} — attente ${waitMs}ms avant retry`);
+        await sleep(waitMs);
+        try {
+          const data = await callProvider(provider, prompt, maxTokens, temperature);
+          if (!validator || validator(data)) {
+            console.log(`[AI] ✅ ${taskName} → ${provider.name} (retry)`);
+            return { data, provider: provider.name };
+          }
+        } catch (e) {
+          console.warn(`[AI] ❌ ${taskName} → retry ${provider.name}: ${e.message}`);
         }
       }
     }
@@ -604,108 +511,69 @@ async function generateWithCascade(prompt, validator, maxTokens, temperature, ta
 }
 
 // ════════════════════════════════════════════════════════════════
-// POOL FIRESTORE
+// CAHIER — STOCKAGE DES NOTIONS GÉNÉRÉES
 // ════════════════════════════════════════════════════════════════
-async function saveSessionToPool(subject, chapter, mode, session, uid) {
-  try {
-    const { db, FieldValue } = getAdminServices();
-    const ref = db.collection(POOL_COLLECTION).doc();
-    await ref.set({
-      subject, chapter, mode, session,
-      source: 'ai',
-      generatedBy: uid,
-      createdAt: FieldValue.serverTimestamp(),
-      usedCount: 0
-    });
-    console.log(`[POOL] Session sauvegardée : ${subject} / ${chapter} / ${mode}`);
-  } catch (e) {
-    console.warn('[POOL] Erreur sauvegarde:', e.message);
-  }
+function cahierDocId(subject, chapter) {
+  return `${subject}_${hashString(normalizeText(chapter))}`;
 }
 
-async function buildSessionFromPool(subject, chapter, mode) {
-  try {
-    const { db } = getAdminServices();
-    const snap = await db.collection(POOL_COLLECTION)
-      .where('subject', '==', subject)
-      .where('mode', '==', mode)
-      .limit(50)
-      .get();
-
-    if (snap.empty) return null;
-
-    const allSessions = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-    const chapterTarget = normalizeText(chapter);
-    let matching = allSessions.filter((s) => normalizeText(s.chapter) === chapterTarget);
-    if (matching.length === 0) matching = allSessions;
-
-    matching.sort((a, b) => (a.usedCount || 0) - (b.usedCount || 0));
-    const top = matching.slice(0, Math.max(1, Math.ceil(matching.length / 3)));
-    const picked = top[Math.floor(Math.random() * top.length)];
-
-    const sess = picked.session;
-    const valid = mode === 'flashcard'
-      ? (Array.isArray(sess?.flashcards) && sess.flashcards.length > 0)
-      : (Array.isArray(sess?.sections) && sess.sections.length > 0);
-
-    if (!valid) {
-      console.warn('[POOL] Session pool invalide, ignorée');
-      return null;
-    }
-
-    await db.collection(POOL_COLLECTION).doc(picked.id).update({
-      usedCount: (picked.usedCount || 0) + 1,
-      lastUsedAt: new Date()
-    }).catch(() => {});
-
-    return { session: sess, source: 'pool', poolId: picked.id };
-  } catch (e) {
-    console.warn('[POOL] Erreur lecture:', e.message);
-    return null;
-  }
-}
-
-async function buildQuizFromPool(subject, chapter, count) {
-  try {
-    const { db } = getAdminServices();
-    const snap = await db.collection(POOL_COLLECTION)
-      .where('subject', '==', subject)
-      .where('mode', '==', 'quiz')
-      .limit(30)
-      .get();
-
-    if (snap.empty) return null;
-
-    const allQuizzes = snap.docs.map((d) => d.data());
-    const allQuestions = [];
-    allQuizzes.forEach((q) => {
-      if (Array.isArray(q.session?.quiz)) allQuestions.push(...q.session.quiz);
-    });
-
-    const validQuestions = allQuestions.filter(isValidQuizQuestion);
-
-    if (validQuestions.length < count) return null;
-
-    const picked = shuffle(validQuestions).slice(0, count);
-    return { quiz: picked, source: 'pool' };
-  } catch (e) { return null; }
-}
-
-async function buildUnavailableSession(chapterTitle, mode) {
+async function loadCahierFromFirestore(uid, subject, chapter) {
+  const { db } = getAdminServices();
+  const ref = db.collection('users').doc(uid).collection(CAHIER_COLLECTION).doc(cahierDocId(subject, chapter));
+  const snap = await ref.get();
+  if (!snap.exists) return { notions: [], notionIds: [] };
+  const data = snap.data();
   return {
-    chapterTitle,
-    mode,
-    sections: [],
-    flashcards: [],
-    quiz: [],
-    unavailable: true,
-    message: `Le contenu pour "${chapterTitle}" n'est pas disponible pour le moment. Réessaie dans quelques minutes.`
+    notions: data.notions || [],
+    notionIds: data.notionIds || [],
+    totalDisponible: data.totalDisponible || 0
+  };
+}
+
+async function saveNotionsToCahier(uid, subject, chapter, newNotions, totalDisponible) {
+  const { db, FieldValue } = getAdminServices();
+  const ref = db.collection('users').doc(uid).collection(CAHIER_COLLECTION).doc(cahierDocId(subject, chapter));
+  const snap = await ref.get();
+
+  const existingNotions = snap.exists ? (snap.data().notions || []) : [];
+  const existingIds = snap.exists ? (snap.data().notionIds || []) : [];
+
+  const allNotions = [...existingNotions, ...newNotions];
+  const allIds = [...existingIds, ...newNotions.map((n) => n.notionId)];
+
+  await ref.set({
+    subject,
+    chapter,
+    notions: allNotions,
+    notionIds: allIds,
+    totalDisponible,
+    lastUpdate: FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  return { total: allNotions.length, ids: allIds };
+}
+
+// ════════════════════════════════════════════════════════════════
+// SÉLECTION DES NOTIONS À GÉNÉRER
+// ════════════════════════════════════════════════════════════════
+function selectNotionsToGenerate(allNotions, alreadyGeneratedIds, count) {
+  // Filtrer celles pas encore générées
+  const remaining = allNotions.filter((n) => !alreadyGeneratedIds.includes(n.id));
+
+  if (remaining.length === 0) {
+    return { selected: [], remaining: 0 };
+  }
+
+  // Prendre les premières `count` (ordre du chapitre)
+  const selected = remaining.slice(0, Math.min(count, remaining.length));
+  return {
+    selected,
+    remaining: remaining.length - selected.length
   };
 }
 
 // ════════════════════════════════════════════════════════════════
-// PROMPTS (identiques à v5.5 — inchangés)
+// PROMPTS — Nouveau format ciblé (3-4 notions seulement)
 // ════════════════════════════════════════════════════════════════
 const LATEX_RULES = `
 ═══════════════════════════════════════════════════════════════
@@ -727,80 +595,48 @@ const PEDAGOGY_RULES = `
 ═══════════════════════════════════════════════════════════════
 MISSION PÉDAGOGIQUE
 ═══════════════════════════════════════════════════════════════
-Tu prépares un élève de Terminale D au Niger qui peut avoir UNE SEULE
-JOURNÉE pour réviser avant son examen. Ton contenu doit permettre à
-cet élève de :
+Tu prépares un élève de Terminale D au Niger qui prépare le BAC.
+Ton contenu doit permettre à cet élève de :
   1. Comprendre CHAQUE notion en profondeur
   2. Mémoriser les formules essentielles
   3. Reconnaître les pièges du BAC
   4. Appliquer les méthodes pas à pas
-  5. Réussir l'examen, même en apprenant la veille
 `;
 
-function serializeNotion(notion, index) {
+function serializeNotionBrief(notion) {
   const lines = [];
-  lines.push(`─── NOTION ${index + 1} ───`);
+  lines.push(`─── ${notion.titre} ───`);
   lines.push(`id: ${notion.id}`);
-  lines.push(`titre: ${notion.titre}`);
-  if (notion.description_courte) lines.push(`description_courte: ${notion.description_courte}`);
-  if (notion.description_longue) lines.push(`description_longue: ${notion.description_longue}`);
-  else if (notion.description) lines.push(`description: ${notion.description}`);
-
+  if (notion.description_courte) lines.push(`description: ${notion.description_courte}`);
   if (Array.isArray(notion.formules)) {
-    lines.push('FORMULES :');
     notion.formules.forEach((f) => {
       const latex = typeof f === 'string' ? f : (f.latex || '');
       if (latex) lines.push(`  • ${latex}`);
     });
   }
-  if (Array.isArray(notion.proprietes)) {
-    lines.push('PROPRIÉTÉS :');
-    notion.proprietes.forEach((p) => lines.push(`  • ${p}`));
-  }
-  if (Array.isArray(notion.methodes)) {
-    lines.push('MÉTHODES :');
-    notion.methodes.forEach((m) => lines.push(`  • ${m}`));
-  }
-  if (notion.exemple_resolu) {
-    lines.push('EXEMPLE RÉSOLU (fourni) :');
-    if (notion.exemple_resolu.enonce) lines.push(`  Énoncé : ${notion.exemple_resolu.enonce}`);
-    if (Array.isArray(notion.exemple_resolu.etapes)) {
-      notion.exemple_resolu.etapes.forEach((e, i) => lines.push(`  Étape ${i + 1} : ${e}`));
-    }
-    if (notion.exemple_resolu.conclusion) lines.push(`  Conclusion : ${notion.exemple_resolu.conclusion}`);
-  }
-  if (Array.isArray(notion.erreurs_frequentes)) {
-    lines.push('ERREURS FRÉQUENTES :');
-    notion.erreurs_frequentes.forEach((e) => lines.push(`  • ${e}`));
-  }
-  if (Array.isArray(notion.pieges_examen)) {
-    lines.push('PIÈGES D\'EXAMEN :');
-    notion.pieges_examen.forEach((p) => lines.push(`  • ${p}`));
-  }
-  if (notion.mnemo) lines.push(`MNÉMOTECHNIQUE : ${notion.mnemo}`);
   return lines.join('\n');
 }
 
-function buildFichePrompt(subjectLabel, chapterTitle, notions) {
-  const notionsSerialized = notions.map((n, i) => serializeNotion(n, i)).join('\n\n');
+function buildNotionsPrompt(subjectLabel, chapterTitle, notions) {
+  const notionsSerialized = notions.map((n) => serializeNotionBrief(n)).join('\n\n');
   const N = notions.length;
 
   return `Tu es un professeur expert du BAC au Niger, avec 20 ans d'expérience en Terminale D.
 
 ${PEDAGOGY_RULES}
 
-MISSION : Génère une FICHE DE RÉVISION ULTIME pour le chapitre "${chapterTitle}" (${subjectLabel}).
+MISSION : Génère une FICHE DE RÉVISION COMPLÈTE pour ${N} notion(s) du chapitre "${chapterTitle}" (${subjectLabel}).
 
 ═══════════════════════════════════════════════════════════════
-NOTIONS OBLIGATOIRES À COUVRIR (${N} notions)
+NOTIONS À COUVRIR (${N} notion${N > 1 ? 's' : ''})
 ═══════════════════════════════════════════════════════════════
 ${notionsSerialized}
 
 ═══════════════════════════════════════════════════════════════
-CE QUE TU DOIS GÉNÉRER POUR CHAQUE NOTION
+POUR CHAQUE NOTION, GÉNÈRE :
 ═══════════════════════════════════════════════════════════════
-1. COMPRENDRE (4-6 phrases)
-2. FORMULES (latex + condition + usage)
+1. COMPRENDRE (4-6 phrases simples)
+2. FORMULES CLÉS (latex + condition + usage)
 3. MÉTHODE PAS À PAS (3-7 étapes)
 4. EXEMPLE RÉSOLU (chiffré, complet)
 5. PIÈGE DU BAC
@@ -813,7 +649,6 @@ FORMAT JSON ATTENDU
 ═══════════════════════════════════════════════════════════════
 {
   "chapterTitle": "${chapterTitle}",
-  "keyPoints": ["3 à 5 points clés"],
   "sections": [
     {
       "notionId": "id-exact-fourni",
@@ -828,42 +663,15 @@ FORMAT JSON ATTENDU
   ]
 }
 
-CONTRAINTES : EXACTEMENT ${N} sections · Qualité maximale · Réponds UNIQUEMENT avec le JSON`;
-}
-
-function buildFlashcardsPrompt(subjectLabel, chapterTitle, notions) {
-  const notionsSerialized = notions.map((n, i) => serializeNotion(n, i)).join('\n\n');
-  const N = notions.length;
-  const total = N * 5;
-
-  return `Tu es un professeur expert du BAC au Niger.
-
-${PEDAGOGY_RULES}
-
-MISSION : Génère ${total} FLASHCARDS haute qualité pour "${chapterTitle}" (${subjectLabel}).
-
-═══════════════════════════════════════════════════════════════
-NOTIONS À COUVRIR
-═══════════════════════════════════════════════════════════════
-${notionsSerialized}
-
-RÈGLES : 5 flashcards par notion · Types variés (definition, formule, methode, piege, application)
-
-${LATEX_RULES}
-
-FORMAT JSON :
-{
-  "chapterTitle": "${chapterTitle}",
-  "flashcards": [
-    { "notionId": "id", "type": "definition", "question": "...", "answer": "...", "hint": null, "difficulty": 1 }
-  ]
-}
-
-CONTRAINTES : EXACTEMENT ${total} flashcards · Réponses complètes (jamais "Voir cours") · Réponds UNIQUEMENT avec le JSON`;
+CONTRAINTES STRICTES :
+- EXACTEMENT ${N} section${N > 1 ? 's' : ''} dans le tableau "sections"
+- Chaque notionId DOIT correspondre exactement à l'id fourni
+- Qualité maximale
+- Réponds UNIQUEMENT avec le JSON`;
 }
 
 function buildQuizPrompt(subjectLabel, chapterTitle, notions, level, questionCount, seed) {
-  const notionsSerialized = notions.map((n, i) => serializeNotion(n, i)).join('\n\n');
+  const notionsSerialized = notions.map((n) => serializeNotionBrief(n)).join('\n\n');
 
   return `Tu es un professeur expert du BAC au Niger.
 
@@ -907,14 +715,9 @@ CONTRAINTES : EXACTEMENT ${questionCount} questions · Réponds UNIQUEMENT avec 
 // ════════════════════════════════════════════════════════════════
 // VALIDATIONS
 // ════════════════════════════════════════════════════════════════
-function validateFiche(data) {
+function validateNotions(data) {
   return data && Array.isArray(data.sections) && data.sections.length >= 1 &&
     data.sections.every((s) => s && s.notionTitle && typeof s.comprendre === 'string' && s.comprendre.length > 20);
-}
-
-function validateFlashcards(data) {
-  return data && Array.isArray(data.flashcards) && data.flashcards.length >= 1 &&
-    data.flashcards.every((c) => c && c.question && c.answer && c.notionId);
 }
 
 function validateQuiz(data) {
@@ -924,144 +727,47 @@ function validateQuiz(data) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// GÉNÉRATION PAR VAGUES
+// FALLBACK POOL
 // ════════════════════════════════════════════════════════════════
-async function generateFicheByWaves(subjectLabel, chapterTitle, notions, deadline) {
-  const allBatches = chunk(notions, NOTION_BATCH_SIZE);
-  const allSections = [];
-  let waveIndex = 0;
-  let missingBatches = 0;
-  let extra = {};
+async function buildNotionsFromPool(subject, chapter, wantedNotions) {
+  try {
+    const { db } = getAdminServices();
+    const snap = await db.collection(POOL_COLLECTION)
+      .where('subject', '==', subject)
+      .where('mode', '==', 'fiche')
+      .limit(30)
+      .get();
 
-  while (waveIndex * MAX_BATCHES_PER_WAVE < allBatches.length) {
-    if (Date.now() > deadline) {
-      console.warn(`[REVISEUR] Budget temps épuisé`);
-      missingBatches += allBatches.length - waveIndex * MAX_BATCHES_PER_WAVE;
-      break;
-    }
+    if (snap.empty) return null;
 
-    const waveBatches = allBatches.slice(
-      waveIndex * MAX_BATCHES_PER_WAVE,
-      (waveIndex + 1) * MAX_BATCHES_PER_WAVE
-    );
+    const allPoolSessions = snap.docs.map((d) => d.data());
+    const matchingSessions = allPoolSessions.filter((s) => normalizeText(s.chapter) === normalizeText(chapter));
 
-    const results = await Promise.allSettled(
-      waveBatches.map(async (batch, i) => {
-        const prompt = buildFichePrompt(subjectLabel, chapterTitle, batch);
-        const { data } = await generateWithCascade(
-          prompt, validateFiche, MAX_TOKENS.FICHE, 0.15,
-          `fiche-wave${waveIndex}-batch${i + 1}`, deadline
-        );
-        return { batch, data };
-      })
-    );
+    if (matchingSessions.length === 0) return null;
 
-    results.forEach((r) => {
-      if (r.status === 'fulfilled' && r.value?.data?.sections) {
-        allSections.push(...r.value.data.sections);
-        if (Object.keys(extra).length === 0 && r.value.data) {
-          extra = r.value.data;
-        }
-      } else {
-        missingBatches++;
+    // Extraire les sections de toutes les sessions du pool
+    const allSections = [];
+    matchingSessions.forEach((s) => {
+      if (Array.isArray(s.session?.sections)) {
+        allSections.push(...s.session.sections);
       }
     });
 
-    waveIndex++;
+    // Filtrer pour ne garder que les notions demandées
+    const wantedIds = wantedNotions.map((n) => n.id);
+    const filtered = allSections.filter((s) => wantedIds.includes(s.notionId));
 
-    if (waveIndex * MAX_BATCHES_PER_WAVE < allBatches.length && Date.now() < deadline - WAVE_PAUSE_MS) {
-      console.log(`[REVISEUR] Pause ${WAVE_PAUSE_MS}ms entre vagues`);
-      await sleep(WAVE_PAUSE_MS);
-    }
+    if (filtered.length === 0) return null;
+
+    return { sections: filtered, source: 'pool' };
+  } catch (e) {
+    console.warn('[POOL] Erreur:', e.message);
+    return null;
   }
-
-  if (missingBatches > 0) {
-    console.warn(`[REVISEUR] ${missingBatches} lot(s) en échec`);
-  }
-
-  return {
-    chapterTitle,
-    sections: allSections,
-    keyPoints: extra.keyPoints || notions.slice(0, 5).map((n) => n.titre),
-    examTraps: extra.examTraps || [],
-    commonMistakes: extra.commonMistakes || [],
-    partial: missingBatches > 0
-  };
-}
-
-async function generateFlashcardsByWaves(subjectLabel, chapterTitle, notions, deadline) {
-  const allBatches = chunk(notions, NOTION_BATCH_SIZE);
-  const allCards = [];
-  let waveIndex = 0;
-
-  while (waveIndex * MAX_BATCHES_PER_WAVE < allBatches.length) {
-    if (Date.now() > deadline) break;
-
-    const waveBatches = allBatches.slice(
-      waveIndex * MAX_BATCHES_PER_WAVE,
-      (waveIndex + 1) * MAX_BATCHES_PER_WAVE
-    );
-
-    const results = await Promise.allSettled(
-      waveBatches.map(async (batch, i) => {
-        const prompt = buildFlashcardsPrompt(subjectLabel, chapterTitle, batch);
-        const { data } = await generateWithCascade(
-          prompt, validateFlashcards, MAX_TOKENS.FLASHCARDS, 0.15,
-          `flashcards-wave${waveIndex}-batch${i + 1}`, deadline
-        );
-        return { batch, data };
-      })
-    );
-
-    results.forEach((r) => {
-      if (r.status === 'fulfilled' && r.value?.data?.flashcards) {
-        allCards.push(...r.value.data.flashcards);
-      }
-    });
-
-    waveIndex++;
-
-    if (waveIndex * MAX_BATCHES_PER_WAVE < allBatches.length && Date.now() < deadline - WAVE_PAUSE_MS) {
-      await sleep(WAVE_PAUSE_MS);
-    }
-  }
-
-  return { chapterTitle, flashcards: allCards };
-}
-
-async function generateQuizByBatches(subjectLabel, chapterTitle, notions, level, totalCount, seed, deadline) {
-  const notionBatches = chunk(notions, NOTION_BATCH_SIZE);
-  const batchCount = Math.min(2, notionBatches.length);
-  if (batchCount === 0) return null;
-
-  const countPerBatch = Math.max(3, Math.ceil(totalCount / batchCount));
-  const batches = notionBatches.slice(0, batchCount);
-
-  const results = await Promise.allSettled(
-    batches.map(async (batch, i) => {
-      const prompt = buildQuizPrompt(subjectLabel, chapterTitle, batch, level, countPerBatch, seed);
-      const { data } = await generateWithCascade(
-        prompt, validateQuiz, MAX_TOKENS.QUIZ, 0.6,
-        `quiz-batch-${i + 1}`, deadline
-      );
-      return { batch, data };
-    })
-  );
-
-  const allQuestions = [];
-  results.forEach((r) => {
-    if (r.status === 'fulfilled' && r.value?.data?.quiz) {
-      allQuestions.push(...r.value.data.quiz);
-    }
-  });
-
-  if (allQuestions.length === 0) return null;
-
-  return { chapterTitle, quiz: shuffle(allQuestions).slice(0, totalCount) };
 }
 
 // ════════════════════════════════════════════════════════════════
-// HANDLER
+// HANDLER PRINCIPAL
 // ════════════════════════════════════════════════════════════════
 module.exports = async function handler(request, response) {
   if (request.method !== 'POST') {
@@ -1070,7 +776,7 @@ module.exports = async function handler(request, response) {
   }
 
   const body = request.body && typeof request.body === 'object' ? request.body : {};
-  const action = body.action || 'generate';
+  const action = body.action || 'loadCahier';
   const isLight = LIGHT_ACTIONS.has(action);
   const rateLimit = isLight ? MAX_REQUESTS_PER_WINDOW_LIGHT : MAX_REQUESTS_PER_WINDOW_HEAVY;
 
@@ -1087,6 +793,7 @@ module.exports = async function handler(request, response) {
 
   if (!ALLOWED_ACTIONS.has(action)) return jsonError(response, 400, 'Action invalide.');
 
+  // ═══ VÉRIFICATION PREMIUM ═══
   if (PREMIUM_ACTIONS.has(action)) {
     try {
       const { db } = getAdminServices();
@@ -1103,15 +810,264 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  if (action === 'listSessions') {
-    try {
+  // ═══ VALIDATION SUBJECT/CHAPTER (pour les actions qui en ont besoin) ═══
+  const needsSubject = ['loadCahier', 'loadNotion', 'generateInitial', 'generateMore', 'deleteNotion', 'generate', 'quiz'].includes(action);
+  if (needsSubject) {
+    if (!ALLOWED_SUBJECTS.has(body.subject)) return jsonError(response, 400, 'Matière invalide.');
+    if (typeof body.chapter !== 'string' || body.chapter.length > 100) return jsonError(response, 400, 'Chapitre invalide.');
+  }
+
+  try {
+    // ═══ ACTION : LOAD CAHIER (GRATUIT) ═══
+    if (action === 'loadCahier') {
+      const { subject, chapter } = body;
+      const cahier = await loadCahierFromFirestore(user.uid, subject, chapter);
+      return response.status(200).json({
+        success: true,
+        notions: cahier.notions,
+        notionIds: cahier.notionIds,
+        total: cahier.notions.length
+      });
+    }
+
+    // ═══ ACTION : LOAD NOTION (GRATUIT) ═══
+    if (action === 'loadNotion') {
+      const { subject, chapter, notionId } = body;
+      if (!notionId) return jsonError(response, 400, 'notionId requis.');
+      const cahier = await loadCahierFromFirestore(user.uid, subject, chapter);
+      const notion = cahier.notions.find((n) => n.notionId === notionId);
+      if (!notion) return jsonError(response, 404, 'Notion introuvable.');
+      return response.status(200).json({ success: true, notion });
+    }
+
+    // ═══ ACTION : DELETE NOTION (GRATUIT) ═══
+    if (action === 'deleteNotion') {
+      const { subject, chapter, notionId } = body;
+      if (!notionId) return jsonError(response, 400, 'notionId requis.');
+      const { db } = getAdminServices();
+      const ref = db.collection('users').doc(user.uid).collection(CAHIER_COLLECTION).doc(cahierDocId(subject, chapter));
+      const snap = await ref.get();
+      if (!snap.exists) return jsonError(response, 404, 'Cahier introuvable.');
+      const data = snap.data();
+      const newNotions = (data.notions || []).filter((n) => n.notionId !== notionId);
+      const newIds = (data.notionIds || []).filter((id) => id !== notionId);
+      await ref.update({ notions: newNotions, notionIds: newIds });
+      return response.status(200).json({ success: true });
+    }
+
+    // ═══ ACTIONS DE GÉNÉRATION ═══
+    if (action === 'generateInitial' || action === 'generateMore') {
+      const { subject, chapter } = body;
+      const wantCount = action === 'generateInitial' ? INITIAL_NOTIONS_COUNT : FOLLOWUP_NOTIONS_COUNT;
+
+      // Charger la base de connaissances
+      const knowledgeBase = loadKnowledgeBase(subject);
+      const chapterData = knowledgeBase ? findChapter(knowledgeBase, chapter) : null;
+      const mandatoryNotions = chapterData ? getMandatoryNotions(chapterData) : [];
+      const hasKnowledge = mandatoryNotions.length > 0;
+
+      if (!hasKnowledge) {
+        return jsonError(response, 400, 'Ce chapitre n\'est pas disponible dans la base.', 'CHAPTER_NOT_READY');
+      }
+
+      const subjectLabel = knowledgeBase?.matiereLabel || {
+        mathematiques: 'Mathématiques', physique: 'Physique', chimie: 'Chimie', svt: 'SVT',
+        philosophie: 'Philosophie', histoire: 'Histoire', geographie: 'Géographie'
+      }[subject] || subject;
+      const chapterTitle = chapterData?.titre || chapter;
+
+      // Charger le cahier existant
+      const cahier = await loadCahierFromFirestore(user.uid, subject, chapter);
+
+      // Sélectionner les notions à générer
+      const { selected, remaining } = selectNotionsToGenerate(mandatoryNotions, cahier.notionIds, wantCount);
+
+      if (selected.length === 0) {
+        return response.status(200).json({
+          success: true,
+          notions: [],
+          message: 'Toutes les notions de ce chapitre ont déjà été générées.',
+          total: cahier.notions.length,
+          totalDisponible: mandatoryNotions.length
+        });
+      }
+
+      // Réservation du quota gratuit
+      let reservation = null;
+      try { reservation = await reserveFreeGeneration(user.uid); }
+      catch (error) { return jsonError(response, 503, 'Quota temporairement indisponible.'); }
+
+      if (reservation.limitReached) {
+        return response.status(429).json({
+          success: false,
+          error: 'Limite gratuite atteinte. Passe à Premium.',
+          code: 'FREE_REVISEUR_LIMIT',
+          used: reservation.used,
+          limit: FREE_REVISEUR_LIMIT
+        });
+      }
+
+      let generatedNotions = [];
+      let source = 'ai';
+
+      try {
+        // Construire le prompt ciblé
+        const prompt = buildNotionsPrompt(subjectLabel, chapterTitle, selected);
+        const deadline = Date.now() + GLOBAL_TIME_BUDGET_MS;
+
+        const { data } = await generateWithCascade(
+          prompt, validateNotions, MAX_TOKENS.NOTIONS_BATCH, 0.15,
+          `${action}-${selected.length}notions`, deadline
+        );
+
+        // Extraire et filtrer les sections générées
+        generatedNotions = (data.sections || [])
+          .filter((s) => s.notionId && s.notionTitle)
+          .map((s) => {
+            const notionOrig = selected.find((n) => n.id === s.notionId);
+            return {
+              notionId: s.notionId,
+              notionTitle: s.notionTitle,
+              comprendre: s.comprendre || '',
+              formules: s.formules || [],
+              methode: s.methode || null,
+              exempleResolu: s.exempleResolu || null,
+              piegeBAC: s.piegeBAC || null,
+              astuce: s.astuce || '',
+              generatedAt: new Date().toISOString()
+            };
+          });
+
+        if (generatedNotions.length === 0) {
+          throw new Error('no_notions_generated');
+        }
+
+        // Nettoyage LaTeX
+        generatedNotions = deepClean(generatedNotions);
+
+      } catch (aiError) {
+        console.warn('[REVISEUR] IA échouée:', aiError.message);
+
+        // Tentative de fallback pool
+        const pooled = await buildNotionsFromPool(subject, chapter, selected);
+        if (pooled) {
+          generatedNotions = pooled.sections;
+          source = 'pool';
+          console.log('[REVISEUR] ✅ Fallback pool utilisé');
+        } else {
+          if (reservation?.reserved) {
+            try { await releaseFreeGeneration(user.uid, reservation.usageDate); } catch (_) {}
+          }
+          return jsonError(response, 503, 'Impossible de générer les notions. Réessaie dans quelques minutes.');
+        }
+      }
+
+      // Sauvegarder dans le cahier
+      await saveNotionsToCahier(user.uid, subject, chapter, generatedNotions, mandatoryNotions.length);
+
+      // Historique (compatibilité)
+      try {
+        const { db, FieldValue } = getAdminServices();
+        await db.collection('users').doc(user.uid).collection('reviseurSessions').add({
+          subject,
+          subjectLabel,
+          chapter: chapterTitle,
+          mode: 'fiche',
+          notionsCovered: generatedNotions.length,
+          session: { sections: generatedNotions },
+          createdAt: FieldValue.serverTimestamp()
+        });
+      } catch (e) {}
+
+      return response.status(200).json({
+        success: true,
+        notions: generatedNotions,
+        total: cahier.notions.length + generatedNotions.length,
+        totalDisponible: mandatoryNotions.length,
+        remaining,
+        source,
+        quota: reservation?.premium
+          ? { type: 'premium', unlimited: true }
+          : { type: 'free', used: reservation?.used, limit: FREE_REVISEUR_LIMIT }
+      });
+    }
+
+    // ═══ ACTION : QUIZ ═══
+    if (action === 'quiz') {
+      const { subject, chapter } = body;
+      const count = Math.min(20, Math.max(5, Number(body.count) || 5));
+      const level = Math.min(4, Math.max(1, Number(body.difficulty) || 2));
+      const seed = hashString(Date.now() + '_' + user.uid + '_' + Math.random());
+
+      const knowledgeBase = loadKnowledgeBase(subject);
+      const chapterData = knowledgeBase ? findChapter(knowledgeBase, chapter) : null;
+      const mandatoryNotions = chapterData ? getMandatoryNotions(chapterData) : [];
+
+      if (mandatoryNotions.length === 0) {
+        return jsonError(response, 400, 'Chapitre non disponible.', 'CHAPTER_NOT_READY');
+      }
+
+      const subjectLabel = knowledgeBase?.matiereLabel || subject;
+      const chapterTitle = chapterData?.titre || chapter;
+
+      // Charger les notions déjà générées pour limiter le contexte
+      const cahier = await loadCahierFromFirestore(user.uid, subject, chapter);
+      const notionsForQuiz = cahier.notions.length > 0
+        ? mandatoryNotions.filter((n) => cahier.notionIds.includes(n.id)).slice(0, 6)
+        : mandatoryNotions.slice(0, 6);
+
+      try {
+        const prompt = buildQuizPrompt(subjectLabel, chapterTitle, notionsForQuiz, level, count, seed);
+        const deadline = Date.now() + GLOBAL_TIME_BUDGET_MS;
+
+        const { data } = await generateWithCascade(
+          prompt, validateQuiz, MAX_TOKENS.QUIZ, 0.6,
+          'quiz', deadline
+        );
+
+        const validQuiz = (data.quiz || []).filter(isValidQuizQuestion);
+        const cleanedQuiz = deepClean(validQuiz);
+
+        return response.status(200).json({ success: true, quiz: cleanedQuiz, source: 'ai', seed });
+      } catch (err) {
+        console.warn('[REVISEUR] Quiz échoué:', err.message);
+        return response.status(200).json({
+          success: true,
+          quiz: [],
+          source: 'unavailable',
+          message: 'Quiz indisponible pour le moment.'
+        });
+      }
+    }
+
+    // ═══ COMPATIBILITÉ : action "generate" (ancien format) ═══
+    if (action === 'generate') {
+      // Rediriger vers generateInitial ou generateMore
+      const isInitial = !body.includeFlashcards;
+      const targetAction = isInitial ? 'generateInitial' : 'generateMore';
+
+      // Reconstruire la requête
+      const redirectBody = { ...body, action: targetAction };
+      const mockRequest = { ...request, body: redirectBody };
+
+      // Appeler récursivement
+      const mockResponse = {
+        status: (code) => ({
+          json: (data) => {
+            return response.status(code).json(data);
+          }
+        })
+      };
+
+      return module.exports(mockRequest, mockResponse);
+    }
+
+    // ═══ HISTORIQUE (compatibilité) ═══
+    if (action === 'listSessions') {
       const { db } = getAdminServices();
       const limit = Math.min(100, Number(body.limit) || 50);
       const snap = await db.collection('users').doc(user.uid)
-        .collection('reviseurSessions')
-        .orderBy('createdAt', 'desc')
-        .limit(limit)
-        .get();
+        .collection('reviseurSessions').orderBy('createdAt', 'desc').limit(limit).get();
 
       const sessions = snap.docs.map((d) => {
         const data = d.data();
@@ -1127,20 +1083,14 @@ module.exports = async function handler(request, response) {
       });
 
       return response.status(200).json({ success: true, sessions });
-    } catch (e) {
-      return jsonError(response, 500, 'Impossible de charger l\'historique.');
     }
-  }
 
-  if (action === 'loadSession') {
-    if (!body.sessionId) return jsonError(response, 400, 'sessionId requis.');
-    try {
+    if (action === 'loadSession') {
+      if (!body.sessionId) return jsonError(response, 400, 'sessionId requis.');
       const { db } = getAdminServices();
-      const ref = db.collection('users').doc(user.uid)
-        .collection('reviseurSessions').doc(body.sessionId);
+      const ref = db.collection('users').doc(user.uid).collection('reviseurSessions').doc(body.sessionId);
       const snap = await ref.get();
       if (!snap.exists) return jsonError(response, 404, 'Session introuvable.');
-
       const data = snap.data();
       return response.status(200).json({
         success: true,
@@ -1154,231 +1104,19 @@ module.exports = async function handler(request, response) {
           createdAt: toISO(data.createdAt)
         }
       });
-    } catch (e) {
-      return jsonError(response, 500, 'Erreur chargement.');
     }
-  }
 
-  if (action === 'deleteSession') {
-    if (!body.sessionId) return jsonError(response, 400, 'sessionId requis.');
-    try {
+    if (action === 'deleteSession') {
+      if (!body.sessionId) return jsonError(response, 400, 'sessionId requis.');
       const { db } = getAdminServices();
-      await db.collection('users').doc(user.uid)
-        .collection('reviseurSessions').doc(body.sessionId).delete();
+      await db.collection('users').doc(user.uid).collection('reviseurSessions').doc(body.sessionId).delete();
       return response.status(200).json({ success: true });
-    } catch (e) {
-      return jsonError(response, 500, 'Erreur suppression.');
-    }
-  }
-
-  if (!ALLOWED_SUBJECTS.has(body.subject)) return jsonError(response, 400, 'Matière invalide.');
-  if (typeof body.chapter !== 'string' || body.chapter.length > 100) return jsonError(response, 400, 'Chapitre invalide.');
-
-  if (action === 'generate') {
-    if (!ALLOWED_MODES.has(body.mode)) {
-      return jsonError(response, 400, 'Mode invalide.');
-    }
-  }
-
-  const knowledgeBase = loadKnowledgeBase(body.subject);
-  const chapterData = knowledgeBase ? findChapter(knowledgeBase, body.chapter) : null;
-  const mandatoryNotions = chapterData ? getMandatoryNotions(chapterData) : [];
-  const hasKnowledge = mandatoryNotions.length > 0;
-
-  const subjectLabel = knowledgeBase?.matiereLabel || {
-    mathematiques: 'Mathématiques', physique: 'Physique', chimie: 'Chimie', svt: 'SVT',
-    philosophie: 'Philosophie', histoire: 'Histoire', geographie: 'Géographie'
-  }[body.subject] || body.subject;
-  const chapterTitle = chapterData?.titre || body.chapter;
-
-  console.log(`[REVISEUR v6.0] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
-
-  let reservation = null;
-  if (action === 'generate') {
-    try { reservation = await reserveFreeGeneration(user.uid); }
-    catch (error) { return jsonError(response, 503, 'Quota temporairement indisponible.'); }
-
-    if (reservation.limitReached) {
-      return response.status(429).json({
-        success: false,
-        error: 'Limite gratuite atteinte. Passe à Premium.',
-        code: 'FREE_REVISEUR_LIMIT',
-        used: reservation.used,
-        limit: FREE_REVISEUR_LIMIT
-      });
-    }
-  }
-
-  try {
-    if (action === 'generate') {
-      const isFlashcard = body.mode === 'flashcard';
-      const includeFlashcards = body.includeFlashcards === true;
-      const deadline = Date.now() + GLOBAL_TIME_BUDGET_MS;
-
-      let session;
-      let source = 'ai';
-
-      try {
-        if (hasKnowledge) {
-          session = isFlashcard
-            ? await generateFlashcardsByWaves(subjectLabel, chapterTitle, mandatoryNotions, deadline)
-            : await generateFicheByWaves(subjectLabel, chapterTitle, mandatoryNotions, deadline);
-        } else {
-          const fakeNotions = [{ id: 'chapter', titre: chapterTitle, description: '' }];
-          session = isFlashcard
-            ? await generateFlashcardsByWaves(subjectLabel, chapterTitle, fakeNotions, deadline)
-            : await generateFicheByWaves(subjectLabel, chapterTitle, fakeNotions, deadline);
-        }
-
-        if (!isFlashcard && includeFlashcards && hasKnowledge) {
-          try {
-            const flashDeadline = Date.now() + Math.max(15000, deadline - Date.now());
-            const flash = await generateFlashcardsByWaves(subjectLabel, chapterTitle, mandatoryNotions, flashDeadline);
-            if (flash && Array.isArray(flash.flashcards) && flash.flashcards.length > 0) {
-              session.flashcards = flash.flashcards;
-            }
-          } catch (e) {
-            console.warn('[REVISEUR] Flashcards bonus échouées:', e.message);
-          }
-        }
-
-        if (!session || (isFlashcard && (!Array.isArray(session.flashcards) || session.flashcards.length === 0)) ||
-            (!isFlashcard && (!Array.isArray(session.sections) || session.sections.length === 0))) {
-          throw new Error('empty_session');
-        }
-      } catch (aiError) {
-        console.warn('[REVISEUR] IA échouée:', aiError.message);
-
-        const pooled = await buildSessionFromPool(body.subject, body.chapter, body.mode);
-        if (pooled) {
-          session = pooled.session;
-          source = 'pool';
-          console.log('[REVISEUR] ✅ Fallback pool utilisé');
-        }
-      }
-
-      const sessionIsEmpty = !session ||
-        (isFlashcard && (!Array.isArray(session.flashcards) || session.flashcards.length === 0)) ||
-        (!isFlashcard && (!Array.isArray(session.sections) || session.sections.length === 0));
-
-      if (sessionIsEmpty) {
-        if (reservation?.reserved) {
-          try { await releaseFreeGeneration(user.uid, reservation.usageDate); } catch (_) {}
-        }
-        return response.status(200).json({
-          success: true,
-          session: await buildUnavailableSession(chapterTitle, body.mode),
-          source: 'unavailable',
-          quota: reservation?.premium
-            ? { type: 'premium', unlimited: true }
-            : { type: 'free', used: reservation?.used, limit: FREE_REVISEUR_LIMIT }
-        });
-      }
-
-      session = deepClean(session);
-
-      if (source === 'ai') {
-        await saveSessionToPool(body.subject, body.chapter, body.mode, session, user.uid);
-
-        try {
-          const { db, FieldValue } = getAdminServices();
-          await db.collection('users').doc(user.uid).collection('reviseurSessions').add({
-            subject: body.subject,
-            subjectLabel,
-            chapter: chapterTitle,
-            mode: body.mode,
-            notionsCovered: hasKnowledge ? mandatoryNotions.length : 0,
-            session,
-            createdAt: FieldValue.serverTimestamp()
-          });
-        } catch (e) {
-          console.warn('[HISTORIQUE] Sauvegarde échouée:', e.message);
-        }
-      }
-
-      return response.status(200).json({
-        success: true,
-        session: {
-          ...session,
-          subject: body.subject,
-          subjectLabel,
-          chapter: body.chapter,
-          mode: body.mode,
-          generationMode: source,
-          notionsCovered: hasKnowledge ? mandatoryNotions.length : 0,
-          generatedAt: new Date().toISOString()
-        },
-        source,
-        quota: reservation?.premium
-          ? { type: 'premium', unlimited: true }
-          : { type: 'free', used: reservation?.used, limit: FREE_REVISEUR_LIMIT }
-      });
-    }
-
-    if (action === 'quiz') {
-      const count = Math.min(20, Math.max(5, Number(body.count) || 5));
-      const level = Math.min(4, Math.max(1, Number(body.difficulty) || 2));
-      const seed = hashString(Date.now() + '_' + user.uid + '_' + Math.random());
-      const deadline = Date.now() + GLOBAL_TIME_BUDGET_MS;
-
-      let quizData;
-      let source = 'ai';
-
-      try {
-        if (hasKnowledge) {
-          quizData = await generateQuizByBatches(subjectLabel, chapterTitle, mandatoryNotions, level, count, seed, deadline);
-          if (!quizData || !quizData.quiz || quizData.quiz.length === 0) throw new Error('empty_quiz');
-        } else {
-          throw new Error('no_knowledge_base');
-        }
-      } catch (e) {
-        console.warn('[REVISEUR] Quiz IA échoué:', e.message);
-        const pooled = await buildQuizFromPool(body.subject, body.chapter, count);
-        if (pooled) {
-          quizData = pooled;
-          source = 'pool';
-        } else {
-          return response.status(200).json({
-            success: true,
-            quiz: [],
-            source: 'unavailable',
-            message: 'Quiz indisponible pour le moment.'
-          });
-        }
-      }
-
-      quizData = deepClean(quizData);
-
-      const validQuiz = (quizData.quiz || []).filter(isValidQuizQuestion);
-
-      if (source === 'ai' && validQuiz.length > 0) {
-        try {
-          const { db, FieldValue } = getAdminServices();
-          await db.collection('users').doc(user.uid).collection('reviseurSessions').add({
-            subject: body.subject,
-            subjectLabel,
-            chapter: chapterTitle,
-            mode: 'quiz',
-            session: { chapterTitle, quiz: validQuiz },
-            createdAt: FieldValue.serverTimestamp()
-          });
-        } catch (e) {}
-      }
-
-      return response.status(200).json({ success: true, quiz: validQuiz, source, seed });
-    }
-
-    if (action === 'exercises') {
-      return response.status(200).json({ success: true, exercises: [], source: 'unavailable' });
     }
 
     return jsonError(response, 400, 'Action inconnue.');
 
   } catch (error) {
-    console.error(`Action "${action}" échouée:`, error.message);
-    if (reservation?.reserved && action === 'generate') {
-      try { await releaseFreeGeneration(user.uid, reservation.usageDate); } catch (_) {}
-    }
-    return jsonError(response, 503, 'Service temporairement indisponible.');
+    console.error(`[REVISEUR v7.0] Action "${action}" échouée:`, error.message);
+    return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
 };
