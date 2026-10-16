@@ -1699,6 +1699,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <header>
@@ -2029,7 +2030,7 @@
     <i class="fas fa-info-circle"></i>
     <span id="toastText"></span>
   </div>
-
+  
   <script type="importmap">
   { "imports": {
     "firebase/app": "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js",
@@ -2232,10 +2233,14 @@
     return txt.trim();
   }
 
+  // ✅ CORRECTION #5 — escapeHtml optimisé (plus de création DOM)
   function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = toPlainText(text);
-    return div.innerHTML;
+    return toPlainText(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   function showView(id) {
@@ -2738,7 +2743,7 @@
     const open = card.classList.contains('open');
     document.querySelectorAll('.notion-card.open').forEach((o) => { if (o !== card) o.classList.remove('open'); });
     card.classList.toggle('open', !open);
-    // Rendu KaTeX automatique (le contenu est déjà dans le DOM)
+    // Rendu KaTeX automatique via MutationObserver
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -2785,9 +2790,15 @@
     }
   });
 
+  // ✅ CORRECTION #2 — Verrou anti-double saut de flashcards
+  let feedbackLock = false;
+
   document.querySelectorAll('.feedback-btn').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (feedbackLock) return;  // ✅ On ignore si déjà en cours
+      feedbackLock = true;
+
       state.flashRatings[state.currentFlashIndex] = btn.dataset.rating;
       const card = $('flashcardEl');
       card.style.opacity = '0';
@@ -2801,11 +2812,18 @@
           $('flashFeedback').classList.remove('show');
           $('flashcardTrackFill').style.width = '100%';
         }
+        feedbackLock = false;  // ✅ Libération après traitement
       }, 200);
     });
   });
 
-  $('finishFlashBtn').addEventListener('click', generateQuiz);
+  // ✅ CORRECTION #3 — Verrou anti-double quiz
+  function safeGenerateQuiz() {
+    if (state.isGeneratingQuiz) return;
+    generateQuiz();
+  }
+
+  $('finishFlashBtn').addEventListener('click', safeGenerateQuiz);
 
   // ═══════════════════════════════════════════════════════════════
   // RENDU QUIZ
@@ -2934,7 +2952,8 @@
     await generateFlashcards();
   });
 
-  $('skipToQuizBtn').addEventListener('click', generateQuiz);
+  // ✅ CORRECTION #3 — Utilise safeGenerateQuiz
+  $('skipToQuizBtn').addEventListener('click', safeGenerateQuiz);
 
   window.addEventListener('scroll', () => {
     $('scrollTop').classList.toggle('show', window.scrollY > 300);
@@ -2984,7 +3003,11 @@
 
   onAuthStateChanged(auth, async (user) => {
     const conn = $('connectionState');
-    if (!user) { window.location.replace('login.html'); return; }
+    if (!user) {
+      // ✅ CORRECTION #1 — Redirection vers auth-choice.html
+      window.location.replace('auth-choice.html');
+      return;
+    }
     state.user = user;
     conn.textContent = 'Connecté';
     conn.classList.add('online');
@@ -3000,7 +3023,7 @@
 
   initCustomSelects();
   initChips();
-  console.log('🎓 ARVEXA — Réviseur v7.0 — KaTeX délégué + pop-up universel');
+  console.log('🎓 ARVEXA — Réviseur v7.1 — Corrections appliquées');
   </script>
 </body>
 </html>
