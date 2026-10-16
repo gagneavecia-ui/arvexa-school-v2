@@ -202,7 +202,7 @@
       padding: 22px;
     }
 
-    /* ═══ SÉLECTEURS MATIÈRE + CHAPITRE ═══ */
+    /* ═══ SÉLECTEURS ═══ */
     .selectors-bar {
       display: grid;
       grid-template-columns: 1fr;
@@ -210,9 +210,7 @@
       margin-bottom: 18px;
     }
     @media (min-width: 620px) {
-      .selectors-bar {
-        grid-template-columns: 1fr 1fr;
-      }
+      .selectors-bar { grid-template-columns: 1fr 1fr; }
     }
 
     .selector {
@@ -347,7 +345,7 @@
       flex-shrink: 0;
     }
 
-    /* ═══ HERO PRINCIPAL ═══ */
+    /* ═══ HERO ═══ */
     .hero-chapter {
       background: linear-gradient(135deg, rgba(184, 134, 11, 0.08), rgba(26, 58, 42, 0.06));
       border: 1px solid rgba(184, 134, 11, 0.2);
@@ -504,7 +502,7 @@
       color: var(--accent-bright);
     }
 
-    /* ═══ LISTE DE NOTIONS ═══ */
+    /* ═══ NOTIONS ═══ */
     .notions-list {
       display: flex;
       flex-direction: column;
@@ -591,9 +589,7 @@
     }
 
     /* ═══ DÉTAIL NOTION ═══ */
-    .notion-detail-header {
-      margin-bottom: 20px;
-    }
+    .notion-detail-header { margin-bottom: 20px; }
     .back-btn {
       display: inline-flex;
       align-items: center;
@@ -629,7 +625,7 @@
       color: var(--text-muted);
     }
 
-    /* Blocs de contenu */
+    /* ═══ BLOCS DE CONTENU ═══ */
     .block {
       background: var(--bg-card);
       border: 1px solid var(--border-soft);
@@ -676,6 +672,244 @@
       font-size: 12px;
       color: var(--text-muted);
       margin-top: 8px;
+      font-style: italic;
+    }
+
+    /* ✅ Points clés (leçons) */
+    .points-cles-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .point-cle {
+      display: flex;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(224, 184, 74, 0.04);
+      border-left: 3px solid var(--accent);
+    }
+    .point-cle-num {
+      color: var(--accent-bright);
+      font-weight: 800;
+      font-size: 13px;
+      flex-shrink: 0;
+      min-width: 20px;
+    }
+    .point-cle-text {
+      font-size: 14px;
+      color: var(--text-body);
+      line-height: 1.65;
+      flex: 1;
+    }
+
+    /* ✅ Termes (leçons) */
+    .termes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .terme-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .terme-nom {
+      font-weight: 700;
+      color: var(--accent-bright);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .terme-def {
+      font-size: 13.5px;
+      color: var(--text-body);
+      line-height: 1.6;
+    }
+
+    /* ✅ Mécanismes (SVT) */
+    .mecanismes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .mecanisme-item {
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(74, 175, 224, 0.04);
+      border-left: 3px solid var(--info);
+    }
+    .mecanisme-nom {
+      font-weight: 700;
+      color: var(--info);
+      font-size: 14.5px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mecanisme-etapes {
+      list-style: none;
+      padding: 0;
+      counter-reset: mstep;
+    }
+    .mecanisme-etapes li {
+      position: relative;
+      padding-left: 26px;
+      counter-increment: mstep;
+      font-size: 13.5px;
+      color: var(--text-body);
+      line-height: 1.65;
+      margin-bottom: 8px;
+    }
+    .mecanisme-etapes li::before {
+      content: counter(mstep);
+      position: absolute;
+      left: 0; top: 1px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: rgba(74, 175, 224, 0.15);
+      color: var(--info);
+      font-size: 10px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mecanisme-consequences {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(74, 175, 224, 0.15);
+    }
+    .mecanisme-consequences-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--info);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+    .mecanisme-consequences ul {
+      list-style: none;
+      padding: 0;
+    }
+    .mecanisme-consequences li {
+      position: relative;
+      padding-left: 16px;
+      font-size: 13px;
+      color: var(--text-body);
+      line-height: 1.6;
+      margin-bottom: 4px;
+    }
+    .mecanisme-consequences li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--info);
+      font-weight: 700;
+    }
+
+    /* ✅ Dates clés (Histoire) */
+    .dates-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .date-item {
+      display: flex;
+      gap: 14px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(224, 184, 74, 0.05);
+      align-items: flex-start;
+    }
+    .date-value {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-bright);
+      flex-shrink: 0;
+      min-width: 60px;
+    }
+    .date-event {
+      font-size: 14px;
+      color: var(--text-body);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    /* ✅ Personnages (Histoire) */
+    .personnages-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .personnage-item {
+      display: flex;
+      gap: 14px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      align-items: flex-start;
+    }
+    .personnage-nom {
+      font-weight: 700;
+      color: var(--accent-bright);
+      font-size: 14px;
+      flex-shrink: 0;
+      min-width: 100px;
+    }
+    .personnage-role {
+      font-size: 13.5px;
+      color: var(--text-body);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    /* ✅ Lieux (Histoire/Géo) */
+    .lieux-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .lieu-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(74, 175, 224, 0.05);
+    }
+    .lieu-nom {
+      font-weight: 700;
+      color: var(--info);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .lieu-info {
+      font-size: 13.5px;
+      color: var(--text-body);
+      line-height: 1.6;
+    }
+
+    /* ✅ Auteurs (Philosophie) */
+    .auteurs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .auteur-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(184, 134, 11, 0.05);
+    }
+    .auteur-nom {
+      font-weight: 700;
+      color: var(--accent-bright);
+      font-size: 14px;
+      margin-bottom: 4px;
+      font-family: var(--font-serif);
+    }
+    .auteur-idee {
+      font-size: 13.5px;
+      color: var(--text-body);
+      line-height: 1.6;
       font-style: italic;
     }
 
@@ -1080,11 +1314,7 @@
 
     /* ═══ KaTeX ═══ */
     .katex { font-size: 1.05em; color: inherit; }
-    .katex-display {
-      margin: 8px 0;
-      overflow-x: auto;
-      padding: 4px 0;
-    }
+    .katex-display { margin: 8px 0; overflow-x: auto; padding: 4px 0; }
 
     /* ═══ RESPONSIVE ═══ */
     @media (max-width: 620px) {
@@ -1118,7 +1348,7 @@
       }
     }
 
-    /* ═══ POP-UP PREMIUM UNIVERSEL ═══ */
+    /* ═══ POP-UP PREMIUM ═══ */
     .arvexa-popup-overlay {
       position: fixed;
       inset: 0;
@@ -1288,7 +1518,6 @@
          ═══════════════════════════════════════════════════════ -->
     <section class="view active" id="viewHome">
 
-      <!-- ✅ NOUVEAU : Sélecteurs matière + chapitre -->
       <div class="selectors-bar">
         <div class="selector" id="subjectSelector">
           <button type="button" class="selector-trigger">
@@ -1488,7 +1717,7 @@
   </main>
 
   <!-- ═══════════════════════════════════════════════════════
-       POP-UP PREMIUM UNIVERSEL
+       POP-UP PREMIUM
        ═══════════════════════════════════════════════════════ -->
   <div class="arvexa-popup-overlay" id="premiumOverlay">
     <div class="arvexa-popup" role="dialog" aria-modal="true">
@@ -1535,7 +1764,7 @@
 
   <script type="module">
   // ═══════════════════════════════════════════════════════════════
-  // RÉVISEUR v7.1 — Génération progressive + sélecteurs
+  // RÉVISEUR v7.2 — Multi-format + Navigation historique
   // ═══════════════════════════════════════════════════════════════
 
   import { initializeApp } from 'firebase/app';
@@ -1577,6 +1806,9 @@
     histoire: '🌍',
     geographie: '🗺️'
   };
+
+  // ✅ Classification des matières
+  const SCIENTIFIC_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie']);
 
   const CHAPTERS = {
     mathematiques: [
@@ -1691,6 +1923,7 @@
   const state = {
     user: null,
     subject: null,
+    subjectType: 'scientific',
     chapter: null,
     totalAvailable: 0,
     generatedCount: 0,
@@ -1749,12 +1982,42 @@
     }, 3200);
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // ✅ NAVIGATION AVEC HISTORIQUE (mobile-friendly)
+  // ═══════════════════════════════════════════════════════════════
+
+  // Vue interne : change l'affichage SANS toucher à l'historique
   function showView(id) {
     document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
     const target = $(id);
     if (target) target.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  // Vue publique : ajoute une entrée d'historique
+  function showViewWithHistory(viewId) {
+    const currentView = document.querySelector('.view.active')?.id;
+    if (currentView !== viewId) {
+      window.history.pushState({ view: viewId }, '', '');
+    }
+    showView(viewId);
+  }
+
+  // ✅ Écouteur du bouton "Retour" du téléphone / navigateur
+  window.addEventListener('popstate', (event) => {
+    const targetView = event.state?.view;
+
+    if (targetView && document.getElementById(targetView)) {
+      // On revient à la vue précédente SANS empiler un nouvel historique
+      showView(targetView);
+
+      // ✅ Recharger le contenu si on revient sur une vue qui en a besoin
+      if (targetView === 'viewNotions') {
+        renderNotionsList();
+      }
+    }
+    // Sinon : pas de state → comportement par défaut (quitter la page)
+  });
 
   function showPremiumPopup() {
     $('premiumOverlay').classList.add('show');
@@ -1802,16 +2065,14 @@
             return;
           }
 
-          // Sauvegarde la nouvelle matière
           state.subject = newSubject;
           state.chapter = CHAPTERS[newSubject]?.[0] || '';
           saveSelection();
 
-          // Ferme et redessine
           closeAllSelectors();
           render();
-          initChapterSelector();  // Re-render chapitres
-          loadCahier();           // Recharge le cahier
+          initChapterSelector();
+          loadCahier();
         });
       });
     }
@@ -1873,7 +2134,6 @@
     render();
   }
 
-  // Fermer les sélecteurs au clic ailleurs
   document.addEventListener('click', () => closeAllSelectors());
 
   // ═══════════════════════════════════════════════════════════════
@@ -1921,12 +2181,12 @@
       state.generatedCount = data.generatedCount || 0;
       state.notions = data.notions || [];
       state.generatedIds = data.generatedIds || [];
+      state.subjectType = data.subjectType || 'scientific';
 
       updateHomeUI();
     } catch (err) {
       console.error('[Réviseur] loadCahier error:', err);
       showToast(err.message || 'Impossible de charger le cahier', 'error');
-      // Réinitialise pour éviter les états incohérents
       state.totalAvailable = 0;
       state.generatedCount = 0;
       state.notions = [];
@@ -1939,19 +2199,15 @@
   // MISE À JOUR UI ACCUEIL
   // ═══════════════════════════════════════════════════════════════
   function updateHomeUI() {
-    // Labels sujet + chapitre
     $('subjectLabel').textContent = SUBJECTS[state.subject] || state.subject;
     $('chapterTitle').textContent = state.chapter;
 
-    // Met à jour la valeur du sélecteur de chapitre
     const chapterValueEl = document.getElementById('chapterSelectorValue');
     if (chapterValueEl) chapterValueEl.textContent = state.chapter;
 
-    // Met à jour la valeur du sélecteur de matière
     const subjectValueEl = document.getElementById('subjectSelectorValue');
     if (subjectValueEl) subjectValueEl.textContent = SUBJECTS[state.subject] || state.subject;
 
-    // Barre de progression
     const percent = state.totalAvailable > 0
       ? Math.round((state.generatedCount / state.totalAvailable) * 100)
       : 0;
@@ -1959,7 +2215,6 @@
     $('progressCurrent').textContent = state.generatedCount;
     $('progressTotal').textContent = '/ ' + state.totalAvailable + ' notions';
 
-    // Bouton "Voir mes notions"
     if (state.generatedCount > 0) {
       $('btnViewNotions').disabled = false;
       $('viewNotionsDesc').textContent = state.generatedCount + ' notion' + (state.generatedCount > 1 ? 's' : '') + ' disponible' + (state.generatedCount > 1 ? 's' : '') + '. Lecture gratuite.';
@@ -1968,7 +2223,6 @@
       $('viewNotionsDesc').textContent = 'Aucune notion générée pour le moment.';
     }
 
-    // Bouton "Générer"
     const remaining = state.totalAvailable - state.generatedCount;
 
     if (state.generatedCount === 0) {
@@ -1986,7 +2240,6 @@
       $('btnGenerateDesc').textContent = count + ' notion' + (count > 1 ? 's' : '') + ' · ' + remaining + ' restante' + (remaining > 1 ? 's' : '');
     }
 
-    // Bouton Quiz
     if (state.generatedCount >= 3) {
       $('btnQuiz').disabled = false;
       $('btnQuizDesc').textContent = 'Teste tes connaissances sur ' + state.generatedCount + ' notions';
@@ -2003,7 +2256,7 @@
     if (state.isGenerating) return;
     state.isGenerating = true;
 
-    showView('viewLoading');
+    showViewWithHistory('viewLoading');
     $('loadingTitle').textContent = 'Génération de tes premières notions';
     $('loadingMessage').textContent = 'L\'IA prépare 4 notions complètes. Cela peut prendre 15 à 20 secondes.';
 
@@ -2025,15 +2278,15 @@
       }
 
       updateHomeUI();
-      showView('viewHome');
+      showViewWithHistory('viewHome');
     } catch (err) {
       console.error('[Réviseur] generateInitial error:', err);
       if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
         showPremiumPopup();
-        showView('viewHome');
+        showViewWithHistory('viewHome');
       } else {
         showToast(err.message || 'Erreur de génération', 'error', 5000);
-        showView('viewHome');
+        showViewWithHistory('viewHome');
       }
     } finally {
       state.isGenerating = false;
@@ -2047,7 +2300,7 @@
     if (state.isGenerating) return;
     state.isGenerating = true;
 
-    showView('viewLoading');
+    showViewWithHistory('viewLoading');
     $('loadingTitle').textContent = 'Génération de nouvelles notions';
     $('loadingMessage').textContent = 'L\'IA prépare 3 nouvelles notions. Cela peut prendre 10 à 15 secondes.';
 
@@ -2058,7 +2311,6 @@
         chapter: state.chapter
       });
 
-      // Recharger le cahier complet pour être sûr
       await loadCahier();
 
       if (data.message) {
@@ -2067,15 +2319,15 @@
         showToast('Nouvelles notions générées !', 'success');
       }
 
-      showView('viewHome');
+      showViewWithHistory('viewHome');
     } catch (err) {
       console.error('[Réviseur] generateMore error:', err);
       if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
         showPremiumPopup();
-        showView('viewHome');
+        showViewWithHistory('viewHome');
       } else {
         showToast(err.message || 'Erreur de génération', 'error', 5000);
-        showView('viewHome');
+        showViewWithHistory('viewHome');
       }
     } finally {
       state.isGenerating = false;
@@ -2099,17 +2351,41 @@
     }
 
     empty.style.display = 'none';
-    list.innerHTML = state.notions.map((n, i) => {
-      const hasFormules = Array.isArray(n.formules) && n.formules.length > 0;
-      const hasMethode = n.methode && (Array.isArray(n.methode.steps) ? n.methode.steps.length > 0 : false);
-      const hasExemple = n.exempleResolu && n.exempleResolu.enonce;
-      const hasPiege = n.piegeBAC && n.piegeBAC.trap;
 
+    list.innerHTML = state.notions.map((n, i) => {
+      // ✅ Tags adaptatifs selon le type
       const tags = [];
-      if (hasFormules) tags.push('<span class="notion-row-tag"><i class="fas fa-square-root-variable"></i> Formules</span>');
-      if (hasMethode) tags.push('<span class="notion-row-tag"><i class="fas fa-list-ol"></i> Méthode</span>');
-      if (hasExemple) tags.push('<span class="notion-row-tag"><i class="fas fa-check-circle"></i> Exemple</span>');
-      if (hasPiege) tags.push('<span class="notion-row-tag"><i class="fas fa-triangle-exclamation"></i> Piège</span>');
+
+      if (state.subjectType === 'scientific') {
+        if (Array.isArray(n.formules) && n.formules.length > 0) {
+          tags.push('<span class="notion-row-tag"><i class="fas fa-square-root-variable"></i> Formules</span>');
+        }
+        if (n.methode && Array.isArray(n.methode.steps) && n.methode.steps.length > 0) {
+          tags.push('<span class="notion-row-tag"><i class="fas fa-list-ol"></i> Méthode</span>');
+        }
+      } else {
+        if (Array.isArray(n.points_cles) && n.points_cles.length > 0) {
+          tags.push('<span class="notion-row-tag"><i class="fas fa-star"></i> Points clés</span>');
+        }
+        if (Array.isArray(n.termes) && n.termes.length > 0) {
+          tags.push('<span class="notion-row-tag"><i class="fas fa-book"></i> Termes</span>');
+        }
+        if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) {
+          tags.push('<span class="notion-row-tag"><i class="fas fa-cogs"></i> Mécanismes</span>');
+        }
+        if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) {
+          tags.push('<span class="notion-row-tag"><i class="fas fa-calendar"></i> Dates</span>');
+        }
+        if (Array.isArray(n.personnages) && n.personnages.length > 0) {
+          tags.push('<span class="notion-row-tag"><i class="fas fa-user-tie"></i> Personnages</span>');
+        }
+        if (Array.isArray(n.lieux) && n.lieux.length > 0) {
+          tags.push('<span class="notion-row-tag"><i class="fas fa-map-marker-alt"></i> Lieux</span>');
+        }
+        if (Array.isArray(n.auteurs) && n.auteurs.length > 0) {
+          tags.push('<span class="notion-row-tag"><i class="fas fa-user-graduate"></i> Auteurs</span>');
+        }
+      }
 
       return `
         <button class="notion-row" data-notion-index="${i}">
@@ -2147,13 +2423,16 @@
     const content = $('notionDetailContent');
     content.innerHTML = renderNotionContent(notion);
 
-    showView('viewNotionDetail');
+    showViewWithHistory('viewNotionDetail');
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // ✅ RENDU MULTI-FORMAT D'UNE NOTION
+  // ═══════════════════════════════════════════════════════════════
   function renderNotionContent(n) {
     let html = '';
 
-    // COMPRENDRE
+    // ═══ COMPRENDRE (commun à tous) ═══
     if (n.comprendre && n.comprendre.trim()) {
       html += `
         <div class="block">
@@ -2163,7 +2442,24 @@
       `;
     }
 
-    // FORMULES
+    // ═══ POINTS CLÉS (leçons) ═══
+    if (Array.isArray(n.points_cles) && n.points_cles.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-star"></i> Points clés</div>
+          <div class="points-cles-list">
+            ${n.points_cles.map((p, i) => `
+              <div class="point-cle">
+                <span class="point-cle-num">${i + 1}.</span>
+                <span class="point-cle-text">${safeText(p)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══ FORMULES (scientifiques) ═══
     if (Array.isArray(n.formules) && n.formules.length > 0) {
       const formulesHtml = n.formules.map((f) => {
         const latex = cleanLatex(f.latex || '');
@@ -2186,7 +2482,145 @@
       }
     }
 
-    // MÉTHODE
+    // ═══ TERMES (leçons) ═══
+    if (Array.isArray(n.termes) && n.termes.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-book"></i> Termes clés</div>
+          <div class="termes-list">
+            ${n.termes.map((t) => {
+              const terme = t.terme || t.mot || '';
+              const def = t.definition || t.meaning || '';
+              return `
+                <div class="terme-item">
+                  <div class="terme-nom">${escapeHtml(terme)}</div>
+                  <div class="terme-def">${safeText(def)}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══ MÉCANISMES (SVT) ═══
+    if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-cogs"></i> Mécanismes</div>
+          <div class="mecanismes-list">
+            ${n.mecanismes.map((m) => {
+              const nom = m.nom || m.name || 'Mécanisme';
+              const etapes = Array.isArray(m.etapes) ? m.etapes : [];
+              const consequences = Array.isArray(m.consequences) ? m.consequences : [];
+
+              return `
+                <div class="mecanisme-item">
+                  <div class="mecanisme-nom"><i class="fas fa-arrow-right"></i> ${safeText(nom)}</div>
+                  ${etapes.length > 0 ? `
+                    <ol class="mecanisme-etapes">
+                      ${etapes.map((e) => `<li>${safeText(e)}</li>`).join('')}
+                    </ol>
+                  ` : ''}
+                  ${consequences.length > 0 ? `
+                    <div class="mecanisme-consequences">
+                      <div class="mecanisme-consequences-title">Conséquences</div>
+                      <ul>${consequences.map((c) => `<li>${safeText(c)}</li>`).join('')}</ul>
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══ DATES CLÉS (Histoire) ═══
+    if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-calendar"></i> Dates clés</div>
+          <div class="dates-list">
+            ${n.dates_cles.map((d) => {
+              const date = d.date || '';
+              const evt = d.evenement || d.event || '';
+              return `
+                <div class="date-item">
+                  <div class="date-value">${escapeHtml(date)}</div>
+                  <div class="date-event">${safeText(evt)}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══ PERSONNAGES (Histoire) ═══
+    if (Array.isArray(n.personnages) && n.personnages.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-user-tie"></i> Personnages clés</div>
+          <div class="personnages-list">
+            ${n.personnages.map((p) => {
+              const nom = p.nom || p.name || '';
+              const role = p.role || '';
+              return `
+                <div class="personnage-item">
+                  <div class="personnage-nom">${escapeHtml(nom)}</div>
+                  <div class="personnage-role">${safeText(role)}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══ LIEUX (Histoire/Géo) ═══
+    if (Array.isArray(n.lieux) && n.lieux.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-map-marker-alt"></i> Lieux importants</div>
+          <div class="lieux-list">
+            ${n.lieux.map((l) => {
+              const nom = l.nom || l.name || l.lieu || '';
+              const info = l.info || l.description || '';
+              return `
+                <div class="lieu-item">
+                  <div class="lieu-nom">${escapeHtml(nom)}</div>
+                  <div class="lieu-info">${safeText(info)}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══ AUTEURS (Philosophie) ═══
+    if (Array.isArray(n.auteurs) && n.auteurs.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-user-graduate"></i> Auteurs et thèses</div>
+          <div class="auteurs-list">
+            ${n.auteurs.map((a) => {
+              const nom = a.nom || a.name || '';
+              const idee = a.idee || a.these || '';
+              return `
+                <div class="auteur-item">
+                  <div class="auteur-nom">${escapeHtml(nom)}</div>
+                  <div class="auteur-idee">"${safeText(idee)}"</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══ MÉTHODE (commun) ═══
     if (n.methode && n.methode.steps && Array.isArray(n.methode.steps) && n.methode.steps.length > 0) {
       html += `
         <div class="block">
@@ -2198,9 +2632,9 @@
       `;
     }
 
-    // EXEMPLE RÉSOLU
+    // ═══ EXEMPLE RÉSOLU (commun) ═══
     if (n.exempleResolu && (n.exempleResolu.enonce || (Array.isArray(n.exempleResolu.etapes) && n.exempleResolu.etapes.length > 0))) {
-      let exHtml = '<div class="block"><div class="block-label"><i class="fas fa-check-circle"></i> Exemple résolu</div>';
+      let exHtml = '<div class="block"><div class="block-label"><i class="fas fa-check-circle"></i> Exemple</div>';
       if (n.exempleResolu.enonce) {
         exHtml += `<div class="example-enonce">${safeText(n.exempleResolu.enonce)}</div>`;
       }
@@ -2214,7 +2648,7 @@
       html += exHtml;
     }
 
-    // PIÈGE DU BAC
+    // ═══ PIÈGE DU BAC (commun) ═══
     if (n.piegeBAC && (n.piegeBAC.trap || n.piegeBAC.solution)) {
       html += `
         <div class="block">
@@ -2225,7 +2659,7 @@
       `;
     }
 
-    // ASTUCE
+    // ═══ ASTUCE (commun) ═══
     if (n.astuce && n.astuce.trim()) {
       html += `
         <div class="block astuce">
@@ -2268,7 +2702,7 @@
       showToast('Notion supprimée', 'success');
       state.currentNotion = null;
       await loadCahier();
-      showView('viewHome');
+      showViewWithHistory('viewHome');
     } catch (err) {
       console.error('[Réviseur] deleteNotion error:', err);
       showToast(err.message || 'Erreur de suppression', 'error');
@@ -2282,7 +2716,7 @@
     if (state.isGeneratingQuiz) return;
     state.isGeneratingQuiz = true;
 
-    showView('viewLoading');
+    showViewWithHistory('viewLoading');
     $('loadingTitle').textContent = 'Génération du quiz';
     $('loadingMessage').textContent = 'L\'IA prépare 10 questions sur tes notions. ~10 secondes.';
 
@@ -2299,16 +2733,16 @@
 
       if (state.quiz.length === 0) {
         showToast('Aucune question générée. Réessaie.', 'error');
-        showView('viewHome');
+        showViewWithHistory('viewHome');
         return;
       }
 
       renderQuiz();
-      showView('viewQuiz');
+      showViewWithHistory('viewQuiz');
     } catch (err) {
       console.error('[Réviseur] quiz error:', err);
       showToast(err.message || 'Erreur de génération du quiz', 'error');
-      showView('viewHome');
+      showViewWithHistory('viewHome');
     } finally {
       state.isGeneratingQuiz = false;
     }
@@ -2403,7 +2837,7 @@
     $('quizResultTitle').textContent = title;
     $('quizResultSub').textContent = sub;
 
-    showView('viewQuizResults');
+    showViewWithHistory('viewQuizResults');
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -2412,7 +2846,7 @@
 
   $('btnViewNotions').addEventListener('click', () => {
     renderNotionsList();
-    showView('viewNotions');
+    showViewWithHistory('viewNotions');
   });
 
   $('btnGenerate').addEventListener('click', () => {
@@ -2426,18 +2860,18 @@
   $('btnQuiz').addEventListener('click', generateQuiz);
 
   $('backFromNotions').addEventListener('click', () => {
-    showView('viewHome');
+    showViewWithHistory('viewHome');
   });
 
   $('backFromNotionDetail').addEventListener('click', () => {
     renderNotionsList();
-    showView('viewNotions');
+    showViewWithHistory('viewNotions');
   });
 
   $('btnDeleteNotion').addEventListener('click', deleteCurrentNotion);
 
   $('backFromQuiz').addEventListener('click', () => {
-    showView('viewHome');
+    showViewWithHistory('viewHome');
   });
 
   $('btnValidateQuiz').addEventListener('click', validateQuiz);
@@ -2447,7 +2881,7 @@
   });
 
   $('btnBackHomeFromResults').addEventListener('click', () => {
-    showView('viewHome');
+    showViewWithHistory('viewHome');
   });
 
   $('premiumClose').addEventListener('click', hidePremiumPopup);
@@ -2470,7 +2904,6 @@
       const urlSubject = params.get('subject');
       const urlChapter = params.get('chapter');
 
-      // Priorité 1 : URL
       if (urlSubject && SUBJECTS[urlSubject]) {
         state.subject = urlSubject;
         if (urlChapter && CHAPTERS[state.subject]?.includes(urlChapter)) {
@@ -2481,7 +2914,6 @@
         return;
       }
 
-      // Priorité 2 : localStorage (dernier choix)
       try {
         const savedSubject = localStorage.getItem(STORAGE_KEY_SUBJECT);
         const savedChapter = localStorage.getItem(STORAGE_KEY_CHAPTER);
@@ -2495,7 +2927,6 @@
         }
       } catch (e) {}
 
-      // Priorité 3 : défauts
       state.subject = 'mathematiques';
       state.chapter = 'Nombres complexes';
     } catch (e) {
@@ -2522,7 +2953,10 @@
 
     prefillFromUrl();
 
-    // ✅ Initialise les sélecteurs
+    // ✅ Initialise l'historique avec la vue d'accueil
+    window.history.replaceState({ view: 'viewHome' }, '', '');
+
+    // Initialise les sélecteurs
     initSubjectSelector();
     initChapterSelector();
 
@@ -2532,7 +2966,7 @@
     showView('viewHome');
   });
 
-  console.log('🚀 ARVEXA — Réviseur v7.1 — Sélecteurs + génération progressive');
+  console.log('🚀 ARVEXA — Réviseur v7.2 — Multi-format + Navigation');
   </script>
 </body>
 </html>
