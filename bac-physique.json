@@ -1,0 +1,3780 @@
+{
+  "matiere": "physique",
+  "matiereLabel": "Physique",
+  "niveau": "terminale_d",
+  "pays": "niger",
+  "exam": "bac",
+  "version": "1.0.0",
+  "derniereMaj": "2026-10-16",
+  "totalChapitres": 17,
+  "totalNotions": 150,
+  "structureVersion": "enrichie-v2",
+  "chapitres": [
+    {
+      "id": "cinematique",
+      "numero": 1,
+      "titre": "Cinématique",
+      "description": "Étude du mouvement des corps sans considération des causes : position, vitesse, accélération.",
+      "duree_estimee_min": 480,
+      "difficulte": 2,
+      "obligatoire": true,
+      "prerequis": ["vecteurs", "derivation"],
+      "notions": [
+        {
+          "id": "referentiel_repere",
+          "titre": "Référentiel et repère",
+          "obligatoire": true,
+          "difficulte": 1,
+          "duree_etude_min": 20,
+          "description_courte": "Un référentiel est un solide de référence auquel on associe un repère d'espace et de temps.",
+          "description_longue": "Pour étudier un mouvement, il faut choisir un référentiel, c'est-à-dire un solide par rapport auquel on décrit le mouvement. À ce référentiel, on associe un repère d'espace (souvent cartésien $(O, \\vec{i}, \\vec{j}, \\vec{k})$) et une horloge pour mesurer le temps. Le mouvement est relatif : il dépend du référentiel choisi.",
+          "formules": [
+            { "latex": "$\\vec{OM} = x\\vec{i} + y\\vec{j} + z\\vec{k}$", "condition": "", "usage": "Vecteur position dans un repère cartésien" }
+          ],
+          "proprietes": [
+            "Le mouvement est relatif au référentiel choisi.",
+            "Un référentiel est dit galiléen si le principe d'inertie s'y applique.",
+            "Le repère cartésien est orthonormé direct."
+          ],
+          "methodes": [
+            "Choisir un référentiel adapté au problème.",
+            "Définir un repère d'espace et une origine des temps.",
+            "Repérer la position du mobile à chaque instant."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un passager marche dans un train roulant à vitesse constante. Décrire son mouvement dans le référentiel du train et dans le référentiel terrestre.",
+            "etapes": [
+              "Dans le référentiel du train, le passager se déplace en ligne droite à vitesse constante.",
+              "Dans le référentiel terrestre, le passager a une vitesse qui est la somme de sa vitesse par rapport au train et de la vitesse du train."
+            ],
+            "conclusion": "Le mouvement dépend du référentiel : rectiligne uniforme dans le train, composition de vitesses dans le référentiel terrestre."
+          },
+          "erreurs_frequentes": [
+            "Oublier de préciser le référentiel d'étude.",
+            "Confondre référentiel et repère.",
+            "Utiliser un référentiel non galiléen sans précaution."
+          ],
+          "pieges_examen": [
+            "Au BAC, toujours préciser le référentiel choisi avant de commencer l'étude.",
+            "Un référentiel en translation rectiligne uniforme par rapport à un référentiel galiléen est aussi galiléen."
+          ],
+          "mnemo": "Référentiel = solide de référence + horloge.",
+          "liens": {
+            "avant": [],
+            "apres": ["vecteur_position"]
+          }
+        },
+        {
+          "id": "vecteur_position",
+          "titre": "Vecteur position",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Le vecteur position $\\vec{OM}$ repère la position d'un point mobile M dans un repère donné.",
+          "description_longue": "Le vecteur position $\\vec{OM}$ d'un point mobile M est le vecteur qui relie l'origine O du repère au point M. Ses coordonnées dans un repère cartésien sont $(x, y, z)$. En fonction du temps, il définit la trajectoire du mobile. En coordonnées cartésiennes, on écrit $\\vec{OM} = x(t)\\vec{i} + y(t)\\vec{j} + z(t)\\vec{k}$.",
+          "formules": [
+            { "latex": "$\\vec{OM} = x(t)\\vec{i} + y(t)\\vec{j} + z(t)\\vec{k}$", "condition": "", "usage": "Vecteur position cartésien" },
+            { "latex": "$OM = \\sqrt{x^2 + y^2 + z^2}$", "condition": "", "usage": "Norme du vecteur position" }
+          ],
+          "proprietes": [
+            "Le vecteur position dépend de l'origine du repère.",
+            "La trajectoire est l'ensemble des positions successives du mobile.",
+            "En coordonnées polaires : $\\vec{OM} = r\\vec{u}_r$."
+          ],
+          "methodes": [
+            "Choisir une origine et un repère.",
+            "Exprimer les coordonnées en fonction du temps.",
+            "Déterminer la trajectoire en éliminant le temps."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un mobile a pour coordonnées $x(t) = 2t$ et $y(t) = 3t^2$ (unités SI). Déterminer l'équation de sa trajectoire.",
+            "etapes": [
+              "On exprime $t$ en fonction de $x$ : $t = \\frac{x}{2}$.",
+              "On remplace dans $y$ : $y = 3\\left(\\frac{x}{2}\\right)^2 = \\frac{3x^2}{4}$."
+            ],
+            "conclusion": "La trajectoire est la parabole d'équation $y = \\frac{3}{4}x^2$ (avec $x$ et $y$ en mètres)."
+          },
+          "erreurs_frequentes": [
+            "Oublier d'exprimer les coordonnées en fonction du temps.",
+            "Confondre vecteur position et distance parcourue."
+          ],
+          "pieges_examen": [
+            "Toujours vérifier les unités des coordonnées.",
+            "Ne pas oublier de préciser le repère utilisé."
+          ],
+          "mnemo": "$\\vec{OM}$ : du point O au point M.",
+          "liens": {
+            "avant": ["referentiel_repere"],
+            "apres": ["vecteur_vitesse"]
+          }
+        },
+        {
+          "id": "vecteur_vitesse",
+          "titre": "Vecteur vitesse",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 25,
+          "description_courte": "Le vecteur vitesse est la dérivée du vecteur position par rapport au temps.",
+          "description_longue": "Le vecteur vitesse instantanée d'un point M est la dérivée par rapport au temps du vecteur position : $\\vec{v} = \\frac{d\\vec{OM}}{dt}$. Il est tangent à la trajectoire et orienté dans le sens du mouvement. Sa norme s'exprime en mètres par seconde ($\\text{m/s}$).",
+          "formules": [
+            { "latex": "$\\vec{v} = \\frac{d\\vec{OM}}{dt}$", "condition": "", "usage": "Vecteur vitesse instantanée" },
+            { "latex": "$\\vec{v} = \\frac{dx}{dt}\\vec{i} + \\frac{dy}{dt}\\vec{j} + \\frac{dz}{dt}\\vec{k}$", "condition": "", "usage": "Coordonnées cartésiennes" },
+            { "latex": "$v = \\|\\vec{v}\\| = \\sqrt{v_x^2 + v_y^2 + v_z^2}$", "condition": "", "usage": "Norme de la vitesse" }
+          ],
+          "proprietes": [
+            "Le vecteur vitesse est tangent à la trajectoire.",
+            "Il est orienté dans le sens du mouvement.",
+            "La vitesse moyenne est $\\vec{v}_{moy} = \\frac{\\Delta \\vec{OM}}{\\Delta t}$."
+          ],
+          "methodes": [
+            "Dériver le vecteur position par rapport au temps.",
+            "Calculer les composantes de la vitesse.",
+            "Déterminer la norme et la direction."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un mobile a pour position $\\vec{OM} = (2t)\\vec{i} + (3t^2)\\vec{j}$ (SI). Calculer son vecteur vitesse à $t = 1\\,\\text{s}$.",
+            "etapes": [
+              "$\\vec{v} = \\frac{d\\vec{OM}}{dt} = 2\\vec{i} + 6t\\vec{j}$.",
+              "À $t = 1\\,\\text{s}$ : $\\vec{v} = 2\\vec{i} + 6\\vec{j}$ (en $\\text{m/s}$).",
+              "$v = \\sqrt{2^2 + 6^2} = \\sqrt{40} \\approx 6{,}32\\,\\text{m/s}$."
+            ],
+            "conclusion": "$\\vec{v} = 2\\vec{i} + 6\\vec{j}$ et $v \\approx 6{,}32\\,\\text{m/s}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier de dériver chaque composante.",
+            "Confondre vitesse moyenne et vitesse instantanée.",
+            "Oublier les unités."
+          ],
+          "pieges_examen": [
+            "Toujours préciser le référentiel et le repère.",
+            "Vérifier que le vecteur vitesse est bien tangent à la trajectoire."
+          ],
+          "mnemo": "Vitesse = dérivée de la position.",
+          "liens": {
+            "avant": ["vecteur_position"],
+            "apres": ["vecteur_acceleration"]
+          }
+        },
+        {
+          "id": "vecteur_acceleration",
+          "titre": "Vecteur accélération",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 25,
+          "description_courte": "Le vecteur accélération est la dérivée du vecteur vitesse par rapport au temps.",
+          "description_longue": "Le vecteur accélération instantanée est la dérivée par rapport au temps du vecteur vitesse : $\\vec{a} = \\frac{d\\vec{v}}{dt} = \\frac{d^2\\vec{OM}}{dt^2}$. Il caractérise la variation du vecteur vitesse en norme et/ou en direction. Son unité est le mètre par seconde au carré ($\\text{m/s}^2$).",
+          "formules": [
+            { "latex": "$\\vec{a} = \\frac{d\\vec{v}}{dt} = \\frac{d^2\\vec{OM}}{dt^2}$", "condition": "", "usage": "Vecteur accélération" },
+            { "latex": "$\\vec{a} = \\frac{dv_x}{dt}\\vec{i} + \\frac{dv_y}{dt}\\vec{j} + \\frac{dv_z}{dt}\\vec{k}$", "condition": "", "usage": "Coordonnées cartésiennes" },
+            { "latex": "$a = \\sqrt{a_x^2 + a_y^2 + a_z^2}$", "condition": "", "usage": "Norme de l'accélération" }
+          ],
+          "proprietes": [
+            "Si $\\vec{a} = \\vec{0}$, le mouvement est rectiligne uniforme.",
+            "L'accélération est nulle si la vitesse est constante en norme et en direction.",
+            "Dans un mouvement circulaire uniforme, l'accélération est centripète."
+          ],
+          "methodes": [
+            "Dériver le vecteur vitesse par rapport au temps.",
+            "Calculer les composantes de l'accélération.",
+            "Déterminer la norme et la direction."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un mobile a pour vitesse $\\vec{v} = 2\\vec{i} + 6t\\vec{j}$ (SI). Calculer son vecteur accélération à $t = 1\\,\\text{s}$.",
+            "etapes": [
+              "$\\vec{a} = \\frac{d\\vec{v}}{dt} = 0\\vec{i} + 6\\vec{j}$.",
+              "À $t = 1\\,\\text{s}$ : $\\vec{a} = 6\\vec{j}$ (en $\\text{m/s}^2$).",
+              "$a = 6\\,\\text{m/s}^2$."
+            ],
+            "conclusion": "$\\vec{a} = 6\\vec{j}$ et $a = 6\\,\\text{m/s}^2$."
+          },
+          "erreurs_frequentes": [
+            "Confondre accélération et vitesse.",
+            "Oublier de dériver chaque composante.",
+            "Oublier les unités."
+          ],
+          "pieges_examen": [
+            "Ne pas oublier que l'accélération peut être non nulle même si la vitesse est constante en norme (mouvement circulaire uniforme).",
+            "Vérifier les unités."
+          ],
+          "mnemo": "Accélération = dérivée de la vitesse.",
+          "liens": {
+            "avant": ["vecteur_vitesse"],
+            "apres": ["mouvement_uniforme"]
+          }
+        },
+        {
+          "id": "mouvement_uniforme",
+          "titre": "Mouvement rectiligne uniforme",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Mouvement rectiligne à vitesse constante.",
+          "description_longue": "Un mouvement rectiligne uniforme (MRU) est un mouvement dont la trajectoire est une droite et dont le vecteur vitesse est constant. L'accélération est nulle. L'équation horaire est $x(t) = v t + x_0$ où $v$ est la vitesse constante et $x_0$ la position initiale.",
+          "formules": [
+            { "latex": "$x(t) = v t + x_0$", "condition": "", "usage": "Équation horaire" },
+            { "latex": "$v = \\frac{d}{t}$", "condition": "", "usage": "Vitesse constante" },
+            { "latex": "$\\vec{a} = \\vec{0}$", "condition": "", "usage": "Accélération nulle" }
+          ],
+          "proprietes": [
+            "La vitesse est constante en norme, direction et sens.",
+            "L'accélération est nulle.",
+            "La distance parcourue est proportionnelle au temps."
+          ],
+          "methodes": [
+            "Vérifier que la trajectoire est une droite.",
+            "Vérifier que la vitesse est constante.",
+            "Utiliser l'équation horaire."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une voiture roule à vitesse constante de $72\\,\\text{km/h}$ sur une route rectiligne. Elle passe par un point A à $t = 0$. Quelle distance parcourt-elle en $10\\,\\text{s}$ ?",
+            "etapes": [
+              "Convertir la vitesse : $v = \\frac{72}{3{,}6} = 20\\,\\text{m/s}$.",
+              "$d = v \\times t = 20 \\times 10 = 200\\,\\text{m}$."
+            ],
+            "conclusion": "La voiture parcourt $200\\,\\text{m}$ en $10\\,\\text{s}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier de convertir les unités (km/h en m/s).",
+            "Confondre vitesse et accélération.",
+            "Oublier la position initiale."
+          ],
+          "pieges_examen": [
+            "Toujours convertir les vitesses en m/s pour les calculs.",
+            "Vérifier que le mouvement est bien uniforme."
+          ],
+          "mnemo": "MRU : vitesse constante, accélération nulle.",
+          "liens": {
+            "avant": ["vecteur_acceleration"],
+            "apres": ["mouvement_uniformement_varie"]
+          }
+        },
+        {
+          "id": "mouvement_uniformement_varie",
+          "titre": "Mouvement rectiligne uniformément varié",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Mouvement rectiligne à accélération constante.",
+          "description_longue": "Un mouvement rectiligne uniformément varié (MRUV) est un mouvement dont la trajectoire est une droite et dont le vecteur accélération est constant. La vitesse varie linéairement avec le temps. Les équations horaires sont $v(t) = a t + v_0$ et $x(t) = \\frac{1}{2}a t^2 + v_0 t + x_0$.",
+          "formules": [
+            { "latex": "$v(t) = a t + v_0$", "condition": "", "usage": "Vitesse" },
+            { "latex": "$x(t) = \\frac{1}{2}a t^2 + v_0 t + x_0$", "condition": "", "usage": "Position" },
+            { "latex": "$v^2 - v_0^2 = 2a(x - x_0)$", "condition": "", "usage": "Relation indépendante du temps" }
+          ],
+          "proprietes": [
+            "L'accélération est constante.",
+            "La vitesse varie linéairement avec le temps.",
+            "La position varie quadratiquement avec le temps."
+          ],
+          "methodes": [
+            "Identifier l'accélération constante.",
+            "Utiliser les équations horaires.",
+            "Utiliser la relation indépendante du temps si nécessaire."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une voiture part du repos et accélère à $2\\,\\text{m/s}^2$ sur une distance de $100\\,\\text{m}$. Calculer sa vitesse finale.",
+            "etapes": [
+              "$v_0 = 0$, $a = 2\\,\\text{m/s}^2$, $x - x_0 = 100\\,\\text{m}$.",
+              "$v^2 - v_0^2 = 2a(x - x_0)$.",
+              "$v^2 = 2 \\times 2 \\times 100 = 400$.",
+              "$v = 20\\,\\text{m/s}$."
+            ],
+            "conclusion": "La vitesse finale est $20\\,\\text{m/s}$ (soit $72\\,\\text{km/h}$)."
+          },
+          "erreurs_frequentes": [
+            "Confondre $v_0$ et $v$.",
+            "Oublier le facteur $\\frac{1}{2}$ dans l'équation de position.",
+            "Erreur de signe pour l'accélération."
+          ],
+          "pieges_examen": [
+            "Bien identifier les conditions initiales.",
+            "Utiliser la relation indépendante du temps pour éviter les erreurs."
+          ],
+          "mnemo": "MRUV : accélération constante.",
+          "liens": {
+            "avant": ["mouvement_uniforme"],
+            "apres": ["mouvement_circulaire_uniforme"]
+          }
+        },
+        {
+          "id": "mouvement_circulaire_uniforme",
+          "titre": "Mouvement circulaire uniforme",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Mouvement sur un cercle à vitesse constante en norme.",
+          "description_longue": "Un mouvement circulaire uniforme (MCU) est un mouvement dont la trajectoire est un cercle et dont la vitesse est constante en norme. L'accélération est centripète (dirigée vers le centre) et a pour norme $a = \\frac{v^2}{R}$. La période $T$ est la durée d'un tour complet.",
+          "formules": [
+            { "latex": "$v = \\frac{2\\pi R}{T}$", "condition": "", "usage": "Vitesse linéaire" },
+            { "latex": "$a = \\frac{v^2}{R}$", "condition": "", "usage": "Accélération centripète" },
+            { "latex": "$\\omega = \\frac{2\\pi}{T}$", "condition": "", "usage": "Vitesse angulaire" },
+            { "latex": "$v = R\\omega$", "condition": "", "usage": "Relation vitesse linéaire-angulaire" }
+          ],
+          "proprietes": [
+            "La vitesse est constante en norme mais pas en direction.",
+            "L'accélération est centripète.",
+            "La période est indépendante de la vitesse linéaire pour un rayon donné."
+          ],
+          "methodes": [
+            "Identifier le rayon $R$ et la période $T$.",
+            "Calculer la vitesse linéaire.",
+            "Calculer l'accélération centripète."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un satellite tourne autour de la Terre sur une orbite circulaire de rayon $R = 7000\\,\\text{km}$ avec une période $T = 97\\,\\text{min}$. Calculer sa vitesse et son accélération.",
+            "etapes": [
+              "$R = 7{,}0 \\times 10^6\\,\\text{m}$, $T = 97 \\times 60 = 5820\\,\\text{s}$.",
+              "$v = \\frac{2\\pi R}{T} = \\frac{2\\pi \\times 7{,}0 \\times 10^6}{5820} \\approx 7{,}56 \\times 10^3\\,\\text{m/s}$.",
+              "$a = \\frac{v^2}{R} = \\frac{(7{,}56 \\times 10^3)^2}{7{,}0 \\times 10^6} \\approx 8{,}16\\,\\text{m/s}^2$."
+            ],
+            "conclusion": "$v \\approx 7{,}56\\,\\text{km/s}$ et $a \\approx 8{,}16\\,\\text{m/s}^2$."
+          },
+          "erreurs_frequentes": [
+            "Confondre vitesse linéaire et vitesse angulaire.",
+            "Oublier de convertir la période en secondes.",
+            "Oublier que l'accélération est centripète."
+          ],
+          "pieges_examen": [
+            "Toujours convertir les unités (km en m, min en s).",
+            "Vérifier que le mouvement est bien circulaire uniforme."
+          ],
+          "mnemo": "MCU : $v$ constante, $a$ centripète.",
+          "liens": {
+            "avant": ["mouvement_uniformement_varie"],
+            "apres": ["repere_frenet"]
+          }
+        },
+        {
+          "id": "repere_frenet",
+          "titre": "Repère de Frenet",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Repère mobile adapté à la trajectoire : vecteur tangent et vecteur normal.",
+          "description_longue": "Le repère de Frenet est un repère mobile lié au point M en mouvement. Il est constitué du vecteur tangent $\\vec{\\tau}$ (dans le sens du mouvement) et du vecteur normal $\\vec{n}$ (perpendiculaire à $\\vec{\\tau}$, dirigé vers le centre de courbure). Dans ce repère, la vitesse s'écrit $\\vec{v} = v\\vec{\\tau}$ et l'accélération $\\vec{a} = \\frac{dv}{dt}\\vec{\\tau} + \\frac{v^2}{R}\\vec{n}$.",
+          "formules": [
+            { "latex": "$\\vec{v} = v\\vec{\\tau}$", "condition": "", "usage": "Vitesse dans le repère de Frenet" },
+            { "latex": "$\\vec{a} = \\frac{dv}{dt}\\vec{\\tau} + \\frac{v^2}{R}\\vec{n}$", "condition": "", "usage": "Accélération dans le repère de Frenet" }
+          ],
+          "proprietes": [
+            "Le vecteur $\\vec{\\tau}$ est tangent à la trajectoire.",
+            "Le vecteur $\\vec{n}$ est normal à la trajectoire et dirigé vers le centre de courbure.",
+            "La composante tangentielle de l'accélération traduit la variation de la vitesse en norme.",
+            "La composante normale traduit la variation de la direction de la vitesse."
+          ],
+          "methodes": [
+            "Identifier la trajectoire et le sens du mouvement.",
+            "Déterminer $\\vec{\\tau}$ et $\\vec{n}$.",
+            "Exprimer $\\vec{v}$ et $\\vec{a}$ dans le repère de Frenet."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un mobile décrit un cercle de rayon $R = 2\\,\\text{m}$ avec une vitesse $v = 4\\,\\text{m/s}$ constante. Déterminer son accélération dans le repère de Frenet.",
+            "etapes": [
+              "$\\frac{dv}{dt} = 0$ car $v$ est constante.",
+              "$a_n = \\frac{v^2}{R} = \\frac{4^2}{2} = 8\\,\\text{m/s}^2$.",
+              "$\\vec{a} = 8\\vec{n}$."
+            ],
+            "conclusion": "L'accélération est purement normale : $\\vec{a} = 8\\vec{n}$ (en $\\text{m/s}^2$)."
+          },
+          "erreurs_frequentes": [
+            "Confondre $\\vec{\\tau}$ et $\\vec{n}$.",
+            "Oublier que $\\vec{n}$ est dirigé vers le centre de courbure.",
+            "Confondre accélération tangentielle et normale."
+          ],
+          "pieges_examen": [
+            "Bien identifier le sens du mouvement pour orienter $\\vec{\\tau}$.",
+            "Ne pas oublier la composante normale dans le calcul de l'accélération."
+          ],
+          "mnemo": "Frenet : $\\vec{\\tau}$ tangent, $\\vec{n}$ normal.",
+          "liens": {
+            "avant": ["mouvement_circulaire_uniforme"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Déterminer les équations horaires d'un mouvement.",
+        "Calculer vitesse et accélération à partir des équations horaires.",
+        "Étudier un mouvement rectiligne uniformément varié.",
+        "Étudier un mouvement circulaire uniforme.",
+        "Utiliser le repère de Frenet."
+      ]
+    },
+    {
+      "id": "mouvement_rectiligne",
+      "numero": 2,
+      "titre": "Mouvement rectiligne",
+      "description": "Étude approfondie des mouvements rectilignes : équations horaires, chute libre, plan incliné.",
+      "duree_estimee_min": 540,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["cinematique"],
+      "notions": [
+        {
+          "id": "equations_horaires",
+          "titre": "Équations horaires",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 25,
+          "description_courte": "Expressions de la position, de la vitesse et de l'accélération en fonction du temps.",
+          "description_longue": "Les équations horaires d'un mouvement rectiligne expriment la position $x(t)$, la vitesse $v(t)$ et l'accélération $a(t)$ en fonction du temps. Pour un mouvement rectiligne uniformément varié, on a $a(t) = a_0$ (constante), $v(t) = a_0 t + v_0$ et $x(t) = \\frac{1}{2}a_0 t^2 + v_0 t + x_0$. Ces équations permettent de prédire l'état du mobile à tout instant.",
+          "formules": [
+            { "latex": "$a(t) = a_0$", "condition": "", "usage": "Accélération constante" },
+            { "latex": "$v(t) = a_0 t + v_0$", "condition": "", "usage": "Vitesse" },
+            { "latex": "$x(t) = \\frac{1}{2}a_0 t^2 + v_0 t + x_0$", "condition": "", "usage": "Position" }
+          ],
+          "proprietes": [
+            "L'accélération est constante.",
+            "La vitesse est une fonction affine du temps.",
+            "La position est une fonction quadratique du temps."
+          ],
+          "methodes": [
+            "Identifier les conditions initiales $x_0$ et $v_0$.",
+            "Déterminer l'accélération $a_0$.",
+            "Écrire les équations horaires.",
+            "Utiliser ces équations pour répondre aux questions."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un mobile part de $x_0 = 0$ avec $v_0 = 5\\,\\text{m/s}$ et une accélération $a = -2\\,\\text{m/s}^2$. Écrire les équations horaires et déterminer l'instant où le mobile s'arrête.",
+            "etapes": [
+              "$v(t) = -2t + 5$.",
+              "$x(t) = -t^2 + 5t$.",
+              "Le mobile s'arrête quand $v(t) = 0$ : $-2t + 5 = 0 \\Rightarrow t = 2{,}5\\,\\text{s}$."
+            ],
+            "conclusion": "Les équations horaires sont $v(t) = -2t + 5$ et $x(t) = -t^2 + 5t$. Le mobile s'arrête à $t = 2{,}5\\,\\text{s}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier les conditions initiales.",
+            "Confondre les signes de l'accélération et de la vitesse.",
+            "Oublier les unités."
+          ],
+          "pieges_examen": [
+            "Bien vérifier les conditions initiales.",
+            "Attention au signe de l'accélération (freinage ou accélération)."
+          ],
+          "mnemo": "Équations horaires : $x(t)$, $v(t)$, $a(t)$.",
+          "liens": {
+            "avant": [],
+            "apres": ["diagramme_vitesses"]
+          }
+        },
+        {
+          "id": "diagramme_vitesses",
+          "titre": "Diagramme des vitesses",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 20,
+          "description_courte": "Représentation graphique de la vitesse en fonction du temps.",
+          "description_longue": "Le diagramme des vitesses est la courbe représentative de $v(t)$. Pour un mouvement rectiligne uniformément varié, c'est une droite dont la pente est l'accélération. L'aire sous la courbe entre deux instants donne la distance parcourue. Cet outil est très utilisé en cinématique.",
+          "formules": [
+            { "latex": "$v(t) = a t + v_0$", "condition": "", "usage": "Équation de la droite" },
+            { "latex": "$\\Delta x = \\int_{t_1}^{t_2} v(t) dt$", "condition": "", "usage": "Aire sous la courbe" }
+          ],
+          "proprietes": [
+            "La pente de la droite $v(t)$ est l'accélération.",
+            "L'aire sous la courbe est la distance parcourue.",
+            "Si $v(t)$ est constante, le mouvement est uniforme."
+          ],
+          "methodes": [
+            "Tracer la courbe $v(t)$.",
+            "Déterminer l'accélération par la pente.",
+            "Calculer la distance par l'aire."
+          ],
+          "exemple_resolu": {
+            "enonce": "Le diagramme des vitesses d'un mobile est une droite passant par $(0, 2)$ et $(4, 10)$ (SI). Déterminer l'accélération et la distance parcourue entre $t=0$ et $t=4\\,\\text{s}$.",
+            "etapes": [
+              "Pente : $a = \\frac{10 - 2}{4 - 0} = 2\\,\\text{m/s}^2$.",
+              "Aire du trapèze : $\\frac{(2 + 10) \\times 4}{2} = 24\\,\\text{m}$."
+            ],
+            "conclusion": "$a = 2\\,\\text{m/s}^2$ et distance $= 24\\,\\text{m}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre pente et aire.",
+            "Oublier les unités.",
+            "Erreur dans le calcul de l'aire."
+          ],
+          "pieges_examen": [
+            "Bien identifier les axes et les unités.",
+            "Pour une courbe non rectiligne, utiliser l'intégration."
+          ],
+          "mnemo": "Pente = accélération, aire = distance.",
+          "liens": {
+            "avant": ["equations_horaires"],
+            "apres": ["chute_libre"]
+          }
+        },
+        {
+          "id": "chute_libre",
+          "titre": "Chute libre sans frottement",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 25,
+          "description_courte": "Mouvement d'un corps soumis uniquement à son poids.",
+          "description_longue": "La chute libre est le mouvement d'un corps soumis uniquement à son poids, sans frottement. L'accélération est $\\vec{a} = \\vec{g}$ avec $g = 9{,}81\\,\\text{m/s}^2$. Les équations horaires sont $v(t) = g t$ et $y(t) = \\frac{1}{2}g t^2$ si le corps part du repos. La vitesse d'arrivée au sol est $v = \\sqrt{2gh}$.",
+          "formules": [
+            { "latex": "$v(t) = g t$", "condition": "$v_0 = 0$", "usage": "Vitesse" },
+            { "latex": "$y(t) = \\frac{1}{2}g t^2$", "condition": "$y_0 = 0$", "usage": "Position" },
+            { "latex": "$v = \\sqrt{2gh}$", "condition": "", "usage": "Vitesse d'arrivée" }
+          ],
+          "proprietes": [
+            "Tous les corps tombent avec la même accélération $g$ (indépendante de la masse).",
+            "La vitesse est proportionnelle au temps.",
+            "La hauteur est proportionnelle au carré du temps."
+          ],
+          "methodes": [
+            "Choisir un axe vertical orienté vers le bas.",
+            "Écrire les équations horaires.",
+            "Utiliser $v = \\sqrt{2gh}$ pour la vitesse d'arrivée."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une pierre est lâchée sans vitesse initiale d'une hauteur $h = 20\\,\\text{m}$. Calculer le temps de chute et la vitesse d'arrivée au sol. On prend $g = 10\\,\\text{m/s}^2$.",
+            "etapes": [
+              "$h = \\frac{1}{2}g t^2 \\Rightarrow t = \\sqrt{\\frac{2h}{g}} = \\sqrt{\\frac{40}{10}} = 2\\,\\text{s}$.",
+              "$v = g t = 10 \\times 2 = 20\\,\\text{m/s}$.",
+              "Vérification : $v = \\sqrt{2gh} = \\sqrt{2 \\times 10 \\times 20} = 20\\,\\text{m/s}$."
+            ],
+            "conclusion": "Temps de chute : $2\\,\\text{s}$, vitesse d'arrivée : $20\\,\\text{m/s}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre la vitesse et l'accélération.",
+            "Oublier que $g$ est constant.",
+            "Erreur dans les unités."
+          ],
+          "pieges_examen": [
+            "Prendre $g = 9{,}8\\,\\text{m/s}^2$ ou $10\\,\\text{m/s}^2$ selon l'énoncé.",
+            "Vérifier les unités des hauteurs."
+          ],
+          "mnemo": "Chute libre : $v = gt$, $h = \\frac{1}{2}gt^2$.",
+          "liens": {
+            "avant": ["diagramme_vitesses"],
+            "apres": ["chute_frottement"]
+          }
+        },
+        {
+          "id": "chute_frottement",
+          "titre": "Chute avec frottement",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Chute d'un corps soumis au poids et à une force de frottement fluide.",
+          "description_longue": "Lorsqu'un corps tombe dans un fluide, il est soumis à son poids et à une force de frottement opposée au mouvement, souvent proportionnelle à la vitesse : $\\vec{f} = -k\\vec{v}$. L'équation différentielle du mouvement est $m\\frac{dv}{dt} = mg - kv$. La vitesse tend vers une vitesse limite $v_{lim} = \\frac{mg}{k}$.",
+          "formules": [
+            { "latex": "$m\\frac{dv}{dt} = mg - kv$", "condition": "", "usage": "Équation différentielle" },
+            { "latex": "$v(t) = v_{lim}(1 - e^{-t/\\tau})$", "condition": "", "usage": "Solution" },
+            { "latex": "$v_{lim} = \\frac{mg}{k}$", "condition": "", "usage": "Vitesse limite" }
+          ],
+          "proprietes": [
+            "La vitesse augmente puis tend vers une limite.",
+            "La vitesse limite est atteinte lorsque $a = 0$.",
+            "Le régime devient stationnaire."
+          ],
+          "methodes": [
+            "Écrire le bilan des forces.",
+            "Établir l'équation différentielle.",
+            "Résoudre et déterminer la vitesse limite."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un corps de masse $m = 0{,}5\\,\\text{kg}$ tombe dans un fluide avec $k = 2\\,\\text{kg/s}$. Calculer la vitesse limite. On prend $g = 10\\,\\text{m/s}^2$.",
+            "etapes": [
+              "$v_{lim} = \\frac{mg}{k} = \\frac{0{,}5 \\times 10}{2} = 2{,}5\\,\\text{m/s}$."
+            ],
+            "conclusion": "La vitesse limite est $2{,}5\\,\\text{m/s}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le signe de la force de frottement.",
+            "Confondre vitesse limite et vitesse initiale.",
+            "Erreur dans l'équation différentielle."
+          ],
+          "pieges_examen": [
+            "Bien orienter l'axe et les forces.",
+            "Vérifier que la vitesse limite est atteinte quand $a = 0$."
+          ],
+          "mnemo": "Vitesse limite : $v_{lim} = mg/k$.",
+          "liens": {
+            "avant": ["chute_libre"],
+            "apres": ["plan_incline"]
+          }
+        },
+        {
+          "id": "plan_incline",
+          "titre": "Mouvement sur plan incliné",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Étude du mouvement d'un corps sur un plan incliné avec ou sans frottement.",
+          "description_longue": "Sur un plan incliné d'angle $\\alpha$, un corps est soumis à son poids, à la réaction normale et éventuellement à une force de frottement. En l'absence de frottement, l'accélération le long du plan est $a = g\\sin\\alpha$. Avec frottement, l'accélération est $a = g(\\sin\\alpha - f\\cos\\alpha)$ où $f$ est le coefficient de frottement.",
+          "formules": [
+            { "latex": "$a = g\\sin\\alpha$", "condition": "sans frottement", "usage": "Accélération" },
+            { "latex": "$a = g(\\sin\\alpha - f\\cos\\alpha)$", "condition": "avec frottement", "usage": "Accélération" },
+            { "latex": "$v = \\sqrt{2aL}$", "condition": "$v_0 = 0$", "usage": "Vitesse après distance $L$" }
+          ],
+          "proprietes": [
+            "L'accélération dépend de l'angle d'inclinaison.",
+            "Le frottement réduit l'accélération.",
+            "Si $\\tan\\alpha \\leq f$, le corps ne glisse pas."
+          ],
+          "methodes": [
+            "Faire le bilan des forces.",
+            "Projeter sur l'axe du plan.",
+            "Écrire l'équation du mouvement.",
+            "Résoudre."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un corps glisse sans frottement sur un plan incliné d'angle $\\alpha = 30^\\circ$ et de longueur $L = 5\\,\\text{m}$. Calculer son accélération et sa vitesse en bas du plan. On prend $g = 10\\,\\text{m/s}^2$.",
+            "etapes": [
+              "$a = g\\sin\\alpha = 10 \\times \\sin 30^\\circ = 10 \\times 0{,}5 = 5\\,\\text{m/s}^2$.",
+              "$v = \\sqrt{2aL} = \\sqrt{2 \\times 5 \\times 5} = \\sqrt{50} \\approx 7{,}07\\,\\text{m/s}$."
+            ],
+            "conclusion": "$a = 5\\,\\text{m/s}^2$ et $v \\approx 7{,}07\\,\\text{m/s}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier de projeter le poids.",
+            "Confondre $\\sin\\alpha$ et $\\cos\\alpha$.",
+            "Oublier le coefficient de frottement."
+          ],
+          "pieges_examen": [
+            "Bien orienter l'axe parallèlement au plan.",
+            "Vérifier les conditions de glissement."
+          ],
+          "mnemo": "Plan incliné : $a = g\\sin\\alpha$ (sans frottement).",
+          "liens": {
+            "avant": ["chute_frottement"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Écrire les équations horaires d'un mouvement rectiligne.",
+        "Exploiter un diagramme des vitesses.",
+        "Étudier une chute libre.",
+        "Étudier un mouvement sur plan incliné."
+      ]
+    },
+    {
+      "id": "mouvement_champ_pesanteur",
+      "numero": 3,
+      "titre": "Mouvement dans le champ de pesanteur",
+      "description": "Étude des projectiles dans le champ de pesanteur uniforme : trajectoire, portée, flèche.",
+      "duree_estimee_min": 540,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["mouvement_rectiligne"],
+      "notions": [
+        {
+          "id": "projectile_sans_frottement",
+          "titre": "Projectile sans frottement",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 30,
+          "description_courte": "Mouvement d'un projectile lancé dans le champ de pesanteur, sans frottement.",
+          "description_longue": "Un projectile lancé avec une vitesse initiale $\\vec{v}_0$ faisant un angle $\\alpha$ avec l'horizontale est soumis uniquement à son poids. Son mouvement est la composition d'un mouvement rectiligne uniforme horizontal et d'un mouvement rectiligne uniformément varié vertical. Les équations horaires sont $x(t) = v_0\\cos\\alpha \\cdot t$ et $y(t) = -\\frac{1}{2}g t^2 + v_0\\sin\\alpha \\cdot t$.",
+          "formules": [
+            { "latex": "$x(t) = v_0\\cos\\alpha \\cdot t$", "condition": "", "usage": "Position horizontale" },
+            { "latex": "$y(t) = -\\frac{1}{2}g t^2 + v_0\\sin\\alpha \\cdot t$", "condition": "", "usage": "Position verticale" },
+            { "latex": "$v_x = v_0\\cos\\alpha$", "condition": "", "usage": "Vitesse horizontale" },
+            { "latex": "$v_y = -g t + v_0\\sin\\alpha$", "condition": "", "usage": "Vitesse verticale" }
+          ],
+          "proprietes": [
+            "Le mouvement horizontal est uniforme.",
+            "Le mouvement vertical est uniformément varié.",
+            "La trajectoire est une parabole."
+          ],
+          "methodes": [
+            "Choisir un repère avec origine au point de lancement.",
+            "Écrire les équations horaires.",
+            "Éliminer le temps pour obtenir l'équation de la trajectoire."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un projectile est lancé avec $v_0 = 20\\,\\text{m/s}$ et $\\alpha = 45^\\circ$. Calculer la portée et la flèche. On prend $g = 10\\,\\text{m/s}^2$.",
+            "etapes": [
+              "$x(t) = 20\\cos 45^\\circ \\cdot t = 10\\sqrt{2} t$.",
+              "$y(t) = -5t^2 + 10\\sqrt{2} t$.",
+              "La portée est atteinte quand $y = 0$ : $-5t^2 + 10\\sqrt{2}t = 0 \\Rightarrow t = 2\\sqrt{2}\\,\\text{s}$.",
+              "$x_{max} = 10\\sqrt{2} \\times 2\\sqrt{2} = 40\\,\\text{m}$.",
+              "La flèche est atteinte quand $v_y = 0$ : $-10t + 10\\sqrt{2} = 0 \\Rightarrow t = \\sqrt{2}\\,\\text{s}$.",
+              "$y_{max} = -5(2) + 10\\sqrt{2} \\times \\sqrt{2} = -10 + 20 = 10\\,\\text{m}$."
+            ],
+            "conclusion": "Portée : $40\\,\\text{m}$, flèche : $10\\,\\text{m}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier de décomposer la vitesse initiale.",
+            "Confondre $\\sin$ et $\\cos$.",
+            "Oublier le signe négatif de $g$."
+          ],
+          "pieges_examen": [
+            "Bien choisir l'origine du repère.",
+            "Vérifier les conditions aux limites (portée, flèche)."
+          ],
+          "mnemo": "Projectile : $x$ uniforme, $y$ uniformément varié.",
+          "liens": {
+            "avant": [],
+            "apres": ["equation_trajectoire"]
+          }
+        },
+        {
+          "id": "equation_trajectoire",
+          "titre": "Équation de la trajectoire",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Équation cartésienne de la trajectoire d'un projectile.",
+          "description_longue": "En éliminant le temps entre les équations horaires, on obtient l'équation de la trajectoire : $y = -\\frac{g}{2v_0^2\\cos^2\\alpha}x^2 + \\tan\\alpha \\cdot x$. C'est une parabole. Le sommet est atteint pour $x = \\frac{v_0^2\\sin 2\\alpha}{2g}$.",
+          "formules": [
+            { "latex": "$y = -\\frac{g}{2v_0^2\\cos^2\\alpha}x^2 + \\tan\\alpha \\cdot x$", "condition": "", "usage": "Équation de la trajectoire" },
+            { "latex": "$x_{sommet} = \\frac{v_0^2\\sin 2\\alpha}{2g}$", "condition": "", "usage": "Abscisse du sommet" }
+          ],
+          "proprietes": [
+            "La trajectoire est une parabole.",
+            "Le sommet correspond à la flèche maximale.",
+            "La portée est maximale pour $\\alpha = 45^\\circ$."
+          ],
+          "methodes": [
+            "Écrire $t = \\frac{x}{v_0\\cos\\alpha}$.",
+            "Remplacer dans $y(t)$.",
+            "Simplifier pour obtenir $y(x)$."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un projectile est lancé avec $v_0 = 10\\,\\text{m/s}$ et $\\alpha = 30^\\circ$. Donner l'équation de la trajectoire. On prend $g = 10\\,\\text{m/s}^2$.",
+            "etapes": [
+              "$v_0^2\\cos^2\\alpha = 100 \\times \\left(\\frac{\\sqrt{3}}{2}\\right)^2 = 100 \\times \\frac{3}{4} = 75$.",
+              "$y = -\\frac{10}{2 \\times 75}x^2 + \\tan 30^\\circ \\cdot x = -\\frac{1}{15}x^2 + \\frac{\\sqrt{3}}{3}x$."
+            ],
+            "conclusion": "$y = -\\frac{1}{15}x^2 + \\frac{\\sqrt{3}}{3}x$ (avec $x$ et $y$ en mètres)."
+          },
+          "erreurs_frequentes": [
+            "Erreur dans l'élimination du temps.",
+            "Confondre $\\tan\\alpha$ et $\\sin\\alpha$.",
+            "Oublier les unités."
+          ],
+          "pieges_examen": [
+            "Bien vérifier les expressions de $x(t)$ et $y(t)$.",
+            "Simplifier correctement."
+          ],
+          "mnemo": "Trajectoire = parabole.",
+          "liens": {
+            "avant": ["projectile_sans_frottement"],
+            "apres": ["portee_fleche"]
+          }
+        },
+        {
+          "id": "portee_fleche",
+          "titre": "Portée et flèche",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Calcul de la portée et de la flèche d'un projectile.",
+          "description_longue": "La portée est la distance horizontale parcourue par le projectile avant de retomber au sol. La flèche est la hauteur maximale atteinte. Pour un tir depuis le sol, la portée est $x_{max} = \\frac{v_0^2\\sin 2\\alpha}{g}$ et la flèche $y_{max} = \\frac{v_0^2\\sin^2\\alpha}{2g}$.",
+          "formules": [
+            { "latex": "$x_{max} = \\frac{v_0^2\\sin 2\\alpha}{g}$", "condition": "tir depuis le sol", "usage": "Portée" },
+            { "latex": "$y_{max} = \\frac{v_0^2\\sin^2\\alpha}{2g}$", "condition": "tir depuis le sol", "usage": "Flèche" }
+          ],
+          "proprietes": [
+            "La portée est maximale pour $\\alpha = 45^\\circ$.",
+            "La flèche est maximale pour $\\alpha = 90^\\circ$.",
+            "Deux angles complémentaires donnent la même portée."
+          ],
+          "methodes": [
+            "Utiliser les formules de portée et flèche.",
+            "Vérifier les conditions de tir.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un projectile est lancé avec $v_0 = 30\\,\\text{m/s}$ et $\\alpha = 60^\\circ$. Calculer la portée et la flèche. On prend $g = 10\\,\\text{m/s}^2$.",
+            "etapes": [
+              "$x_{max} = \\frac{900 \\times \\sin 120^\\circ}{10} = \\frac{900 \\times \\frac{\\sqrt{3}}{2}}{10} = 45\\sqrt{3} \\approx 77{,}9\\,\\text{m}$.",
+              "$y_{max} = \\frac{900 \\times \\sin^2 60^\\circ}{20} = \\frac{900 \\times 0{,}75}{20} = 33{,}75\\,\\text{m}$."
+            ],
+            "conclusion": "Portée $\\approx 77{,}9\\,\\text{m}$, flèche $= 33{,}75\\,\\text{m}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $\\sin 2\\alpha$ et $2\\sin\\alpha$.",
+            "Oublier le facteur 2 dans la flèche.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien vérifier les conditions de tir (depuis le sol ou non).",
+            "Utiliser les formules adaptées."
+          ],
+          "mnemo": "Portée : $v_0^2\\sin 2\\alpha/g$.",
+          "liens": {
+            "avant": ["equation_trajectoire"],
+            "apres": ["vitesse_maximale"]
+          }
+        },
+        {
+          "id": "vitesse_maximale",
+          "titre": "Vitesse maximale",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 20,
+          "description_courte": "Vitesse d'un projectile à un instant donné.",
+          "description_longue": "La vitesse d'un projectile à un instant $t$ est $v = \\sqrt{v_x^2 + v_y^2}$ avec $v_x = v_0\\cos\\alpha$ et $v_y = -gt + v_0\\sin\\alpha$. La vitesse est maximale au moment du lancement et à l'impact (si le point de chute est au même niveau). Au sommet de la trajectoire, la vitesse est minimale et égale à $v_0\\cos\\alpha$.",
+          "formules": [
+            { "latex": "$v = \\sqrt{v_x^2 + v_y^2}$", "condition": "", "usage": "Vitesse" },
+            { "latex": "$v_{sommet} = v_0\\cos\\alpha$", "condition": "", "usage": "Vitesse au sommet" }
+          ],
+          "proprietes": [
+            "La vitesse horizontale est constante.",
+            "La vitesse verticale varie.",
+            "La vitesse est minimale au sommet."
+          ],
+          "methodes": [
+            "Calculer $v_x$ et $v_y$.",
+            "Calculer la norme.",
+            "Identifier les instants particuliers."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un projectile est lancé avec $v_0 = 20\\,\\text{m/s}$ et $\\alpha = 30^\\circ$. Calculer sa vitesse au sommet. On prend $g = 10\\,\\text{m/s}^2$.",
+            "etapes": [
+              "$v_{sommet} = v_0\\cos\\alpha = 20 \\times \\cos 30^\\circ = 20 \\times \\frac{\\sqrt{3}}{2} = 10\\sqrt{3} \\approx 17{,}3\\,\\text{m/s}$."
+            ],
+            "conclusion": "$v_{sommet} \\approx 17{,}3\\,\\text{m/s}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier que la vitesse verticale est nulle au sommet.",
+            "Confondre vitesse et accélération."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'instant où la vitesse est demandée.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Au sommet, $v_y = 0$.",
+          "liens": {
+            "avant": ["portee_fleche"],
+            "apres": ["applications_militaires"]
+          }
+        },
+        {
+          "id": "applications_militaires",
+          "titre": "Applications militaires et sportives",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Applications des projectiles dans le domaine militaire et sportif.",
+          "description_longue": "L'étude des projectiles a de nombreuses applications : balistique militaire (portée des obus), sport (lancer de poids, tir à l'arc, football), et sécurité (chute d'objets). La compréhension de la trajectoire permet d'optimiser les performances ou d'assurer la sécurité.",
+          "formules": [
+            { "latex": "$x_{max} = \\frac{v_0^2\\sin 2\\alpha}{g}$", "condition": "", "usage": "Portée" }
+          ],
+          "proprietes": [
+            "La portée dépend de l'angle et de la vitesse initiale.",
+            "Le vent et les frottements modifient la trajectoire.",
+            "Les applications pratiques nécessitent des ajustements."
+          ],
+          "methodes": [
+            "Modéliser le problème.",
+            "Appliquer les formules.",
+            "Interpréter les résultats."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un joueur de football frappe le ballon avec $v_0 = 25\\,\\text{m/s}$ et $\\alpha = 40^\\circ$. Calculer la portée. On prend $g = 9{,}81\\,\\text{m/s}^2$.",
+            "etapes": [
+              "$x_{max} = \\frac{625 \\times \\sin 80^\\circ}{9{,}81} \\approx \\frac{625 \\times 0{,}985}{9{,}81} \\approx 62{,}8\\,\\text{m}$."
+            ],
+            "conclusion": "Portée $\\approx 62{,}8\\,\\text{m}$."
+          },
+          "erreurs_frequentes": [
+            "Négliger les frottements.",
+            "Erreur d'unités.",
+            "Confondre les angles."
+          ],
+          "pieges_examen": [
+            "Bien lire les données de l'énoncé.",
+            "Utiliser $g = 9{,}81\\,\\text{m/s}^2$ si non précisé."
+          ],
+          "mnemo": "Applications : balistique, sport.",
+          "liens": {
+            "avant": ["vitesse_maximale"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Établir les équations horaires d'un projectile.",
+        "Déterminer l'équation de la trajectoire.",
+        "Calculer la portée et la flèche.",
+        "Résoudre des problèmes de balistique."
+      ]
+    },
+    {
+      "id": "mouvement_particules_chargees",
+      "numero": 4,
+      "titre": "Mouvement des particules chargées",
+      "description": "Étude du mouvement des particules chargées dans les champs électrique et magnétique.",
+      "duree_estimee_min": 480,
+      "difficulte": 4,
+      "obligatoire": true,
+      "prerequis": ["cinematique", "electrostatique"],
+      "notions": [
+        {
+          "id": "force_electrique",
+          "titre": "Force électrique",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Force exercée par un champ électrique sur une charge.",
+          "description_longue": "Une particule de charge $q$ placée dans un champ électrique $\\vec{E}$ subit une force électrique $\\vec{F} = q\\vec{E}$. Cette force est parallèle au champ, dans le même sens si $q > 0$, dans le sens opposé si $q < 0$. Elle est responsable de l'accélération des particules chargées.",
+          "formules": [
+            { "latex": "$\\vec{F} = q\\vec{E}$", "condition": "", "usage": "Force électrique" },
+            { "latex": "$\\vec{a} = \\frac{q\\vec{E}}{m}$", "condition": "", "usage": "Accélération" }
+          ],
+          "proprietes": [
+            "La force est proportionnelle à la charge et au champ.",
+            "Le sens dépend du signe de la charge.",
+            "L'accélération est constante si $\\vec{E}$ est uniforme."
+          ],
+          "methodes": [
+            "Identifier la charge et le champ.",
+            "Appliquer la formule.",
+            "En déduire l'accélération."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un électron de charge $q = -1{,}6 \\times 10^{-19}\\,\\text{C}$ et de masse $m = 9{,}1 \\times 10^{-31}\\,\\text{kg}$ est placé dans un champ électrique $E = 1000\\,\\text{V/m}$. Calculer la force et l'accélération.",
+            "etapes": [
+              "$F = |q|E = 1{,}6 \\times 10^{-19} \\times 1000 = 1{,}6 \\times 10^{-16}\\,\\text{N}$.",
+              "$a = \\frac{F}{m} = \\frac{1{,}6 \\times 10^{-16}}{9{,}1 \\times 10^{-31}} \\approx 1{,}76 \\times 10^{14}\\,\\text{m/s}^2$."
+            ],
+            "conclusion": "$F = 1{,}6 \\times 10^{-16}\\,\\text{N}$ et $a \\approx 1{,}76 \\times 10^{14}\\,\\text{m/s}^2$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le signe de la charge.",
+            "Confondre force et champ.",
+            "Erreur dans les puissances de 10."
+          ],
+          "pieges_examen": [
+            "Bien vérifier le signe de la charge.",
+            "Utiliser les unités SI."
+          ],
+          "mnemo": "$\\vec{F} = q\\vec{E}$.",
+          "liens": {
+            "avant": [],
+            "apres": ["acceleration_champ_electrique"]
+          }
+        },
+        {
+          "id": "acceleration_champ_electrique",
+          "titre": "Accélération dans un champ électrique",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Mouvement d'une particule chargée dans un champ électrique uniforme.",
+          "description_longue": "Une particule chargée soumise à un champ électrique uniforme a un mouvement rectiligne uniformément varié si sa vitesse initiale est parallèle au champ, ou parabolique si sa vitesse initiale est perpendiculaire au champ. L'accélération est $\\vec{a} = \\frac{q\\vec{E}}{m}$.",
+          "formules": [
+            { "latex": "$\\vec{a} = \\frac{q\\vec{E}}{m}$", "condition": "", "usage": "Accélération" },
+            { "latex": "$v = \\sqrt{\\frac{2qU}{m}}$", "condition": "accélération par une tension U", "usage": "Vitesse acquise" }
+          ],
+          "proprietes": [
+            "Le mouvement est uniformément varié si $\\vec{v}_0 \\parallel \\vec{E}$.",
+            "Le mouvement est parabolique si $\\vec{v}_0 \\perp \\vec{E}$.",
+            "L'énergie cinétique acquise est $E_c = qU$."
+          ],
+          "methodes": [
+            "Écrire le bilan des forces.",
+            "Appliquer le principe fondamental de la dynamique.",
+            "Étudier le mouvement."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un proton de charge $q = 1{,}6 \\times 10^{-19}\\,\\text{C}$ et de masse $m = 1{,}67 \\times 10^{-27}\\,\\text{kg}$ est accéléré par une tension $U = 1000\\,\\text{V}$. Calculer sa vitesse finale.",
+            "etapes": [
+              "$v = \\sqrt{\\frac{2qU}{m}} = \\sqrt{\\frac{2 \\times 1{,}6 \\times 10^{-19} \\times 1000}{1{,}67 \\times 10^{-27}}}$.",
+              "$v = \\sqrt{\\frac{3{,}2 \\times 10^{-16}}{1{,}67 \\times 10^{-27}}} = \\sqrt{1{,}92 \\times 10^{11}} \\approx 4{,}38 \\times 10^5\\,\\text{m/s}$."
+            ],
+            "conclusion": "$v \\approx 4{,}38 \\times 10^5\\,\\text{m/s}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier la racine carrée.",
+            "Confondre $q$ et $|q|$.",
+            "Erreur dans les unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier le signe de la charge.",
+            "Utiliser la bonne formule pour la vitesse."
+          ],
+          "mnemo": "Accélération : $a = qE/m$.",
+          "liens": {
+            "avant": ["force_electrique"],
+            "apres": ["mouvement_champ_magnetique"]
+          }
+        },
+        {
+          "id": "mouvement_champ_magnetique",
+          "titre": "Mouvement dans un champ magnétique",
+          "obligatoire": true,
+          "difficulte": 4,
+          "duree_etude_min": 30,
+          "description_courte": "Mouvement d'une particule chargée dans un champ magnétique uniforme.",
+          "description_longue": "Une particule chargée en mouvement dans un champ magnétique $\\vec{B}$ subit la force de Lorentz $\\vec{F} = q\\vec{v} \\wedge \\vec{B}$. Cette force est perpendiculaire à la vitesse et au champ. Si la vitesse est perpendiculaire au champ, le mouvement est circulaire uniforme de rayon $R = \\frac{mv}{|q|B}$. Si la vitesse est oblique, le mouvement est hélicoïdal.",
+          "formules": [
+            { "latex": "$\\vec{F} = q\\vec{v} \\wedge \\vec{B}$", "condition": "", "usage": "Force de Lorentz" },
+            { "latex": "$R = \\frac{mv}{|q|B}$", "condition": "", "usage": "Rayon de la trajectoire" },
+            { "latex": "$T = \\frac{2\\pi m}{|q|B}$", "condition": "", "usage": "Période" }
+          ],
+          "proprietes": [
+            "La force est perpendiculaire à la vitesse : elle ne travaille pas.",
+            "La vitesse est constante en norme.",
+            "Le mouvement est circulaire uniforme si $\\vec{v} \\perp \\vec{B}$."
+          ],
+          "methodes": [
+            "Identifier la direction du champ.",
+            "Appliquer la formule de la force de Lorentz.",
+            "Déterminer le rayon et la période."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un électron de vitesse $v = 10^6\\,\\text{m/s}$ pénètre perpendiculairement dans un champ magnétique $B = 0{,}1\\,\\text{T}$. Calculer le rayon de sa trajectoire. On donne $m = 9{,}1 \\times 10^{-31}\\,\\text{kg}$ et $q = 1{,}6 \\times 10^{-19}\\,\\text{C}$.",
+            "etapes": [
+              "$R = \\frac{mv}{|q|B} = \\frac{9{,}1 \\times 10^{-31} \\times 10^6}{1{,}6 \\times 10^{-19} \\times 0{,}1}$.",
+              "$R = \\frac{9{,}1 \\times 10^{-25}}{1{,}6 \\times 10^{-20}} \\approx 5{,}69 \\times 10^{-5}\\,\\text{m}$."
+            ],
+            "conclusion": "$R \\approx 5{,}69 \\times 10^{-5}\\,\\text{m}$ (soit $56{,}9\\,\\mu\\text{m}$)."
+          },
+          "erreurs_frequentes": [
+            "Oublier la valeur absolue de $q$.",
+            "Confondre rayon et période.",
+            "Erreur dans le produit vectoriel."
+          ],
+          "pieges_examen": [
+            "Bien vérifier l'orientation du champ.",
+            "Utiliser la formule du rayon avec les bonnes unités."
+          ],
+          "mnemo": "Force de Lorentz : $\\vec{F} = q\\vec{v} \\wedge \\vec{B}$.",
+          "liens": {
+            "avant": ["acceleration_champ_electrique"],
+            "apres": ["spectrographe_masse"]
+          }
+        },
+        {
+          "id": "spectrographe_masse",
+          "titre": "Application : spectrographe de masse",
+          "obligatoire": true,
+          "difficulte": 4,
+          "duree_etude_min": 30,
+          "description_courte": "Appareil qui sépare les particules chargées selon leur rapport masse/charge.",
+          "description_longue": "Le spectrographe de masse est un appareil qui utilise les champs électrique et magnétique pour séparer des ions de masses différentes. Les ions sont accélérés par une tension $U$, puis déviés par un champ magnétique. Le rayon de la trajectoire dépend du rapport $m/q$, ce qui permet de séparer les isotopes.",
+          "formules": [
+            { "latex": "$R = \\frac{1}{B}\\sqrt{\\frac{2mU}{q}}$", "condition": "", "usage": "Rayon de la trajectoire" }
+          ],
+          "proprietes": [
+            "Les ions de masses différentes ont des rayons différents.",
+            "Permet de séparer les isotopes.",
+            "Utilisé en spectrométrie de masse."
+          ],
+          "methodes": [
+            "Accélérer les ions par une tension $U$.",
+            "Dévier par un champ magnétique $B$.",
+            "Mesurer le rayon pour déterminer $m/q$."
+          ],
+          "exemple_resolu": {
+            "enonce": "Dans un spectrographe, des ions de charge $q = 1{,}6 \\times 10^{-19}\\,\\text{C}$ sont accélérés par $U = 500\\,\\text{V}$ puis déviés par $B = 0{,}2\\,\\text{T}$. Calculer le rayon pour un ion de masse $m = 2 \\times 10^{-26}\\,\\text{kg}$.",
+            "etapes": [
+              "$R = \\frac{1}{0{,}2}\\sqrt{\\frac{2 \\times 2 \\times 10^{-26} \\times 500}{1{,}6 \\times 10^{-19}}}$.",
+              "$R = 5 \\sqrt{\\frac{2 \\times 10^{-23}}{1{,}6 \\times 10^{-19}}} = 5\\sqrt{1{,}25 \\times 10^{-4}} = 5 \\times 1{,}12 \\times 10^{-2} \\approx 0{,}056\\,\\text{m}$."
+            ],
+            "conclusion": "$R \\approx 5{,}6\\,\\text{cm}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier la racine carrée.",
+            "Confondre $U$ et $B$.",
+            "Erreur dans les unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier les paramètres du problème.",
+            "Vérifier les unités."
+          ],
+          "mnemo": "Spectrographe : $R = \\frac{1}{B}\\sqrt{\\frac{2mU}{q}}$.",
+          "liens": {
+            "avant": ["mouvement_champ_magnetique"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Calculer la force électrique sur une particule chargée.",
+        "Déterminer l'accélération dans un champ électrique.",
+        "Étudier le mouvement dans un champ magnétique.",
+        "Appliquer au spectrographe de masse."
+      ]
+    },
+    {
+      "id": "oscillateurs_mecaniques",
+      "numero": 5,
+      "titre": "Oscillateurs mécaniques",
+      "description": "Étude des oscillateurs mécaniques : pendule simple, pendule élastique, énergie.",
+      "duree_estimee_min": 600,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["cinematique", "dynamique"],
+      "notions": [
+        {
+          "id": "pendule_simple",
+          "titre": "Pendule simple",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 30,
+          "description_courte": "Oscillateur constitué d'une masse suspendue à un fil inextensible.",
+          "description_longue": "Un pendule simple est constitué d'une masse ponctuelle $m$ suspendue à un fil inextensible de longueur $l$. Pour de petites oscillations, le mouvement est sinusoïdal de période $T = 2\\pi\\sqrt{\\frac{l}{g}}$. La période est indépendante de la masse et de l'amplitude (pour de petites oscillations).",
+          "formules": [
+            { "latex": "$T = 2\\pi\\sqrt{\\frac{l}{g}}$", "condition": "petites oscillations", "usage": "Période" },
+            { "latex": "$\\theta(t) = \\theta_0\\cos(\\omega t + \\varphi)$", "condition": "", "usage": "Équation horaire" }
+          ],
+          "proprietes": [
+            "La période est indépendante de la masse.",
+            "La période dépend de la longueur du fil.",
+            "L'énergie mécanique est conservée (sans frottement)."
+          ],
+          "methodes": [
+            "Faire le bilan des forces.",
+            "Appliquer le principe fondamental.",
+            "Utiliser l'approximation des petites oscillations.",
+            "Calculer la période."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un pendule simple a une longueur $l = 1\\,\\text{m}$. Calculer sa période. On prend $g = 9{,}81\\,\\text{m/s}^2$.",
+            "etapes": [
+              "$T = 2\\pi\\sqrt{\\frac{1}{9{,}81}} = 2\\pi \\times 0{,}319 = 2{,}01\\,\\text{s}$."
+            ],
+            "conclusion": "$T \\approx 2{,}01\\,\\text{s}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier l'approximation des petites oscillations.",
+            "Confondre $l$ et $m$.",
+            "Erreur dans la formule."
+          ],
+          "pieges_examen": [
+            "Bien vérifier que les oscillations sont petites.",
+            "Utiliser $g = 9{,}81\\,\\text{m/s}^2$."
+          ],
+          "mnemo": "$T = 2\\pi\\sqrt{l/g}$.",
+          "liens": {
+            "avant": [],
+            "apres": ["pendule_elastique"]
+          }
+        },
+        {
+          "id": "pendule_elastique",
+          "titre": "Pendule élastique",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 30,
+          "description_courte": "Oscillateur constitué d'une masse attachée à un ressort.",
+          "description_longue": "Un pendule élastique est constitué d'une masse $m$ attachée à un ressort de raideur $k$. En l'absence de frottement, le mouvement est sinusoïdal de période $T = 2\\pi\\sqrt{\\frac{m}{k}}$. La période dépend de la masse et de la raideur du ressort.",
+          "formules": [
+            { "latex": "$T = 2\\pi\\sqrt{\\frac{m}{k}}$", "condition": "", "usage": "Période" },
+            { "latex": "$\\omega = \\sqrt{\\frac{k}{m}}$", "condition": "", "usage": "Pulsation" }
+          ],
+          "proprietes": [
+            "La période augmente avec la masse.",
+            "La période diminue avec la raideur.",
+            "L'énergie mécanique est conservée (sans frottement)."
+          ],
+          "methodes": [
+            "Faire le bilan des forces.",
+            "Appliquer le principe fondamental.",
+            "Utiliser la formule de la période."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un ressort de raideur $k = 100\\,\\text{N/m}$ est attaché à une masse $m = 0{,}5\\,\\text{kg}$. Calculer la période d'oscillation.",
+            "etapes": [
+              "$T = 2\\pi\\sqrt{\\frac{0{,}5}{100}} = 2\\pi\\sqrt{0{,}005} = 2\\pi \\times 0{,}0707 \\approx 0{,}444\\,\\text{s}$."
+            ],
+            "conclusion": "$T \\approx 0{,}444\\,\\text{s}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $m$ et $k$.",
+            "Oublier la racine carrée.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien vérifier les unités de $k$ (N/m).",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$T = 2\\pi\\sqrt{m/k}$.",
+          "liens": {
+            "avant": ["pendule_simple"],
+            "apres": ["ressort_horizontal"]
+          }
+        },
+        {
+          "id": "ressort_horizontal",
+          "titre": "Ressort horizontal",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Oscillateur horizontal sans frottement.",
+          "description_longue": "Un ressort horizontal de raideur $k$ attaché à une masse $m$ sur un plan horizontal sans frottement oscille avec une période $T = 2\\pi\\sqrt{\\frac{m}{k}}$. L'équation différentielle du mouvement est $m\\frac{d^2x}{dt^2} + kx = 0$.",
+          "formules": [
+            { "latex": "$m\\frac{d^2x}{dt^2} + kx = 0$", "condition": "", "usage": "Équation différentielle" },
+            { "latex": "$T = 2\\pi\\sqrt{\\frac{m}{k}}$", "condition": "", "usage": "Période" }
+          ],
+          "proprietes": [
+            "Le mouvement est sinusoïdal.",
+            "L'énergie mécanique est constante.",
+            "La force de rappel est $F = -kx$."
+          ],
+          "methodes": [
+            "Écrire l'équation différentielle.",
+            "Résoudre.",
+            "Déterminer la période."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un ressort horizontal de raideur $k = 50\\,\\text{N/m}$ est attaché à une masse $m = 0{,}2\\,\\text{kg}$. Calculer la pulsation et la période.",
+            "etapes": [
+              "$\\omega = \\sqrt{\\frac{k}{m}} = \\sqrt{\\frac{50}{0{,}2}} = \\sqrt{250} \\approx 15{,}8\\,\\text{rad/s}$.",
+              "$T = \\frac{2\\pi}{\\omega} = \\frac{2\\pi}{15{,}8} \\approx 0{,}397\\,\\text{s}$."
+            ],
+            "conclusion": "$\\omega \\approx 15{,}8\\,\\text{rad/s}$ et $T \\approx 0{,}397\\,\\text{s}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre pulsation et période.",
+            "Erreur dans l'équation différentielle."
+          ],
+          "pieges_examen": [
+            "Bien vérifier les unités.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "Ressort horizontal : $F = -kx$.",
+          "liens": {
+            "avant": ["pendule_elastique"],
+            "apres": ["ressort_vertical"]
+          }
+        },
+        {
+          "id": "ressort_vertical",
+          "titre": "Ressort vertical",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Oscillateur vertical avec poids.",
+          "description_longue": "Un ressort vertical de raideur $k$ attaché à une masse $m$ est soumis à son poids en plus de la force de rappel. À l'équilibre, le ressort s'allonge de $\\Delta l = \\frac{mg}{k}$. Autour de cette position, le mouvement est sinusoïdal de période $T = 2\\pi\\sqrt{\\frac{m}{k}}$.",
+          "formules": [
+            { "latex": "$\\Delta l = \\frac{mg}{k}$", "condition": "", "usage": "Allongement à l'équilibre" },
+            { "latex": "$T = 2\\pi\\sqrt{\\frac{m}{k}}$", "condition": "", "usage": "Période" }
+          ],
+          "proprietes": [
+            "L'allongement à l'équilibre dépend de $g$.",
+            "La période est la même qu'en horizontal.",
+            "L'énergie potentielle élastique est $E_p = \\frac{1}{2}kx^2$."
+          ],
+          "methodes": [
+            "Déterminer la position d'équilibre.",
+            "Écrire l'équation différentielle.",
+            "Calculer la période."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un ressort vertical de raideur $k = 200\\,\\text{N/m}$ supporte une masse $m = 2\\,\\text{kg}$. Calculer l'allongement à l'équilibre et la période. On prend $g = 10\\,\\text{m/s}^2$.",
+            "etapes": [
+              "$\\Delta l = \\frac{2 \\times 10}{200} = 0{,}1\\,\\text{m}$.",
+              "$T = 2\\pi\\sqrt{\\frac{2}{200}} = 2\\pi\\sqrt{0{,}01} = 2\\pi \\times 0{,}1 = 0{,}628\\,\\text{s}$."
+            ],
+            "conclusion": "$\\Delta l = 10\\,\\text{cm}$ et $T \\approx 0{,}628\\,\\text{s}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le poids.",
+            "Confondre allongement et longueur.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien déterminer la position d'équilibre.",
+            "Utiliser la bonne formule pour la période."
+          ],
+          "mnemo": "Ressort vertical : $\\Delta l = mg/k$.",
+          "liens": {
+            "avant": ["ressort_horizontal"],
+            "apres": ["energie_mecanique"]
+          }
+        },
+        {
+          "id": "energie_mecanique",
+          "titre": "Énergie mécanique d'un oscillateur",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Conservation de l'énergie mécanique en l'absence de frottement.",
+          "description_longue": "L'énergie mécanique d'un oscillateur est la somme de son énergie cinétique et de son énergie potentielle. En l'absence de frottement, elle est constante. Pour un ressort, $E_m = \\frac{1}{2}mv^2 + \\frac{1}{2}kx^2 = \\text{constante}$. Cette conservation permet de résoudre de nombreux problèmes.",
+          "formules": [
+            { "latex": "$E_m = E_c + E_p$", "condition": "", "usage": "Énergie mécanique" },
+            { "latex": "$E_c = \\frac{1}{2}mv^2$", "condition": "", "usage": "Énergie cinétique" },
+            { "latex": "$E_p = \\frac{1}{2}kx^2$", "condition": "", "usage": "Énergie potentielle élastique" }
+          ],
+          "proprietes": [
+            "L'énergie mécanique est constante sans frottement.",
+            "L'énergie cinétique et l'énergie potentielle varient.",
+            "L'énergie totale est proportionnelle au carré de l'amplitude."
+          ],
+          "methodes": [
+            "Calculer l'énergie cinétique.",
+            "Calculer l'énergie potentielle.",
+            "Additionner.",
+            "Utiliser la conservation."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un ressort de raideur $k = 100\\,\\text{N/m}$ oscille avec une amplitude $A = 0{,}1\\,\\text{m}$. Calculer l'énergie mécanique.",
+            "etapes": [
+              "$E_m = \\frac{1}{2}kA^2 = \\frac{1}{2} \\times 100 \\times 0{,}01 = 0{,}5\\,\\text{J}$."
+            ],
+            "conclusion": "$E_m = 0{,}5\\,\\text{J}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le facteur $\\frac{1}{2}$.",
+            "Confondre énergie cinétique et potentielle.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier les formes d'énergie.",
+            "Utiliser la conservation."
+          ],
+          "mnemo": "$E_m = E_c + E_p$.",
+          "liens": {
+            "avant": ["ressort_vertical"],
+            "apres": ["amortissement"]
+          }
+        },
+        {
+          "id": "amortissement",
+          "titre": "Amortissement",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Réduction progressive de l'amplitude des oscillations due aux frottements.",
+          "description_longue": "En présence de frottements, l'amplitude des oscillations diminue progressivement : c'est l'amortissement. On distingue les régimes pseudo-périodique, critique et apériodique. L'énergie mécanique diminue et se dissipe sous forme de chaleur.",
+          "formules": [
+            { "latex": "$m\\frac{d^2x}{dt^2} + f\\frac{dx}{dt} + kx = 0$", "condition": "", "usage": "Équation avec frottement" }
+          ],
+          "proprietes": [
+            "L'amplitude diminue exponentiellement.",
+            "La pseudo-période est proche de la période propre.",
+            "L'énergie se dissipe."
+          ],
+          "methodes": [
+            "Identifier le type d'amortissement.",
+            "Écrire l'équation différentielle.",
+            "Résoudre."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un oscillateur amorti a une amplitude qui diminue de moitié en 10 oscillations. Décrire qualitativement son mouvement.",
+            "etapes": [
+              "L'amplitude diminue exponentiellement.",
+              "Le régime est pseudo-périodique.",
+              "L'énergie diminue."
+            ],
+            "conclusion": "Régime pseudo-périodique avec amortissement."
+          },
+          "erreurs_frequentes": [
+            "Confondre les régimes.",
+            "Oublier la dissipation d'énergie."
+          ],
+          "pieges_examen": [
+            "Bien identifier le type d'amortissement.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Amortissement = diminution d'amplitude.",
+          "liens": {
+            "avant": ["energie_mecanique"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Calculer la période d'un pendule simple.",
+        "Calculer la période d'un pendule élastique.",
+        "Étudier l'énergie mécanique.",
+        "Analyser l'amortissement."
+      ]
+    },
+    {
+      "id": "generalites_ondes",
+      "numero": 6,
+      "titre": "Généralités sur les ondes",
+      "description": "Définition, types et caractéristiques des ondes.",
+      "duree_estimee_min": 540,
+      "difficulte": 2,
+      "obligatoire": true,
+      "prerequis": ["cinematique"],
+      "notions": [
+        {
+          "id": "definition_onde",
+          "titre": "Définition d'une onde",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Une onde est une perturbation qui se propage dans un milieu.",
+          "description_longue": "Une onde est une perturbation qui se propage dans un milieu matériel ou dans le vide, transportant de l'énergie sans transport de matière. On distingue les ondes mécaniques (nécessitent un milieu) et les ondes électromagnétiques (peuvent se propager dans le vide).",
+          "formules": [
+            { "latex": "$v = \\frac{d}{\\Delta t}$", "condition": "", "usage": "Célérité" }
+          ],
+          "proprietes": [
+            "Une onde transporte de l'énergie sans transporter de matière.",
+            "La célérité dépend du milieu.",
+            "Une onde peut être transversale ou longitudinale."
+          ],
+          "methodes": [
+            "Identifier le type d'onde.",
+            "Déterminer le milieu de propagation.",
+            "Calculer la célérité."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une onde sonore parcourt $340\\,\\text{m}$ en $1\\,\\text{s}$ dans l'air. Calculer sa célérité.",
+            "etapes": [
+              "$v = \\frac{340}{1} = 340\\,\\text{m/s}$."
+            ],
+            "conclusion": "$v = 340\\,\\text{m/s}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre onde et matière.",
+            "Oublier les unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier le type d'onde.",
+            "Utiliser les bonnes unités."
+          ],
+          "mnemo": "Onde = propagation d'énergie.",
+          "liens": {
+            "avant": [],
+            "apres": ["ondes_transversales_longitudinales"]
+          }
+        },
+        {
+          "id": "ondes_transversales_longitudinales",
+          "titre": "Ondes transversales et longitudinales",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Classification des ondes selon la direction de la perturbation.",
+          "description_longue": "Une onde est transversale si la perturbation est perpendiculaire à la direction de propagation (ex : onde sur une corde). Elle est longitudinale si la perturbation est parallèle à la direction de propagation (ex : onde sonore).",
+          "formules": [],
+          "proprietes": [
+            "Onde transversale : perturbation perpendiculaire.",
+            "Onde longitudinale : perturbation parallèle.",
+            "Les ondes électromagnétiques sont transversales."
+          ],
+          "methodes": [
+            "Identifier la direction de la perturbation.",
+            "Identifier la direction de propagation.",
+            "Conclure."
+          ],
+          "exemple_resolu": {
+            "enonce": "Classer les ondes suivantes : onde sur une corde, onde sonore.",
+            "etapes": [
+              "Onde sur une corde : perturbation perpendiculaire à la propagation → transversale.",
+              "Onde sonore : perturbation parallèle à la propagation → longitudinale."
+            ],
+            "conclusion": "Corde : transversale ; son : longitudinale."
+          },
+          "erreurs_frequentes": [
+            "Confondre les deux types.",
+            "Oublier des exemples."
+          ],
+          "pieges_examen": [
+            "Bien visualiser la perturbation.",
+            "Ne pas confondre avec la nature de l'onde."
+          ],
+          "mnemo": "Transversale = perpendiculaire.",
+          "liens": {
+            "avant": ["definition_onde"],
+            "apres": ["celerite_frequence"]
+          }
+        },
+        {
+          "id": "celerite_frequence",
+          "titre": "Célérité, fréquence, longueur d'onde",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 25,
+          "description_courte": "Relation entre célérité, fréquence et longueur d'onde.",
+          "description_longue": "La célérité $v$ d'une onde est la vitesse de propagation de la perturbation. La fréquence $f$ est le nombre d'oscillations par seconde. La longueur d'onde $\\lambda$ est la distance parcourue par l'onde pendant une période. On a la relation fondamentale $v = \\lambda f$.",
+          "formules": [
+            { "latex": "$v = \\lambda f$", "condition": "", "usage": "Relation fondamentale" },
+            { "latex": "$T = \\frac{1}{f}$", "condition": "", "usage": "Période" },
+            { "latex": "$\\lambda = vT$", "condition": "", "usage": "Longueur d'onde" }
+          ],
+          "proprietes": [
+            "La fréquence est indépendante du milieu.",
+            "La longueur d'onde dépend du milieu.",
+            "La célérité dépend du milieu."
+          ],
+          "methodes": [
+            "Identifier les grandeurs connues.",
+            "Appliquer la relation $v = \\lambda f$.",
+            "Calculer l'inconnue."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une onde a une fréquence $f = 50\\,\\text{Hz}$ et une longueur d'onde $\\lambda = 2\\,\\text{m}$. Calculer sa célérité.",
+            "etapes": [
+              "$v = \\lambda f = 2 \\times 50 = 100\\,\\text{m/s}$."
+            ],
+            "conclusion": "$v = 100\\,\\text{m/s}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre fréquence et période.",
+            "Oublier les unités.",
+            "Inverser $\\lambda$ et $f$."
+          ],
+          "pieges_examen": [
+            "Bien vérifier les unités ($f$ en Hz, $\\lambda$ en m).",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$v = \\lambda f$.",
+          "liens": {
+            "avant": ["ondes_transversales_longitudinales"],
+            "apres": ["relation_v_lambda_f"]
+          }
+        },
+        {
+          "id": "relation_v_lambda_f",
+          "titre": "Relation $v = \\lambda f$",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Relation fondamentale des ondes.",
+          "description_longue": "La relation $v = \\lambda f$ lie la célérité, la longueur d'onde et la fréquence. Elle est valable pour toutes les ondes. Elle permet de calculer l'une des trois grandeurs connaissant les deux autres.",
+          "formules": [
+            { "latex": "$v = \\lambda f$", "condition": "", "usage": "Relation fondamentale" }
+          ],
+          "proprietes": [
+            "La célérité est le produit de la longueur d'onde et de la fréquence.",
+            "La longueur d'onde est inversement proportionnelle à la fréquence.",
+            "La fréquence est indépendante du milieu."
+          ],
+          "methodes": [
+            "Identifier les grandeurs.",
+            "Appliquer la relation.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une onde lumineuse a une longueur d'onde $\\lambda = 600\\,\\text{nm}$ et une célérité $c = 3 \\times 10^8\\,\\text{m/s}$. Calculer sa fréquence.",
+            "etapes": [
+              "$f = \\frac{c}{\\lambda} = \\frac{3 \\times 10^8}{600 \\times 10^{-9}} = 5 \\times 10^{14}\\,\\text{Hz}$."
+            ],
+            "conclusion": "$f = 5 \\times 10^{14}\\,\\text{Hz}$."
+          },
+          "erreurs_frequentes": [
+            "Erreur dans les conversions.",
+            "Confondre $\\lambda$ et $f$."
+          ],
+          "pieges_examen": [
+            "Bien convertir les unités (nm en m).",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$v = \\lambda f$.",
+          "liens": {
+            "avant": ["celerite_frequence"],
+            "apres": ["ondes_progressives"]
+          }
+        },
+        {
+          "id": "ondes_progressives",
+          "titre": "Ondes progressives",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Onde qui se déplace dans l'espace au cours du temps.",
+          "description_longue": "Une onde progressive est une onde qui se déplace dans l'espace au cours du temps. Si elle se déplace dans une seule direction, on parle d'onde progressive unidimensionnelle. L'équation d'onde est $y(x,t) = y_0\\cos(\\omega t - kx + \\varphi)$ où $k = \\frac{2\\pi}{\\lambda}$ est le nombre d'onde.",
+          "formules": [
+            { "latex": "$y(x,t) = y_0\\cos(\\omega t - kx + \\varphi)$", "condition": "", "usage": "Équation d'onde" },
+            { "latex": "$k = \\frac{2\\pi}{\\lambda}$", "condition": "", "usage": "Nombre d'onde" }
+          ],
+          "proprietes": [
+            "L'onde se propage à la célérité $v$.",
+            "La forme de l'onde se conserve.",
+            "L'onde transporte de l'énergie."
+          ],
+          "methodes": [
+            "Identifier l'équation d'onde.",
+            "Déterminer l'amplitude, la pulsation, le nombre d'onde.",
+            "Calculer la célérité."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une onde progressive a pour équation $y(x,t) = 0{,}05\\cos(100t - 2x)$ (SI). Déterminer la longueur d'onde, la fréquence et la célérité.",
+            "etapes": [
+              "$\\omega = 100\\,\\text{rad/s} \\Rightarrow f = \\frac{\\omega}{2\\pi} \\approx 15{,}9\\,\\text{Hz}$.",
+              "$k = 2\\,\\text{rad/m} \\Rightarrow \\lambda = \\frac{2\\pi}{k} = \\pi \\approx 3{,}14\\,\\text{m}$.",
+              "$v = \\lambda f = \\pi \\times 15{,}9 \\approx 50\\,\\text{m/s}$."
+            ],
+            "conclusion": "$\\lambda \\approx 3{,}14\\,\\text{m}$, $f \\approx 15{,}9\\,\\text{Hz}$, $v \\approx 50\\,\\text{m/s}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $\\omega$ et $k$.",
+            "Oublier les formules.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier les paramètres de l'équation.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Onde progressive : $y(x,t) = y_0\\cos(\\omega t - kx)$.",
+          "liens": {
+            "avant": ["relation_v_lambda_f"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Calculer la célérité d'une onde.",
+        "Utiliser la relation $v = \\lambda f$.",
+        "Analyser une équation d'onde progressive."
+      ]
+    },
+    {
+      "id": "mouvement_vibratoire",
+      "numero": 7,
+      "titre": "Mouvement vibratoire",
+      "description": "Étude du mouvement sinusoïdal et de la résonance.",
+      "duree_estimee_min": 480,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["oscillateurs_mecaniques"],
+      "notions": [
+        {
+          "id": "mouvement_sinusoidal",
+          "titre": "Mouvement sinusoïdal",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 25,
+          "description_courte": "Mouvement dont l'élongation est une fonction sinusoïdale du temps.",
+          "description_longue": "Un mouvement vibratoire est sinusoïdal si son élongation $x(t)$ s'écrit $x(t) = X_m\\cos(\\omega t + \\varphi)$ où $X_m$ est l'amplitude, $\\omega$ la pulsation et $\\varphi$ la phase à l'origine. Ce type de mouvement est très courant en physique.",
+          "formules": [
+            { "latex": "$x(t) = X_m\\cos(\\omega t + \\varphi)$", "condition": "", "usage": "Équation horaire" },
+            { "latex": "$\\omega = 2\\pi f = \\frac{2\\pi}{T}$", "condition": "", "usage": "Pulsation" }
+          ],
+          "proprietes": [
+            "L'amplitude est constante.",
+            "La période est indépendante de l'amplitude.",
+            "La vitesse et l'accélération sont aussi sinusoïdales."
+          ],
+          "methodes": [
+            "Identifier l'amplitude, la pulsation et la phase.",
+            "Écrire l'équation horaire.",
+            "Calculer vitesse et accélération."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un mobile a un mouvement sinusoïdal d'amplitude $X_m = 0{,}1\\,\\text{m}$ et de période $T = 0{,}5\\,\\text{s}$. Écrire son équation horaire si à $t=0$, $x = X_m$.",
+            "etapes": [
+              "$\\omega = \\frac{2\\pi}{0{,}5} = 4\\pi\\,\\text{rad/s}$.",
+              "À $t=0$, $x = X_m = X_m\\cos\\varphi \\Rightarrow \\cos\\varphi = 1 \\Rightarrow \\varphi = 0$.",
+              "$x(t) = 0{,}1\\cos(4\\pi t)$."
+            ],
+            "conclusion": "$x(t) = 0{,}1\\cos(4\\pi t)$ (SI)."
+          },
+          "erreurs_frequentes": [
+            "Oublier la phase.",
+            "Confondre $\\omega$ et $f$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien déterminer la phase à partir des conditions initiales.",
+            "Vérifier les unités."
+          ],
+          "mnemo": "$x(t) = X_m\\cos(\\omega t + \\varphi)$.",
+          "liens": {
+            "avant": [],
+            "apres": ["vitesse_acceleration_vibratoire"]
+          }
+        },
+        {
+          "id": "vitesse_acceleration_vibratoire",
+          "titre": "Vitesse et accélération d'un mouvement sinusoïdal",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Dérivées de l'élongation par rapport au temps.",
+          "description_longue": "Pour un mouvement sinusoïdal $x(t) = X_m\\cos(\\omega t + \\varphi)$, la vitesse est $v(t) = -X_m\\omega\\sin(\\omega t + \\varphi)$ et l'accélération $a(t) = -X_m\\omega^2\\cos(\\omega t + \\varphi) = -\\omega^2 x(t)$. La vitesse est en quadrature de phase avec l'élongation, et l'accélération est en opposition de phase.",
+          "formules": [
+            { "latex": "$v(t) = -X_m\\omega\\sin(\\omega t + \\varphi)$", "condition": "", "usage": "Vitesse" },
+            { "latex": "$a(t) = -X_m\\omega^2\\cos(\\omega t + \\varphi)$", "condition": "", "usage": "Accélération" },
+            { "latex": "$a = -\\omega^2 x$", "condition": "", "usage": "Relation accélération-élongation" }
+          ],
+          "proprietes": [
+            "La vitesse est maximale quand $x=0$.",
+            "L'accélération est maximale quand $|x|$ est maximal.",
+            "L'accélération est proportionnelle à l'élongation et opposée."
+          ],
+          "methodes": [
+            "Dériver l'élongation.",
+            "Dériver la vitesse.",
+            "Utiliser les relations."
+          ],
+          "exemple_resolu": {
+            "enonce": "Soit $x(t) = 0{,}1\\cos(4\\pi t)$. Calculer la vitesse et l'accélération maximales.",
+            "etapes": [
+              "$v_{max} = X_m\\omega = 0{,}1 \\times 4\\pi = 0{,}4\\pi \\approx 1{,}26\\,\\text{m/s}$.",
+              "$a_{max} = X_m\\omega^2 = 0{,}1 \\times (4\\pi)^2 = 1{,}6\\pi^2 \\approx 15{,}8\\,\\text{m/s}^2$."
+            ],
+            "conclusion": "$v_{max} \\approx 1{,}26\\,\\text{m/s}$ et $a_{max} \\approx 15{,}8\\,\\text{m/s}^2$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le signe négatif.",
+            "Confondre vitesse et accélération.",
+            "Erreur dans les dérivées."
+          ],
+          "pieges_examen": [
+            "Bien dériver.",
+            "Utiliser les relations entre $x$, $v$ et $a$."
+          ],
+          "mnemo": "$v = x'$, $a = v' = x''$.",
+          "liens": {
+            "avant": ["mouvement_sinusoidal"],
+            "apres": ["resonance"]
+          }
+        },
+        {
+          "id": "resonance",
+          "titre": "Résonance",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Phénomène d'amplification de l'amplitude lorsque la fréquence d'excitation est proche de la fréquence propre.",
+          "description_longue": "La résonance est un phénomène qui se produit lorsqu'un système oscillant est excité à une fréquence proche de sa fréquence propre. L'amplitude des oscillations devient alors très grande. La résonance peut être bénéfique (instruments de musique) ou destructrice (ponts, bâtiments).",
+          "formules": [
+            { "latex": "$f_{excitation} \\approx f_{propre}$", "condition": "", "usage": "Condition de résonance" }
+          ],
+          "proprietes": [
+            "L'amplitude est maximale à la résonance.",
+            "La fréquence de résonance dépend du système.",
+            "L'amortissement réduit l'effet de résonance."
+          ],
+          "methodes": [
+            "Identifier la fréquence propre.",
+            "Comparer à la fréquence d'excitation.",
+            "Conclure."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un pendule a une période propre $T_0 = 1\\,\\text{s}$. À quelle fréquence doit-on l'exciter pour observer la résonance ?",
+            "etapes": [
+              "$f_0 = \\frac{1}{T_0} = 1\\,\\text{Hz}$.",
+              "La résonance est observée pour $f \\approx 1\\,\\text{Hz}$."
+            ],
+            "conclusion": "Fréquence de résonance : $1\\,\\text{Hz}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre fréquence propre et fréquence d'excitation.",
+            "Oublier l'amortissement."
+          ],
+          "pieges_examen": [
+            "Bien identifier la fréquence propre.",
+            "Tenir compte de l'amortissement."
+          ],
+          "mnemo": "Résonance : $f_{exc} = f_{propre}$.",
+          "liens": {
+            "avant": ["vitesse_acceleration_vibratoire"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Écrire l'équation horaire d'un mouvement sinusoïdal.",
+        "Calculer vitesse et accélération.",
+        "Étudier la résonance."
+      ]
+    },
+    {
+      "id": "superposition_ondes",
+      "numero": 8,
+      "titre": "Superposition des ondes",
+      "description": "Principe de superposition, ondes stationnaires et cordes vibrantes.",
+      "duree_estimee_min": 480,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["generalites_ondes"],
+      "notions": [
+        {
+          "id": "principe_superposition",
+          "titre": "Principe de superposition",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "L'élongation résultante est la somme des élongations individuelles.",
+          "description_longue": "Lorsque deux ondes se rencontrent, leurs élongations s'additionnent : c'est le principe de superposition. Après leur rencontre, les ondes continuent leur propagation comme si elles ne s'étaient pas rencontrées. Ce principe est valable pour les ondes linéaires.",
+          "formules": [
+            { "latex": "$y(x,t) = y_1(x,t) + y_2(x,t)$", "condition": "", "usage": "Superposition" }
+          ],
+          "proprietes": [
+            "Les ondes s'additionnent.",
+            "Les ondes se croisent sans se modifier.",
+            "Valable pour les ondes linéaires."
+          ],
+          "methodes": [
+            "Additionner les élongations.",
+            "Simplifier.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Deux ondes $y_1 = 0{,}02\\cos(100t - 2x)$ et $y_2 = 0{,}02\\cos(100t - 2x + \\pi)$ se superposent. Décrire le résultat.",
+            "etapes": [
+              "$y = y_1 + y_2 = 0{,}02[\\cos(\\theta) + \\cos(\\theta + \\pi)]$.",
+              "$\\cos(\\theta + \\pi) = -\\cos\\theta$.",
+              "$y = 0$."
+            ],
+            "conclusion": "Les ondes s'annulent (interférences destructives)."
+          },
+          "erreurs_frequentes": [
+            "Oublier de sommer les élongations.",
+            "Erreur dans les phases."
+          ],
+          "pieges_examen": [
+            "Bien identifier les ondes.",
+            "Utiliser les formules trigonométriques."
+          ],
+          "mnemo": "Superposition = somme des élongations.",
+          "liens": {
+            "avant": [],
+            "apres": ["ondes_stationnaires"]
+          }
+        },
+        {
+          "id": "ondes_stationnaires",
+          "titre": "Ondes stationnaires",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Onde résultant de la superposition de deux ondes progressives de sens opposés.",
+          "description_longue": "Une onde stationnaire résulte de la superposition de deux ondes progressives de même fréquence et de même amplitude se propageant en sens opposés. Elle présente des nœuds (points fixes) et des ventres (points d'amplitude maximale). L'onde ne se propage pas.",
+          "formules": [
+            { "latex": "$y(x,t) = 2Y_m\\cos(kx)\\cos(\\omega t)$", "condition": "", "usage": "Équation d'onde stationnaire" },
+            { "latex": "$\\lambda = \\frac{2L}{n}$", "condition": "corde fixée aux deux extrémités", "usage": "Longueur d'onde" }
+          ],
+          "proprietes": [
+            "Les nœuds sont fixes.",
+            "Les ventres ont une amplitude double.",
+            "La distance entre deux nœuds est $\\frac{\\lambda}{2}$."
+          ],
+          "methodes": [
+            "Identifier les ondes qui se superposent.",
+            "Écrire l'équation résultante.",
+            "Identifier les nœuds et ventres."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une corde de longueur $L = 1\\,\\text{m}$ fixée aux deux extrémités vibre avec 3 ventres. Calculer la longueur d'onde.",
+            "etapes": [
+              "$n = 3$.",
+              "$\\lambda = \\frac{2L}{n} = \\frac{2}{3} \\approx 0{,}667\\,\\text{m}$."
+            ],
+            "conclusion": "$\\lambda \\approx 0{,}667\\,\\text{m}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre nœuds et ventres.",
+            "Erreur dans la formule."
+          ],
+          "pieges_examen": [
+            "Bien compter les ventres.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "Onde stationnaire = nœuds + ventres.",
+          "liens": {
+            "avant": ["principe_superposition"],
+            "apres": ["noeuds_ventres"]
+          }
+        },
+        {
+          "id": "noeuds_ventres",
+          "titre": "Nœuds et ventres",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 20,
+          "description_courte": "Points fixes (nœuds) et points d'amplitude maximale (ventres).",
+          "description_longue": "Dans une onde stationnaire, les nœuds sont les points où l'amplitude est toujours nulle. Les ventres sont les points où l'amplitude est maximale. La distance entre deux nœuds consécutifs est $\\frac{\\lambda}{2}$, et entre un nœud et un ventre $\\frac{\\lambda}{4}$.",
+          "formules": [
+            { "latex": "$d_{n\\text{œuds}} = \\frac{\\lambda}{2}$", "condition": "", "usage": "Distance entre nœuds" },
+            { "latex": "$d_{n\\text{œud-ventre}} = \\frac{\\lambda}{4}$", "condition": "", "usage": "Distance nœud-ventre" }
+          ],
+          "proprietes": [
+            "Les nœuds sont fixes.",
+            "Les ventres oscillent.",
+            "La distance nœud-ventre est $\\lambda/4$."
+          ],
+          "methodes": [
+            "Identifier les nœuds et ventres.",
+            "Calculer les distances.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une onde stationnaire a une longueur d'onde $\\lambda = 0{,}5\\,\\text{m}$. Calculer la distance entre deux nœuds consécutifs.",
+            "etapes": [
+              "$d = \\frac{\\lambda}{2} = \\frac{0{,}5}{2} = 0{,}25\\,\\text{m}$."
+            ],
+            "conclusion": "$d = 25\\,\\text{cm}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $\\lambda/2$ et $\\lambda/4$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier les points.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Nœud-ventre : $\\lambda/4$.",
+          "liens": {
+            "avant": ["ondes_stationnaires"],
+            "apres": ["corde_vibrante"]
+          }
+        },
+        {
+          "id": "corde_vibrante",
+          "titre": "Corde vibrante",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Corde fixée aux deux extrémités qui vibre en formant des ondes stationnaires.",
+          "description_longue": "Une corde de longueur $L$ fixée aux deux extrémités peut vibrer en formant des ondes stationnaires. Les fréquences propres sont $f_n = \\frac{nv}{2L}$ où $n$ est un entier. La fréquence fondamentale est $f_1 = \\frac{v}{2L}$.",
+          "formules": [
+            { "latex": "$f_n = \\frac{nv}{2L}$", "condition": "$n \\in \\mathbb{N}^*$", "usage": "Fréquences propres" },
+            { "latex": "$v = \\sqrt{\\frac{T}{\\mu}}$", "condition": "", "usage": "Célérité sur une corde" }
+          ],
+          "proprietes": [
+            "Les fréquences propres sont des multiples de la fondamentale.",
+            "La célérité dépend de la tension et de la masse linéique.",
+            "Le nombre de ventres est $n$."
+          ],
+          "methodes": [
+            "Identifier $L$, $T$ et $\\mu$.",
+            "Calculer la célérité.",
+            "Calculer les fréquences propres."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une corde de longueur $L = 0{,}5\\,\\text{m}$ a une célérité $v = 100\\,\\text{m/s}$. Calculer sa fréquence fondamentale.",
+            "etapes": [
+              "$f_1 = \\frac{v}{2L} = \\frac{100}{1} = 100\\,\\text{Hz}$."
+            ],
+            "conclusion": "$f_1 = 100\\,\\text{Hz}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le facteur 2.",
+            "Confondre $f_1$ et $f_n$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier le mode de vibration.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$f_n = nv/(2L)$.",
+          "liens": {
+            "avant": ["noeuds_ventres"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Appliquer le principe de superposition.",
+        "Étudier une onde stationnaire.",
+        "Calculer les fréquences propres d'une corde vibrante."
+      ]
+    },
+    {
+      "id": "interference_lumineuse",
+      "numero": 9,
+      "titre": "Interférence lumineuse",
+      "description": "Phénomènes d'interférence de la lumière et applications.",
+      "duree_estimee_min": 480,
+      "difficulte": 4,
+      "obligatoire": true,
+      "prerequis": ["generalites_ondes"],
+      "notions": [
+        {
+          "id": "interferences_constructives",
+          "titre": "Interférences constructives",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Interférences qui renforcent la lumière.",
+          "description_longue": "Des interférences constructives se produisent lorsque la différence de marche entre deux ondes est un multiple entier de la longueur d'onde : $\\delta = k\\lambda$. Les ondes sont en phase et s'additionnent, produisant une frange brillante.",
+          "formules": [
+            { "latex": "$\\delta = k\\lambda$", "condition": "$k \\in \\mathbb{Z}$", "usage": "Condition d'interférence constructive" }
+          ],
+          "proprietes": [
+            "Les ondes sont en phase.",
+            "L'amplitude résultante est maximale.",
+            "On observe une frange brillante."
+          ],
+          "methodes": [
+            "Calculer la différence de marche.",
+            "Vérifier la condition.",
+            "Conclure."
+          ],
+          "exemple_resolu": {
+            "enonce": "Deux ondes de longueur d'onde $\\lambda = 600\\,\\text{nm}$ ont une différence de marche $\\delta = 1200\\,\\text{nm}$. Y a-t-il interférence constructive ?",
+            "etapes": [
+              "$\\frac{\\delta}{\\lambda} = \\frac{1200}{600} = 2$.",
+              "$\\delta = 2\\lambda$."
+            ],
+            "conclusion": "Oui, interférence constructive (frange brillante)."
+          },
+          "erreurs_frequentes": [
+            "Confondre constructive et destructive.",
+            "Erreur dans les unités."
+          ],
+          "pieges_examen": [
+            "Bien vérifier la condition.",
+            "Utiliser les bonnes unités."
+          ],
+          "mnemo": "Constructive : $\\delta = k\\lambda$.",
+          "liens": {
+            "avant": [],
+            "apres": ["interferences_destructives"]
+          }
+        },
+        {
+          "id": "interferences_destructives",
+          "titre": "Interférences destructives",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Interférences qui annulent la lumière.",
+          "description_longue": "Des interférences destructives se produisent lorsque la différence de marche est un multiple impair de la demi-longueur d'onde : $\\delta = (2k+1)\\frac{\\lambda}{2}$. Les ondes sont en opposition de phase et s'annulent, produisant une frange sombre.",
+          "formules": [
+            { "latex": "$\\delta = (2k+1)\\frac{\\lambda}{2}$", "condition": "$k \\in \\mathbb{Z}$", "usage": "Condition d'interférence destructive" }
+          ],
+          "proprietes": [
+            "Les ondes sont en opposition de phase.",
+            "L'amplitude résultante est nulle.",
+            "On observe une frange sombre."
+          ],
+          "methodes": [
+            "Calculer la différence de marche.",
+            "Vérifier la condition.",
+            "Conclure."
+          ],
+          "exemple_resolu": {
+            "enonce": "Deux ondes de longueur d'onde $\\lambda = 600\\,\\text{nm}$ ont une différence de marche $\\delta = 300\\,\\text{nm}$. Y a-t-il interférence destructive ?",
+            "etapes": [
+              "$\\frac{\\delta}{\\lambda} = \\frac{300}{600} = 0{,}5$.",
+              "$\\delta = \\frac{\\lambda}{2}$."
+            ],
+            "conclusion": "Oui, interférence destructive (frange sombre)."
+          },
+          "erreurs_frequentes": [
+            "Confondre les conditions.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien vérifier la condition.",
+            "Utiliser les bonnes unités."
+          ],
+          "mnemo": "Destructive : $\\delta = (2k+1)\\lambda/2$.",
+          "liens": {
+            "avant": ["interferences_constructives"],
+            "apres": ["difference_marche"]
+          }
+        },
+        {
+          "id": "difference_marche",
+          "titre": "Différence de marche",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Différence de chemin optique entre deux ondes.",
+          "description_longue": "La différence de marche $\\delta$ entre deux ondes est la différence des chemins optiques parcourus. Elle détermine le type d'interférence. Pour deux fentes séparées de $a$, à une distance $D$ sur un écran, $\\delta = \\frac{ax}{D}$ où $x$ est la position sur l'écran.",
+          "formules": [
+            { "latex": "$\\delta = \\frac{ax}{D}$", "condition": "", "usage": "Différence de marche" }
+          ],
+          "proprietes": [
+            "La différence de marche détermine le type d'interférence.",
+            "Elle dépend de la géométrie.",
+            "Elle est proportionnelle à $x$."
+          ],
+          "methodes": [
+            "Identifier la géométrie.",
+            "Calculer $\\delta$.",
+            "Déterminer le type d'interférence."
+          ],
+          "exemple_resolu": {
+            "enonce": "Deux fentes séparées de $a = 0{,}5\\,\\text{mm}$ sont éclairées par une lumière de longueur d'onde $\\lambda = 600\\,\\text{nm}$. L'écran est à $D = 1\\,\\text{m}$. Calculer l'interfrange.",
+            "etapes": [
+              "$i = \\frac{\\lambda D}{a} = \\frac{600 \\times 10^{-9} \\times 1}{0{,}5 \\times 10^{-3}} = 1{,}2 \\times 10^{-3}\\,\\text{m}$."
+            ],
+            "conclusion": "$i = 1{,}2\\,\\text{mm}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $a$ et $D$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier les paramètres.",
+            "Utiliser les bonnes unités."
+          ],
+          "mnemo": "$\\delta = ax/D$.",
+          "liens": {
+            "avant": ["interferences_destructives"],
+            "apres": ["fentes_young"]
+          }
+        },
+        {
+          "id": "fentes_young",
+          "titre": "Fentes de Young",
+          "obligatoire": true,
+          "difficulte": 4,
+          "duree_etude_min": 30,
+          "description_courte": "Dispositif expérimental produisant des interférences lumineuses.",
+          "description_longue": "Les fentes de Young sont un dispositif constitué de deux fentes fines parallèles éclairées par une source lumineuse monochromatique. Sur un écran placé à une distance $D$, on observe des franges d'interférence. L'interfrange est $i = \\frac{\\lambda D}{a}$.",
+          "formules": [
+            { "latex": "$i = \\frac{\\lambda D}{a}$", "condition": "", "usage": "Interfrange" }
+          ],
+          "proprietes": [
+            "Les franges sont équidistantes.",
+            "L'interfrange dépend de $\\lambda$, $D$ et $a$.",
+            "La frange centrale est brillante."
+          ],
+          "methodes": [
+            "Identifier $\\lambda$, $D$ et $a$.",
+            "Calculer l'interfrange.",
+            "Déterminer la position des franges."
+          ],
+          "exemple_resolu": {
+            "enonce": "Avec $\\lambda = 500\\,\\text{nm}$, $D = 2\\,\\text{m}$ et $a = 0{,}4\\,\\text{mm}$, calculer l'interfrange.",
+            "etapes": [
+              "$i = \\frac{500 \\times 10^{-9} \\times 2}{0{,}4 \\times 10^{-3}} = 2{,}5 \\times 10^{-3}\\,\\text{m}$."
+            ],
+            "conclusion": "$i = 2{,}5\\,\\text{mm}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $a$ et $D$.",
+            "Erreur d'unités.",
+            "Oublier la conversion."
+          ],
+          "pieges_examen": [
+            "Bien convertir les unités.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "Young : $i = \\lambda D/a$.",
+          "liens": {
+            "avant": ["difference_marche"],
+            "apres": ["applications_interferences"]
+          }
+        },
+        {
+          "id": "applications_interferences",
+          "titre": "Applications des interférences",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Applications pratiques des interférences lumineuses.",
+          "description_longue": "Les interférences lumineuses ont de nombreuses applications : mesure de longueurs d'onde, contrôle de surfaces optiques, interféromètres, holographie, et technologies de pointe. Elles permettent des mesures très précises.",
+          "formules": [
+            { "latex": "$i = \\frac{\\lambda D}{a}$", "condition": "", "usage": "Interfrange" }
+          ],
+          "proprietes": [
+            "Mesure précise de longueurs d'onde.",
+            "Contrôle de qualité des surfaces.",
+            "Applications en métrologie."
+          ],
+          "methodes": [
+            "Identifier l'application.",
+            "Utiliser les formules.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un interféromètre mesure un déplacement de $0{,}5\\,\\mu\\text{m}$ en observant 2 franges. Calculer la longueur d'onde utilisée.",
+            "etapes": [
+              "$\\Delta x = k\\frac{\\lambda}{2} \\Rightarrow \\lambda = \\frac{2\\Delta x}{k} = \\frac{2 \\times 0{,}5 \\times 10^{-6}}{2} = 0{,}5 \\times 10^{-6}\\,\\text{m}$."
+            ],
+            "conclusion": "$\\lambda = 500\\,\\text{nm}$."
+          },
+          "erreurs_frequentes": [
+            "Erreur dans les formules.",
+            "Oublier les unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'application.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Interférences = mesures précises.",
+          "liens": {
+            "avant": ["fentes_young"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Déterminer le type d'interférence.",
+        "Calculer la différence de marche.",
+        "Utiliser les fentes de Young.",
+        "Appliquer les interférences à des mesures."
+      ]
+    },
+    {
+      "id": "champ_magnetique",
+      "numero": 10,
+      "titre": "Champ magnétique",
+      "description": "Étude du champ magnétique et de ses sources.",
+      "duree_estimee_min": 540,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["electrostatique"],
+      "notions": [
+        {
+          "id": "definition_champ_magnetique",
+          "titre": "Définition du champ magnétique",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Le champ magnétique $\\vec{B}$ est un champ vectoriel créé par des aimants ou des courants.",
+          "description_longue": "Le champ magnétique $\\vec{B}$ est un champ vectoriel qui existe dans l'espace autour d'aimants ou de conducteurs parcourus par un courant. Il est caractérisé par sa direction, son sens et son intensité. Son unité est le tesla ($\\text{T}$). Il exerce des forces sur les charges en mouvement et les courants.",
+          "formules": [
+            { "latex": "$\\vec{B}$ en $\\text{T}$ (tesla)", "condition": "", "usage": "Unité" }
+          ],
+          "proprietes": [
+            "Le champ magnétique est un vecteur.",
+            "Il est créé par des aimants ou des courants.",
+            "Il exerce des forces sur les charges en mouvement."
+          ],
+          "methodes": [
+            "Identifier la source du champ.",
+            "Déterminer la direction et le sens.",
+            "Calculer l'intensité."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un aimant droit crée un champ magnétique. Décrire la direction du champ.",
+            "etapes": [
+              "Le champ sort du pôle Nord et entre par le pôle Sud.",
+              "À l'extérieur de l'aimant, les lignes de champ vont du Nord au Sud."
+            ],
+            "conclusion": "Champ dirigé du Nord vers le Sud à l'extérieur."
+          },
+          "erreurs_frequentes": [
+            "Confondre champ électrique et magnétique.",
+            "Oublier les unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier la source.",
+            "Utiliser les bonnes unités."
+          ],
+          "mnemo": "Champ magnétique : $\\vec{B}$ en tesla.",
+          "liens": {
+            "avant": [],
+            "apres": ["lignes_champ"]
+          }
+        },
+        {
+          "id": "lignes_champ",
+          "titre": "Lignes de champ",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Courbes tangentes au vecteur champ en chaque point.",
+          "description_longue": "Les lignes de champ magnétique sont des courbes tangentes en chaque point au vecteur champ $\\vec{B}$. Elles permettent de visualiser le champ. Elles sont orientées du pôle Nord vers le pôle Sud à l'extérieur d'un aimant, et se referment sur elles-mêmes.",
+          "formules": [],
+          "proprietes": [
+            "Les lignes de champ ne se croisent pas.",
+            "Elles sont plus denses là où le champ est plus intense.",
+            "Elles sont orientées du Nord au Sud."
+          ],
+          "methodes": [
+            "Tracer les lignes de champ.",
+            "Déterminer la direction et le sens.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Tracer les lignes de champ d'un aimant droit.",
+            "etapes": [
+              "Les lignes partent du pôle Nord et vont au pôle Sud.",
+              "À l'intérieur, elles vont du Sud au Nord.",
+              "Elles se referment."
+            ],
+            "conclusion": "Lignes fermées du Nord au Sud à l'extérieur."
+          },
+          "erreurs_frequentes": [
+            "Oublier l'orientation.",
+            "Confondre avec les lignes de champ électrique."
+          ],
+          "pieges_examen": [
+            "Bien orienter les lignes.",
+            "Ne pas oublier la fermeture."
+          ],
+          "mnemo": "Lignes de champ : Nord vers Sud.",
+          "liens": {
+            "avant": ["definition_champ_magnetique"],
+            "apres": ["champ_aimant"]
+          }
+        },
+        {
+          "id": "champ_aimant",
+          "titre": "Champ créé par un aimant",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Champ magnétique créé par un aimant permanent.",
+          "description_longue": "Un aimant permanent crée un champ magnétique dont les lignes vont du pôle Nord au pôle Sud à l'extérieur. L'intensité du champ dépend de l'aimant et de la distance. Le champ est plus intense près des pôles.",
+          "formules": [],
+          "proprietes": [
+            "Le champ est plus intense près des pôles.",
+            "Les lignes vont du Nord au Sud.",
+            "Le champ diminue avec la distance."
+          ],
+          "methodes": [
+            "Identifier les pôles.",
+            "Tracer les lignes.",
+            "Déterminer l'intensité."
+          ],
+          "exemple_resolu": {
+            "enonce": "Décrire le champ magnétique autour d'un aimant en U.",
+            "etapes": [
+              "Le champ est intense entre les deux pôles.",
+              "Les lignes vont du Nord au Sud.",
+              "Le champ est uniforme dans l'entrefer."
+            ],
+            "conclusion": "Champ uniforme dans l'entrefer, dirigé du Nord au Sud."
+          },
+          "erreurs_frequentes": [
+            "Confondre les pôles.",
+            "Oublier la direction."
+          ],
+          "pieges_examen": [
+            "Bien identifier les pôles.",
+            "Tracer les lignes correctement."
+          ],
+          "mnemo": "Aimant : Nord vers Sud.",
+          "liens": {
+            "avant": ["lignes_champ"],
+            "apres": ["champ_courant"]
+          }
+        },
+        {
+          "id": "champ_courant",
+          "titre": "Champ créé par un courant",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Champ magnétique créé par un conducteur parcouru par un courant.",
+          "description_longue": "Un conducteur rectiligne parcouru par un courant $I$ crée un champ magnétique dont les lignes sont des cercles concentriques autour du conducteur. L'intensité du champ à une distance $r$ est $B = \\frac{\\mu_0 I}{2\\pi r}$ où $\\mu_0 = 4\\pi \\times 10^{-7}\\,\\text{T}\\cdot\\text{m/A}$.",
+          "formules": [
+            { "latex": "$B = \\frac{\\mu_0 I}{2\\pi r}$", "condition": "", "usage": "Champ créé par un fil rectiligne" },
+            { "latex": "$\\mu_0 = 4\\pi \\times 10^{-7}\\,\\text{T}\\cdot\\text{m/A}$", "condition": "", "usage": "Perméabilité du vide" }
+          ],
+          "proprietes": [
+            "Les lignes de champ sont des cercles.",
+            "Le sens est donné par la règle de la main droite.",
+            "Le champ diminue avec la distance."
+          ],
+          "methodes": [
+            "Identifier le courant et la distance.",
+            "Appliquer la formule.",
+            "Déterminer la direction."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un fil rectiligne est parcouru par un courant $I = 10\\,\\text{A}$. Calculer le champ à une distance $r = 2\\,\\text{cm}$.",
+            "etapes": [
+              "$B = \\frac{4\\pi \\times 10^{-7} \\times 10}{2\\pi \\times 0{,}02} = \\frac{2 \\times 10^{-6}}{0{,}02} = 10^{-4}\\,\\text{T}$."
+            ],
+            "conclusion": "$B = 10^{-4}\\,\\text{T} = 0{,}1\\,\\text{mT}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier $\\mu_0$.",
+            "Erreur d'unités.",
+            "Confondre $r$ et $I$."
+          ],
+          "pieges_examen": [
+            "Bien convertir les distances en mètres.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$B = \\mu_0 I/(2\\pi r)$.",
+          "liens": {
+            "avant": ["champ_aimant"],
+            "apres": ["champ_solenoide"]
+          }
+        },
+        {
+          "id": "champ_solenoide",
+          "titre": "Champ dans un solénoïde",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Champ magnétique à l'intérieur d'un solénoïde.",
+          "description_longue": "Un solénoïde est une bobine de fil enroulé. À l'intérieur, le champ magnétique est uniforme et vaut $B = \\mu_0 n I$ où $n = \\frac{N}{L}$ est le nombre de spires par unité de longueur. À l'extérieur, le champ est négligeable.",
+          "formules": [
+            { "latex": "$B = \\mu_0 n I$", "condition": "", "usage": "Champ dans un solénoïde" },
+            { "latex": "$n = \\frac{N}{L}$", "condition": "", "usage": "Nombre de spires par unité de longueur" }
+          ],
+          "proprietes": [
+            "Le champ est uniforme à l'intérieur.",
+            "Le champ est nul à l'extérieur.",
+            "Le champ dépend de $n$ et $I$."
+          ],
+          "methodes": [
+            "Calculer $n$.",
+            "Appliquer la formule.",
+            "Déterminer la direction."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un solénoïde de longueur $L = 0{,}5\\,\\text{m}$ comporte $N = 500$ spires et est parcouru par $I = 2\\,\\text{A}$. Calculer le champ intérieur.",
+            "etapes": [
+              "$n = \\frac{500}{0{,}5} = 1000\\,\\text{spires/m}$.",
+              "$B = 4\\pi \\times 10^{-7} \\times 1000 \\times 2 = 8\\pi \\times 10^{-4} \\approx 2{,}51 \\times 10^{-3}\\,\\text{T}$."
+            ],
+            "conclusion": "$B \\approx 2{,}51\\,\\text{mT}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $N$ et $n$.",
+            "Erreur d'unités.",
+            "Oublier $\\mu_0$."
+          ],
+          "pieges_examen": [
+            "Bien calculer $n$.",
+            "Utiliser les bonnes unités."
+          ],
+          "mnemo": "$B = \\mu_0 n I$.",
+          "liens": {
+            "avant": ["champ_courant"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Décrire le champ magnétique créé par un aimant.",
+        "Calculer le champ créé par un courant.",
+        "Calculer le champ dans un solénoïde."
+      ]
+    },
+    {
+      "id": "force_laplace",
+      "numero": 11,
+      "titre": "Force de Laplace",
+      "description": "Force exercée par un champ magnétique sur un conducteur parcouru par un courant.",
+      "duree_estimee_min": 480,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["champ_magnetique"],
+      "notions": [
+        {
+          "id": "force_conducteur",
+          "titre": "Force sur un conducteur parcouru par un courant",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Un conducteur parcouru par un courant dans un champ magnétique subit une force.",
+          "description_longue": "Un conducteur rectiligne de longueur $L$ parcouru par un courant $I$ et placé dans un champ magnétique $\\vec{B}$ subit une force de Laplace $\\vec{F} = I\\vec{L} \\wedge \\vec{B}$. Cette force est perpendiculaire au conducteur et au champ. Elle est utilisée dans les moteurs électriques.",
+          "formules": [
+            { "latex": "$\\vec{F} = I\\vec{L} \\wedge \\vec{B}$", "condition": "", "usage": "Force de Laplace" },
+            { "latex": "$F = BIL\\sin\\alpha$", "condition": "", "usage": "Norme de la force" }
+          ],
+          "proprietes": [
+            "La force est perpendiculaire au conducteur et au champ.",
+            "La force est maximale quand $\\vec{L} \\perp \\vec{B}$.",
+            "La force est nulle quand $\\vec{L} \\parallel \\vec{B}$."
+          ],
+          "methodes": [
+            "Identifier $I$, $L$ et $B$.",
+            "Appliquer la formule.",
+            "Déterminer la direction et le sens."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un conducteur de longueur $L = 0{,}2\\,\\text{m}$ parcouru par $I = 5\\,\\text{A}$ est placé perpendiculairement à un champ $B = 0{,}5\\,\\text{T}$. Calculer la force.",
+            "etapes": [
+              "$F = BIL\\sin 90^\\circ = 0{,}5 \\times 5 \\times 0{,}2 = 0{,}5\\,\\text{N}$."
+            ],
+            "conclusion": "$F = 0{,}5\\,\\text{N}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le sinus.",
+            "Confondre $I$ et $L$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'angle.",
+            "Utiliser les bonnes unités."
+          ],
+          "mnemo": "$\\vec{F} = I\\vec{L} \\wedge \\vec{B}$.",
+          "liens": {
+            "avant": [],
+            "apres": ["expression_force_laplace"]
+          }
+        },
+        {
+          "id": "expression_force_laplace",
+          "titre": "Expression $\\vec{F} = I\\vec{L} \\wedge \\vec{B}$",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Expression vectorielle de la force de Laplace.",
+          "description_longue": "La force de Laplace s'exprime vectoriellement par $\\vec{F} = I\\vec{L} \\wedge \\vec{B}$ où $\\vec{L}$ est le vecteur orienté dans le sens du courant. Cette expression permet de déterminer la direction et le sens de la force par le produit vectoriel.",
+          "formules": [
+            { "latex": "$\\vec{F} = I\\vec{L} \\wedge \\vec{B}$", "condition": "", "usage": "Force de Laplace" }
+          ],
+          "proprietes": [
+            "La force est perpendiculaire à $\\vec{L}$ et $\\vec{B}$.",
+            "Le sens est donné par la règle de la main droite.",
+            "La norme est $F = BIL\\sin\\alpha$."
+          ],
+          "methodes": [
+            "Identifier les vecteurs.",
+            "Appliquer le produit vectoriel.",
+            "Déterminer la direction et le sens."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un conducteur horizontal parcouru par un courant vers la droite est placé dans un champ magnétique vertical vers le haut. Déterminer la direction de la force.",
+            "etapes": [
+              "$\\vec{L}$ vers la droite, $\\vec{B}$ vers le haut.",
+              "$\\vec{F} = I\\vec{L} \\wedge \\vec{B}$.",
+              "La force est perpendiculaire au plan, vers l'avant."
+            ],
+            "conclusion": "Force perpendiculaire au plan, vers l'avant."
+          },
+          "erreurs_frequentes": [
+            "Confondre le sens du produit vectoriel.",
+            "Oublier la règle de la main droite."
+          ],
+          "pieges_examen": [
+            "Bien appliquer la règle de la main droite.",
+            "Vérifier la direction."
+          ],
+          "mnemo": "Main droite : $\\vec{L} \\wedge \\vec{B}$.",
+          "liens": {
+            "avant": ["force_conducteur"],
+            "apres": ["moteur_electrique"]
+          }
+        },
+        {
+          "id": "moteur_electrique",
+          "titre": "Application : moteur électrique",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Principe du moteur électrique utilisant la force de Laplace.",
+          "description_longue": "Le moteur électrique utilise la force de Laplace pour convertir l'énergie électrique en énergie mécanique. Une bobine parcourue par un courant dans un champ magnétique subit un couple qui la fait tourner. Le collecteur inverse le courant à chaque demi-tour pour maintenir la rotation.",
+          "formules": [
+            { "latex": "$\\vec{F} = I\\vec{L} \\wedge \\vec{B}$", "condition": "", "usage": "Force de Laplace" }
+          ],
+          "proprietes": [
+            "Conversion d'énergie électrique en mécanique.",
+            "Le couple dépend du courant et du champ.",
+            "Le collecteur permet la rotation continue."
+          ],
+          "methodes": [
+            "Identifier les forces.",
+            "Calculer le couple.",
+            "Expliquer le fonctionnement."
+          ],
+          "exemple_resolu": {
+            "enonce": "Expliquer le fonctionnement d'un moteur électrique simple.",
+            "etapes": [
+              "La bobine est parcourue par un courant.",
+              "Chaque côté subit une force de Laplace opposée.",
+              "Cela crée un couple qui fait tourner la bobine.",
+              "Le collecteur inverse le courant à chaque demi-tour."
+            ],
+            "conclusion": "Rotation continue grâce au couple et au collecteur."
+          },
+          "erreurs_frequentes": [
+            "Oublier le rôle du collecteur.",
+            "Confondre force et couple."
+          ],
+          "pieges_examen": [
+            "Bien expliquer le rôle du collecteur.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Moteur : force de Laplace + collecteur.",
+          "liens": {
+            "avant": ["expression_force_laplace"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Calculer la force de Laplace.",
+        "Déterminer la direction et le sens.",
+        "Expliquer le fonctionnement d'un moteur."
+      ]
+    },
+    {
+      "id": "force_lorentz",
+      "numero": 12,
+      "titre": "Force de Lorentz",
+      "description": "Force exercée par un champ magnétique sur une charge en mouvement.",
+      "duree_estimee_min": 480,
+      "difficulte": 4,
+      "obligatoire": true,
+      "prerequis": ["champ_magnetique"],
+      "notions": [
+        {
+          "id": "force_charge_mouvement",
+          "titre": "Force sur une charge en mouvement",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Une charge en mouvement dans un champ magnétique subit la force de Lorentz.",
+          "description_longue": "Une particule de charge $q$ animée d'une vitesse $\\vec{v}$ dans un champ magnétique $\\vec{B}$ subit la force de Lorentz $\\vec{F} = q\\vec{v} \\wedge \\vec{B}$. Cette force est perpendiculaire à la vitesse et au champ. Elle ne travaille pas et ne modifie donc pas l'énergie cinétique.",
+          "formules": [
+            { "latex": "$\\vec{F} = q\\vec{v} \\wedge \\vec{B}$", "condition": "", "usage": "Force de Lorentz" },
+            { "latex": "$F = |q|vB\\sin\\alpha$", "condition": "", "usage": "Norme" }
+          ],
+          "proprietes": [
+            "La force est perpendiculaire à $\\vec{v}$ et $\\vec{B}$.",
+            "La force ne travaille pas.",
+            "Le mouvement est circulaire uniforme si $\\vec{v} \\perp \\vec{B}$."
+          ],
+          "methodes": [
+            "Identifier $q$, $v$ et $B$.",
+            "Appliquer la formule.",
+            "Déterminer la direction et le sens."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un proton de charge $q = 1{,}6 \\times 10^{-19}\\,\\text{C}$ et de vitesse $v = 10^6\\,\\text{m/s}$ pénètre perpendiculairement dans un champ $B = 0{,}5\\,\\text{T}$. Calculer la force.",
+            "etapes": [
+              "$F = |q|vB = 1{,}6 \\times 10^{-19} \\times 10^6 \\times 0{,}5 = 8 \\times 10^{-14}\\,\\text{N}$."
+            ],
+            "conclusion": "$F = 8 \\times 10^{-14}\\,\\text{N}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier la valeur absolue.",
+            "Confondre $v$ et $B$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien vérifier le signe de la charge.",
+            "Utiliser les bonnes unités."
+          ],
+          "mnemo": "$\\vec{F} = q\\vec{v} \\wedge \\vec{B}$.",
+          "liens": {
+            "avant": [],
+            "apres": ["expression_force_lorentz"]
+          }
+        },
+        {
+          "id": "expression_force_lorentz",
+          "titre": "Expression $\\vec{F} = q\\vec{v} \\wedge \\vec{B}$",
+          "obligatoire": true,
+          "difficulte": 4,
+          "duree_etude_min": 25,
+          "description_courte": "Expression vectorielle de la force de Lorentz.",
+          "description_longue": "La force de Lorentz s'exprime vectoriellement par $\\vec{F} = q\\vec{v} \\wedge \\vec{B}$. Le sens dépend du signe de la charge. Pour une charge positive, le sens est donné par la règle de la main droite. Pour une charge négative, il est opposé.",
+          "formules": [
+            { "latex": "$\\vec{F} = q\\vec{v} \\wedge \\vec{B}$", "condition": "", "usage": "Force de Lorentz" }
+          ],
+          "proprietes": [
+            "La force est perpendiculaire à $\\vec{v}$ et $\\vec{B}$.",
+            "Le sens dépend du signe de $q$.",
+            "La force ne travaille pas."
+          ],
+          "methodes": [
+            "Identifier les vecteurs.",
+            "Appliquer le produit vectoriel.",
+            "Tenir compte du signe de $q$."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un électron se déplace vers la droite dans un champ magnétique vers le haut. Déterminer la direction de la force.",
+            "etapes": [
+              "$\\vec{v}$ vers la droite, $\\vec{B}$ vers le haut.",
+              "$\\vec{v} \\wedge \\vec{B}$ est vers l'avant.",
+              "Pour un électron ($q<0$), la force est vers l'arrière."
+            ],
+            "conclusion": "Force vers l'arrière."
+          },
+          "erreurs_frequentes": [
+            "Oublier le signe de la charge.",
+            "Confondre le sens du produit vectoriel."
+          ],
+          "pieges_examen": [
+            "Bien tenir compte du signe de $q$.",
+            "Utiliser la règle de la main droite."
+          ],
+          "mnemo": "Lorentz : $\\vec{F} = q\\vec{v} \\wedge \\vec{B}$.",
+          "liens": {
+            "avant": ["force_charge_mouvement"],
+            "apres": ["cyclotron"]
+          }
+        },
+        {
+          "id": "cyclotron",
+          "titre": "Application : cyclotron",
+          "obligatoire": true,
+          "difficulte": 4,
+          "duree_etude_min": 30,
+          "description_courte": "Accélérateur de particules utilisant la force de Lorentz.",
+          "description_longue": "Le cyclotron est un accélérateur de particules qui utilise un champ magnétique pour faire tourner les particules et un champ électrique pour les accélérer. La période de rotation est indépendante de la vitesse : $T = \\frac{2\\pi m}{qB}$. Les particules sont accélérées à chaque passage dans l'entrefer.",
+          "formules": [
+            { "latex": "$T = \\frac{2\\pi m}{qB}$", "condition": "", "usage": "Période" },
+            { "latex": "$R = \\frac{mv}{qB}$", "condition": "", "usage": "Rayon" }
+          ],
+          "proprietes": [
+            "La période est indépendante de la vitesse.",
+            "Les particules sont accélérées à chaque tour.",
+            "L'énergie augmente à chaque passage."
+          ],
+          "methodes": [
+            "Identifier les champs.",
+            "Calculer la période.",
+            "Expliquer le fonctionnement."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un cyclotron accélère des protons ($m = 1{,}67 \\times 10^{-27}\\,\\text{kg}$, $q = 1{,}6 \\times 10^{-19}\\,\\text{C}$) avec $B = 1\\,\\text{T}$. Calculer la période de rotation.",
+            "etapes": [
+              "$T = \\frac{2\\pi \\times 1{,}67 \\times 10^{-27}}{1{,}6 \\times 10^{-19} \\times 1} \\approx 6{,}56 \\times 10^{-8}\\,\\text{s}$."
+            ],
+            "conclusion": "$T \\approx 65{,}6\\,\\text{ns}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $m$ et $q$.",
+            "Oublier $2\\pi$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier les particules.",
+            "Utiliser les bonnes unités."
+          ],
+          "mnemo": "Cyclotron : $T = 2\\pi m/(qB)$.",
+          "liens": {
+            "avant": ["expression_force_lorentz"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Calculer la force de Lorentz.",
+        "Déterminer la direction et le sens.",
+        "Expliquer le fonctionnement d'un cyclotron."
+      ]
+    },
+    {
+      "id": "induction_magnetique",
+      "numero": 13,
+      "titre": "Induction magnétique",
+      "description": "Phénomènes d'induction magnétique : lois de Faraday et de Lenz.",
+      "duree_estimee_min": 540,
+      "difficulte": 4,
+      "obligatoire": true,
+      "prerequis": ["champ_magnetique"],
+      "notions": [
+        {
+          "id": "loi_faraday",
+          "titre": "Loi de Faraday",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "La force électromotrice induite est proportionnelle à la variation du flux magnétique.",
+          "description_longue": "La loi de Faraday énonce que la force électromotrice induite dans un circuit est égale à l'opposé de la dérivée du flux magnétique par rapport au temps : $e = -\\frac{d\\Phi}{dt}$. Elle explique la production d'électricité par variation de flux.",
+          "formules": [
+            { "latex": "$e = -\\frac{d\\Phi}{dt}$", "condition": "", "usage": "Loi de Faraday" },
+            { "latex": "$\\Phi = \\vec{B} \\cdot \\vec{S} = BS\\cos\\alpha$", "condition": "", "usage": "Flux magnétique" }
+          ],
+          "proprietes": [
+            "La f.é.m. induite dépend de la variation du flux.",
+            "Le flux s'exprime en webers ($\\text{Wb}$).",
+            "La f.é.m. s'exprime en volts ($\\text{V}$)."
+          ],
+          "methodes": [
+            "Calculer le flux.",
+            "Dériver par rapport au temps.",
+            "Déterminer la f.é.m."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une bobine de $N = 100$ spires a un flux qui varie de $0{,}02\\,\\text{Wb}$ en $0{,}1\\,\\text{s}$. Calculer la f.é.m. induite.",
+            "etapes": [
+              "$e = -N\\frac{\\Delta\\Phi}{\\Delta t} = -100 \\times \\frac{0{,}02}{0{,}1} = -20\\,\\text{V}$.",
+              "La valeur absolue est $20\\,\\text{V}$."
+            ],
+            "conclusion": "$|e| = 20\\,\\text{V}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le nombre de spires.",
+            "Oublier le signe négatif.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien utiliser la loi de Faraday.",
+            "Vérifier les unités."
+          ],
+          "mnemo": "$e = -d\\Phi/dt$.",
+          "liens": {
+            "avant": [],
+            "apres": ["loi_lenz"]
+          }
+        },
+        {
+          "id": "loi_lenz",
+          "titre": "Loi de Lenz",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Le courant induit s'oppose à la cause qui lui donne naissance.",
+          "description_longue": "La loi de Lenz énonce que le courant induit circule dans un sens tel qu'il s'oppose à la variation du flux qui l'a créé. C'est une manifestation du principe de conservation de l'énergie. Le signe moins dans la loi de Faraday traduit cette opposition.",
+          "formules": [
+            { "latex": "$e = -\\frac{d\\Phi}{dt}$", "condition": "", "usage": "Loi de Faraday-Lenz" }
+          ],
+          "proprietes": [
+            "Le courant induit s'oppose à la variation du flux.",
+            "Conséquence de la conservation de l'énergie.",
+            "Explique le freinage magnétique."
+          ],
+          "methodes": [
+            "Identifier la variation du flux.",
+            "Déterminer le sens du courant induit.",
+            "Appliquer la loi de Lenz."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un aimant s'approche d'une bobine. Déterminer le sens du courant induit.",
+            "etapes": [
+              "Le flux augmente.",
+              "Le courant induit crée un champ qui s'oppose à cette augmentation.",
+              "Le champ induit est opposé au champ de l'aimant."
+            ],
+            "conclusion": "Le courant induit crée un champ opposé à l'aimant."
+          },
+          "erreurs_frequentes": [
+            "Oublier le sens de la variation.",
+            "Confondre avec la loi de Faraday."
+          ],
+          "pieges_examen": [
+            "Bien identifier la cause.",
+            "Appliquer correctement la loi."
+          ],
+          "mnemo": "Lenz : le courant induit s'oppose.",
+          "liens": {
+            "avant": ["loi_faraday"],
+            "apres": ["flux_magnetique"]
+          }
+        },
+        {
+          "id": "flux_magnetique",
+          "titre": "Flux magnétique",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Le flux magnétique mesure le champ traversant une surface.",
+          "description_longue": "Le flux magnétique $\\Phi$ à travers une surface $S$ est le produit scalaire du champ magnétique et du vecteur surface : $\\Phi = \\vec{B} \\cdot \\vec{S} = BS\\cos\\alpha$. Il s'exprime en webers ($\\text{Wb}$). Le flux dépend de l'orientation de la surface par rapport au champ.",
+          "formules": [
+            { "latex": "$\\Phi = BS\\cos\\alpha$", "condition": "", "usage": "Flux magnétique" }
+          ],
+          "proprietes": [
+            "Le flux est maximal quand $\\vec{B} \\perp S$.",
+            "Le flux est nul quand $\\vec{B} \\parallel S$.",
+            "Unité : weber ($\\text{Wb}$)."
+          ],
+          "methodes": [
+            "Identifier $B$, $S$ et $\\alpha$.",
+            "Appliquer la formule.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une surface $S = 0{,}1\\,\\text{m}^2$ est placée perpendiculairement à un champ $B = 0{,}5\\,\\text{T}$. Calculer le flux.",
+            "etapes": [
+              "$\\alpha = 0$, $\\cos\\alpha = 1$.",
+              "$\\Phi = 0{,}5 \\times 0{,}1 \\times 1 = 0{,}05\\,\\text{Wb}$."
+            ],
+            "conclusion": "$\\Phi = 0{,}05\\,\\text{Wb}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $\\sin$ et $\\cos$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'angle.",
+            "Utiliser les bonnes unités."
+          ],
+          "mnemo": "$\\Phi = BS\\cos\\alpha$.",
+          "liens": {
+            "avant": ["loi_lenz"],
+            "apres": ["generatrice"]
+          }
+        },
+        {
+          "id": "generatrice",
+          "titre": "Application : génératrice",
+          "obligatoire": true,
+          "difficulte": 4,
+          "duree_etude_min": 25,
+          "description_courte": "Machine qui convertit l'énergie mécanique en énergie électrique.",
+          "description_longue": "Une génératrice (alternateur ou dynamo) convertit l'énergie mécanique en énergie électrique en utilisant l'induction magnétique. Une bobine tourne dans un champ magnétique, ce qui fait varier le flux et induit une f.é.m. alternative. C'est le principe de la production d'électricité.",
+          "formules": [
+            { "latex": "$e = -N\\frac{d\\Phi}{dt}$", "condition": "", "usage": "F.é.m. induite" }
+          ],
+          "proprietes": [
+            "Conversion d'énergie mécanique en électrique.",
+            "Production d'une f.é.m. alternative.",
+            "Principe des alternateurs."
+          ],
+          "methodes": [
+            "Décrire le fonctionnement.",
+            "Identifier la variation du flux.",
+            "Calculer la f.é.m."
+          ],
+          "exemple_resolu": {
+            "enonce": "Expliquer le fonctionnement d'un alternateur.",
+            "etapes": [
+              "Une bobine tourne dans un champ magnétique.",
+              "Le flux varie sinusoïdalement.",
+              "Une f.é.m. alternative est induite.",
+              "L'énergie mécanique est convertie en énergie électrique."
+            ],
+            "conclusion": "Alternateur : rotation + induction = électricité."
+          },
+          "erreurs_frequentes": [
+            "Oublier la variation du flux.",
+            "Confondre moteur et génératrice."
+          ],
+          "pieges_examen": [
+            "Bien expliquer le principe.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Génératrice : mécanique → électrique.",
+          "liens": {
+            "avant": ["flux_magnetique"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Calculer une f.é.m. induite.",
+        "Appliquer la loi de Lenz.",
+        "Calculer un flux magnétique.",
+        "Expliquer le fonctionnement d'une génératrice."
+      ]
+    },
+    {
+      "id": "auto_induction",
+      "numero": 14,
+      "titre": "Auto-induction",
+      "description": "Phénomène d'auto-induction dans les bobines.",
+      "duree_estimee_min": 480,
+      "difficulte": 4,
+      "obligatoire": true,
+      "prerequis": ["induction_magnetique"],
+      "notions": [
+        {
+          "id": "coefficient_auto_induction",
+          "titre": "Coefficient d'auto-induction",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "L'inductance $L$ mesure la capacité d'une bobine à s'opposer aux variations de courant.",
+          "description_longue": "Le coefficient d'auto-induction $L$ (ou inductance) d'une bobine mesure sa capacité à produire une f.é.m. auto-induite lorsqu'elle est parcourue par un courant variable. Il s'exprime en henrys ($\\text{H}$). Le flux propre de la bobine est $\\Phi = LI$.",
+          "formules": [
+            { "latex": "$\\Phi = LI$", "condition": "", "usage": "Flux propre" },
+            { "latex": "$L$ en $\\text{H}$ (henry)", "condition": "", "usage": "Unité" }
+          ],
+          "proprietes": [
+            "L'inductance dépend de la géométrie de la bobine.",
+            "Unité : henry ($\\text{H}$).",
+            "L'inductance s'oppose aux variations de courant."
+          ],
+          "methodes": [
+            "Identifier la bobine.",
+            "Calculer le flux propre.",
+            "Déterminer $L$."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une bobine parcourue par $I = 2\\,\\text{A}$ a un flux propre $\\Phi = 0{,}04\\,\\text{Wb}$. Calculer son inductance.",
+            "etapes": [
+              "$L = \\frac{\\Phi}{I} = \\frac{0{,}04}{2} = 0{,}02\\,\\text{H}$."
+            ],
+            "conclusion": "$L = 20\\,\\text{mH}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre flux et inductance.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier les grandeurs.",
+            "Utiliser les bonnes unités."
+          ],
+          "mnemo": "$\\Phi = LI$.",
+          "liens": {
+            "avant": [],
+            "apres": ["force_electromotrice_auto_induction"]
+          }
+        },
+        {
+          "id": "force_electromotrice_auto_induction",
+          "titre": "Force électromotrice d'auto-induction",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "$e = -L\\frac{dI}{dt}$.",
+          "description_longue": "La force électromotrice d'auto-induction dans une bobine est $e = -L\\frac{dI}{dt}$. Elle s'oppose aux variations du courant. C'est une manifestation de la loi de Lenz. Elle est responsable des étincelles à l'ouverture d'un circuit inductif.",
+          "formules": [
+            { "latex": "$e = -L\\frac{dI}{dt}$", "condition": "", "usage": "F.é.m. auto-induite" }
+          ],
+          "proprietes": [
+            "La f.é.m. s'oppose aux variations de courant.",
+            "Elle est proportionnelle à $L$ et à $dI/dt$.",
+            "Elle peut être très grande à l'ouverture."
+          ],
+          "methodes": [
+            "Identifier $L$ et $dI/dt$.",
+            "Appliquer la formule.",
+            "Déterminer le signe."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une bobine d'inductance $L = 0{,}1\\,\\text{H}$ est parcourue par un courant qui varie de $2\\,\\text{A}$ en $0{,}01\\,\\text{s}$. Calculer la f.é.m. auto-induite.",
+            "etapes": [
+              "$e = -L\\frac{\\Delta I}{\\Delta t} = -0{,}1 \\times \\frac{2}{0{,}01} = -20\\,\\text{V}$.",
+              "La valeur absolue est $20\\,\\text{V}$."
+            ],
+            "conclusion": "$|e| = 20\\,\\text{V}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le signe négatif.",
+            "Confondre $L$ et $I$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien utiliser la loi de Faraday.",
+            "Vérifier les unités."
+          ],
+          "mnemo": "$e = -L dI/dt$.",
+          "liens": {
+            "avant": ["coefficient_auto_induction"],
+            "apres": ["bobine"]
+          }
+        },
+        {
+          "id": "bobine",
+          "titre": "Bobine",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 20,
+          "description_courte": "Composant électronique caractérisé par son inductance.",
+          "description_longue": "Une bobine est un enroulement de fil conducteur. Elle est caractérisée par son inductance $L$ et sa résistance interne $r$. Elle stocke de l'énergie magnétique $E = \\frac{1}{2}LI^2$. Elle s'oppose aux variations de courant.",
+          "formules": [
+            { "latex": "$E = \\frac{1}{2}LI^2$", "condition": "", "usage": "Énergie stockée" }
+          ],
+          "proprietes": [
+            "Stocke de l'énergie magnétique.",
+            "S'oppose aux variations de courant.",
+            "A une résistance interne."
+          ],
+          "methodes": [
+            "Identifier $L$ et $I$.",
+            "Calculer l'énergie.",
+            "Étudier le comportement."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une bobine d'inductance $L = 0{,}2\\,\\text{H}$ est parcourue par un courant $I = 3\\,\\text{A}$. Calculer l'énergie stockée.",
+            "etapes": [
+              "$E = \\frac{1}{2} \\times 0{,}2 \\times 9 = 0{,}9\\,\\text{J}$."
+            ],
+            "conclusion": "$E = 0{,}9\\,\\text{J}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le facteur $\\frac{1}{2}$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien utiliser la formule.",
+            "Vérifier les unités."
+          ],
+          "mnemo": "$E = \\frac{1}{2}LI^2$.",
+          "liens": {
+            "avant": ["force_electromotrice_auto_induction"],
+            "apres": ["applications_auto_induction"]
+          }
+        },
+        {
+          "id": "applications_auto_induction",
+          "titre": "Applications de l'auto-induction",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 20,
+          "description_courte": "Applications pratiques de l'auto-induction.",
+          "description_longue": "L'auto-induction a de nombreuses applications : transformateurs, bobines d'allumage, filtres, circuits électroniques, et production d'étincelles. Elle est essentielle dans de nombreux dispositifs électriques.",
+          "formules": [
+            { "latex": "$e = -L\\frac{dI}{dt}$", "condition": "", "usage": "F.é.m. auto-induite" }
+          ],
+          "proprietes": [
+            "Transformateurs.",
+            "Bobines d'allumage.",
+            "Filtres électroniques."
+          ],
+          "methodes": [
+            "Identifier l'application.",
+            "Expliquer le principe.",
+            "Utiliser les formules."
+          ],
+          "exemple_resolu": {
+            "enonce": "Expliquer le principe de la bobine d'allumage.",
+            "etapes": [
+              "Le courant dans la bobine est interrompu brusquement.",
+              "La variation de courant est très rapide.",
+              "Une f.é.m. élevée est induite.",
+              "Cela crée une étincelle."
+            ],
+            "conclusion": "La bobine d'allumage utilise l'auto-induction pour créer une étincelle."
+          },
+          "erreurs_frequentes": [
+            "Oublier la rapidité de la variation.",
+            "Confondre avec l'induction mutuelle."
+          ],
+          "pieges_examen": [
+            "Bien expliquer le principe.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Auto-induction : étincelle, transformateur.",
+          "liens": {
+            "avant": ["bobine"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Calculer une inductance.",
+        "Calculer une f.é.m. auto-induite.",
+        "Calculer l'énergie stockée dans une bobine."
+      ]
+    },
+    {
+      "id": "circuit_lc",
+      "numero": 15,
+      "titre": "Circuit LC",
+      "description": "Oscillations libres dans un circuit LC.",
+      "duree_estimee_min": 480,
+      "difficulte": 4,
+      "obligatoire": true,
+      "prerequis": ["auto_induction"],
+      "notions": [
+        {
+          "id": "oscillations_libres",
+          "titre": "Oscillations libres",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Oscillations d'un circuit LC sans source.",
+          "description_longue": "Un circuit LC constitué d'une bobine d'inductance $L$ et d'un condensateur de capacité $C$ peut osciller librement. L'énergie est échangée entre le condensateur (électrique) et la bobine (magnétique). En l'absence de résistance, les oscillations sont sinusoïdales et entretenues.",
+          "formules": [
+            { "latex": "$\\omega_0 = \\frac{1}{\\sqrt{LC}}$", "condition": "", "usage": "Pulsation propre" },
+            { "latex": "$T_0 = 2\\pi\\sqrt{LC}$", "condition": "", "usage": "Période propre" }
+          ],
+          "proprietes": [
+            "L'énergie est conservée.",
+            "Les oscillations sont sinusoïdales.",
+            "La fréquence dépend de $L$ et $C$."
+          ],
+          "methodes": [
+            "Identifier $L$ et $C$.",
+            "Calculer la pulsation et la période.",
+            "Étudier l'énergie."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un circuit LC a $L = 0{,}1\\,\\text{H}$ et $C = 10\\,\\mu\\text{F}$. Calculer la période propre.",
+            "etapes": [
+              "$T_0 = 2\\pi\\sqrt{0{,}1 \\times 10 \\times 10^{-6}} = 2\\pi\\sqrt{10^{-6}} = 2\\pi \\times 10^{-3} \\approx 6{,}28 \\times 10^{-3}\\,\\text{s}$."
+            ],
+            "conclusion": "$T_0 \\approx 6{,}28\\,\\text{ms}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier la racine carrée.",
+            "Erreur d'unités.",
+            "Confondre $L$ et $C$."
+          ],
+          "pieges_examen": [
+            "Bien convertir les unités ($\\mu\\text{F}$ en $\\text{F}$).",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$T_0 = 2\\pi\\sqrt{LC}$.",
+          "liens": {
+            "avant": [],
+            "apres": ["periode_propre"]
+          }
+        },
+        {
+          "id": "periode_propre",
+          "titre": "Période propre",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 20,
+          "description_courte": "Période des oscillations libres d'un circuit LC.",
+          "description_longue": "La période propre d'un circuit LC est $T_0 = 2\\pi\\sqrt{LC}$. Elle est indépendante de l'amplitude des oscillations. C'est la période des oscillations libres non amorties.",
+          "formules": [
+            { "latex": "$T_0 = 2\\pi\\sqrt{LC}$", "condition": "", "usage": "Période propre" },
+            { "latex": "$f_0 = \\frac{1}{2\\pi\\sqrt{LC}}$", "condition": "", "usage": "Fréquence propre" }
+          ],
+          "proprietes": [
+            "Indépendante de l'amplitude.",
+            "Dépend de $L$ et $C$.",
+            "Caractéristique du circuit."
+          ],
+          "methodes": [
+            "Identifier $L$ et $C$.",
+            "Appliquer la formule.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer la fréquence propre d'un circuit LC avec $L = 0{,}01\\,\\text{H}$ et $C = 1\\,\\mu\\text{F}$.",
+            "etapes": [
+              "$f_0 = \\frac{1}{2\\pi\\sqrt{0{,}01 \\times 10^{-6}}} = \\frac{1}{2\\pi\\sqrt{10^{-8}}} = \\frac{1}{2\\pi \\times 10^{-4}} \\approx 1591\\,\\text{Hz}$."
+            ],
+            "conclusion": "$f_0 \\approx 1{,}59\\,\\text{kHz}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier $2\\pi$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien convertir les unités.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$f_0 = 1/(2\\pi\\sqrt{LC})$.",
+          "liens": {
+            "avant": ["oscillations_libres"],
+            "apres": ["energie_circuit_lc"]
+          }
+        },
+        {
+          "id": "energie_circuit_lc",
+          "titre": "Énergie du circuit LC",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Énergie totale dans un circuit LC.",
+          "description_longue": "L'énergie totale dans un circuit LC est la somme de l'énergie électrique du condensateur $E_C = \\frac{1}{2}Cu^2$ et de l'énergie magnétique de la bobine $E_L = \\frac{1}{2}Li^2$. En l'absence de résistance, elle est constante : $E = \\frac{1}{2}CU_{max}^2 = \\frac{1}{2}LI_{max}^2$.",
+          "formules": [
+            { "latex": "$E = \\frac{1}{2}Cu^2 + \\frac{1}{2}Li^2$", "condition": "", "usage": "Énergie totale" },
+            { "latex": "$E = \\frac{1}{2}CU_{max}^2 = \\frac{1}{2}LI_{max}^2$", "condition": "", "usage": "Énergie constante" }
+          ],
+          "proprietes": [
+            "L'énergie est conservée.",
+            "Échange entre condensateur et bobine.",
+            "L'énergie totale est proportionnelle au carré de l'amplitude."
+          ],
+          "methodes": [
+            "Calculer l'énergie du condensateur.",
+            "Calculer l'énergie de la bobine.",
+            "Additionner."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un circuit LC a $C = 10\\,\\mu\\text{F}$ et $L = 0{,}1\\,\\text{H}$. Le condensateur est chargé sous $U = 10\\,\\text{V}$. Calculer l'énergie totale.",
+            "etapes": [
+              "$E = \\frac{1}{2}CU^2 = \\frac{1}{2} \\times 10 \\times 10^{-6} \\times 100 = 5 \\times 10^{-4}\\,\\text{J}$."
+            ],
+            "conclusion": "$E = 0{,}5\\,\\text{mJ}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le facteur $\\frac{1}{2}$.",
+            "Confondre $E_C$ et $E_L$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien identifier les formes d'énergie.",
+            "Utiliser la conservation."
+          ],
+          "mnemo": "$E = \\frac{1}{2}CU^2 = \\frac{1}{2}LI^2$.",
+          "liens": {
+            "avant": ["periode_propre"],
+            "apres": ["amortissement_lc"]
+          }
+        },
+        {
+          "id": "amortissement_lc",
+          "titre": "Amortissement dans un circuit LC",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 20,
+          "description_courte": "Réduction progressive de l'amplitude des oscillations due à la résistance.",
+          "description_longue": "En présence d'une résistance, l'énergie du circuit LC se dissipe par effet Joule. Les oscillations s'amortissent progressivement. Le régime peut être pseudo-périodique, critique ou apériodique selon la valeur de la résistance.",
+          "formules": [
+            { "latex": "$L\\frac{d^2q}{dt^2} + R\\frac{dq}{dt} + \\frac{q}{C} = 0$", "condition": "", "usage": "Équation avec résistance" }
+          ],
+          "proprietes": [
+            "L'énergie se dissipe.",
+            "L'amplitude diminue.",
+            "Le régime dépend de $R$."
+          ],
+          "methodes": [
+            "Identifier le type d'amortissement.",
+            "Écrire l'équation.",
+            "Étudier le régime."
+          ],
+          "exemple_resolu": {
+            "enonce": "Décrire l'évolution des oscillations d'un circuit LC avec une résistance $R$.",
+            "etapes": [
+              "L'énergie se dissipe par effet Joule.",
+              "L'amplitude diminue exponentiellement.",
+              "Le régime est pseudo-périodique."
+            ],
+            "conclusion": "Oscillations amorties."
+          },
+          "erreurs_frequentes": [
+            "Oublier la dissipation.",
+            "Confondre les régimes."
+          ],
+          "pieges_examen": [
+            "Bien identifier le régime.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Amortissement = dissipation d'énergie.",
+          "liens": {
+            "avant": ["energie_circuit_lc"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Calculer la période propre d'un circuit LC.",
+        "Calculer l'énergie totale.",
+        "Étudier l'amortissement."
+      ]
+    },
+    {
+      "id": "circuit_rlc",
+      "numero": 16,
+      "titre": "Circuit RLC",
+      "description": "Oscillations forcées et résonance dans un circuit RLC.",
+      "duree_estimee_min": 540,
+      "difficulte": 4,
+      "obligatoire": true,
+      "prerequis": ["circuit_lc"],
+      "notions": [
+        {
+          "id": "oscillations_forcees",
+          "titre": "Oscillations forcées",
+          "obligatoire": true,
+          "difficulte": 4,
+          "duree_etude_min": 30,
+          "description_courte": "Oscillations d'un circuit RLC soumis à une tension alternative.",
+          "description_longue": "Lorsqu'un circuit RLC est soumis à une tension alternative $u(t) = U_m\\cos(\\omega t)$, il oscille à la fréquence de l'excitation. L'amplitude dépend de la fréquence. C'est le régime des oscillations forcées.",
+          "formules": [
+            { "latex": "$u(t) = U_m\\cos(\\omega t)$", "condition": "", "usage": "Tension d'excitation" },
+            { "latex": "$Z = \\sqrt{R^2 + (L\\omega - \\frac{1}{C\\omega})^2}$", "condition": "", "usage": "Impédance" }
+          ],
+          "proprietes": [
+            "La fréquence est imposée par la source.",
+            "L'amplitude dépend de la fréquence.",
+            "Le régime est stationnaire."
+          ],
+          "methodes": [
+            "Identifier la fréquence d'excitation.",
+            "Calculer l'impédance.",
+            "Déterminer l'amplitude."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un circuit RLC a $R = 10\\,\\Omega$, $L = 0{,}1\\,\\text{H}$, $C = 10\\,\\mu\\text{F}$ et est soumis à une tension de fréquence $f = 50\\,\\text{Hz}$. Calculer l'impédance.",
+            "etapes": [
+              "$\\omega = 2\\pi f = 100\\pi\\,\\text{rad/s}$.",
+              "$L\\omega = 0{,}1 \\times 100\\pi = 10\\pi \\approx 31{,}4\\,\\Omega$.",
+              "$\\frac{1}{C\\omega} = \\frac{1}{10 \\times 10^{-6} \\times 100\\pi} \\approx 318\\,\\Omega$.",
+              "$Z = \\sqrt{10^2 + (31{,}4 - 318)^2} \\approx 288\\,\\Omega$."
+            ],
+            "conclusion": "$Z \\approx 288\\,\\Omega$."
+          },
+          "erreurs_frequentes": [
+            "Oublier la résistance.",
+            "Erreur dans le calcul de l'impédance.",
+            "Confondre $\\omega$ et $f$."
+          ],
+          "pieges_examen": [
+            "Bien convertir les unités.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$Z = \\sqrt{R^2 + (L\\omega - 1/(C\\omega))^2}$.",
+          "liens": {
+            "avant": [],
+            "apres": ["resonance_rlc"]
+          }
+        },
+        {
+          "id": "resonance_rlc",
+          "titre": "Résonance dans un circuit RLC",
+          "obligatoire": true,
+          "difficulte": 4,
+          "duree_etude_min": 30,
+          "description_courte": "Phénomène de résonance lorsque la fréquence d'excitation est égale à la fréquence propre.",
+          "description_longue": "La résonance dans un circuit RLC se produit lorsque la fréquence d'excitation est égale à la fréquence propre $f_0 = \\frac{1}{2\\pi\\sqrt{LC}}$. L'impédance est alors minimale et égale à $R$, et l'intensité est maximale.",
+          "formules": [
+            { "latex": "$f_0 = \\frac{1}{2\\pi\\sqrt{LC}}$", "condition": "", "usage": "Fréquence de résonance" },
+            { "latex": "$Z_{res} = R$", "condition": "", "usage": "Impédance à la résonance" }
+          ],
+          "proprietes": [
+            "L'impédance est minimale.",
+            "L'intensité est maximale.",
+            "Le circuit est en phase."
+          ],
+          "methodes": [
+            "Calculer la fréquence propre.",
+            "Comparer à la fréquence d'excitation.",
+            "Conclure."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un circuit RLC a $L = 0{,}1\\,\\text{H}$ et $C = 10\\,\\mu\\text{F}$. Calculer la fréquence de résonance.",
+            "etapes": [
+              "$f_0 = \\frac{1}{2\\pi\\sqrt{0{,}1 \\times 10^{-5}}} = \\frac{1}{2\\pi\\sqrt{10^{-6}}} = \\frac{1}{2\\pi \\times 10^{-3}} \\approx 159\\,\\text{Hz}$."
+            ],
+            "conclusion": "$f_0 \\approx 159\\,\\text{Hz}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier $2\\pi$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien convertir les unités.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "Résonance : $f = f_0$.",
+          "liens": {
+            "avant": ["oscillations_forcees"],
+            "apres": ["facteur_qualite"]
+          }
+        },
+        {
+          "id": "facteur_qualite",
+          "titre": "Facteur de qualité",
+          "obligatoire": true,
+          "difficulte": 4,
+          "duree_etude_min": 25,
+          "description_courte": "Le facteur de qualité $Q$ mesure l'acuité de la résonance.",
+          "description_longue": "Le facteur de qualité $Q$ d'un circuit RLC mesure l'acuité de la résonance. Il est défini par $Q = \\frac{L\\omega_0}{R} = \\frac{1}{R}\\sqrt{\\frac{L}{C}}$. Plus $Q$ est grand, plus la résonance est aiguë.",
+          "formules": [
+            { "latex": "$Q = \\frac{L\\omega_0}{R} = \\frac{1}{R}\\sqrt{\\frac{L}{C}}$", "condition": "", "usage": "Facteur de qualité" }
+          ],
+          "proprietes": [
+            "Plus $Q$ est grand, plus la résonance est aiguë.",
+            "$Q$ est sans dimension.",
+            "$Q$ dépend de $R$, $L$ et $C$."
+          ],
+          "methodes": [
+            "Identifier $R$, $L$ et $C$.",
+            "Appliquer la formule.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un circuit RLC a $R = 10\\,\\Omega$, $L = 0{,}1\\,\\text{H}$ et $C = 10\\,\\mu\\text{F}$. Calculer le facteur de qualité.",
+            "etapes": [
+              "$Q = \\frac{1}{10}\\sqrt{\\frac{0{,}1}{10 \\times 10^{-6}}} = \\frac{1}{10}\\sqrt{10^4} = \\frac{100}{10} = 10$."
+            ],
+            "conclusion": "$Q = 10$."
+          },
+          "erreurs_frequentes": [
+            "Oublier la racine carrée.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien convertir les unités.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$Q = \\frac{1}{R}\\sqrt{L/C}$.",
+          "liens": {
+            "avant": ["resonance_rlc"],
+            "apres": ["impedance"]
+          }
+        },
+        {
+          "id": "impedance",
+          "titre": "Impédance",
+          "obligatoire": true,
+          "difficulte": 4,
+          "duree_etude_min": 30,
+          "description_courte": "L'impédance $Z$ est la résistance apparente d'un circuit en courant alternatif.",
+          "description_longue": "L'impédance $Z$ d'un circuit RLC série est $Z = \\sqrt{R^2 + (L\\omega - \\frac{1}{C\\omega})^2}$. Elle mesure l'opposition au passage du courant alternatif. Elle dépend de la fréquence. À la résonance, $Z = R$.",
+          "formules": [
+            { "latex": "$Z = \\sqrt{R^2 + (L\\omega - \\frac{1}{C\\omega})^2}$", "condition": "", "usage": "Impédance" },
+            { "latex": "$U = ZI$", "condition": "", "usage": "Loi d'Ohm en alternatif" }
+          ],
+          "proprietes": [
+            "L'impédance dépend de la fréquence.",
+            "À la résonance, $Z = R$.",
+            "L'impédance s'exprime en ohms ($\\Omega$)."
+          ],
+          "methodes": [
+            "Identifier $R$, $L$, $C$ et $\\omega$.",
+            "Calculer $L\\omega$ et $\\frac{1}{C\\omega}$.",
+            "Appliquer la formule."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un circuit RLC a $R = 10\\,\\Omega$, $L = 0{,}1\\,\\text{H}$, $C = 10\\,\\mu\\text{F}$ et $\\omega = 1000\\,\\text{rad/s}$. Calculer l'impédance.",
+            "etapes": [
+              "$L\\omega = 0{,}1 \\times 1000 = 100\\,\\Omega$.",
+              "$\\frac{1}{C\\omega} = \\frac{1}{10 \\times 10^{-6} \\times 1000} = 100\\,\\Omega$.",
+              "$Z = \\sqrt{10^2 + (100 - 100)^2} = 10\\,\\Omega$."
+            ],
+            "conclusion": "$Z = 10\\,\\Omega$ (résonance)."
+          },
+          "erreurs_frequentes": [
+            "Confondre $\\omega$ et $f$.",
+            "Erreur de calcul.",
+            "Oublier la racine carrée."
+          ],
+          "pieges_examen": [
+            "Bien convertir les unités.",
+            "Vérifier les calculs."
+          ],
+          "mnemo": "$Z = \\sqrt{R^2 + (L\\omega - 1/(C\\omega))^2}$.",
+          "liens": {
+            "avant": ["facteur_qualite"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Calculer l'impédance d'un circuit RLC.",
+        "Étudier la résonance.",
+        "Calculer le facteur de qualité."
+      ]
+    },
+    {
+      "id": "radioactivite",
+      "numero": 17,
+      "titre": "Radioactivité",
+      "description": "Étude de la radioactivité et de la loi de décroissance.",
+      "duree_estimee_min": 540,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["noyau_atomique"],
+      "notions": [
+        {
+          "id": "noyau_atomique",
+          "titre": "Noyau atomique",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Le noyau atomique est constitué de protons et de neutrons.",
+          "description_longue": "Le noyau atomique est constitué de nucléons : protons (charge positive) et neutrons (neutres). Il est caractérisé par son numéro atomique $Z$ (nombre de protons) et son nombre de masse $A$ (nombre de nucléons). On note $^A_Z X$.",
+          "formules": [
+            { "latex": "$^A_Z X$", "condition": "", "usage": "Notation du noyau" },
+            { "latex": "$A = Z + N$", "condition": "", "usage": "Nombre de masse" }
+          ],
+          "proprietes": [
+            "Le noyau est chargé positivement.",
+            "Le nombre de masse est le nombre de nucléons.",
+            "Le numéro atomique est le nombre de protons."
+          ],
+          "methodes": [
+            "Identifier $Z$ et $A$.",
+            "Écrire la notation du noyau.",
+            "Déterminer le nombre de neutrons."
+          ],
+          "exemple_resolu": {
+            "enonce": "Donner la composition du noyau $^{235}_{92}U$.",
+            "etapes": [
+              "$Z = 92$ protons.",
+              "$A = 235$ nucléons.",
+              "$N = A - Z = 235 - 92 = 143$ neutrons."
+            ],
+            "conclusion": "92 protons et 143 neutrons."
+          },
+          "erreurs_frequentes": [
+            "Confondre $A$ et $Z$.",
+            "Oublier les neutrons."
+          ],
+          "pieges_examen": [
+            "Bien identifier $Z$ et $A$.",
+            "Vérifier la notation."
+          ],
+          "mnemo": "$^A_Z X$.",
+          "liens": {
+            "avant": [],
+            "apres": ["isotopes"]
+          }
+        },
+        {
+          "id": "isotopes",
+          "titre": "Isotopes",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Atomes ayant le même $Z$ mais des $A$ différents.",
+          "description_longue": "Les isotopes sont des atomes qui ont le même nombre de protons $Z$ mais des nombres de neutrons différents. Ils ont donc le même numéro atomique mais des nombres de masse différents. Ils ont les mêmes propriétés chimiques mais des propriétés nucléaires différentes.",
+          "formules": [],
+          "proprietes": [
+            "Même $Z$, $A$ différents.",
+            "Mêmes propriétés chimiques.",
+            "Propriétés nucléaires différentes."
+          ],
+          "methodes": [
+            "Comparer les noyaux.",
+            "Identifier $Z$ et $A$.",
+            "Conclure."
+          ],
+          "exemple_resolu": {
+            "enonce": "Les noyaux $^{12}_6C$ et $^{14}_6C$ sont-ils isotopes ?",
+            "etapes": [
+              "Même $Z = 6$.",
+              "$A$ différents (12 et 14).",
+              "Ce sont des isotopes."
+            ],
+            "conclusion": "Oui, isotopes du carbone."
+          },
+          "erreurs_frequentes": [
+            "Confondre isotopes et ions.",
+            "Oublier $Z$."
+          ],
+          "pieges_examen": [
+            "Bien comparer $Z$.",
+            "Ne pas confondre avec les ions."
+          ],
+          "mnemo": "Isotopes : même $Z$, $A$ différents.",
+          "liens": {
+            "avant": ["noyau_atomique"],
+            "apres": ["radioactivite_alpha_beta_gamma"]
+          }
+        },
+        {
+          "id": "radioactivite_alpha_beta_gamma",
+          "titre": "Radioactivité $\\alpha$, $\\beta$, $\\gamma$",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Différents types de désintégrations radioactives.",
+          "description_longue": "La radioactivité $\\alpha$ émet un noyau d'hélium $^4_2He$. La radioactivité $\\beta^-$ émet un électron et un antineutrino. La radioactivité $\\beta^+$ émet un positon et un neutrino. La radioactivité $\\gamma$ émet un photon. Ces désintégrations transforment les noyaux.",
+          "formules": [
+            { "latex": "$\\alpha$ : $^A_Z X \\to ^{A-4}_{Z-2} Y + ^4_2 He$", "condition": "", "usage": "Désintégration $\\alpha$" },
+            { "latex": "$\\beta^-$ : $^A_Z X \\to ^A_{Z+1} Y + ^0_{-1} e + \\bar{\\nu}$", "condition": "", "usage": "Désintégration $\\beta^-$" },
+            { "latex": "$\\beta^+$ : $^A_Z X \\to ^A_{Z-1} Y + ^0_{+1} e + \\nu$", "condition": "", "usage": "Désintégration $\\beta^+$" }
+          ],
+          "proprietes": [
+            "$\\alpha$ : émission d'un noyau d'hélium.",
+            "$\\beta^-$ : émission d'un électron.",
+            "$\\beta^+$ : émission d'un positon.",
+            "$\\gamma$ : émission d'un photon."
+          ],
+          "methodes": [
+            "Écrire l'équation de désintégration.",
+            "Appliquer les lois de conservation.",
+            "Identifier le noyau fils."
+          ],
+          "exemple_resolu": {
+            "enonce": "Le noyau $^{238}_{92}U$ subit une désintégration $\\alpha$. Écrire l'équation.",
+            "etapes": [
+              "$^{238}_{92}U \\to ^{234}_{90}Th + ^4_2He$.",
+              "Vérification : $238 = 234 + 4$ et $92 = 90 + 2$."
+            ],
+            "conclusion": "$^{238}_{92}U \\to ^{234}_{90}Th + ^4_2He$."
+          },
+          "erreurs_frequentes": [
+            "Oublier les lois de conservation.",
+            "Confondre $\\beta^-$ et $\\beta^+$.",
+            "Erreur dans les coefficients."
+          ],
+          "pieges_examen": [
+            "Bien vérifier la conservation de $A$ et $Z$.",
+            "Ne pas oublier les particules émises."
+          ],
+          "mnemo": "$\\alpha$ : $^4_2He$ ; $\\beta^-$ : $e^-$ ; $\\beta^+$ : $e^+$.",
+          "liens": {
+            "avant": ["isotopes"],
+            "apres": ["loi_decroissance"]
+          }
+        },
+        {
+          "id": "loi_decroissance",
+          "titre": "Loi de décroissance radioactive",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "$N(t) = N_0 e^{-\\lambda t}$.",
+          "description_longue": "La loi de décroissance radioactive donne le nombre de noyaux restants à l'instant $t$ : $N(t) = N_0 e^{-\\lambda t}$ où $\\lambda$ est la constante radioactive. L'activité est $A(t) = \\lambda N(t) = A_0 e^{-\\lambda t}$. Elle s'exprime en becquerels ($\\text{Bq}$).",
+          "formules": [
+            { "latex": "$N(t) = N_0 e^{-\\lambda t}$", "condition": "", "usage": "Loi de décroissance" },
+            { "latex": "$A(t) = \\lambda N(t)$", "condition": "", "usage": "Activité" },
+            { "latex": "$A(t) = A_0 e^{-\\lambda t}$", "condition": "", "usage": "Activité" }
+          ],
+          "proprietes": [
+            "La décroissance est exponentielle.",
+            "L'activité diminue exponentiellement.",
+            "L'unité d'activité est le becquerel."
+          ],
+          "methodes": [
+            "Identifier $N_0$ et $\\lambda$.",
+            "Appliquer la loi.",
+            "Calculer $N(t)$ ou $A(t)$."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un échantillon a $N_0 = 10^{20}$ noyaux et $\\lambda = 0{,}1\\,\\text{s}^{-1}$. Calculer $N$ après $10\\,\\text{s}$.",
+            "etapes": [
+              "$N(10) = 10^{20} e^{-0{,}1 \\times 10} = 10^{20} e^{-1} \\approx 3{,}68 \\times 10^{19}$."
+            ],
+            "conclusion": "$N(10) \\approx 3{,}68 \\times 10^{19}$ noyaux."
+          },
+          "erreurs_frequentes": [
+            "Confondre $N$ et $A$.",
+            "Erreur d'unités.",
+            "Oublier la fonction exponentielle."
+          ],
+          "pieges_examen": [
+            "Bien utiliser la loi exponentielle.",
+            "Vérifier les unités de $\\lambda$."
+          ],
+          "mnemo": "$N(t) = N_0 e^{-\\lambda t}$.",
+          "liens": {
+            "avant": ["radioactivite_alpha_beta_gamma"],
+            "apres": ["demi_vie"]
+          }
+        },
+        {
+          "id": "demi_vie",
+          "titre": "Demi-vie",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Temps au bout duquel la moitié des noyaux se sont désintégrés.",
+          "description_longue": "La demi-vie $t_{1/2}$ est la durée au bout de laquelle la moitié des noyaux d'un échantillon radioactif se sont désintégrés. Elle est liée à la constante radioactive par $t_{1/2} = \\frac{\\ln 2}{\\lambda}$. Elle est caractéristique de chaque isotope.",
+          "formules": [
+            { "latex": "$t_{1/2} = \\frac{\\ln 2}{\\lambda}$", "condition": "", "usage": "Demi-vie" },
+            { "latex": "$N(t_{1/2}) = \\frac{N_0}{2}$", "condition": "", "usage": "Définition" }
+          ],
+          "proprietes": [
+            "La demi-vie est indépendante de $N_0$.",
+            "Elle est caractéristique de l'isotope.",
+            "Après $n$ demi-vies, $N = \\frac{N_0}{2^n}$."
+          ],
+          "methodes": [
+            "Identifier $\\lambda$.",
+            "Calculer $t_{1/2}$.",
+            "Utiliser la relation."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un isotope a $\\lambda = 0{,}693\\,\\text{an}^{-1}$. Calculer sa demi-vie.",
+            "etapes": [
+              "$t_{1/2} = \\frac{\\ln 2}{\\lambda} = \\frac{0{,}693}{0{,}693} = 1\\,\\text{an}$."
+            ],
+            "conclusion": "$t_{1/2} = 1\\,\\text{an}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $\\ln 2$ et $\\log 2$.",
+            "Erreur d'unités."
+          ],
+          "pieges_examen": [
+            "Bien utiliser $\\ln 2 \\approx 0{,}693$.",
+            "Vérifier les unités."
+          ],
+          "mnemo": "$t_{1/2} = \\ln 2/\\lambda$.",
+          "liens": {
+            "avant": ["loi_decroissance"],
+            "apres": ["applications_radioactivite"]
+          }
+        },
+        {
+          "id": "applications_radioactivite",
+          "titre": "Applications de la radioactivité",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Applications médicales, industrielles et archéologiques.",
+          "description_longue": "La radioactivité a de nombreuses applications : datation au carbone 14, médecine nucléaire (diagnostic et traitement), industrie (contrôle de soudures), et production d'énergie. Elle présente aussi des dangers nécessitant des précautions.",
+          "formules": [
+            { "latex": "$t = \\frac{1}{\\lambda}\\ln\\frac{N_0}{N}$", "condition": "", "usage": "Datation" }
+          ],
+          "proprietes": [
+            "Datation au carbone 14.",
+            "Médecine nucléaire.",
+            "Production d'énergie."
+          ],
+          "methodes": [
+            "Identifier l'application.",
+            "Utiliser les formules.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un échantillon a un rapport $N/N_0 = 0{,}25$. Calculer son âge si $t_{1/2} = 5730\\,\\text{ans}$.",
+            "etapes": [
+              "$N/N_0 = 0{,}25 = \\frac{1}{4} = \\frac{1}{2^2}$.",
+              "Il s'est écoulé 2 demi-vies.",
+              "$t = 2 \\times 5730 = 11460\\,\\text{ans}$."
+            ],
+            "conclusion": "$t = 11460\\,\\text{ans}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $N$ et $N_0$.",
+            "Erreur dans le calcul des demi-vies."
+          ],
+          "pieges_examen": [
+            "Bien identifier le nombre de demi-vies.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Datation : $N/N_0 = (1/2)^n$.",
+          "liens": {
+            "avant": ["demi_vie"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Écrire une équation de désintégration.",
+        "Appliquer la loi de décroissance.",
+        "Calculer une demi-vie.",
+        "Résoudre un problème de datation."
+      ]
+    }
+  ]
+}
