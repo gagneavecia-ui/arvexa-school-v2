@@ -1764,7 +1764,7 @@
 
   <script type="module">
   // ═══════════════════════════════════════════════════════════════
-  // RÉVISEUR v7.2 — Multi-format + Navigation historique
+  // RÉVISEUR v7.2 — Navigation mobile + rendu multi-format
   // ═══════════════════════════════════════════════════════════════
 
   import { initializeApp } from 'firebase/app';
@@ -1860,21 +1860,21 @@
       'La reproduction conforme',
       'Cycle cellulaire et évolution de la quantité d\'ADN',
       'Protéines',
-      'Synthèse des protéines',
+      'Mécanismes d\'expression des gènes : la synthèse des protéines',
       'Reproduction sexuée',
       'Brassage des gènes',
-      'Transmission des caractères héréditaires',
+      'Transmission des caractères héréditaires chez l\'Homme',
       'Anomalies chromosomiques',
-      'Tissus nerveux et réflexes',
+      'Tissus nerveux et notions de réflexes',
       'Messages nerveux',
       'La glycémie',
-      'Appareils génitaux',
-      'Régulation des organes génitaux',
+      'Les appareils génitaux et leur fonctionnement',
+      'Régulation du fonctionnement des organes génitaux',
       'De la fécondation à la nidation',
-      'Régulation des naissances',
+      'La régulation des naissances',
       'Le soi et le non soi',
-      'Réponses immunitaires',
-      'VIH/SIDA'
+      'Les réponses immunitaires',
+      'Dysfonctionnement du système immunitaire : cas du VIH/SIDA'
     ],
     philosophie: [
       'Conscience - Inconscient',
@@ -1923,8 +1923,8 @@
   const state = {
     user: null,
     subject: null,
-    subjectType: 'scientific',
     chapter: null,
+    subjectType: 'scientific',
     totalAvailable: 0,
     generatedCount: 0,
     notions: [],
@@ -1983,10 +1983,8 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // ✅ NAVIGATION AVEC HISTORIQUE (mobile-friendly)
+  // ✅ NAVIGATION AVEC HISTORIQUE (bouton Retour Android)
   // ═══════════════════════════════════════════════════════════════
-
-  // Vue interne : change l'affichage SANS toucher à l'historique
   function showView(id) {
     document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
     const target = $(id);
@@ -1994,37 +1992,37 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Vue publique : ajoute une entrée d'historique
-  function showViewWithHistory(viewId) {
+  function showViewWithHistory(viewId, options = {}) {
     const currentView = document.querySelector('.view.active')?.id;
-    if (currentView !== viewId) {
+    if (currentView !== viewId && !options.replace) {
       window.history.pushState({ view: viewId }, '', '');
+    } else if (options.replace) {
+      window.history.replaceState({ view: viewId }, '', '');
     }
     showView(viewId);
   }
 
-  // ✅ Écouteur du bouton "Retour" du téléphone / navigateur
+  // ✅ Écouteur pour le bouton Retour du téléphone
   window.addEventListener('popstate', (event) => {
     const targetView = event.state?.view;
 
     if (targetView && document.getElementById(targetView)) {
-      // On revient à la vue précédente SANS empiler un nouvel historique
-      showView(targetView);
+      document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
+      const target = document.getElementById(targetView);
+      if (target) target.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      // ✅ Recharger le contenu si on revient sur une vue qui en a besoin
+      // Si on revient à la liste, la re-render
       if (targetView === 'viewNotions') {
         renderNotionsList();
       }
-    }
-    // Sinon : pas de state → comportement par défaut (quitter la page)
-  });
 
-  function showPremiumPopup() {
-    $('premiumOverlay').classList.add('show');
-  }
-  function hidePremiumPopup() {
-    $('premiumOverlay').classList.remove('show');
-  }
+      // Si on revient à l'accueil, mettre à jour l'UI
+      if (targetView === 'viewHome') {
+        updateHomeUI();
+      }
+    }
+  });
 
   // ═══════════════════════════════════════════════════════════════
   // SÉLECTEURS
@@ -2181,7 +2179,7 @@
       state.generatedCount = data.generatedCount || 0;
       state.notions = data.notions || [];
       state.generatedIds = data.generatedIds || [];
-      state.subjectType = data.subjectType || 'scientific';
+      state.subjectType = data.subjectType || (SCIENTIFIC_SUBJECTS.has(state.subject) ? 'scientific' : 'lesson');
 
       updateHomeUI();
     } catch (err) {
@@ -2278,15 +2276,15 @@
       }
 
       updateHomeUI();
-      showViewWithHistory('viewHome');
+      showViewWithHistory('viewHome', { replace: true });
     } catch (err) {
       console.error('[Réviseur] generateInitial error:', err);
       if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
         showPremiumPopup();
-        showViewWithHistory('viewHome');
+        showViewWithHistory('viewHome', { replace: true });
       } else {
         showToast(err.message || 'Erreur de génération', 'error', 5000);
-        showViewWithHistory('viewHome');
+        showViewWithHistory('viewHome', { replace: true });
       }
     } finally {
       state.isGenerating = false;
@@ -2319,15 +2317,15 @@
         showToast('Nouvelles notions générées !', 'success');
       }
 
-      showViewWithHistory('viewHome');
+      showViewWithHistory('viewHome', { replace: true });
     } catch (err) {
       console.error('[Réviseur] generateMore error:', err);
       if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
         showPremiumPopup();
-        showViewWithHistory('viewHome');
+        showViewWithHistory('viewHome', { replace: true });
       } else {
         showToast(err.message || 'Erreur de génération', 'error', 5000);
-        showViewWithHistory('viewHome');
+        showViewWithHistory('viewHome', { replace: true });
       }
     } finally {
       state.isGenerating = false;
@@ -2351,41 +2349,24 @@
     }
 
     empty.style.display = 'none';
-
     list.innerHTML = state.notions.map((n, i) => {
-      // ✅ Tags adaptatifs selon le type
       const tags = [];
 
-      if (state.subjectType === 'scientific') {
-        if (Array.isArray(n.formules) && n.formules.length > 0) {
-          tags.push('<span class="notion-row-tag"><i class="fas fa-square-root-variable"></i> Formules</span>');
-        }
-        if (n.methode && Array.isArray(n.methode.steps) && n.methode.steps.length > 0) {
-          tags.push('<span class="notion-row-tag"><i class="fas fa-list-ol"></i> Méthode</span>');
-        }
-      } else {
-        if (Array.isArray(n.points_cles) && n.points_cles.length > 0) {
-          tags.push('<span class="notion-row-tag"><i class="fas fa-star"></i> Points clés</span>');
-        }
-        if (Array.isArray(n.termes) && n.termes.length > 0) {
-          tags.push('<span class="notion-row-tag"><i class="fas fa-book"></i> Termes</span>');
-        }
-        if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) {
-          tags.push('<span class="notion-row-tag"><i class="fas fa-cogs"></i> Mécanismes</span>');
-        }
-        if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) {
-          tags.push('<span class="notion-row-tag"><i class="fas fa-calendar"></i> Dates</span>');
-        }
-        if (Array.isArray(n.personnages) && n.personnages.length > 0) {
-          tags.push('<span class="notion-row-tag"><i class="fas fa-user-tie"></i> Personnages</span>');
-        }
-        if (Array.isArray(n.lieux) && n.lieux.length > 0) {
-          tags.push('<span class="notion-row-tag"><i class="fas fa-map-marker-alt"></i> Lieux</span>');
-        }
-        if (Array.isArray(n.auteurs) && n.auteurs.length > 0) {
-          tags.push('<span class="notion-row-tag"><i class="fas fa-user-graduate"></i> Auteurs</span>');
-        }
-      }
+      // Tags pour scientifiques
+      if (Array.isArray(n.formules) && n.formules.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-square-root-variable"></i> Formules</span>');
+      if (n.methode && n.methode.steps && n.methode.steps.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-list-ol"></i> Méthode</span>');
+      if (n.exempleResolu && n.exempleResolu.enonce) tags.push('<span class="notion-row-tag"><i class="fas fa-check-circle"></i> Exemple</span>');
+
+      // Tags pour leçons
+      if (Array.isArray(n.points_cles) && n.points_cles.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-star"></i> Points clés</span>');
+      if (Array.isArray(n.termes) && n.termes.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-book"></i> Termes</span>');
+      if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-cogs"></i> Mécanismes</span>');
+      if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-calendar"></i> Dates</span>');
+      if (Array.isArray(n.personnages) && n.personnages.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-user-tie"></i> Personnages</span>');
+      if (Array.isArray(n.lieux) && n.lieux.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-map-marker-alt"></i> Lieux</span>');
+      if (Array.isArray(n.auteurs) && n.auteurs.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-user-graduate"></i> Auteurs</span>');
+
+      if (n.piegeBAC && n.piegeBAC.trap) tags.push('<span class="notion-row-tag"><i class="fas fa-triangle-exclamation"></i> Piège</span>');
 
       return `
         <button class="notion-row" data-notion-index="${i}">
@@ -2427,12 +2408,12 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // ✅ RENDU MULTI-FORMAT D'UNE NOTION
+  // ✅ RENDU MULTI-FORMAT
   // ═══════════════════════════════════════════════════════════════
   function renderNotionContent(n) {
     let html = '';
 
-    // ═══ COMPRENDRE (commun à tous) ═══
+    // COMPRENDRE
     if (n.comprendre && n.comprendre.trim()) {
       html += `
         <div class="block">
@@ -2442,7 +2423,7 @@
       `;
     }
 
-    // ═══ POINTS CLÉS (leçons) ═══
+    // 📚 POINTS CLÉS (leçons)
     if (Array.isArray(n.points_cles) && n.points_cles.length > 0) {
       html += `
         <div class="block">
@@ -2459,7 +2440,146 @@
       `;
     }
 
-    // ═══ FORMULES (scientifiques) ═══
+    // 📚 TERMES (leçons)
+    if (Array.isArray(n.termes) && n.termes.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-book"></i> Termes clés</div>
+          <div class="termes-list">
+            ${n.termes.map((t) => {
+              const term = t.terme || t.mot || '';
+              const def = t.definition || t.meaning || '';
+              return `
+                <div class="terme-item">
+                  <div class="terme-nom">${safeText(term)}</div>
+                  <div class="terme-def">${safeText(def)}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // 📚 MÉCANISMES (SVT)
+    if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-cogs"></i> Mécanismes</div>
+          <div class="mecanismes-list">
+            ${n.mecanismes.map((m) => {
+              const nom = m.nom || m.name || 'Mécanisme';
+              const etapes = Array.isArray(m.etapes) ? m.etapes : [];
+              const consequences = Array.isArray(m.consequences) ? m.consequences : [];
+              return `
+                <div class="mecanisme-item">
+                  <div class="mecanisme-nom"><i class="fas fa-arrow-right"></i> ${safeText(nom)}</div>
+                  ${etapes.length > 0 ? `
+                    <ol class="mecanisme-etapes">
+                      ${etapes.map((e) => `<li>${safeText(e)}</li>`).join('')}
+                    </ol>
+                  ` : ''}
+                  ${consequences.length > 0 ? `
+                    <div class="mecanisme-consequences">
+                      <div class="mecanisme-consequences-title">Conséquences</div>
+                      <ul>
+                        ${consequences.map((c) => `<li>${safeText(c)}</li>`).join('')}
+                      </ul>
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // 📚 DATES CLÉS (Histoire)
+    if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-calendar"></i> Dates clés</div>
+          <div class="dates-list">
+            ${n.dates_cles.map((d) => {
+              const date = d.date || '';
+              const evt = d.evenement || d.event || '';
+              return `
+                <div class="date-item">
+                  <div class="date-value">${safeText(date)}</div>
+                  <div class="date-event">${safeText(evt)}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // 📚 PERSONNAGES (Histoire)
+    if (Array.isArray(n.personnages) && n.personnages.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-user-tie"></i> Personnages clés</div>
+          <div class="personnages-list">
+            ${n.personnages.map((p) => {
+              const nom = p.nom || p.name || '';
+              const role = p.role || '';
+              return `
+                <div class="personnage-item">
+                  <div class="personnage-nom">${safeText(nom)}</div>
+                  <div class="personnage-role">${safeText(role)}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // 📚 LIEUX (Histoire, Géo)
+    if (Array.isArray(n.lieux) && n.lieux.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-map-marker-alt"></i> Lieux importants</div>
+          <div class="lieux-list">
+            ${n.lieux.map((l) => {
+              const nom = l.nom || l.name || l.lieu || '';
+              const info = l.info || l.description || '';
+              return `
+                <div class="lieu-item">
+                  <div class="lieu-nom">${safeText(nom)}</div>
+                  ${info ? `<div class="lieu-info">${safeText(info)}</div>` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // 📚 AUTEURS (Philosophie)
+    if (Array.isArray(n.auteurs) && n.auteurs.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-user-graduate"></i> Auteurs et thèses</div>
+          <div class="auteurs-list">
+            ${n.auteurs.map((a) => {
+              const nom = a.nom || a.name || '';
+              const idee = a.idee || a.these || '';
+              return `
+                <div class="auteur-item">
+                  <div class="auteur-nom">${safeText(nom)}</div>
+                  <div class="auteur-idee">${safeText(idee)}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // 🔬 FORMULES (scientifiques)
     if (Array.isArray(n.formules) && n.formules.length > 0) {
       const formulesHtml = n.formules.map((f) => {
         const latex = cleanLatex(f.latex || '');
@@ -2482,146 +2602,8 @@
       }
     }
 
-    // ═══ TERMES (leçons) ═══
-    if (Array.isArray(n.termes) && n.termes.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-book"></i> Termes clés</div>
-          <div class="termes-list">
-            ${n.termes.map((t) => {
-              const terme = t.terme || t.mot || '';
-              const def = t.definition || t.meaning || '';
-              return `
-                <div class="terme-item">
-                  <div class="terme-nom">${escapeHtml(terme)}</div>
-                  <div class="terme-def">${safeText(def)}</div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    // ═══ MÉCANISMES (SVT) ═══
-    if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-cogs"></i> Mécanismes</div>
-          <div class="mecanismes-list">
-            ${n.mecanismes.map((m) => {
-              const nom = m.nom || m.name || 'Mécanisme';
-              const etapes = Array.isArray(m.etapes) ? m.etapes : [];
-              const consequences = Array.isArray(m.consequences) ? m.consequences : [];
-
-              return `
-                <div class="mecanisme-item">
-                  <div class="mecanisme-nom"><i class="fas fa-arrow-right"></i> ${safeText(nom)}</div>
-                  ${etapes.length > 0 ? `
-                    <ol class="mecanisme-etapes">
-                      ${etapes.map((e) => `<li>${safeText(e)}</li>`).join('')}
-                    </ol>
-                  ` : ''}
-                  ${consequences.length > 0 ? `
-                    <div class="mecanisme-consequences">
-                      <div class="mecanisme-consequences-title">Conséquences</div>
-                      <ul>${consequences.map((c) => `<li>${safeText(c)}</li>`).join('')}</ul>
-                    </div>
-                  ` : ''}
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    // ═══ DATES CLÉS (Histoire) ═══
-    if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-calendar"></i> Dates clés</div>
-          <div class="dates-list">
-            ${n.dates_cles.map((d) => {
-              const date = d.date || '';
-              const evt = d.evenement || d.event || '';
-              return `
-                <div class="date-item">
-                  <div class="date-value">${escapeHtml(date)}</div>
-                  <div class="date-event">${safeText(evt)}</div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    // ═══ PERSONNAGES (Histoire) ═══
-    if (Array.isArray(n.personnages) && n.personnages.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-user-tie"></i> Personnages clés</div>
-          <div class="personnages-list">
-            ${n.personnages.map((p) => {
-              const nom = p.nom || p.name || '';
-              const role = p.role || '';
-              return `
-                <div class="personnage-item">
-                  <div class="personnage-nom">${escapeHtml(nom)}</div>
-                  <div class="personnage-role">${safeText(role)}</div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    // ═══ LIEUX (Histoire/Géo) ═══
-    if (Array.isArray(n.lieux) && n.lieux.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-map-marker-alt"></i> Lieux importants</div>
-          <div class="lieux-list">
-            ${n.lieux.map((l) => {
-              const nom = l.nom || l.name || l.lieu || '';
-              const info = l.info || l.description || '';
-              return `
-                <div class="lieu-item">
-                  <div class="lieu-nom">${escapeHtml(nom)}</div>
-                  <div class="lieu-info">${safeText(info)}</div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    // ═══ AUTEURS (Philosophie) ═══
-    if (Array.isArray(n.auteurs) && n.auteurs.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-user-graduate"></i> Auteurs et thèses</div>
-          <div class="auteurs-list">
-            ${n.auteurs.map((a) => {
-              const nom = a.nom || a.name || '';
-              const idee = a.idee || a.these || '';
-              return `
-                <div class="auteur-item">
-                  <div class="auteur-nom">${escapeHtml(nom)}</div>
-                  <div class="auteur-idee">"${safeText(idee)}"</div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    // ═══ MÉTHODE (commun) ═══
-    if (n.methode && n.methode.steps && Array.isArray(n.methode.steps) && n.methode.steps.length > 0) {
+    // 🔬 MÉTHODE (commune aux deux, avec ou sans calculs)
+    if (n.methode && Array.isArray(n.methode.steps) && n.methode.steps.length > 0) {
       html += `
         <div class="block">
           <div class="block-label"><i class="fas fa-list-ol"></i> ${escapeHtml(n.methode.title || 'Méthode pas-à-pas')}</div>
@@ -2632,7 +2614,7 @@
       `;
     }
 
-    // ═══ EXEMPLE RÉSOLU (commun) ═══
+    // EXEMPLE RÉSOLU (commun)
     if (n.exempleResolu && (n.exempleResolu.enonce || (Array.isArray(n.exempleResolu.etapes) && n.exempleResolu.etapes.length > 0))) {
       let exHtml = '<div class="block"><div class="block-label"><i class="fas fa-check-circle"></i> Exemple</div>';
       if (n.exempleResolu.enonce) {
@@ -2648,7 +2630,7 @@
       html += exHtml;
     }
 
-    // ═══ PIÈGE DU BAC (commun) ═══
+    // PIÈGE DU BAC (commun)
     if (n.piegeBAC && (n.piegeBAC.trap || n.piegeBAC.solution)) {
       html += `
         <div class="block">
@@ -2659,7 +2641,7 @@
       `;
     }
 
-    // ═══ ASTUCE (commun) ═══
+    // ASTUCE (commun)
     if (n.astuce && n.astuce.trim()) {
       html += `
         <div class="block astuce">
@@ -2669,7 +2651,6 @@
       `;
     }
 
-    // Fallback
     if (!html) {
       html = `
         <div class="block">
@@ -2702,7 +2683,7 @@
       showToast('Notion supprimée', 'success');
       state.currentNotion = null;
       await loadCahier();
-      showViewWithHistory('viewHome');
+      showViewWithHistory('viewHome', { replace: true });
     } catch (err) {
       console.error('[Réviseur] deleteNotion error:', err);
       showToast(err.message || 'Erreur de suppression', 'error');
@@ -2733,16 +2714,16 @@
 
       if (state.quiz.length === 0) {
         showToast('Aucune question générée. Réessaie.', 'error');
-        showViewWithHistory('viewHome');
+        showViewWithHistory('viewHome', { replace: true });
         return;
       }
 
       renderQuiz();
-      showViewWithHistory('viewQuiz');
+      showViewWithHistory('viewQuiz', { replace: true });
     } catch (err) {
       console.error('[Réviseur] quiz error:', err);
       showToast(err.message || 'Erreur de génération du quiz', 'error');
-      showViewWithHistory('viewHome');
+      showViewWithHistory('viewHome', { replace: true });
     } finally {
       state.isGeneratingQuiz = false;
     }
@@ -2841,6 +2822,16 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
+  // POP-UP PREMIUM
+  // ═══════════════════════════════════════════════════════════════
+  function showPremiumPopup() {
+    $('premiumOverlay').classList.add('show');
+  }
+  function hidePremiumPopup() {
+    $('premiumOverlay').classList.remove('show');
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   // EVENT LISTENERS
   // ═══════════════════════════════════════════════════════════════
 
@@ -2860,18 +2851,17 @@
   $('btnQuiz').addEventListener('click', generateQuiz);
 
   $('backFromNotions').addEventListener('click', () => {
-    showViewWithHistory('viewHome');
+    window.history.back();
   });
 
   $('backFromNotionDetail').addEventListener('click', () => {
-    renderNotionsList();
-    showViewWithHistory('viewNotions');
+    window.history.back();
   });
 
   $('btnDeleteNotion').addEventListener('click', deleteCurrentNotion);
 
   $('backFromQuiz').addEventListener('click', () => {
-    showViewWithHistory('viewHome');
+    window.history.back();
   });
 
   $('btnValidateQuiz').addEventListener('click', validateQuiz);
@@ -2881,7 +2871,7 @@
   });
 
   $('btnBackHomeFromResults').addEventListener('click', () => {
-    showViewWithHistory('viewHome');
+    showViewWithHistory('viewHome', { replace: true });
   });
 
   $('premiumClose').addEventListener('click', hidePremiumPopup);
@@ -2953,20 +2943,19 @@
 
     prefillFromUrl();
 
-    // ✅ Initialise l'historique avec la vue d'accueil
-    window.history.replaceState({ view: 'viewHome' }, '', '');
-
-    // Initialise les sélecteurs
     initSubjectSelector();
     initChapterSelector();
 
-    // Charge le cahier
+    // ✅ Initialise l'historique avec la vue d'accueil
+    window.history.replaceState({ view: 'viewHome' }, '', '');
+
     await loadCahier();
 
     showView('viewHome');
   });
 
-  console.log('🚀 ARVEXA — Réviseur v7.2 — Multi-format + Navigation');
+  console.log('🚀 ARVEXA — Réviseur v7.2 — Navigation mobile + multi-format');
   </script>
 </body>
 </html>
+  
