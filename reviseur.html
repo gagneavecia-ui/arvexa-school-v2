@@ -83,7 +83,6 @@
     button { cursor: pointer; font-family: inherit; }
     button:disabled { cursor: not-allowed; opacity: 0.55; }
 
-    /* ═══ HEADER ═══ */
     header {
       position: sticky;
       top: 0;
@@ -151,14 +150,12 @@
     }
     .connection.online::before { background: var(--success-light); }
 
-    /* ═══ SHELL ═══ */
     .shell {
       width: min(100% - 28px, 900px);
       margin: 0 auto;
       padding: 20px 0 40px;
     }
 
-    /* ═══ VIEWS ═══ */
     .view { display: none; }
     .view.active {
       display: block;
@@ -194,7 +191,6 @@
       font-size: 14.5px;
     }
 
-    /* ═══ PANEL ═══ */
     .panel {
       background: var(--bg-card);
       border: 1px solid var(--border-soft);
@@ -202,7 +198,6 @@
       padding: 22px;
     }
 
-    /* ═══ SÉLECTEURS ═══ */
     .selectors-bar {
       display: grid;
       grid-template-columns: 1fr;
@@ -210,7 +205,9 @@
       margin-bottom: 18px;
     }
     @media (min-width: 620px) {
-      .selectors-bar { grid-template-columns: 1fr 1fr; }
+      .selectors-bar {
+        grid-template-columns: 1fr 1fr;
+      }
     }
 
     .selector {
@@ -345,7 +342,6 @@
       flex-shrink: 0;
     }
 
-    /* ═══ HERO ═══ */
     .hero-chapter {
       background: linear-gradient(135deg, rgba(184, 134, 11, 0.08), rgba(26, 58, 42, 0.06));
       border: 1px solid rgba(184, 134, 11, 0.2);
@@ -408,7 +404,6 @@
     }
     .hero-progress-text strong { color: var(--accent-bright); }
 
-    /* ═══ CARTES D'ACTION ═══ */
     .action-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -502,7 +497,6 @@
       color: var(--accent-bright);
     }
 
-    /* ═══ NOTIONS ═══ */
     .notions-list {
       display: flex;
       flex-direction: column;
@@ -588,8 +582,9 @@
       transform: translateX(3px);
     }
 
-    /* ═══ DÉTAIL NOTION ═══ */
-    .notion-detail-header { margin-bottom: 20px; }
+    .notion-detail-header {
+      margin-bottom: 20px;
+    }
     .back-btn {
       display: inline-flex;
       align-items: center;
@@ -625,7 +620,6 @@
       color: var(--text-muted);
     }
 
-    /* ═══ BLOCS DE CONTENU ═══ */
     .block {
       background: var(--bg-card);
       border: 1px solid var(--border-soft);
@@ -675,242 +669,34 @@
       font-style: italic;
     }
 
-    /* ✅ Points clés (leçons) */
-    .points-cles-list {
+    /* ✅ NOUVEAU : listes simples (points clés, termes, etc.) */
+    .simple-list {
+      list-style: none;
+      padding: 0;
       display: flex;
       flex-direction: column;
+      gap: 8px;
+      margin: 0;
+    }
+    .simple-list li {
+      display: flex;
+      align-items: flex-start;
       gap: 10px;
+      font-size: 14px;
+      color: var(--text-body);
+      line-height: 1.7;
     }
-    .point-cle {
-      display: flex;
-      gap: 12px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: rgba(224, 184, 74, 0.04);
-      border-left: 3px solid var(--accent);
-    }
-    .point-cle-num {
+    .simple-list li::before {
+      content: '•';
       color: var(--accent-bright);
-      font-weight: 800;
-      font-size: 13px;
+      font-weight: 700;
       flex-shrink: 0;
-      min-width: 20px;
+      font-size: 18px;
+      line-height: 1.4;
     }
-    .point-cle-text {
-      font-size: 14px;
-      color: var(--text-body);
-      line-height: 1.65;
-      flex: 1;
-    }
-
-    /* ✅ Termes (leçons) */
-    .termes-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .terme-item {
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: rgba(0, 0, 0, 0.2);
-    }
-    .terme-nom {
+    .simple-list li strong {
+      color: var(--text-light);
       font-weight: 700;
-      color: var(--accent-bright);
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-    .terme-def {
-      font-size: 13.5px;
-      color: var(--text-body);
-      line-height: 1.6;
-    }
-
-    /* ✅ Mécanismes (SVT) */
-    .mecanismes-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .mecanisme-item {
-      padding: 14px 16px;
-      border-radius: 12px;
-      background: rgba(74, 175, 224, 0.04);
-      border-left: 3px solid var(--info);
-    }
-    .mecanisme-nom {
-      font-weight: 700;
-      color: var(--info);
-      font-size: 14.5px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .mecanisme-etapes {
-      list-style: none;
-      padding: 0;
-      counter-reset: mstep;
-    }
-    .mecanisme-etapes li {
-      position: relative;
-      padding-left: 26px;
-      counter-increment: mstep;
-      font-size: 13.5px;
-      color: var(--text-body);
-      line-height: 1.65;
-      margin-bottom: 8px;
-    }
-    .mecanisme-etapes li::before {
-      content: counter(mstep);
-      position: absolute;
-      left: 0; top: 1px;
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      background: rgba(74, 175, 224, 0.15);
-      color: var(--info);
-      font-size: 10px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .mecanisme-consequences {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(74, 175, 224, 0.15);
-    }
-    .mecanisme-consequences-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--info);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 6px;
-    }
-    .mecanisme-consequences ul {
-      list-style: none;
-      padding: 0;
-    }
-    .mecanisme-consequences li {
-      position: relative;
-      padding-left: 16px;
-      font-size: 13px;
-      color: var(--text-body);
-      line-height: 1.6;
-      margin-bottom: 4px;
-    }
-    .mecanisme-consequences li::before {
-      content: '→';
-      position: absolute;
-      left: 0;
-      color: var(--info);
-      font-weight: 700;
-    }
-
-    /* ✅ Dates clés (Histoire) */
-    .dates-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .date-item {
-      display: flex;
-      gap: 14px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: rgba(224, 184, 74, 0.05);
-      align-items: flex-start;
-    }
-    .date-value {
-      font-family: var(--font-serif);
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--accent-bright);
-      flex-shrink: 0;
-      min-width: 60px;
-    }
-    .date-event {
-      font-size: 14px;
-      color: var(--text-body);
-      line-height: 1.6;
-      flex: 1;
-    }
-
-    /* ✅ Personnages (Histoire) */
-    .personnages-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .personnage-item {
-      display: flex;
-      gap: 14px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: rgba(0, 0, 0, 0.2);
-      align-items: flex-start;
-    }
-    .personnage-nom {
-      font-weight: 700;
-      color: var(--accent-bright);
-      font-size: 14px;
-      flex-shrink: 0;
-      min-width: 100px;
-    }
-    .personnage-role {
-      font-size: 13.5px;
-      color: var(--text-body);
-      line-height: 1.6;
-      flex: 1;
-    }
-
-    /* ✅ Lieux (Histoire/Géo) */
-    .lieux-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .lieu-item {
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: rgba(74, 175, 224, 0.05);
-    }
-    .lieu-nom {
-      font-weight: 700;
-      color: var(--info);
-      font-size: 14px;
-      margin-bottom: 4px;
-    }
-    .lieu-info {
-      font-size: 13.5px;
-      color: var(--text-body);
-      line-height: 1.6;
-    }
-
-    /* ✅ Auteurs (Philosophie) */
-    .auteurs-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .auteur-item {
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: rgba(184, 134, 11, 0.05);
-    }
-    .auteur-nom {
-      font-weight: 700;
-      color: var(--accent-bright);
-      font-size: 14px;
-      margin-bottom: 4px;
-      font-family: var(--font-serif);
-    }
-    .auteur-idee {
-      font-size: 13.5px;
-      color: var(--text-body);
-      line-height: 1.6;
-      font-style: italic;
     }
 
     .method-steps {
@@ -1009,7 +795,92 @@
     }
     .block.astuce .block-label { color: var(--info); }
 
-    /* ═══ LOADING ═══ */
+    /* ✅ Mécanismes (SVT) */
+    .mechanism {
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.25);
+      margin-bottom: 12px;
+    }
+    .mechanism:last-child { margin-bottom: 0; }
+    .mechanism-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mechanism-name i {
+      color: var(--accent-bright);
+      font-size: 12px;
+    }
+    .mechanism-steps {
+      list-style: none;
+      padding: 0;
+      counter-reset: mstep;
+      margin-bottom: 10px;
+    }
+    .mechanism-steps li {
+      position: relative;
+      padding-left: 28px;
+      counter-increment: mstep;
+      font-size: 13.5px;
+      color: var(--text-body);
+      line-height: 1.7;
+      margin-bottom: 8px;
+    }
+    .mechanism-steps li::before {
+      content: counter(mstep);
+      position: absolute;
+      left: 0; top: 1px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: rgba(74, 175, 224, 0.15);
+      color: var(--info);
+      font-size: 10px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mechanism-consequences {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(69, 180, 125, 0.06);
+      border-left: 3px solid var(--success-light);
+    }
+    .mechanism-consequences-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--success-light);
+      margin-bottom: 6px;
+    }
+    .mechanism-consequences ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .mechanism-consequences li {
+      font-size: 13px;
+      color: #7ce0aa;
+      padding-left: 14px;
+      position: relative;
+      line-height: 1.6;
+    }
+    .mechanism-consequences li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      font-weight: 700;
+    }
+
     .loading-state {
       display: flex;
       flex-direction: column;
@@ -1040,7 +911,6 @@
       line-height: 1.6;
     }
 
-    /* ═══ EMPTY ═══ */
     .empty-state {
       text-align: center;
       padding: 50px 20px;
@@ -1073,7 +943,6 @@
       max-width: 360px;
     }
 
-    /* ═══ QUIZ ═══ */
     .quiz-question {
       background: var(--bg-card);
       border: 1px solid var(--border-soft);
@@ -1174,7 +1043,6 @@
     .quiz-explanation.show { display: block; }
     .quiz-explanation strong { color: var(--info); }
 
-    /* ═══ BOUTONS ═══ */
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -1218,7 +1086,6 @@
     }
     .btn.full { width: 100%; }
 
-    /* ═══ RÉSULTATS QUIZ ═══ */
     .result-hero {
       text-align: center;
       padding: 32px 22px;
@@ -1271,7 +1138,6 @@
       font-weight: 700;
     }
 
-    /* ═══ TOAST ═══ */
     .toast-container {
       position: fixed;
       top: calc(var(--safe-top) + 16px);
@@ -1312,11 +1178,13 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ═══ KaTeX ═══ */
     .katex { font-size: 1.05em; color: inherit; }
-    .katex-display { margin: 8px 0; overflow-x: auto; padding: 4px 0; }
+    .katex-display {
+      margin: 8px 0;
+      overflow-x: auto;
+      padding: 4px 0;
+    }
 
-    /* ═══ RESPONSIVE ═══ */
     @media (max-width: 620px) {
       .shell { width: min(100% - 20px, 900px); padding: 14px 0 30px; }
       .panel { padding: 18px; }
@@ -1348,7 +1216,6 @@
       }
     }
 
-    /* ═══ POP-UP PREMIUM ═══ */
     .arvexa-popup-overlay {
       position: fixed;
       inset: 0;
@@ -1513,9 +1380,7 @@
 
   <main class="shell">
 
-    <!-- ═══════════════════════════════════════════════════════
-         VUE 1 — ACCUEIL DU RÉVISEUR
-         ═══════════════════════════════════════════════════════ -->
+    <!-- VUE 1 — ACCUEIL -->
     <section class="view active" id="viewHome">
 
       <div class="selectors-bar">
@@ -1596,9 +1461,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════
-         VUE 2 — CHARGEMENT
-         ═══════════════════════════════════════════════════════ -->
+    <!-- VUE 2 — CHARGEMENT -->
     <section class="view" id="viewLoading">
       <div class="panel">
         <div class="loading-state">
@@ -1609,9 +1472,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════
-         VUE 3 — LISTE DES NOTIONS
-         ═══════════════════════════════════════════════════════ -->
+    <!-- VUE 3 — LISTE DES NOTIONS -->
     <section class="view" id="viewNotions">
       <div class="notion-detail-header">
         <button class="back-btn" id="backFromNotions">
@@ -1631,9 +1492,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════
-         VUE 4 — DÉTAIL D'UNE NOTION
-         ═══════════════════════════════════════════════════════ -->
+    <!-- VUE 4 — DÉTAIL D'UNE NOTION -->
     <section class="view" id="viewNotionDetail">
       <div class="notion-detail-header">
         <button class="back-btn" id="backFromNotionDetail">
@@ -1654,9 +1513,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════
-         VUE 5 — QUIZ
-         ═══════════════════════════════════════════════════════ -->
+    <!-- VUE 5 — QUIZ -->
     <section class="view" id="viewQuiz">
       <div class="notion-detail-header">
         <button class="back-btn" id="backFromQuiz">
@@ -1677,9 +1534,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════
-         VUE 6 — RÉSULTATS DU QUIZ
-         ═══════════════════════════════════════════════════════ -->
+    <!-- VUE 6 — RÉSULTATS DU QUIZ -->
     <section class="view" id="viewQuizResults">
       <div class="result-hero">
         <span class="emoji" id="quizResultEmoji">🎉</span>
@@ -1716,9 +1571,7 @@
 
   </main>
 
-  <!-- ═══════════════════════════════════════════════════════
-       POP-UP PREMIUM
-       ═══════════════════════════════════════════════════════ -->
+  <!-- POP-UP PREMIUM -->
   <div class="arvexa-popup-overlay" id="premiumOverlay">
     <div class="arvexa-popup" role="dialog" aria-modal="true">
 
@@ -1747,9 +1600,6 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════
-       TOASTS
-       ═══════════════════════════════════════════════════════ -->
   <div class="toast-container" id="toastContainer"></div>
   
   <script type="importmap">
@@ -1764,7 +1614,7 @@
 
   <script type="module">
   // ═══════════════════════════════════════════════════════════════
-  // RÉVISEUR v7.2 — Navigation mobile + rendu multi-format
+  // RÉVISEUR v7.2 — Multi-format + Historique mobile
   // ═══════════════════════════════════════════════════════════════
 
   import { initializeApp } from 'firebase/app';
@@ -1860,21 +1710,21 @@
       'La reproduction conforme',
       'Cycle cellulaire et évolution de la quantité d\'ADN',
       'Protéines',
-      'Mécanismes d\'expression des gènes : la synthèse des protéines',
+      'Synthèse des protéines',
       'Reproduction sexuée',
       'Brassage des gènes',
-      'Transmission des caractères héréditaires chez l\'Homme',
+      'Transmission des caractères héréditaires',
       'Anomalies chromosomiques',
-      'Tissus nerveux et notions de réflexes',
+      'Tissus nerveux et réflexes',
       'Messages nerveux',
       'La glycémie',
-      'Les appareils génitaux et leur fonctionnement',
-      'Régulation du fonctionnement des organes génitaux',
+      'Appareils génitaux',
+      'Régulation des organes génitaux',
       'De la fécondation à la nidation',
-      'La régulation des naissances',
+      'Régulation des naissances',
       'Le soi et le non soi',
-      'Les réponses immunitaires',
-      'Dysfonctionnement du système immunitaire : cas du VIH/SIDA'
+      'Réponses immunitaires',
+      'VIH/SIDA'
     ],
     philosophie: [
       'Conscience - Inconscient',
@@ -1930,6 +1780,7 @@
     notions: [],
     generatedIds: [],
     currentNotion: null,
+    currentNotionIndex: 0,
     quiz: [],
     quizAnswers: {},
     isGenerating: false,
@@ -1983,8 +1834,10 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // ✅ NAVIGATION AVEC HISTORIQUE (bouton Retour Android)
+  // ✅ NAVIGATION AVEC HISTORIQUE (pour le bouton Retour du téléphone)
   // ═══════════════════════════════════════════════════════════════
+
+  // Vue affichée SANS toucher à l'historique (utilisée par popstate)
   function showView(id) {
     document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
     const target = $(id);
@@ -1992,36 +1845,51 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function showViewWithHistory(viewId, options = {}) {
+  // Vue affichée AVEC empilement d'historique (utilisée par les boutons)
+  function navigateTo(viewId, stateData = {}) {
     const currentView = document.querySelector('.view.active')?.id;
-    if (currentView !== viewId && !options.replace) {
-      window.history.pushState({ view: viewId }, '', '');
-    } else if (options.replace) {
-      window.history.replaceState({ view: viewId }, '', '');
+
+    // Ne rien faire si on est déjà sur cette vue
+    if (currentView === viewId) {
+      showView(viewId);
+      return;
     }
+
+    // Empiler une nouvelle entrée d'historique
+    try {
+      window.history.pushState(
+        { view: viewId, ...stateData },
+        '',
+        window.location.pathname + window.location.search
+      );
+    } catch (e) {
+      console.warn('[Réviseur] pushState error:', e.message);
+    }
+
     showView(viewId);
   }
 
-  // ✅ Écouteur pour le bouton Retour du téléphone
+  // Retour en arrière (comme si on cliquait sur le bouton Retour)
+  function goBack() {
+    window.history.back();
+  }
+
+  // ✅ Gestion du bouton Retour du téléphone / navigateur
   window.addEventListener('popstate', (event) => {
     const targetView = event.state?.view;
 
     if (targetView && document.getElementById(targetView)) {
-      document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
-      const target = document.getElementById(targetView);
-      if (target) target.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // ✅ On revient à la vue précédente
+      showView(targetView);
 
-      // Si on revient à la liste, la re-render
+      // Rendre les données spécifiques à la vue
       if (targetView === 'viewNotions') {
         renderNotionsList();
-      }
-
-      // Si on revient à l'accueil, mettre à jour l'UI
-      if (targetView === 'viewHome') {
+      } else if (targetView === 'viewHome') {
         updateHomeUI();
       }
     }
+    // Sinon : c'est la sortie de la page, on laisse faire
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -2065,6 +1933,7 @@
 
           state.subject = newSubject;
           state.chapter = CHAPTERS[newSubject]?.[0] || '';
+          state.subjectType = SCIENTIFIC_SUBJECTS.has(newSubject) ? 'scientific' : 'lesson';
           saveSelection();
 
           closeAllSelectors();
@@ -2254,9 +2123,10 @@
     if (state.isGenerating) return;
     state.isGenerating = true;
 
-    showViewWithHistory('viewLoading');
     $('loadingTitle').textContent = 'Génération de tes premières notions';
     $('loadingMessage').textContent = 'L\'IA prépare 4 notions complètes. Cela peut prendre 15 à 20 secondes.';
+
+    navigateTo('viewLoading');
 
     try {
       const data = await callApi({
@@ -2276,15 +2146,16 @@
       }
 
       updateHomeUI();
-      showViewWithHistory('viewHome', { replace: true });
+      navigateTo('viewHome');
+
     } catch (err) {
       console.error('[Réviseur] generateInitial error:', err);
       if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
         showPremiumPopup();
-        showViewWithHistory('viewHome', { replace: true });
+        navigateTo('viewHome');
       } else {
         showToast(err.message || 'Erreur de génération', 'error', 5000);
-        showViewWithHistory('viewHome', { replace: true });
+        navigateTo('viewHome');
       }
     } finally {
       state.isGenerating = false;
@@ -2298,9 +2169,10 @@
     if (state.isGenerating) return;
     state.isGenerating = true;
 
-    showViewWithHistory('viewLoading');
     $('loadingTitle').textContent = 'Génération de nouvelles notions';
     $('loadingMessage').textContent = 'L\'IA prépare 3 nouvelles notions. Cela peut prendre 10 à 15 secondes.';
+
+    navigateTo('viewLoading');
 
     try {
       const data = await callApi({
@@ -2317,15 +2189,16 @@
         showToast('Nouvelles notions générées !', 'success');
       }
 
-      showViewWithHistory('viewHome', { replace: true });
+      navigateTo('viewHome');
+
     } catch (err) {
       console.error('[Réviseur] generateMore error:', err);
       if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
         showPremiumPopup();
-        showViewWithHistory('viewHome', { replace: true });
+        navigateTo('viewHome');
       } else {
         showToast(err.message || 'Erreur de génération', 'error', 5000);
-        showViewWithHistory('viewHome', { replace: true });
+        navigateTo('viewHome');
       }
     } finally {
       state.isGenerating = false;
@@ -2349,24 +2222,39 @@
     }
 
     empty.style.display = 'none';
+
     list.innerHTML = state.notions.map((n, i) => {
       const tags = [];
 
-      // Tags pour scientifiques
-      if (Array.isArray(n.formules) && n.formules.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-square-root-variable"></i> Formules</span>');
-      if (n.methode && n.methode.steps && n.methode.steps.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-list-ol"></i> Méthode</span>');
-      if (n.exempleResolu && n.exempleResolu.enonce) tags.push('<span class="notion-row-tag"><i class="fas fa-check-circle"></i> Exemple</span>');
+      // ✅ Tags pour scientifiques
+      if (Array.isArray(n.formules) && n.formules.length > 0) {
+        tags.push('<span class="notion-row-tag"><i class="fas fa-square-root-variable"></i> Formules</span>');
+      }
 
-      // Tags pour leçons
-      if (Array.isArray(n.points_cles) && n.points_cles.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-star"></i> Points clés</span>');
-      if (Array.isArray(n.termes) && n.termes.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-book"></i> Termes</span>');
-      if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-cogs"></i> Mécanismes</span>');
-      if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-calendar"></i> Dates</span>');
-      if (Array.isArray(n.personnages) && n.personnages.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-user-tie"></i> Personnages</span>');
-      if (Array.isArray(n.lieux) && n.lieux.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-map-marker-alt"></i> Lieux</span>');
-      if (Array.isArray(n.auteurs) && n.auteurs.length > 0) tags.push('<span class="notion-row-tag"><i class="fas fa-user-graduate"></i> Auteurs</span>');
+      // ✅ Tags pour leçons
+      if (Array.isArray(n.points_cles) && n.points_cles.length > 0) {
+        tags.push('<span class="notion-row-tag"><i class="fas fa-list-check"></i> Points clés</span>');
+      }
+      if (Array.isArray(n.termes) && n.termes.length > 0) {
+        tags.push('<span class="notion-row-tag"><i class="fas fa-book"></i> Termes</span>');
+      }
+      if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) {
+        tags.push('<span class="notion-row-tag"><i class="fas fa-cogs"></i> Mécanismes</span>');
+      }
+      if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) {
+        tags.push('<span class="notion-row-tag"><i class="fas fa-calendar"></i> Dates</span>');
+      }
 
-      if (n.piegeBAC && n.piegeBAC.trap) tags.push('<span class="notion-row-tag"><i class="fas fa-triangle-exclamation"></i> Piège</span>');
+      // ✅ Tags communs
+      if (n.methode && Array.isArray(n.methode.steps) && n.methode.steps.length > 0) {
+        tags.push('<span class="notion-row-tag"><i class="fas fa-list-ol"></i> Méthode</span>');
+      }
+      if (n.exempleResolu && n.exempleResolu.enonce) {
+        tags.push('<span class="notion-row-tag"><i class="fas fa-check-circle"></i> Exemple</span>');
+      }
+      if (n.piegeBAC && n.piegeBAC.trap) {
+        tags.push('<span class="notion-row-tag"><i class="fas fa-triangle-exclamation"></i> Piège</span>');
+      }
 
       return `
         <button class="notion-row" data-notion-index="${i}">
@@ -2396,6 +2284,7 @@
     if (!notion) return;
 
     state.currentNotion = notion;
+    state.currentNotionIndex = index;
 
     $('notionDetailEyebrow').textContent = 'Notion ' + (index + 1);
     $('notionDetailTitle').textContent = notion.notionTitle || 'Notion';
@@ -2404,7 +2293,7 @@
     const content = $('notionDetailContent');
     content.innerHTML = renderNotionContent(notion);
 
-    showViewWithHistory('viewNotionDetail');
+    navigateTo('viewNotionDetail');
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -2413,7 +2302,7 @@
   function renderNotionContent(n) {
     let html = '';
 
-    // COMPRENDRE
+    // ─── COMPRENDRE ───
     if (n.comprendre && n.comprendre.trim()) {
       html += `
         <div class="block">
@@ -2423,163 +2312,147 @@
       `;
     }
 
-    // 📚 POINTS CLÉS (leçons)
+    // ─── POINTS CLÉS (leçons) ───
     if (Array.isArray(n.points_cles) && n.points_cles.length > 0) {
       html += `
         <div class="block">
-          <div class="block-label"><i class="fas fa-star"></i> Points clés</div>
-          <div class="points-cles-list">
-            ${n.points_cles.map((p, i) => `
-              <div class="point-cle">
-                <span class="point-cle-num">${i + 1}.</span>
-                <span class="point-cle-text">${safeText(p)}</span>
-              </div>
-            `).join('')}
-          </div>
+          <div class="block-label"><i class="fas fa-list-check"></i> Points clés</div>
+          <ul class="simple-list">
+            ${n.points_cles.map((p) => `<li>${safeText(p)}</li>`).join('')}
+          </ul>
         </div>
       `;
     }
 
-    // 📚 TERMES (leçons)
+    // ─── TERMES (leçons) ───
     if (Array.isArray(n.termes) && n.termes.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-book"></i> Termes clés</div>
-          <div class="termes-list">
-            ${n.termes.map((t) => {
-              const term = t.terme || t.mot || '';
-              const def = t.definition || t.meaning || '';
-              return `
-                <div class="terme-item">
-                  <div class="terme-nom">${safeText(term)}</div>
-                  <div class="terme-def">${safeText(def)}</div>
-                </div>
-              `;
-            }).join('')}
+      const termesHtml = n.termes.map((t) => {
+        const term = t.terme || t.mot || '';
+        const def = t.definition || t.meaning || '';
+        if (!term) return '';
+        return `<li><strong>${safeText(term)}</strong> — ${safeText(def)}</li>`;
+      }).filter(Boolean).join('');
+
+      if (termesHtml) {
+        html += `
+          <div class="block">
+            <div class="block-label"><i class="fas fa-book"></i> Termes clés</div>
+            <ul class="simple-list">${termesHtml}</ul>
           </div>
-        </div>
-      `;
+        `;
+      }
     }
 
-    // 📚 MÉCANISMES (SVT)
+    // ─── MÉCANISMES (SVT) ───
     if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) {
+      const mecaHtml = n.mecanismes.map((m) => {
+        const nom = m.nom || m.name || 'Mécanisme';
+        const etapes = Array.isArray(m.etapes) ? m.etapes : [];
+        const consequences = Array.isArray(m.consequences) ? m.consequences : [];
+
+        let inner = `<div class="mechanism-name"><i class="fas fa-cogs"></i> ${safeText(nom)}</div>`;
+
+        if (etapes.length > 0) {
+          inner += `<ol class="mechanism-steps">${etapes.map((e) => `<li>${safeText(e)}</li>`).join('')}</ol>`;
+        }
+
+        if (consequences.length > 0) {
+          inner += `
+            <div class="mechanism-consequences">
+              <div class="mechanism-consequences-title">Conséquences</div>
+              <ul>${consequences.map((c) => `<li>${safeText(c)}</li>`).join('')}</ul>
+            </div>
+          `;
+        }
+
+        return `<div class="mechanism">${inner}</div>`;
+      }).join('');
+
       html += `
         <div class="block">
           <div class="block-label"><i class="fas fa-cogs"></i> Mécanismes</div>
-          <div class="mecanismes-list">
-            ${n.mecanismes.map((m) => {
-              const nom = m.nom || m.name || 'Mécanisme';
-              const etapes = Array.isArray(m.etapes) ? m.etapes : [];
-              const consequences = Array.isArray(m.consequences) ? m.consequences : [];
-              return `
-                <div class="mecanisme-item">
-                  <div class="mecanisme-nom"><i class="fas fa-arrow-right"></i> ${safeText(nom)}</div>
-                  ${etapes.length > 0 ? `
-                    <ol class="mecanisme-etapes">
-                      ${etapes.map((e) => `<li>${safeText(e)}</li>`).join('')}
-                    </ol>
-                  ` : ''}
-                  ${consequences.length > 0 ? `
-                    <div class="mecanisme-consequences">
-                      <div class="mecanisme-consequences-title">Conséquences</div>
-                      <ul>
-                        ${consequences.map((c) => `<li>${safeText(c)}</li>`).join('')}
-                      </ul>
-                    </div>
-                  ` : ''}
-                </div>
-              `;
-            }).join('')}
-          </div>
+          ${mecaHtml}
         </div>
       `;
     }
 
-    // 📚 DATES CLÉS (Histoire)
+    // ─── DATES CLÉS (Histoire) ───
     if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-calendar"></i> Dates clés</div>
-          <div class="dates-list">
-            ${n.dates_cles.map((d) => {
-              const date = d.date || '';
-              const evt = d.evenement || d.event || '';
-              return `
-                <div class="date-item">
-                  <div class="date-value">${safeText(date)}</div>
-                  <div class="date-event">${safeText(evt)}</div>
-                </div>
-              `;
-            }).join('')}
+      const datesHtml = n.dates_cles.map((d) => {
+        const date = d.date || '';
+        const evt = d.evenement || d.event || '';
+        if (!date) return '';
+        return `<li><strong>${safeText(date)}</strong> — ${safeText(evt)}</li>`;
+      }).filter(Boolean).join('');
+
+      if (datesHtml) {
+        html += `
+          <div class="block">
+            <div class="block-label"><i class="fas fa-calendar"></i> Dates clés</div>
+            <ul class="simple-list">${datesHtml}</ul>
           </div>
-        </div>
-      `;
+        `;
+      }
     }
 
-    // 📚 PERSONNAGES (Histoire)
+    // ─── PERSONNAGES (Histoire) ───
     if (Array.isArray(n.personnages) && n.personnages.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-user-tie"></i> Personnages clés</div>
-          <div class="personnages-list">
-            ${n.personnages.map((p) => {
-              const nom = p.nom || p.name || '';
-              const role = p.role || '';
-              return `
-                <div class="personnage-item">
-                  <div class="personnage-nom">${safeText(nom)}</div>
-                  <div class="personnage-role">${safeText(role)}</div>
-                </div>
-              `;
-            }).join('')}
+      const persoHtml = n.personnages.map((p) => {
+        const nom = p.nom || p.name || '';
+        const role = p.role || '';
+        if (!nom) return '';
+        return `<li><strong>${safeText(nom)}</strong> — ${safeText(role)}</li>`;
+      }).filter(Boolean).join('');
+
+      if (persoHtml) {
+        html += `
+          <div class="block">
+            <div class="block-label"><i class="fas fa-user-tie"></i> Personnages clés</div>
+            <ul class="simple-list">${persoHtml}</ul>
           </div>
-        </div>
-      `;
+        `;
+      }
     }
 
-    // 📚 LIEUX (Histoire, Géo)
+    // ─── LIEUX (Géo/Histoire) ───
     if (Array.isArray(n.lieux) && n.lieux.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-map-marker-alt"></i> Lieux importants</div>
-          <div class="lieux-list">
-            ${n.lieux.map((l) => {
-              const nom = l.nom || l.name || l.lieu || '';
-              const info = l.info || l.description || '';
-              return `
-                <div class="lieu-item">
-                  <div class="lieu-nom">${safeText(nom)}</div>
-                  ${info ? `<div class="lieu-info">${safeText(info)}</div>` : ''}
-                </div>
-              `;
-            }).join('')}
+      const lieuxHtml = n.lieux.map((l) => {
+        const nom = l.nom || l.name || l.lieu || '';
+        const info = l.info || l.description || '';
+        if (!nom) return '';
+        return `<li><strong>${safeText(nom)}</strong> — ${safeText(info)}</li>`;
+      }).filter(Boolean).join('');
+
+      if (lieuxHtml) {
+        html += `
+          <div class="block">
+            <div class="block-label"><i class="fas fa-map-location-dot"></i> Lieux importants</div>
+            <ul class="simple-list">${lieuxHtml}</ul>
           </div>
-        </div>
-      `;
+        `;
+      }
     }
 
-    // 📚 AUTEURS (Philosophie)
+    // ─── AUTEURS (Philosophie) ───
     if (Array.isArray(n.auteurs) && n.auteurs.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-user-graduate"></i> Auteurs et thèses</div>
-          <div class="auteurs-list">
-            ${n.auteurs.map((a) => {
-              const nom = a.nom || a.name || '';
-              const idee = a.idee || a.these || '';
-              return `
-                <div class="auteur-item">
-                  <div class="auteur-nom">${safeText(nom)}</div>
-                  <div class="auteur-idee">${safeText(idee)}</div>
-                </div>
-              `;
-            }).join('')}
+      const auteursHtml = n.auteurs.map((a) => {
+        const nom = a.nom || a.name || '';
+        const idee = a.idee || a.these || '';
+        if (!nom) return '';
+        return `<li><strong>${safeText(nom)}</strong> — ${safeText(idee)}</li>`;
+      }).filter(Boolean).join('');
+
+      if (auteursHtml) {
+        html += `
+          <div class="block">
+            <div class="block-label"><i class="fas fa-user-graduate"></i> Auteurs clés</div>
+            <ul class="simple-list">${auteursHtml}</ul>
           </div>
-        </div>
-      `;
+        `;
+      }
     }
 
-    // 🔬 FORMULES (scientifiques)
+    // ─── FORMULES (scientifiques) ───
     if (Array.isArray(n.formules) && n.formules.length > 0) {
       const formulesHtml = n.formules.map((f) => {
         const latex = cleanLatex(f.latex || '');
@@ -2602,35 +2475,56 @@
       }
     }
 
-    // 🔬 MÉTHODE (commune aux deux, avec ou sans calculs)
-    if (n.methode && Array.isArray(n.methode.steps) && n.methode.steps.length > 0) {
+    // ─── PROPRIÉTÉS (scientifiques) ───
+    if (Array.isArray(n.proprietes) && n.proprietes.length > 0) {
       html += `
         <div class="block">
-          <div class="block-label"><i class="fas fa-list-ol"></i> ${escapeHtml(n.methode.title || 'Méthode pas-à-pas')}</div>
+          <div class="block-label"><i class="fas fa-list-ul"></i> Propriétés</div>
+          <ul class="simple-list">
+            ${n.proprietes.map((p) => `<li>${safeText(p)}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    // ─── MÉTHODE PAS-À-PAS (commun) ───
+    let methodeSteps = [];
+    let methodeTitle = 'Méthode pas-à-pas';
+
+    if (n.methode && typeof n.methode === 'object' && !Array.isArray(n.methode)) {
+      methodeTitle = n.methode.title || methodeTitle;
+      methodeSteps = Array.isArray(n.methode.steps) ? n.methode.steps : [];
+    } else if (Array.isArray(n.methodes) && n.methodes.length > 0) {
+      methodeSteps = n.methodes;
+    }
+
+    if (methodeSteps.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-list-ol"></i> ${escapeHtml(methodeTitle)}</div>
           <ol class="method-steps">
-            ${n.methode.steps.map((s) => `<li>${safeText(s)}</li>`).join('')}
+            ${methodeSteps.map((s) => `<li>${safeText(s)}</li>`).join('')}
           </ol>
         </div>
       `;
     }
 
-    // EXEMPLE RÉSOLU (commun)
-    if (n.exempleResolu && (n.exempleResolu.enonce || (Array.isArray(n.exempleResolu.etapes) && n.exempleResolu.etapes.length > 0))) {
-      let exHtml = '<div class="block"><div class="block-label"><i class="fas fa-check-circle"></i> Exemple</div>';
-      if (n.exempleResolu.enonce) {
-        exHtml += `<div class="example-enonce">${safeText(n.exempleResolu.enonce)}</div>`;
+    // ─── EXEMPLE RÉSOLU (commun) ───
+    if (n.exempleResolu && typeof n.exempleResolu === 'object') {
+      const ex = n.exempleResolu;
+      if (ex.enonce || (Array.isArray(ex.etapes) && ex.etapes.length > 0)) {
+        let exHtml = '<div class="block"><div class="block-label"><i class="fas fa-check-circle"></i> Exemple résolu</div>';
+        if (ex.enonce) exHtml += `<div class="example-enonce">${safeText(ex.enonce)}</div>`;
+        if (Array.isArray(ex.etapes) && ex.etapes.length > 0) {
+          exHtml += `<ol class="example-steps">${ex.etapes.map((e) => `<li>${safeText(e)}</li>`).join('')}</ol>`;
+        }
+        if (ex.conclusion) exHtml += `<div class="example-conclusion">${safeText(ex.conclusion)}</div>`;
+        exHtml += '</div>';
+        html += exHtml;
       }
-      if (Array.isArray(n.exempleResolu.etapes) && n.exempleResolu.etapes.length > 0) {
-        exHtml += `<ol class="example-steps">${n.exempleResolu.etapes.map((e) => `<li>${safeText(e)}</li>`).join('')}</ol>`;
-      }
-      if (n.exempleResolu.conclusion) {
-        exHtml += `<div class="example-conclusion">${safeText(n.exempleResolu.conclusion)}</div>`;
-      }
-      exHtml += '</div>';
-      html += exHtml;
     }
 
-    // PIÈGE DU BAC (commun)
+    // ─── PIÈGE DU BAC (commun) ───
     if (n.piegeBAC && (n.piegeBAC.trap || n.piegeBAC.solution)) {
       html += `
         <div class="block">
@@ -2641,7 +2535,7 @@
       `;
     }
 
-    // ASTUCE (commun)
+    // ─── ASTUCE (commun) ───
     if (n.astuce && n.astuce.trim()) {
       html += `
         <div class="block astuce">
@@ -2651,6 +2545,7 @@
       `;
     }
 
+    // ─── FALLBACK ───
     if (!html) {
       html = `
         <div class="block">
@@ -2683,7 +2578,11 @@
       showToast('Notion supprimée', 'success');
       state.currentNotion = null;
       await loadCahier();
-      showViewWithHistory('viewHome', { replace: true });
+
+      // ✅ On remplace l'historique pour éviter de revenir sur une notion supprimée
+      window.history.replaceState({ view: 'viewHome' }, '', window.location.pathname + window.location.search);
+      showView('viewHome');
+
     } catch (err) {
       console.error('[Réviseur] deleteNotion error:', err);
       showToast(err.message || 'Erreur de suppression', 'error');
@@ -2697,9 +2596,10 @@
     if (state.isGeneratingQuiz) return;
     state.isGeneratingQuiz = true;
 
-    showViewWithHistory('viewLoading');
     $('loadingTitle').textContent = 'Génération du quiz';
     $('loadingMessage').textContent = 'L\'IA prépare 10 questions sur tes notions. ~10 secondes.';
+
+    navigateTo('viewLoading');
 
     try {
       const data = await callApi({
@@ -2714,16 +2614,17 @@
 
       if (state.quiz.length === 0) {
         showToast('Aucune question générée. Réessaie.', 'error');
-        showViewWithHistory('viewHome', { replace: true });
+        navigateTo('viewHome');
         return;
       }
 
       renderQuiz();
-      showViewWithHistory('viewQuiz', { replace: true });
+      navigateTo('viewQuiz');
+
     } catch (err) {
       console.error('[Réviseur] quiz error:', err);
       showToast(err.message || 'Erreur de génération du quiz', 'error');
-      showViewWithHistory('viewHome', { replace: true });
+      navigateTo('viewHome');
     } finally {
       state.isGeneratingQuiz = false;
     }
@@ -2818,11 +2719,11 @@
     $('quizResultTitle').textContent = title;
     $('quizResultSub').textContent = sub;
 
-    showViewWithHistory('viewQuizResults');
+    navigateTo('viewQuizResults');
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // POP-UP PREMIUM
+  // PREMIUM POPUP
   // ═══════════════════════════════════════════════════════════════
   function showPremiumPopup() {
     $('premiumOverlay').classList.add('show');
@@ -2837,7 +2738,7 @@
 
   $('btnViewNotions').addEventListener('click', () => {
     renderNotionsList();
-    showViewWithHistory('viewNotions');
+    navigateTo('viewNotions');
   });
 
   $('btnGenerate').addEventListener('click', () => {
@@ -2851,17 +2752,17 @@
   $('btnQuiz').addEventListener('click', generateQuiz);
 
   $('backFromNotions').addEventListener('click', () => {
-    window.history.back();
+    goBack();
   });
 
   $('backFromNotionDetail').addEventListener('click', () => {
-    window.history.back();
+    goBack();
   });
 
   $('btnDeleteNotion').addEventListener('click', deleteCurrentNotion);
 
   $('backFromQuiz').addEventListener('click', () => {
-    window.history.back();
+    goBack();
   });
 
   $('btnValidateQuiz').addEventListener('click', validateQuiz);
@@ -2871,7 +2772,7 @@
   });
 
   $('btnBackHomeFromResults').addEventListener('click', () => {
-    showViewWithHistory('viewHome', { replace: true });
+    goBack();
   });
 
   $('premiumClose').addEventListener('click', hidePremiumPopup);
@@ -2901,6 +2802,7 @@
         } else {
           state.chapter = CHAPTERS[state.subject]?.[0] || 'Nombres complexes';
         }
+        state.subjectType = SCIENTIFIC_SUBJECTS.has(urlSubject) ? 'scientific' : 'lesson';
         return;
       }
 
@@ -2912,6 +2814,7 @@
           state.subject = savedSubject;
           if (savedChapter && CHAPTERS[state.subject]?.includes(savedChapter)) {
             state.chapter = savedChapter;
+            state.subjectType = SCIENTIFIC_SUBJECTS.has(savedSubject) ? 'scientific' : 'lesson';
             return;
           }
         }
@@ -2919,10 +2822,12 @@
 
       state.subject = 'mathematiques';
       state.chapter = 'Nombres complexes';
+      state.subjectType = 'scientific';
     } catch (e) {
       console.warn('[Réviseur] prefillFromUrl error:', e.message);
       state.subject = 'mathematiques';
       state.chapter = 'Nombres complexes';
+      state.subjectType = 'scientific';
     }
   }
 
@@ -2947,15 +2852,22 @@
     initChapterSelector();
 
     // ✅ Initialise l'historique avec la vue d'accueil
-    window.history.replaceState({ view: 'viewHome' }, '', '');
+    try {
+      window.history.replaceState(
+        { view: 'viewHome' },
+        '',
+        window.location.pathname + window.location.search
+      );
+    } catch (e) {
+      console.warn('[Réviseur] replaceState error:', e.message);
+    }
 
     await loadCahier();
 
     showView('viewHome');
   });
 
-  console.log('🚀 ARVEXA — Réviseur v7.2 — Navigation mobile + multi-format');
+  console.log('🚀 ARVEXA — Réviseur v7.2 — Multi-format + Historique mobile');
   </script>
 </body>
 </html>
-  
