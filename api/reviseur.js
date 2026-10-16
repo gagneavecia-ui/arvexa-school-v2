@@ -1,6 +1,7 @@
 // ================================================================
-// API RÉVISEUR v7.0.1 — ARVEXA School
-// Refonte : génération progressive + cahier persistant + lecture gratuite
+// API RÉVISEUR v7.2 — ARVEXA School
+// Génération progressive + cahier persistant + lecture gratuite
+// Support multi-format : scientifiques + leçons
 // Providers : OpenRouter (principal) + Groq (fallback)
 // ================================================================
 
@@ -20,6 +21,7 @@ const requestLog = new Map();
 const FREE_REVISEUR_LIMIT = 3;
 
 const ALLOWED_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie', 'svt', 'philosophie', 'histoire', 'geographie']);
+const ALLOWED_MODES = new Set(['fiche', 'flashcard']);
 
 const ALLOWED_ACTIONS = new Set([
   'loadCahier',
@@ -32,6 +34,7 @@ const ALLOWED_ACTIONS = new Set([
 ]);
 
 const LIGHT_ACTIONS = new Set(['loadCahier', 'loadNotion', 'deleteNotion', 'deleteCahier']);
+const PREMIUM_ACTIONS = new Set([]);
 
 const INITIAL_NOTIONS_COUNT = 4;
 const MORE_NOTIONS_COUNT = 3;
@@ -43,6 +46,22 @@ const CAHIER_COLLECTION = 'reviseurCahier';
 
 const KNOWLEDGE_MEMORY_CACHE = new Map();
 let adminServices = null;
+
+// ────────────────────────────────────────────────────────────────
+// ✅ CLASSIFICATION DES MATIÈRES (scientifiques vs leçons)
+// ────────────────────────────────────────────────────────────────
+const SCIENTIFIC_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie']);
+const LESSON_SUBJECTS = new Set(['svt', 'philosophie', 'histoire', 'geographie']);
+
+// Mapping des champs selon le type de matière
+const SCIENTIFIC_FIELDS = ['formules', 'proprietes', 'methodes', 'exemple_resolu'];
+const LESSON_FIELDS = ['points_cles', 'termes', 'mecanismes', 'dates_cles', 'personnages', 'lieux', 'auteurs'];
+
+function getSubjectType(subject) {
+  if (SCIENTIFIC_SUBJECTS.has(subject)) return 'scientific';
+  if (LESSON_SUBJECTS.has(subject)) return 'lesson';
+  return 'lesson'; // par défaut
+}
 
 // ════════════════════════════════════════════════════════════════
 // FIREBASE ADMIN
@@ -144,7 +163,6 @@ function getAllNotions(chapter) {
 // UTILITAIRES
 // ════════════════════════════════════════════════════════════════
 function clientIp(request) {
-  if (!request || !request.headers) return 'unknown';
   return String(request.headers['x-forwarded-for'] || request.socket?.remoteAddress || 'unknown').split(',')[0].trim();
 }
 
@@ -162,8 +180,7 @@ function jsonError(response, status, error, code) {
 }
 
 async function verifyFirebaseToken(request) {
-  if (!request) return null;
-  const authorization = request.headers?.authorization || '';
+  const authorization = request.headers.authorization || '';
   const match = authorization.match(/^Bearer\s+(.+)$/i);
   if (!match) return null;
   try { return await getAdminServices().auth.verifyIdToken(match[1]); }
@@ -202,6 +219,7 @@ function toISO(v) {
   return null;
 }
 
+// ✅ Nettoyage LaTeX
 const UNICODE_TO_LATEX = {
   'π': '\\pi ', '√': '\\sqrt{}', '×': '\\times ', '÷': '\\div ',
   '≤': '\\leq ', '≥': '\\geq ', '≠': '\\neq ', '∞': '\\infty ',
@@ -382,11 +400,11 @@ async function generateWithCascade(prompt, validator, maxTokens, temperature, ta
 }
 
 // ════════════════════════════════════════════════════════════════
-// PROMPTS
+// PROMPTS — Version allégée et adaptée au type de matière
 // ════════════════════════════════════════════════════════════════
 const LATEX_RULES = `
 RÈGLES LATEX :
-- Toute formule entre $...$ (inline) ou $$...$$ (display).
+- Toute formule mathématique entre $...$ ou $$...$$.
 - INTERDIT : LaTeX brut sans $, symboles Unicode (π → $\\pi$, √ → $\\sqrt{}$, × → $\\times$, ≤ → $\\leq$, ² → $^2$).
 `;
 
@@ -395,7 +413,8 @@ MISSION : Tu prépares un élève de Terminale D au Niger au BAC.
 Contenu clair, précis, mémorisable.
 `;
 
-function buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate) {
+// ✅ Prompt SCIENTIFIQUE (Maths, Physique, Chimie)
+function buildScientificNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate) {
   const notionsList = notionsToGenerate.map((n, i) =>
     `  ${i + 1}. [id: ${n.id}] ${n.titre}${n.description_courte ? ` — ${n.description_courte}` : ''}`
   ).join('\n');
@@ -406,15 +425,15 @@ ${PEDAGOGY_RULES}
 
 Chapitre : "${chapterTitle}"
 
-MISSION : Génère une fiche de révision pour CHACUNE des ${notionsToGenerate.length} notions suivantes :
+MISSION : Génère une fiche de révision SCIENTIFIQUE pour CHACUNE des ${notionsToGenerate.length} notions suivantes :
 
 ${notionsList}
 
 Pour CHAQUE notion, fournis :
 1. comprendre (4-6 phrases)
-2. formules (2-4 formules avec condition)
-3. methode (3-6 étapes)
-4. exempleResolu (chiffré, complet)
+2. formules (2-4 formules avec condition et usage)
+3. methodes (3-6 étapes avec calculs)
+4. exempleResolu (CHIFFRÉ, complet avec calculs)
 5. piegeBAC (piège + solution)
 6. astuce (mnémotechnique)
 
@@ -427,7 +446,7 @@ FORMAT JSON :
       "notionId": "id-exact-fourni",
       "notionTitle": "Titre exact",
       "comprendre": "...",
-      "formules": [{"latex": "$...$", "condition": "..."}],
+      "formules": [{"latex": "$...$", "condition": "...", "usage": "..."}],
       "methode": {"title": "Méthode", "steps": ["..."]},
       "exempleResolu": {"enonce": "...", "etapes": ["..."], "conclusion": "..."},
       "piegeBAC": {"trap": "...", "solution": "..."},
@@ -441,6 +460,91 @@ CONTRAINTES :
 - Réponds UNIQUEMENT avec le JSON`;
 }
 
+// ✅ Prompt LEÇON (SVT, Philosophie, Histoire, Géographie)
+function buildLessonNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate, subjectKey) {
+  const notionsList = notionsToGenerate.map((n, i) =>
+    `  ${i + 1}. [id: ${n.id}] ${n.titre}${n.description_courte ? ` — ${n.description_courte}` : ''}`
+  ).join('\n');
+
+  // Adapter les champs selon la matière
+  let specificFields = '';
+  let specificExample = '';
+
+  if (subjectKey === 'svt') {
+    specificFields = `3. termes (vocabulaire biologique PRÉCIS avec définitions)
+4. mecanismes (processus biologiques avec étapes)`;
+    specificExample = `"termes": [{"terme": "...", "definition": "..."}],
+      "mecanismes": [{"nom": "...", "etapes": ["..."], "consequences": ["..."]}],`;
+  } else if (subjectKey === 'histoire') {
+    specificFields = `3. dates_cles (dates importantes avec événements)
+4. personnages (personnages historiques avec leur rôle)
+5. lieux (lieux importants)`;
+    specificExample = `"dates_cles": [{"date": "1939", "evenement": "..."}],
+      "personnages": [{"nom": "...", "role": "..."}],
+      "lieux": [{"nom": "...", "info": "..."}],`;
+  } else if (subjectKey === 'philosophie') {
+    specificFields = `3. auteurs (philosophes avec leurs thèses)
+4. thèses principales`;
+    specificExample = `"auteurs": [{"nom": "...", "idee": "..."}],`;
+  } else if (subjectKey === 'geographie') {
+    specificFields = `3. lieux (pays, régions, zones)
+4. donnees_chiffrees (chiffres clés)`;
+    specificExample = `"lieux": [{"nom": "...", "info": "..."}],`;
+  }
+
+  return `Tu es professeur expert du BAC en Terminale D (${subjectLabel}).
+
+${PEDAGOGY_RULES}
+
+⚠️ IMPORTANT : Cette matière est une matière de LEÇONS. Il n'y a PAS de formules mathématiques. Utilise des POINTS CLÉS, du VOCABULAIRE et des MÉCANISMES.
+
+Chapitre : "${chapterTitle}"
+
+MISSION : Génère une fiche de révision pour CHACUNE des ${notionsToGenerate.length} notions suivantes :
+
+${notionsList}
+
+Pour CHAQUE notion, fournis :
+1. comprendre (4-6 phrases)
+2. points_cles (3-5 points importants à retenir)
+${specificFields}
+${notionsToGenerate.length + 3}. exempleResolu (exemple concret SANS calculs mathématiques, plutôt un cas pratique)
+${notionsToGenerate.length + 4}. piegeBAC (piège + solution)
+${notionsToGenerate.length + 5}. astuce (mnémotechnique ou astuce)
+
+FORMAT JSON :
+{
+  "notions": [
+    {
+      "notionId": "id-exact-fourni",
+      "notionTitle": "Titre exact",
+      "comprendre": "...",
+      "points_cles": ["...", "..."],
+      ${specificExample}
+      "methode": {"title": "Méthode", "steps": ["..."]},
+      "exempleResolu": {"enonce": "...", "etapes": ["..."], "conclusion": "..."},
+      "piegeBAC": {"trap": "...", "solution": "..."},
+      "astuce": "..."
+    }
+  ]
+}
+
+CONTRAINTES :
+- EXACTEMENT ${notionsToGenerate.length} notions
+- INTERDIT d'inventer des formules mathématiques
+- Réponds UNIQUEMENT avec le JSON`;
+}
+
+// ✅ Dispatcher : choisit le bon prompt selon la matière
+function buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate, subjectKey) {
+  const subjectType = getSubjectType(subjectKey);
+  if (subjectType === 'scientific') {
+    return buildScientificNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate);
+  }
+  return buildLessonNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate, subjectKey);
+}
+
+// ✅ Prompt pour le quiz (universel)
 function buildQuizPrompt(subjectLabel, chapterTitle, notions, count) {
   const notionsText = notions.map((n) => `- ${n.notionTitle || n.titre}`).join('\n');
 
@@ -478,9 +582,23 @@ CONTRAINTES : EXACTEMENT ${count} questions · Réponds UNIQUEMENT avec le JSON`
 // ════════════════════════════════════════════════════════════════
 // VALIDATIONS
 // ════════════════════════════════════════════════════════════════
-function validateNotionsResponse(data) {
-  return data && Array.isArray(data.notions) && data.notions.length >= 1 &&
-    data.notions.every((n) => n && n.notionId && n.notionTitle && typeof n.comprendre === 'string');
+function validateNotionsResponse(data, subjectType) {
+  if (!data || !Array.isArray(data.notions) || data.notions.length === 0) return false;
+
+  return data.notions.every((n) => {
+    if (!n.notionId || !n.notionTitle) return false;
+    if (typeof n.comprendre !== 'string') return false;
+
+    // Vérifier les champs essentiels selon le type
+    if (subjectType === 'scientific') {
+      // Les formules peuvent être vides mais doivent être un tableau si présent
+      if (n.formules && !Array.isArray(n.formules)) return false;
+    } else {
+      // Les leçons doivent avoir des points_cles
+      if (!Array.isArray(n.points_cles) || n.points_cles.length === 0) return false;
+    }
+    return true;
+  });
 }
 
 function validateQuiz(data) {
@@ -533,6 +651,40 @@ async function saveCahierToDB(uid, subject, chapter, cahierData) {
 }
 
 // ════════════════════════════════════════════════════════════════
+// ✅ NETTOYAGE D'UNE NOTION — accepte tous les formats
+// ════════════════════════════════════════════════════════════════
+function cleanNotion(n) {
+  const cleaned = {
+    notionId: n.notionId || '',
+    notionTitle: n.notionTitle || '',
+    comprendre: n.comprendre || '',
+    generatedAt: new Date().toISOString()
+  };
+
+  // 🔬 SCIENTIFIQUES (Maths, Physique, Chimie)
+  if (Array.isArray(n.formules) && n.formules.length > 0) cleaned.formules = n.formules;
+  if (Array.isArray(n.proprietes) && n.proprietes.length > 0) cleaned.proprietes = n.proprietes;
+  if (Array.isArray(n.methodes) && n.methodes.length > 0) cleaned.methodes = n.methodes;
+
+  // 📚 LEÇONS (SVT, Histoire, Philo, Géo)
+  if (Array.isArray(n.points_cles) && n.points_cles.length > 0) cleaned.points_cles = n.points_cles;
+  if (Array.isArray(n.termes) && n.termes.length > 0) cleaned.termes = n.termes;
+  if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) cleaned.mecanismes = n.mecanismes;
+  if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) cleaned.dates_cles = n.dates_cles;
+  if (Array.isArray(n.personnages) && n.personnages.length > 0) cleaned.personnages = n.personnages;
+  if (Array.isArray(n.lieux) && n.lieux.length > 0) cleaned.lieux = n.lieux;
+  if (Array.isArray(n.auteurs) && n.auteurs.length > 0) cleaned.auteurs = n.auteurs;
+
+  // COMMUNS
+  if (n.methode && typeof n.methode === 'object') cleaned.methode = n.methode;
+  if (n.exempleResolu && typeof n.exempleResolu === 'object') cleaned.exempleResolu = n.exempleResolu;
+  if (n.piegeBAC && typeof n.piegeBAC === 'object') cleaned.piegeBAC = n.piegeBAC;
+  if (n.astuce) cleaned.astuce = n.astuce;
+
+  return cleaned;
+}
+
+// ════════════════════════════════════════════════════════════════
 // ACTIONS
 // ════════════════════════════════════════════════════════════════
 
@@ -552,6 +704,7 @@ async function actionLoadCahier(uid, body) {
     success: true,
     subject,
     chapter,
+    subjectType: getSubjectType(subject),
     totalAvailable,
     generatedCount: cahier?.notions?.length || 0,
     notions: cahier?.notions || [],
@@ -586,6 +739,7 @@ async function actionGenerateInitial(uid, body) {
 
   const subjectLabel = knowledgeBase?.matiereLabel || subject;
   const chapterTitle = chapterData.titre || chapter;
+  const subjectType = getSubjectType(subject);
 
   let cahier = await loadCahierFromDB(uid, subject, chapter);
   if (!cahier) {
@@ -605,13 +759,19 @@ async function actionGenerateInitial(uid, body) {
   }
 
   const notionsToGenerate = remainingNotions.slice(0, INITIAL_NOTIONS_COUNT);
-  console.log(`[REVISEUR v7.0.1] generateInitial | ${subject} > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
+  console.log(`[REVISEUR v7.2] generateInitial | ${subject} (${subjectType}) > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
 
-  const prompt = buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate);
+  const prompt = buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate, subject);
 
   let generatedData;
   try {
-    const result = await generateWithCascade(prompt, validateNotionsResponse, MAX_TOKENS_PER_CALL, 0.3, 'initial');
+    const result = await generateWithCascade(
+      prompt,
+      (data) => validateNotionsResponse(data, subjectType),
+      MAX_TOKENS_PER_CALL,
+      0.3,
+      'initial'
+    );
     generatedData = result.data;
   } catch (err) {
     console.error('[REVISEUR] IA échouée:', err.message);
@@ -620,20 +780,8 @@ async function actionGenerateInitial(uid, body) {
 
   generatedData = deepClean(generatedData);
 
-  const newNotions = generatedData.notions.map((n) => ({
-    notionId: n.notionId,
-    notionTitle: n.notionTitle,
-    comprendre: n.comprendre || '',
-    formules: n.formules || [],
-    methode: n.methode || {},
-    exempleResolu: n.exempleResolu || {},
-    piegeBAC: n.piegeBAC || {},
-    astuce: n.astuce || '',
-    generatedAt: new Date().toISOString()
-  }));
+  const newNotions = generatedData.notions.map(cleanNotion);
 
-  cahier.notions = cahier.notions || [];
-  cahier.generatedIds = cahier.generatedIds || [];
   cahier.notions.push(...newNotions);
   cahier.generatedIds.push(...notionsToGenerate.map((n) => n.id));
 
@@ -661,6 +809,7 @@ async function actionGenerateMore(uid, body) {
   const allNotions = getAllNotions(chapterData);
   const subjectLabel = knowledgeBase?.matiereLabel || subject;
   const chapterTitle = chapterData.titre || chapter;
+  const subjectType = getSubjectType(subject);
 
   const cahier = await loadCahierFromDB(uid, subject, chapter);
   if (!cahier) {
@@ -681,13 +830,19 @@ async function actionGenerateMore(uid, body) {
 
   const shuffled = shuffle(remainingNotions);
   const notionsToGenerate = shuffled.slice(0, Math.min(MORE_NOTIONS_COUNT, shuffled.length));
-  console.log(`[REVISEUR v7.0.1] generateMore | ${subject} > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
+  console.log(`[REVISEUR v7.2] generateMore | ${subject} (${subjectType}) > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
 
-  const prompt = buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate);
+  const prompt = buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate, subject);
 
   let generatedData;
   try {
-    const result = await generateWithCascade(prompt, validateNotionsResponse, MAX_TOKENS_PER_CALL, 0.4, 'more');
+    const result = await generateWithCascade(
+      prompt,
+      (data) => validateNotionsResponse(data, subjectType),
+      MAX_TOKENS_PER_CALL,
+      0.4,
+      'more'
+    );
     generatedData = result.data;
   } catch (err) {
     console.error('[REVISEUR] IA échouée:', err.message);
@@ -696,17 +851,7 @@ async function actionGenerateMore(uid, body) {
 
   generatedData = deepClean(generatedData);
 
-  const newNotions = generatedData.notions.map((n) => ({
-    notionId: n.notionId,
-    notionTitle: n.notionTitle,
-    comprendre: n.comprendre || '',
-    formules: n.formules || [],
-    methode: n.methode || {},
-    exempleResolu: n.exempleResolu || {},
-    piegeBAC: n.piegeBAC || {},
-    astuce: n.astuce || '',
-    generatedAt: new Date().toISOString()
-  }));
+  const newNotions = generatedData.notions.map(cleanNotion);
 
   cahier.notions.push(...newNotions);
   cahier.generatedIds.push(...notionsToGenerate.map((n) => n.id));
@@ -797,8 +942,6 @@ async function actionDeleteCahier(uid, body) {
 // HANDLER
 // ════════════════════════════════════════════════════════════════
 module.exports = async function handler(request, response) {
-  if (!request || !response) return;
-
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST');
     return jsonError(response, 405, 'Méthode non autorisée.');
@@ -824,17 +967,17 @@ module.exports = async function handler(request, response) {
 
   try {
     switch (action) {
-      case 'loadCahier':     return response.status(200).json(await actionLoadCahier(user.uid, body));
-      case 'loadNotion':     return response.status(200).json(await actionLoadNotion(user.uid, body));
+      case 'loadCahier':      return response.status(200).json(await actionLoadCahier(user.uid, body));
+      case 'loadNotion':      return response.status(200).json(await actionLoadNotion(user.uid, body));
       case 'generateInitial': return response.status(200).json(await actionGenerateInitial(user.uid, body));
-      case 'generateMore':   return response.status(200).json(await actionGenerateMore(user.uid, body));
-      case 'deleteNotion':   return response.status(200).json(await actionDeleteNotion(user.uid, body));
-      case 'deleteCahier':   return response.status(200).json(await actionDeleteCahier(user.uid, body));
-      case 'quiz':           return response.status(200).json(await actionQuiz(user.uid, body));
-      default:               return jsonError(response, 400, `Action inconnue : "${action}"`);
+      case 'generateMore':    return response.status(200).json(await actionGenerateMore(user.uid, body));
+      case 'deleteNotion':    return response.status(200).json(await actionDeleteNotion(user.uid, body));
+      case 'deleteCahier':    return response.status(200).json(await actionDeleteCahier(user.uid, body));
+      case 'quiz':            return response.status(200).json(await actionQuiz(user.uid, body));
+      default:                return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[REVISEUR v7.0.1] "${action}" échouée:`, error.message);
+    console.error(`[REVISEUR v7.2] "${action}" échouée:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
