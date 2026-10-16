@@ -1,8 +1,9 @@
 // ================================================================
-// API RÉVISEUR v7.2 — ARVEXA School
+// API RÉVISEUR v7.3 — ARVEXA School
 // Génération progressive + cahier persistant + lecture gratuite
 // Support multi-format : scientifiques + leçons
 // Providers : OpenRouter (principal) + Groq (fallback)
+// ✅ Quotas fonctionnels : 3 crédits/jour par utilisateur
 // ================================================================
 
 const fs = require('fs');
@@ -18,6 +19,7 @@ const MAX_REQUESTS_PER_WINDOW_LIGHT = 60;
 const MAX_REQUESTS_PER_WINDOW_HEAVY = 20;
 const requestLog = new Map();
 
+// ✅ 3 crédits gratuits par jour
 const FREE_REVISEUR_LIMIT = 3;
 
 const ALLOWED_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie', 'svt', 'philosophie', 'histoire', 'geographie']);
@@ -48,19 +50,15 @@ const KNOWLEDGE_MEMORY_CACHE = new Map();
 let adminServices = null;
 
 // ────────────────────────────────────────────────────────────────
-// ✅ CLASSIFICATION DES MATIÈRES (scientifiques vs leçons)
+// ✅ CLASSIFICATION DES MATIÈRES
 // ────────────────────────────────────────────────────────────────
 const SCIENTIFIC_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie']);
 const LESSON_SUBJECTS = new Set(['svt', 'philosophie', 'histoire', 'geographie']);
 
-// Mapping des champs selon le type de matière
-const SCIENTIFIC_FIELDS = ['formules', 'proprietes', 'methodes', 'exemple_resolu'];
-const LESSON_FIELDS = ['points_cles', 'termes', 'mecanismes', 'dates_cles', 'personnages', 'lieux', 'auteurs'];
-
 function getSubjectType(subject) {
   if (SCIENTIFIC_SUBJECTS.has(subject)) return 'scientific';
   if (LESSON_SUBJECTS.has(subject)) return 'lesson';
-  return 'lesson'; // par défaut
+  return 'lesson';
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -187,19 +185,6 @@ async function verifyFirebaseToken(request) {
   catch (_) { return null; }
 }
 
-function isPremiumUser(data) {
-  if (!data) return false;
-  const status = data.subscriptionStatus || 'none';
-  if (status === 'pending') return false;
-  const hasPremium = data.premium === true || data.isUnlocked === true || data.hasDeposited === true;
-  const end = data.subscriptionEndDate?.toDate?.() ||
-    (data.subscriptionEndDate?.seconds ? new Date(data.subscriptionEndDate.seconds * 1000) : null);
-  if (hasPremium && end) return end.getTime() > Date.now();
-  if (status === 'expired') return false;
-  if (hasPremium && !end) return true;
-  return false;
-}
-
 function shuffle(array) {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -272,6 +257,76 @@ function deepClean(obj) {
     return c;
   }
   return obj;
+}
+
+// ════════════════════════════════════════════════════════════════
+// ✅ QUOTAS — Fonctions de gestion du quota gratuit
+// ════════════════════════════════════════════════════════════════
+
+function getUsageDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function isPremiumUser(data) {
+  if (!data) return false;
+  const status = data.subscriptionStatus || 'none';
+  if (status === 'pending') return false;
+  const hasPremium = data.premium === true || data.isUnlocked === true || data.hasDeposited === true;
+  const end = data.subscriptionEndDate?.toDate?.() ||
+    (data.subscriptionEndDate?.seconds ? new Date(data.subscriptionEndDate.seconds * 1000) : null);
+  if (hasPremium && end) return end.getTime() > Date.now();
+  if (status === 'expired') return false;
+  if (hasPremium && !end) return true;
+  return false;
+}
+
+async function reserveFreeGeneration(uid) {
+  const { db, FieldValue } = getAdminServices();
+  const userRef = db.collection('users').doc(uid);
+  const usageDate = getUsageDate();
+  const usageRef = userRef.collection('reviseurUsage').doc(usageDate);
+
+  return db.runTransaction(async (transaction) => {
+    const userSnapshot = await transaction.get(userRef);
+    const usageSnapshot = await transaction.get(usageRef);
+
+    if (!userSnapshot.exists) throw new Error('profile_missing');
+
+    if (isPremiumUser(userSnapshot.data())) {
+      return { premium: true, reserved: false, usageDate };
+    }
+
+    const used = Number(usageSnapshot.data()?.count || 0);
+
+    if (used >= FREE_REVISEUR_LIMIT) {
+      return { premium: false, reserved: false, limitReached: true, used, usageDate };
+    }
+
+    transaction.set(usageRef, {
+      count: used + 1,
+      updatedAt: FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    return { premium: false, reserved: true, usageDate, used: used + 1 };
+  });
+}
+
+async function releaseFreeGeneration(uid, usageDate) {
+  if (!usageDate) return;
+
+  try {
+    const { db, FieldValue } = getAdminServices();
+    const usageRef = db.collection('users').doc(uid).collection('reviseurUsage').doc(usageDate);
+
+    await db.runTransaction(async (transaction) => {
+      const snap = await transaction.get(usageRef);
+      const used = Math.max(0, Number(snap.data()?.count || 0) - 1);
+      transaction.set(usageRef, {
+        count: used,
+        updatedAt: FieldValue.serverTimestamp()
+      }, { merge: true });
+    });
+  } catch (_) {}
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -400,7 +455,7 @@ async function generateWithCascade(prompt, validator, maxTokens, temperature, ta
 }
 
 // ════════════════════════════════════════════════════════════════
-// PROMPTS — Version allégée et adaptée au type de matière
+// PROMPTS
 // ════════════════════════════════════════════════════════════════
 const LATEX_RULES = `
 RÈGLES LATEX :
@@ -413,7 +468,6 @@ MISSION : Tu prépares un élève de Terminale D au Niger au BAC.
 Contenu clair, précis, mémorisable.
 `;
 
-// ✅ Prompt SCIENTIFIQUE (Maths, Physique, Chimie)
 function buildScientificNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate) {
   const notionsList = notionsToGenerate.map((n, i) =>
     `  ${i + 1}. [id: ${n.id}] ${n.titre}${n.description_courte ? ` — ${n.description_courte}` : ''}`
@@ -460,13 +514,11 @@ CONTRAINTES :
 - Réponds UNIQUEMENT avec le JSON`;
 }
 
-// ✅ Prompt LEÇON (SVT, Philosophie, Histoire, Géographie)
 function buildLessonNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate, subjectKey) {
   const notionsList = notionsToGenerate.map((n, i) =>
     `  ${i + 1}. [id: ${n.id}] ${n.titre}${n.description_courte ? ` — ${n.description_courte}` : ''}`
   ).join('\n');
 
-  // Adapter les champs selon la matière
   let specificFields = '';
   let specificExample = '';
 
@@ -484,7 +536,7 @@ function buildLessonNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate,
       "lieux": [{"nom": "...", "info": "..."}],`;
   } else if (subjectKey === 'philosophie') {
     specificFields = `3. auteurs (philosophes avec leurs thèses)
-4. thèses principales`;
+4. theses principales`;
     specificExample = `"auteurs": [{"nom": "...", "idee": "..."}],`;
   } else if (subjectKey === 'geographie') {
     specificFields = `3. lieux (pays, régions, zones)
@@ -508,7 +560,7 @@ Pour CHAQUE notion, fournis :
 1. comprendre (4-6 phrases)
 2. points_cles (3-5 points importants à retenir)
 ${specificFields}
-${notionsToGenerate.length + 3}. exempleResolu (exemple concret SANS calculs mathématiques, plutôt un cas pratique)
+${notionsToGenerate.length + 3}. exempleResolu (exemple concret SANS calculs mathématiques)
 ${notionsToGenerate.length + 4}. piegeBAC (piège + solution)
 ${notionsToGenerate.length + 5}. astuce (mnémotechnique ou astuce)
 
@@ -535,7 +587,6 @@ CONTRAINTES :
 - Réponds UNIQUEMENT avec le JSON`;
 }
 
-// ✅ Dispatcher : choisit le bon prompt selon la matière
 function buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate, subjectKey) {
   const subjectType = getSubjectType(subjectKey);
   if (subjectType === 'scientific') {
@@ -544,7 +595,6 @@ function buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate, subje
   return buildLessonNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate, subjectKey);
 }
 
-// ✅ Prompt pour le quiz (universel)
 function buildQuizPrompt(subjectLabel, chapterTitle, notions, count) {
   const notionsText = notions.map((n) => `- ${n.notionTitle || n.titre}`).join('\n');
 
@@ -589,12 +639,9 @@ function validateNotionsResponse(data, subjectType) {
     if (!n.notionId || !n.notionTitle) return false;
     if (typeof n.comprendre !== 'string') return false;
 
-    // Vérifier les champs essentiels selon le type
     if (subjectType === 'scientific') {
-      // Les formules peuvent être vides mais doivent être un tableau si présent
       if (n.formules && !Array.isArray(n.formules)) return false;
     } else {
-      // Les leçons doivent avoir des points_cles
       if (!Array.isArray(n.points_cles) || n.points_cles.length === 0) return false;
     }
     return true;
@@ -650,9 +697,6 @@ async function saveCahierToDB(uid, subject, chapter, cahierData) {
   }
 }
 
-// ════════════════════════════════════════════════════════════════
-// ✅ NETTOYAGE D'UNE NOTION — accepte tous les formats
-// ════════════════════════════════════════════════════════════════
 function cleanNotion(n) {
   const cleaned = {
     notionId: n.notionId || '',
@@ -661,12 +705,12 @@ function cleanNotion(n) {
     generatedAt: new Date().toISOString()
   };
 
-  // 🔬 SCIENTIFIQUES (Maths, Physique, Chimie)
+  // SCIENTIFIQUES
   if (Array.isArray(n.formules) && n.formules.length > 0) cleaned.formules = n.formules;
   if (Array.isArray(n.proprietes) && n.proprietes.length > 0) cleaned.proprietes = n.proprietes;
   if (Array.isArray(n.methodes) && n.methodes.length > 0) cleaned.methodes = n.methodes;
 
-  // 📚 LEÇONS (SVT, Histoire, Philo, Géo)
+  // LEÇONS
   if (Array.isArray(n.points_cles) && n.points_cles.length > 0) cleaned.points_cles = n.points_cles;
   if (Array.isArray(n.termes) && n.termes.length > 0) cleaned.termes = n.termes;
   if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) cleaned.mecanismes = n.mecanismes;
@@ -759,7 +803,26 @@ async function actionGenerateInitial(uid, body) {
   }
 
   const notionsToGenerate = remainingNotions.slice(0, INITIAL_NOTIONS_COUNT);
-  console.log(`[REVISEUR v7.2] generateInitial | ${subject} (${subjectType}) > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
+  console.log(`[REVISEUR v7.3] generateInitial | ${subject} (${subjectType}) > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
+
+  // ✅ Réservation du quota
+  let reservation = null;
+  try {
+    reservation = await reserveFreeGeneration(uid);
+  } catch (error) {
+    console.error('[REVISEUR] Erreur quota:', error.message);
+    throw { status: 503, message: 'Quota temporairement indisponible.' };
+  }
+
+  if (reservation.limitReached) {
+    throw {
+      status: 429,
+      code: 'FREE_REVISEUR_LIMIT',
+      message: 'Limite gratuite atteinte. Passe à Premium.',
+      used: reservation.used,
+      limit: FREE_REVISEUR_LIMIT
+    };
+  }
 
   const prompt = buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate, subject);
 
@@ -775,6 +838,12 @@ async function actionGenerateInitial(uid, body) {
     generatedData = result.data;
   } catch (err) {
     console.error('[REVISEUR] IA échouée:', err.message);
+
+    // ✅ Libérer le quota si échec IA
+    if (reservation?.reserved) {
+      try { await releaseFreeGeneration(uid, reservation.usageDate); } catch (_) {}
+    }
+
     throw { status: 503, message: 'Service IA temporairement indisponible. Réessaie dans une minute.' };
   }
 
@@ -793,7 +862,10 @@ async function actionGenerateInitial(uid, body) {
     generatedCount: cahier.notions.length,
     totalAvailable: allNotions.length,
     source: 'ai',
-    message: `${newNotions.length} notions générées.`
+    message: `${newNotions.length} notions générées.`,
+    quota: reservation?.premium
+      ? { type: 'premium', unlimited: true }
+      : { type: 'free', used: reservation?.used, limit: FREE_REVISEUR_LIMIT }
   };
 }
 
@@ -830,7 +902,26 @@ async function actionGenerateMore(uid, body) {
 
   const shuffled = shuffle(remainingNotions);
   const notionsToGenerate = shuffled.slice(0, Math.min(MORE_NOTIONS_COUNT, shuffled.length));
-  console.log(`[REVISEUR v7.2] generateMore | ${subject} (${subjectType}) > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
+  console.log(`[REVISEUR v7.3] generateMore | ${subject} (${subjectType}) > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
+
+  // ✅ Réservation du quota
+  let reservation = null;
+  try {
+    reservation = await reserveFreeGeneration(uid);
+  } catch (error) {
+    console.error('[REVISEUR] Erreur quota:', error.message);
+    throw { status: 503, message: 'Quota temporairement indisponible.' };
+  }
+
+  if (reservation.limitReached) {
+    throw {
+      status: 429,
+      code: 'FREE_REVISEUR_LIMIT',
+      message: 'Limite gratuite atteinte. Passe à Premium.',
+      used: reservation.used,
+      limit: FREE_REVISEUR_LIMIT
+    };
+  }
 
   const prompt = buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate, subject);
 
@@ -846,6 +937,11 @@ async function actionGenerateMore(uid, body) {
     generatedData = result.data;
   } catch (err) {
     console.error('[REVISEUR] IA échouée:', err.message);
+
+    if (reservation?.reserved) {
+      try { await releaseFreeGeneration(uid, reservation.usageDate); } catch (_) {}
+    }
+
     throw { status: 503, message: 'Service IA temporairement indisponible. Réessaie dans une minute.' };
   }
 
@@ -864,7 +960,10 @@ async function actionGenerateMore(uid, body) {
     generatedCount: cahier.notions.length,
     totalAvailable: allNotions.length,
     source: 'ai',
-    message: `${newNotions.length} nouvelles notions générées.`
+    message: `${newNotions.length} nouvelles notions générées.`,
+    quota: reservation?.premium
+      ? { type: 'premium', unlimited: true }
+      : { type: 'free', used: reservation?.used, limit: FREE_REVISEUR_LIMIT }
   };
 }
 
@@ -906,9 +1005,11 @@ async function actionQuiz(uid, body) {
   // ✅ NOUVEAU : réserver 1 crédit pour le quiz
   let reservation = null;
   try {
+    console.log(`[REVISEUR] Quiz — réservation quota pour uid=${uid.slice(0, 8)}`);
     reservation = await reserveFreeGeneration(uid);
+    console.log(`[REVISEUR] Quiz — réservation OK:`, JSON.stringify(reservation));
   } catch (error) {
-    console.error('[REVISEUR] Erreur quota:', error.message);
+    console.error('[REVISEUR] Quiz — ERREUR réservation:', error.message);
     throw { status: 503, message: 'Quota temporairement indisponible.' };
   }
 
@@ -929,9 +1030,9 @@ async function actionQuiz(uid, body) {
     const result = await generateWithCascade(prompt, validateQuiz, 4000, 0.6, 'quiz');
     quizData = result.data;
   } catch (err) {
-    console.error('[REVISEUR] Quiz échoué:', err.message);
+    console.error('[REVISEUR] Quiz IA échoué:', err.message);
 
-    // ✅ Libérer le crédit si l'IA échoue
+    // ✅ Libérer le quota si IA échoue
     if (reservation?.reserved) {
       try { await releaseFreeGeneration(uid, reservation.usageDate); } catch (_) {}
     }
@@ -943,7 +1044,7 @@ async function actionQuiz(uid, body) {
   const validQuiz = (quizData.quiz || []).filter((q) => q && q.question && Array.isArray(q.options) && q.options.length === 4);
 
   if (validQuiz.length === 0) {
-    // ✅ Libérer le crédit si aucune question valide
+    // ✅ Libérer le quota si aucune question valide
     if (reservation?.reserved) {
       try { await releaseFreeGeneration(uid, reservation.usageDate); } catch (_) {}
     }
@@ -1019,7 +1120,7 @@ module.exports = async function handler(request, response) {
       default:                return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[REVISEUR v7.2] "${action}" échouée:`, error.message);
+    console.error(`[REVISEUR v7.3] "${action}" échouée:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
