@@ -903,6 +903,25 @@ async function actionQuiz(uid, body) {
     throw { status: 400, message: 'Génère d\'abord des notions avant de faire un quiz.' };
   }
 
+  // ✅ NOUVEAU : réserver 1 crédit pour le quiz
+  let reservation = null;
+  try {
+    reservation = await reserveFreeGeneration(uid);
+  } catch (error) {
+    console.error('[REVISEUR] Erreur quota:', error.message);
+    throw { status: 503, message: 'Quota temporairement indisponible.' };
+  }
+
+  if (reservation.limitReached) {
+    throw {
+      status: 429,
+      code: 'FREE_REVISEUR_LIMIT',
+      message: 'Limite gratuite atteinte. Passe à Premium.',
+      used: reservation.used,
+      limit: FREE_REVISEUR_LIMIT
+    };
+  }
+
   const prompt = buildQuizPrompt(subjectLabel, chapterTitle, notions, count);
 
   let quizData;
@@ -911,16 +930,39 @@ async function actionQuiz(uid, body) {
     quizData = result.data;
   } catch (err) {
     console.error('[REVISEUR] Quiz échoué:', err.message);
+
+    // ✅ Libérer le crédit si l'IA échoue
+    if (reservation?.reserved) {
+      try { await releaseFreeGeneration(uid, reservation.usageDate); } catch (_) {}
+    }
+
     throw { status: 503, message: 'Quiz temporairement indisponible.' };
   }
 
   quizData = deepClean(quizData);
   const validQuiz = (quizData.quiz || []).filter((q) => q && q.question && Array.isArray(q.options) && q.options.length === 4);
 
+  if (validQuiz.length === 0) {
+    // ✅ Libérer le crédit si aucune question valide
+    if (reservation?.reserved) {
+      try { await releaseFreeGeneration(uid, reservation.usageDate); } catch (_) {}
+    }
+
+    return {
+      success: true,
+      quiz: [],
+      source: 'unavailable',
+      message: 'Aucune question générée. Réessaie.'
+    };
+  }
+
   return {
     success: true,
     quiz: validQuiz,
-    source: 'ai'
+    source: 'ai',
+    quota: reservation?.premium
+      ? { type: 'premium', unlimited: true }
+      : { type: 'free', used: reservation?.used, limit: FREE_REVISEUR_LIMIT }
   };
 }
 
