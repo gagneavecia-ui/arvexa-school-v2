@@ -1,11 +1,7 @@
 // ================================================================
-// KATEX UTILS v4.0 — ARVEXA School
+// KATEX UTILS v5.0 — ARVEXA School
 // Rendu mathématique robuste, global, auto-injecté
-// + Réparation des commandes LaTeX amputées par JSON.parse
-// + Extraction commandes LaTeX dans \text{...}
-// + Nettoyage unités avec virgules
-// + Conversion Unicode exhaustive
-// + Fallback visuel si KaTeX échoue
+// ✅ OPTIMISÉ : cache regex + une seule passe Unicode
 // ================================================================
 
 (function () {
@@ -15,7 +11,7 @@
   window.__arvexaKatexInit = true;
 
   // ═══════════════════════════════════════════════════════════════
-  // 1. MACROS UNIVERSAL
+  // 1. MACROS UNIVERSEL
   // ═══════════════════════════════════════════════════════════════
   const MACROS = {
     "\\R": "\\mathbb{R}",
@@ -259,7 +255,34 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // 7. RÉPARATION DES COMMANDES AMPUTÉES PAR JSON.parse
+  // 7. ✅ OPTIMISATION : REGEX PRÉ-COMPILÉES (construites UNE FOIS)
+  // ═══════════════════════════════════════════════════════════════
+
+  // ✅ Regex pour fixCommandSpacing (construite une seule fois)
+  let __fixCommandSpacingRegex = null;
+  (function buildFixCommandSpacingRegex() {
+    const cmdList = Array.from(KNOWN_LATEX_COMMANDS)
+      .filter(c => /^[a-zA-Z]+$/.test(c))
+      .sort((a, b) => b.length - a.length);
+    if (cmdList.length > 0) {
+      __fixCommandSpacingRegex = new RegExp(
+        `(\\\\${cmdList.join('|\\\\')})(?=[a-zA-Z0-9])`,
+        'g'
+      );
+    }
+  })();
+
+  // ✅ Regex pour replaceUnicodeMath (une seule passe au lieu de 200 itérations)
+  const __UNICODE_MAP_ENTRIES = Object.entries(UNICODE_MAP);
+  const __UNICODE_REGEX = new RegExp(
+    __UNICODE_MAP_ENTRIES
+      .map(([k]) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|'),
+    'g'
+  );
+
+  // ═══════════════════════════════════════════════════════════════
+  // 8. RÉPARATION DES COMMANDES AMPUTÉES PAR JSON.parse
   // ═══════════════════════════════════════════════════════════════
   function repairBrokenLatexCommands(text) {
     if (!text || typeof text !== 'string') return text;
@@ -314,9 +337,8 @@
     return r;
   }
 
-  
   // ═══════════════════════════════════════════════════════════════
-  // 8. FONCTIONS DE NETTOYAGE
+  // 9. FONCTIONS DE NETTOYAGE
   // ═══════════════════════════════════════════════════════════════
 
   function replaceUnicodeScripts(text) {
@@ -336,6 +358,7 @@
     return r;
   }
 
+  // ✅ OPTIMISÉ : une seule passe regex au lieu de 200 itérations
   function replaceUnicodeMath(text) {
     if (!text || typeof text !== 'string') return text;
 
@@ -343,28 +366,15 @@
 
     return parts.map((part, i) => {
       if (i % 2 === 1) return part;
-      let r = part;
-      for (const [uni, latex] of Object.entries(UNICODE_MAP)) {
-        if (r.indexOf(uni) !== -1) {
-          r = r.split(uni).join(latex);
-        }
-      }
-      return r;
+      return part.replace(__UNICODE_REGEX, (match) => UNICODE_MAP[match] || match);
     }).join('');
   }
 
+  // ✅ OPTIMISÉ : utilise la regex pré-compilée
   function fixCommandSpacing(text) {
     if (!text || typeof text !== 'string') return text;
-
-    const cmdList = Array.from(KNOWN_LATEX_COMMANDS)
-      .filter(c => /^[a-zA-Z]+$/.test(c))
-      .sort((a, b) => b.length - a.length);
-
-    if (cmdList.length === 0) return text;
-
-    const regex = new RegExp(`(\\\\${cmdList.join('|\\\\')})(?=[a-zA-Z0-9])`, 'g');
-
-    return text.replace(regex, '$1 ');
+    if (!__fixCommandSpacingRegex) return text;
+    return text.replace(__fixCommandSpacingRegex, '$1 ');
   }
 
   function fixTextInternals(text) {
@@ -585,6 +595,7 @@
     }).join('');
   }
 
+  // ✅ OPTIMISÉ : limitation du backtracking
   function wrapSegmentLatex(segment) {
     if (!segment) return segment;
 
@@ -621,10 +632,11 @@
       }
     );
 
+    // ✅ Limite les itérations de fusion pour éviter le backtracking
     for (let iteration = 0; iteration < 8; iteration++) {
       const before = r;
       r = r.replace(
-        /\$\s*([^$]*?)\s*\$\s*([+\-*/=<>()\[\]{}.,\s]*?)\s*\$\s*([^$]*?)\s*\$/g,
+        /\$\s*([^$]{0,500}?)\s*\$\s*([+\-*/=<>()\[\]{}.,\s]{0,50}?)\s*\$\s*([^$]{0,500}?)\s*\$/g,
         (m, a, ops, b) => ` $${a.trim()} ${ops.trim()} ${b.trim()}$ `
       );
       if (before === r) break;
@@ -767,9 +779,8 @@
     return false;
   }
 
- 
   // ═══════════════════════════════════════════════════════════════
-  // 9. RENDU KATEX
+  // 10. RENDU KATEX
   // ═══════════════════════════════════════════════════════════════
   function renderKaTeXInternal(root, options) {
     if (!root) return;
@@ -802,7 +813,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // 10. FALLBACK VISUEL
+  // 11. FALLBACK VISUEL
   // ═══════════════════════════════════════════════════════════════
   function applyFallbackStyle() {
     if (document.getElementById('arvexa-katex-fallback-style')) return;
@@ -838,7 +849,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // 11. RENDU GLOBAL
+  // 12. RENDU GLOBAL
   // ═══════════════════════════════════════════════════════════════
   function renderMath(root) {
     const element = root || document.body;
@@ -915,7 +926,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // 12. MUTATION OBSERVER
+  // 13. MUTATION OBSERVER
   // ═══════════════════════════════════════════════════════════════
   let observerTimer = null;
   let pendingTargets = new Set();
@@ -990,7 +1001,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // 13. EXPORT GLOBAL
+  // 14. EXPORT GLOBAL
   // ═══════════════════════════════════════════════════════════════
   window.KaTeXUtils = {
     normalizeLatex,
@@ -1026,7 +1037,7 @@
   };
 
   // ═══════════════════════════════════════════════════════════════
-  // 14. AUTO-INIT
+  // 15. AUTO-INIT
   // ═══════════════════════════════════════════════════════════════
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
@@ -1036,6 +1047,6 @@
     initAutoRender();
   }
 
-  console.log('📐 KaTeXUtils v4.0 chargé');
+  console.log('📐 KaTeXUtils v5.0 chargé (optimisé)');
 
 })();
