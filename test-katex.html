@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test KaTeX</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="katex-utils.js" defer></script>
+<style>
+  body {
+    background: #0A0A0A;
+    color: #F5F0E8;
+    font-family: -apple-system, system-ui, sans-serif;
+    padding: 20px;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  h1 { color: #E0B84A; font-size: 22px; margin-bottom: 10px; }
+  h2 { color: #E0B84A; font-size: 16px; margin: 24px 0 10px; border-bottom: 1px solid #333; padding-bottom: 6px; }
+  .test-item { margin-bottom: 16px; padding: 12px; background: rgba(20,20,20,0.6); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); }
+  .label { font-size: 11px; color: #8A8A7A; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .raw { font-family: monospace; font-size: 12px; color: #7ce0aa; word-break: break-all; margin-bottom: 8px; padding: 8px; background: #000; border-radius: 6px; }
+  .rendered { font-size: 16px; color: #F5F0E8; }
+  .status-box {
+    padding: 16px; border-radius: 10px; margin-bottom: 20px; font-weight: 700;
+    text-align: center; font-size: 16px;
+  }
+  .status-ok { background: rgba(58,182,126,0.15); border: 1px solid #3AB67E; color: #7ce0aa; }
+  .status-ko { background: rgba(255,154,132,0.15); border: 1px solid #ff9a84; color: #ff9a84; }
+</style>
+</head>
+<body>
+
+<div id="statusBox" class="status-box">Vérification en cours...</div>
+
+<h1>📐 Test KaTeX v4.0</h1>
+
+<h2>Cas 1 — \text{...} avec LaTeX piégé</h2>
+<div class="test-item">
+  <div class="label">Avant (brut)</div>
+  <div class="raw">\delta_{\text{eau}} = 1000\, \text{g\cdot L^{-1}}</div>
+  <div class="label">Après (rendu)</div>
+  <div class="rendered">\delta_{\text{eau}} = 1000\, \text{g\cdot L^{-1}}</div>
+</div>
+
+<h2>Cas 2 — Formule avec \times et \cdot</h2>
+<div class="test-item">
+  <div class="label">Avant (brut)</div>
+  <div class="raw">M = 2\times 1 + 32 + 4\times 16 = 98\, \text{g\cdot mol^{-1}}</div>
+  <div class="label">Après (rendu)</div>
+  <div class="rendered">M = 2\times 1 + 32 + 4\times 16 = 98\, \text{g\cdot mol^{-1}}</div>
+</div>
+
+<h2>Cas 3 — Formule classique</h2>
+<div class="test-item">
+  <div class="label">Avant (brut)</div>
+  <div class="raw">$C = \frac{n}{V}$ en $\text{mol}\cdot\text{L}^{-1}$</div>
+  <div class="label">Après (rendu)</div>
+  <div class="rendered">$C = \frac{n}{V}$ en $\text{mol}\cdot\text{L}^{-1}$</div>
+</div>
+
+<h2>Cas 4 — Commande amputée (ext)</h2>
+<div class="test-item">
+  <div class="label">Avant (brut)</div>
+  <div class="raw">500 ext{mL} de solution</div>
+  <div class="label">Après (rendu)</div>
+  <div class="rendered">500 ext{mL} de solution</div>
+</div>
+
+<h2>Cas 5 — Accents LaTeX français</h2>
+<div class="test-item">
+  <div class="label">Avant (brut)</div>
+  <div class="raw">D\'eterminer la masse molaire du solut\'e</div>
+  <div class="label">Après (rendu)</div>
+  <div class="rendered">D\'eterminer la masse molaire du solut\'e</div>
+</div>
+
+<script>
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var box = document.getElementById('statusBox');
+    if (typeof window.KaTeXUtils === 'undefined') {
+      box.className = 'status-box status-ko';
+      box.textContent = '❌ KaTeXUtils NON chargé';
+    } else {
+      box.className = 'status-box status-ok';
+      box.textContent = '✅ KaTeXUtils v4.0 chargé — vérifie les rendus ci-dessous';
+    }
+  }, 2000);
+});
+</script>
+
+</body>
+</html>
