@@ -1,0 +1,3464 @@
+{
+  "matiere": "chimie",
+  "matiereLabel": "Chimie",
+  "niveau": "terminale_d",
+  "pays": "niger",
+  "exam": "bac",
+  "version": "1.0.0",
+  "derniereMaj": "2026-10-16",
+  "totalChapitres": 9,
+  "totalNotions": 75,
+  "structureVersion": "enrichie-v2",
+  "chapitres": [
+    {
+      "id": "solutions_aqueuses",
+      "numero": 1,
+      "titre": "Solutions aqueuses et leur pH",
+      "description": "Étude des solutions aqueuses, notion de pH et calculs associés.",
+      "duree_estimee_min": 420,
+      "difficulte": 2,
+      "obligatoire": true,
+      "prerequis": ["equilibre_chimique"],
+      "notions": [
+        {
+          "id": "notion_solution_aqueuse",
+          "titre": "Notion de solution aqueuse",
+          "obligatoire": true,
+          "difficulte": 1,
+          "duree_etude_min": 15,
+          "description_courte": "Une solution aqueuse est un mélange homogène où le solvant est l'eau.",
+          "description_longue": "Une solution aqueuse est obtenue en dissolvant un soluté (solide, liquide ou gaz) dans de l'eau distillée. Le soluté peut être moléculaire ou ionique. Lorsqu'un composé ionique se dissout, il se dissocie en ions. La solution est homogène et transparente si elle ne contient pas de particules en suspension.",
+          "formules": [
+            { "latex": "$\\text{soluté} + \\text{eau} \\to \\text{solution aqueuse}$", "condition": "", "usage": "Dissolution" },
+            { "latex": "$NaCl \\to Na^+ + Cl^-$", "condition": "", "usage": "Dissociation ionique" }
+          ],
+          "proprietes": [
+            "Le solvant est l'eau.",
+            "La solution est homogène.",
+            "Les composés ioniques se dissocient en ions.",
+            "La concentration dépend de la quantité de soluté."
+          ],
+          "methodes": [
+            "Identifier le soluté et le solvant.",
+            "Écrire l'équation de dissolution.",
+            "Déterminer les espèces présentes en solution."
+          ],
+          "exemple_resolu": {
+            "enonce": "On dissout $5{,}85\\,\\text{g}$ de chlorure de sodium $NaCl$ dans $500\\,\\text{mL}$ d'eau. Écrire l'équation de dissolution.",
+            "etapes": [
+              "Le chlorure de sodium est un composé ionique.",
+              "Il se dissocie en ions sodium et chlorure : $NaCl \\to Na^+ + Cl^-$."
+            ],
+            "conclusion": "Équation : $NaCl \\to Na^+ + Cl^-$."
+          },
+          "erreurs_frequentes": [
+            "Confondre dissolution et réaction chimique.",
+            "Oublier de dissocier les composés ioniques.",
+            "Utiliser des volumes inadaptés."
+          ],
+          "pieges_examen": [
+            "Bien distinguer soluté moléculaire et ionique.",
+            "Ne pas oublier les charges des ions."
+          ],
+          "mnemo": "Solution = soluté + solvant.",
+          "liens": {
+            "avant": [],
+            "apres": ["concentration_molaire_massique"]
+          }
+        },
+        {
+          "id": "concentration_molaire_massique",
+          "titre": "Concentration molaire et massique",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "La concentration molaire $C$ est le nombre de moles de soluté par litre de solution.",
+          "description_longue": "La concentration molaire $C$ d'une solution est le quotient de la quantité de matière de soluté (en moles) par le volume de solution (en litres) : $C = \\frac{n}{V}$. La concentration massique $C_m$ est la masse de soluté par litre de solution : $C_m = \\frac{m}{V}$. On passe de l'une à l'autre par la masse molaire $M$ : $C_m = C \\times M$.",
+          "formules": [
+            { "latex": "$C = \\frac{n}{V}$", "condition": "$V$ en L", "usage": "Concentration molaire" },
+            { "latex": "$C_m = \\frac{m}{V}$", "condition": "$V$ en L", "usage": "Concentration massique" },
+            { "latex": "$C_m = C \\times M$", "condition": "", "usage": "Relation" }
+          ],
+          "proprietes": [
+            "La concentration molaire s'exprime en $\\text{mol/L}$.",
+            "La concentration massique s'exprime en $\\text{g/L}$.",
+            "La masse molaire $M$ s'exprime en $\\text{g/mol}$."
+          ],
+          "methodes": [
+            "Calculer la quantité de matière $n$.",
+            "Calculer la concentration molaire $C$.",
+            "Convertir en concentration massique si nécessaire."
+          ],
+          "exemple_resolu": {
+            "enonce": "On dissout $5{,}85\\,\\text{g}$ de $NaCl$ ($M = 58{,}5\\,\\text{g/mol}$) dans $500\\,\\text{mL}$ de solution. Calculer $C$ et $C_m$.",
+            "etapes": [
+              "$n = \\frac{m}{M} = \\frac{5{,}85}{58{,}5} = 0{,}1\\,\\text{mol}$.",
+              "$V = 0{,}5\\,\\text{L}$.",
+              "$C = \\frac{0{,}1}{0{,}5} = 0{,}2\\,\\text{mol/L}$.",
+              "$C_m = C \\times M = 0{,}2 \\times 58{,}5 = 11{,}7\\,\\text{g/L}$."
+            ],
+            "conclusion": "$C = 0{,}2\\,\\text{mol/L}$ et $C_m = 11{,}7\\,\\text{g/L}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier de convertir le volume en litres.",
+            "Confondre $C$ et $C_m$.",
+            "Erreur dans le calcul de $n$."
+          ],
+          "pieges_examen": [
+            "Toujours convertir le volume en litres.",
+            "Vérifier les unités."
+          ],
+          "mnemo": "$C = n/V$, $C_m = m/V$.",
+          "liens": {
+            "avant": ["notion_solution_aqueuse"],
+            "apres": ["dilution"]
+          }
+        },
+        {
+          "id": "dilution",
+          "titre": "Dilution",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "La dilution consiste à ajouter du solvant à une solution pour diminuer sa concentration.",
+          "description_longue": "Diluer une solution consiste à ajouter du solvant (eau) pour diminuer sa concentration. La quantité de soluté reste constante : $n_1 = n_2$, donc $C_1V_1 = C_2V_2$. Le facteur de dilution est $F = \\frac{C_1}{C_2} = \\frac{V_2}{V_1}$.",
+          "formules": [
+            { "latex": "$C_1V_1 = C_2V_2$", "condition": "", "usage": "Conservation de la matière" },
+            { "latex": "$F = \\frac{C_1}{C_2}$", "condition": "", "usage": "Facteur de dilution" }
+          ],
+          "proprietes": [
+            "La quantité de soluté est constante.",
+            "La concentration diminue.",
+            "Le volume augmente."
+          ],
+          "methodes": [
+            "Identifier $C_1$, $V_1$ et $C_2$ ou $V_2$.",
+            "Appliquer $C_1V_1 = C_2V_2$.",
+            "Calculer l'inconnue."
+          ],
+          "exemple_resolu": {
+            "enonce": "On dilue $50\\,\\text{mL}$ d'une solution de concentration $C_1 = 0{,}5\\,\\text{mol/L}$ pour obtenir $250\\,\\text{mL}$ de solution. Calculer $C_2$.",
+            "etapes": [
+              "$C_1V_1 = C_2V_2$.",
+              "$0{,}5 \\times 50 = C_2 \\times 250$.",
+              "$C_2 = \\frac{25}{250} = 0{,}1\\,\\text{mol/L}$."
+            ],
+            "conclusion": "$C_2 = 0{,}1\\,\\text{mol/L}$."
+          },
+          "erreurs_frequentes": [
+            "Inverser $V_1$ et $V_2$.",
+            "Oublier de convertir les volumes.",
+            "Confondre concentration et quantité."
+          ],
+          "pieges_examen": [
+            "Bien identifier la solution mère et la solution fille.",
+            "Utiliser la même unité pour $V_1$ et $V_2$."
+          ],
+          "mnemo": "$C_1V_1 = C_2V_2$.",
+          "liens": {
+            "avant": ["concentration_molaire_massique"],
+            "apres": ["produit_ionique_eau"]
+          }
+        },
+        {
+          "id": "produit_ionique_eau",
+          "titre": "Produit ionique de l'eau $K_e$",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "$K_e = [H_3O^+][OH^-] = 10^{-14}$ à $25\\,^\\circ\\text{C}$.",
+          "description_longue": "L'eau pure est le siège d'une auto-ionisation : $2H_2O \\rightleftharpoons H_3O^+ + OH^-$. Le produit ionique de l'eau est $K_e = [H_3O^+][OH^-]$. À $25\\,^\\circ\\text{C}$, $K_e = 10^{-14}$. Cette relation est valable pour toute solution aqueuse.",
+          "formules": [
+            { "latex": "$K_e = [H_3O^+][OH^-]$", "condition": "", "usage": "Produit ionique" },
+            { "latex": "$K_e = 10^{-14}$ à $25\\,^\\circ\\text{C}$", "condition": "", "usage": "Valeur" },
+            { "latex": "$pK_e = -\\log K_e = 14$", "condition": "", "usage": "pKe" }
+          ],
+          "proprietes": [
+            "$K_e$ ne dépend que de la température.",
+            "Dans l'eau pure, $[H_3O^+] = [OH^-] = 10^{-7}\\,\\text{mol/L}$.",
+            "La relation est valable pour toute solution aqueuse."
+          ],
+          "methodes": [
+            "Utiliser $K_e$ pour relier $[H_3O^+]$ et $[OH^-]$.",
+            "Calculer l'une des concentrations connaissant l'autre."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une solution a $[H_3O^+] = 10^{-3}\\,\\text{mol/L}$. Calculer $[OH^-]$.",
+            "etapes": [
+              "$K_e = [H_3O^+][OH^-] = 10^{-14}$.",
+              "$[OH^-] = \\frac{10^{-14}}{10^{-3}} = 10^{-11}\\,\\text{mol/L}$."
+            ],
+            "conclusion": "$[OH^-] = 10^{-11}\\,\\text{mol/L}$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $K_e$ et $K_a$.",
+            "Oublier que $K_e$ dépend de la température.",
+            "Erreur dans les puissances de 10."
+          ],
+          "pieges_examen": [
+            "Bien utiliser $K_e = 10^{-14}$ à $25\\,^\\circ\\text{C}$.",
+            "Vérifier la température."
+          ],
+          "mnemo": "$K_e = [H_3O^+][OH^-] = 10^{-14}$.",
+          "liens": {
+            "avant": ["dilution"],
+            "apres": ["definition_ph"]
+          }
+        },
+        {
+          "id": "definition_ph",
+          "titre": "Définition du pH",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "$pH = -\\log[H_3O^+]$.",
+          "description_longue": "Le pH d'une solution aqueuse est défini par $pH = -\\log[H_3O^+]$. Il mesure l'acidité d'une solution. Le pH est sans unité et varie généralement de 0 à 14. Plus le pH est faible, plus la solution est acide.",
+          "formules": [
+            { "latex": "$pH = -\\log[H_3O^+]$", "condition": "", "usage": "Définition" },
+            { "latex": "$[H_3O^+] = 10^{-pH}$", "condition": "", "usage": "Inverse" }
+          ],
+          "proprietes": [
+            "Le pH est sans unité.",
+            "Le pH dépend de la température.",
+            "Une variation de 1 unité de pH correspond à un facteur 10 sur $[H_3O^+]$."
+          ],
+          "methodes": [
+            "Calculer $[H_3O^+]$.",
+            "Appliquer $pH = -\\log[H_3O^+]$.",
+            "Vérifier la cohérence."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer le pH d'une solution avec $[H_3O^+] = 10^{-4}\\,\\text{mol/L}$.",
+            "etapes": [
+              "$pH = -\\log(10^{-4}) = 4$."
+            ],
+            "conclusion": "$pH = 4$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le signe moins.",
+            "Confondre $\\log$ et $\\ln$.",
+            "Erreur dans les puissances de 10."
+          ],
+          "pieges_examen": [
+            "Bien utiliser le logarithme décimal.",
+            "Vérifier le signe."
+          ],
+          "mnemo": "$pH = -\\log[H_3O^+]$.",
+          "liens": {
+            "avant": ["produit_ionique_eau"],
+            "apres": ["calcul_ph_h3o"]
+          }
+        },
+        {
+          "id": "calcul_ph_h3o",
+          "titre": "Calcul du pH à partir de $[H_3O^+]$",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Application de la formule $pH = -\\log[H_3O^+]$.",
+          "description_longue": "Pour calculer le pH à partir de la concentration en ions oxonium, on utilise la relation $pH = -\\log[H_3O^+]$. Si la concentration est donnée sous forme scientifique, on utilise les propriétés des logarithmes. Par exemple, si $[H_3O^+] = a \\times 10^{-n}$, alors $pH = n - \\log a$.",
+          "formules": [
+            { "latex": "$pH = -\\log[H_3O^+]$", "condition": "", "usage": "Calcul" },
+            { "latex": "$pH = n - \\log a$ si $[H_3O^+] = a \\times 10^{-n}$", "condition": "", "usage": "Forme scientifique" }
+          ],
+          "proprietes": [
+            "Le pH est une fonction décroissante de $[H_3O^+]$.",
+            "Une solution acide a $pH < 7$.",
+            "Une solution basique a $pH > 7$."
+          ],
+          "methodes": [
+            "Identifier $[H_3O^+]$.",
+            "Appliquer la formule.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer le pH d'une solution avec $[H_3O^+] = 2{,}5 \\times 10^{-3}\\,\\text{mol/L}$.",
+            "etapes": [
+              "$pH = -\\log(2{,}5 \\times 10^{-3})$.",
+              "$pH = 3 - \\log 2{,}5$.",
+              "$\\log 2{,}5 \\approx 0{,}4$.",
+              "$pH \\approx 2{,}6$."
+            ],
+            "conclusion": "$pH \\approx 2{,}6$."
+          },
+          "erreurs_frequentes": [
+            "Erreur dans le calcul du logarithme.",
+            "Oublier le signe moins.",
+            "Confondre avec $\\ln$."
+          ],
+          "pieges_examen": [
+            "Utiliser la calculatrice correctement.",
+            "Vérifier l'ordre de grandeur."
+          ],
+          "mnemo": "$pH = -\\log[H_3O^+]$.",
+          "liens": {
+            "avant": ["definition_ph"],
+            "apres": ["calcul_h3o_ph"]
+          }
+        },
+        {
+          "id": "calcul_h3o_ph",
+          "titre": "Calcul de $[H_3O^+]$ à partir du pH",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "$[H_3O^+] = 10^{-pH}$.",
+          "description_longue": "Pour calculer la concentration en ions oxonium à partir du pH, on utilise la relation inverse : $[H_3O^+] = 10^{-pH}$. Cette relation permet de déterminer la concentration d'une solution dont on connaît le pH.",
+          "formules": [
+            { "latex": "$[H_3O^+] = 10^{-pH}$", "condition": "", "usage": "Calcul" }
+          ],
+          "proprietes": [
+            "La concentration est une fonction décroissante du pH.",
+            "Une solution de pH 3 a $[H_3O^+] = 10^{-3}\\,\\text{mol/L}$.",
+            "Une solution de pH 7 a $[H_3O^+] = 10^{-7}\\,\\text{mol/L}$."
+          ],
+          "methodes": [
+            "Identifier le pH.",
+            "Appliquer $[H_3O^+] = 10^{-pH}$.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer $[H_3O^+]$ pour une solution de pH $= 3{,}5$.",
+            "etapes": [
+              "$[H_3O^+] = 10^{-3{,}5}$.",
+              "$[H_3O^+] \\approx 3{,}16 \\times 10^{-4}\\,\\text{mol/L}$."
+            ],
+            "conclusion": "$[H_3O^+] \\approx 3{,}16 \\times 10^{-4}\\,\\text{mol/L}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le signe moins.",
+            "Erreur dans les puissances de 10.",
+            "Confondre avec le pH."
+          ],
+          "pieges_examen": [
+            "Bien utiliser la calculatrice.",
+            "Vérifier l'ordre de grandeur."
+          ],
+          "mnemo": "$[H_3O^+] = 10^{-pH}$.",
+          "liens": {
+            "avant": ["calcul_ph_h3o"],
+            "apres": ["solutions_acides_basiques_neutres"]
+          }
+        },
+        {
+          "id": "solutions_acides_basiques_neutres",
+          "titre": "Solutions acides, basiques, neutres",
+          "obligatoire": true,
+          "difficulte": 1,
+          "duree_etude_min": 15,
+          "description_courte": "Classification des solutions selon leur pH.",
+          "description_longue": "Une solution est acide si $pH < 7$, basique si $pH > 7$, et neutre si $pH = 7$ à $25\\,^\\circ\\text{C}$. Cette classification est basée sur la comparaison de $[H_3O^+]$ et $[OH^-]$.",
+          "formules": [
+            { "latex": "$pH < 7$ : acide", "condition": "", "usage": "Solution acide" },
+            { "latex": "$pH = 7$ : neutre", "condition": "", "usage": "Solution neutre" },
+            { "latex": "$pH > 7$ : basique", "condition": "", "usage": "Solution basique" }
+          ],
+          "proprietes": [
+            "Solution acide : $[H_3O^+] > [OH^-]$.",
+            "Solution neutre : $[H_3O^+] = [OH^-]$.",
+            "Solution basique : $[H_3O^+] < [OH^-]$."
+          ],
+          "methodes": [
+            "Calculer le pH.",
+            "Comparer à 7.",
+            "Conclure."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une solution a $[H_3O^+] = 10^{-5}\\,\\text{mol/L}$. Est-elle acide, basique ou neutre ?",
+            "etapes": [
+              "$pH = -\\log(10^{-5}) = 5$.",
+              "$pH < 7$."
+            ],
+            "conclusion": "Solution acide."
+          },
+          "erreurs_frequentes": [
+            "Confondre acide et basique.",
+            "Oublier la température.",
+            "Erreur dans le calcul du pH."
+          ],
+          "pieges_examen": [
+            "Bien vérifier la température (le pH neutre dépend de $T$).",
+            "Utiliser $K_e$."
+          ],
+          "mnemo": "$pH < 7$ : acide ; $pH > 7$ : basique.",
+          "liens": {
+            "avant": ["calcul_h3o_ph"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Calculer une concentration molaire ou massique.",
+        "Préparer une solution par dilution.",
+        "Calculer le pH d'une solution.",
+        "Calculer $[H_3O^+]$ à partir du pH.",
+        "Classer une solution comme acide, basique ou neutre."
+      ]
+    },
+    {
+      "id": "acide_fort_base_forte",
+      "numero": 2,
+      "titre": "Acide fort, base forte",
+      "description": "Étude des acides forts et des bases fortes, dissociation totale et pH.",
+      "duree_estimee_min": 420,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["solutions_aqueuses"],
+      "notions": [
+        {
+          "id": "acide_fort_definition",
+          "titre": "Acide fort : définition",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Un acide fort se dissocie totalement dans l'eau.",
+          "description_longue": "Un acide fort est un acide qui réagit totalement avec l'eau pour donner des ions oxonium $H_3O^+$. Sa dissociation est totale : $HA + H_2O \\to H_3O^+ + A^-$. La concentration en ions oxonium est égale à la concentration initiale de l'acide : $[H_3O^+] = C$.",
+          "formules": [
+            { "latex": "$HA + H_2O \\to H_3O^+ + A^-$", "condition": "", "usage": "Dissociation totale" },
+            { "latex": "$[H_3O^+] = C$", "condition": "", "usage": "Concentration en $H_3O^+$" }
+          ],
+          "proprietes": [
+            "La dissociation est totale.",
+            "Le pH est donné par $pH = -\\log C$.",
+            "La réaction est irréversible."
+          ],
+          "methodes": [
+            "Identifier l'acide fort.",
+            "Écrire l'équation de dissociation.",
+            "Calculer $[H_3O^+]$ et le pH."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer le pH d'une solution d'acide chlorhydrique $HCl$ de concentration $C = 10^{-3}\\,\\text{mol/L}$.",
+            "etapes": [
+              "$HCl \\to H^+ + Cl^-$ (ou $HCl + H_2O \\to H_3O^+ + Cl^-$).",
+              "$[H_3O^+] = C = 10^{-3}\\,\\text{mol/L}$.",
+              "$pH = -\\log(10^{-3}) = 3$."
+            ],
+            "conclusion": "$pH = 3$."
+          },
+          "erreurs_frequentes": [
+            "Confondre acide fort et acide faible.",
+            "Oublier que la dissociation est totale.",
+            "Erreur dans le calcul du pH."
+          ],
+          "pieges_examen": [
+            "Bien identifier les acides forts usuels ($HCl$, $HNO_3$, $H_2SO_4$).",
+            "Ne pas oublier que $[H_3O^+] = C$."
+          ],
+          "mnemo": "Acide fort : dissociation totale.",
+          "liens": {
+            "avant": [],
+            "apres": ["base_forte_definition"]
+          }
+        },
+        {
+          "id": "base_forte_definition",
+          "titre": "Base forte : définition",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Une base forte se dissocie totalement dans l'eau.",
+          "description_longue": "Une base forte est une base qui réagit totalement avec l'eau pour donner des ions hydroxyde $OH^-$. Sa dissociation est totale : $B + H_2O \\to BH^+ + OH^-$. La concentration en ions hydroxyde est égale à la concentration initiale de la base : $[OH^-] = C$.",
+          "formules": [
+            { "latex": "$B + H_2O \\to BH^+ + OH^-$", "condition": "", "usage": "Dissociation totale" },
+            { "latex": "$[OH^-] = C$", "condition": "", "usage": "Concentration en $OH^-$" }
+          ],
+          "proprietes": [
+            "La dissociation est totale.",
+            "Le pH est donné par $pH = 14 + \\log C$.",
+            "La réaction est irréversible."
+          ],
+          "methodes": [
+            "Identifier la base forte.",
+            "Écrire l'équation de dissociation.",
+            "Calculer $[OH^-]$ et le pH."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer le pH d'une solution de soude $NaOH$ de concentration $C = 10^{-2}\\,\\text{mol/L}$.",
+            "etapes": [
+              "$NaOH \\to Na^+ + OH^-$.",
+              "$[OH^-] = C = 10^{-2}\\,\\text{mol/L}$.",
+              "$[H_3O^+] = \\frac{K_e}{[OH^-]} = \\frac{10^{-14}}{10^{-2}} = 10^{-12}\\,\\text{mol/L}$.",
+              "$pH = -\\log(10^{-12}) = 12$."
+            ],
+            "conclusion": "$pH = 12$."
+          },
+          "erreurs_frequentes": [
+            "Confondre base forte et base faible.",
+            "Oublier que $[OH^-] = C$.",
+            "Erreur dans le calcul du pH."
+          ],
+          "pieges_examen": [
+            "Bien identifier les bases fortes usuelles ($NaOH$, $KOH$).",
+            "Utiliser $K_e$ pour calculer $[H_3O^+]$."
+          ],
+          "mnemo": "Base forte : dissociation totale.",
+          "liens": {
+            "avant": ["acide_fort_definition"],
+            "apres": ["dissociation_totale"]
+          }
+        },
+        {
+          "id": "dissociation_totale",
+          "titre": "Dissociation totale",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Les acides forts et les bases fortes se dissocient totalement.",
+          "description_longue": "La dissociation totale signifie que la réaction est complète : tout l'acide (ou la base) est transformé en ions. Il n'y a pas d'équilibre chimique. Les concentrations des produits sont directement liées à la concentration initiale.",
+          "formules": [
+            { "latex": "$HA \\to H^+ + A^-$", "condition": "", "usage": "Acide fort" },
+            { "latex": "$BOH \\to B^+ + OH^-$", "condition": "", "usage": "Base forte" }
+          ],
+          "proprietes": [
+            "Pas d'équilibre.",
+            "Réaction totale.",
+            "Concentrations directement calculables."
+          ],
+          "methodes": [
+            "Écrire l'équation de dissociation.",
+            "Utiliser la stœchiométrie.",
+            "Calculer les concentrations."
+          ],
+          "exemple_resolu": {
+            "enonce": "On dissout $0{,}01\\,\\text{mol}$ de $HCl$ dans $1\\,\\text{L}$ d'eau. Calculer $[H_3O^+]$ et $[Cl^-]$.",
+            "etapes": [
+              "$HCl \\to H^+ + Cl^-$.",
+              "$[H_3O^+] = 0{,}01\\,\\text{mol/L}$.",
+              "$[Cl^-] = 0{,}01\\,\\text{mol/L}$."
+            ],
+            "conclusion": "$[H_3O^+] = [Cl^-] = 0{,}01\\,\\text{mol/L}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier la stœchiométrie.",
+            "Confondre avec une réaction partielle."
+          ],
+          "pieges_examen": [
+            "Bien vérifier que l'acide (ou la base) est fort.",
+            "Utiliser la stœchiométrie."
+          ],
+          "mnemo": "Dissociation totale = réaction complète.",
+          "liens": {
+            "avant": ["base_forte_definition"],
+            "apres": ["ph_acide_fort"]
+          }
+        },
+        {
+          "id": "ph_acide_fort",
+          "titre": "pH d'un acide fort",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "$pH = -\\log C$ pour un acide fort.",
+          "description_longue": "Pour un acide fort de concentration $C$, la concentration en ions oxonium est égale à $C$ : $[H_3O^+] = C$. Le pH est donc $pH = -\\log C$. Cette relation est valable pour $C > 10^{-6}\\,\\text{mol/L}$.",
+          "formules": [
+            { "latex": "$pH = -\\log C$", "condition": "$C > 10^{-6}\\,\\text{mol/L}$", "usage": "pH d'un acide fort" }
+          ],
+          "proprietes": [
+            "Le pH est indépendant de la nature de l'acide fort.",
+            "Le pH ne dépend que de la concentration.",
+            "Valable pour les acides forts usuels."
+          ],
+          "methodes": [
+            "Identifier la concentration $C$.",
+            "Appliquer $pH = -\\log C$.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer le pH d'une solution de $HNO_3$ à $C = 5 \\times 10^{-4}\\,\\text{mol/L}$.",
+            "etapes": [
+              "$pH = -\\log(5 \\times 10^{-4})$.",
+              "$pH = 4 - \\log 5$.",
+              "$\\log 5 \\approx 0{,}7$.",
+              "$pH \\approx 3{,}3$."
+            ],
+            "conclusion": "$pH \\approx 3{,}3$."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec un acide faible.",
+            "Oublier le signe moins.",
+            "Erreur dans le logarithme."
+          ],
+          "pieges_examen": [
+            "Bien vérifier que l'acide est fort.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$pH = -\\log C$ (acide fort).",
+          "liens": {
+            "avant": ["dissociation_totale"],
+            "apres": ["ph_base_forte"]
+          }
+        },
+        {
+          "id": "ph_base_forte",
+          "titre": "pH d'une base forte",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "$pH = 14 + \\log C$ pour une base forte.",
+          "description_longue": "Pour une base forte de concentration $C$, la concentration en ions hydroxyde est $[OH^-] = C$. On en déduit $[H_3O^+] = \\frac{K_e}{C}$ et $pH = 14 + \\log C$. Cette relation est valable pour $C > 10^{-6}\\,\\text{mol/L}$.",
+          "formules": [
+            { "latex": "$pH = 14 + \\log C$", "condition": "$C > 10^{-6}\\,\\text{mol/L}$", "usage": "pH d'une base forte" }
+          ],
+          "proprietes": [
+            "Le pH est indépendant de la nature de la base forte.",
+            "Le pH ne dépend que de la concentration.",
+            "Valable pour les bases fortes usuelles."
+          ],
+          "methodes": [
+            "Identifier la concentration $C$.",
+            "Appliquer $pH = 14 + \\log C$.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer le pH d'une solution de $KOH$ à $C = 0{,}01\\,\\text{mol/L}$.",
+            "etapes": [
+              "$pH = 14 + \\log(0{,}01)$.",
+              "$\\log(0{,}01) = -2$.",
+              "$pH = 14 - 2 = 12$."
+            ],
+            "conclusion": "$pH = 12$."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec une base faible.",
+            "Oublier le logarithme.",
+            "Erreur de signe."
+          ],
+          "pieges_examen": [
+            "Bien vérifier que la base est forte.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$pH = 14 + \\log C$ (base forte).",
+          "liens": {
+            "avant": ["ph_acide_fort"],
+            "apres": ["melange_acide_fort_base_forte"]
+          }
+        },
+        {
+          "id": "melange_acide_fort_base_forte",
+          "titre": "Mélange acide fort/base forte",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Réaction entre un acide fort et une base forte.",
+          "description_longue": "Lorsqu'on mélange un acide fort et une base forte, ils réagissent selon $H_3O^+ + OH^- \\to 2H_2O$. C'est une réaction totale. Le pH du mélange dépend des quantités relatives d'acide et de base. Si l'acide est en excès, le pH est acide ; si la base est en excès, le pH est basique.",
+          "formules": [
+            { "latex": "$H_3O^+ + OH^- \\to 2H_2O$", "condition": "", "usage": "Réaction" },
+            { "latex": "$n_{H_3O^+} = C_aV_a$", "condition": "", "usage": "Quantité d'acide" },
+            { "latex": "$n_{OH^-} = C_bV_b$", "condition": "", "usage": "Quantité de base" }
+          ],
+          "proprietes": [
+            "La réaction est totale.",
+            "Le pH dépend des quantités relatives.",
+            "À l'équivalence, $n_{H_3O^+} = n_{OH^-}$."
+          ],
+          "methodes": [
+            "Calculer les quantités d'acide et de base.",
+            "Déterminer l'excès.",
+            "Calculer le pH."
+          ],
+          "exemple_resolu": {
+            "enonce": "On mélange $100\\,\\text{mL}$ de $HCl$ à $0{,}1\\,\\text{mol/L}$ et $50\\,\\text{mL}$ de $NaOH$ à $0{,}1\\,\\text{mol/L}$. Calculer le pH.",
+            "etapes": [
+              "$n_{H_3O^+} = 0{,}1 \\times 0{,}1 = 0{,}01\\,\\text{mol}$.",
+              "$n_{OH^-} = 0{,}1 \\times 0{,}05 = 0{,}005\\,\\text{mol}$.",
+              "L'acide est en excès : $n_{H_3O^+}^{excès} = 0{,}01 - 0{,}005 = 0{,}005\\,\\text{mol}$.",
+              "$V_{total} = 0{,}15\\,\\text{L}$.",
+              "$[H_3O^+] = \\frac{0{,}005}{0{,}15} = 0{,}033\\,\\text{mol/L}$.",
+              "$pH = -\\log(0{,}033) \\approx 1{,}5$."
+            ],
+            "conclusion": "$pH \\approx 1{,}5$."
+          },
+          "erreurs_frequentes": [
+            "Oublier de calculer l'excès.",
+            "Erreur dans les volumes.",
+            "Confondre acide et base."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'excès.",
+            "Utiliser le volume total."
+          ],
+          "mnemo": "$H_3O^+ + OH^- \\to 2H_2O$.",
+          "liens": {
+            "avant": ["ph_base_forte"],
+            "apres": ["dosage_acide_fort_base_forte"]
+          }
+        },
+        {
+          "id": "dosage_acide_fort_base_forte",
+          "titre": "Dosage acide fort/base forte",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Détermination de la concentration d'un acide fort par une base forte.",
+          "description_longue": "Le dosage d'un acide fort par une base forte permet de déterminer la concentration de l'acide. À l'équivalence, les quantités d'acide et de base sont égales : $C_aV_a = C_bV_b$. Le pH à l'équivalence est 7 à $25\\,^\\circ\\text{C}$.",
+          "formules": [
+            { "latex": "$C_aV_a = C_bV_b$", "condition": "", "usage": "Équivalence" },
+            { "latex": "$pH_{eq} = 7$", "condition": "à $25\\,^\\circ\\text{C}$", "usage": "pH à l'équivalence" }
+          ],
+          "proprietes": [
+            "À l'équivalence, $n_a = n_b$.",
+            "Le pH à l'équivalence est 7.",
+            "Le saut de pH est important."
+          ],
+          "methodes": [
+            "Écrire l'équation de la réaction.",
+            "Utiliser la relation à l'équivalence.",
+            "Calculer la concentration inconnue."
+          ],
+          "exemple_resolu": {
+            "enonce": "On dose $20\\,\\text{mL}$ de $HCl$ par $NaOH$ à $0{,}1\\,\\text{mol/L}$. L'équivalence est atteinte pour $V_b = 15\\,\\text{mL}$. Calculer $C_a$.",
+            "etapes": [
+              "$C_aV_a = C_bV_b$.",
+              "$C_a \\times 20 = 0{,}1 \\times 15$.",
+              "$C_a = \\frac{1{,}5}{20} = 0{,}075\\,\\text{mol/L}$."
+            ],
+            "conclusion": "$C_a = 0{,}075\\,\\text{mol/L}$."
+          },
+          "erreurs_frequentes": [
+            "Oublier la relation à l'équivalence.",
+            "Erreur dans les volumes.",
+            "Confondre acide et base."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'équivalence.",
+            "Utiliser les bonnes unités."
+          ],
+          "mnemo": "$C_aV_a = C_bV_b$.",
+          "liens": {
+            "avant": ["melange_acide_fort_base_forte"],
+            "apres": ["applications_acide_fort_base_forte"]
+          }
+        },
+        {
+          "id": "applications_acide_fort_base_forte",
+          "titre": "Applications",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Applications pratiques des acides forts et bases fortes.",
+          "description_longue": "Les acides forts et les bases fortes ont de nombreuses applications : industrie chimique, traitement des eaux, nettoyage, médecine, et laboratoire. Leur manipulation nécessite des précautions car ils sont corrosifs.",
+          "formules": [
+            { "latex": "$pH = -\\log C$", "condition": "", "usage": "Acide fort" },
+            { "latex": "$pH = 14 + \\log C$", "condition": "", "usage": "Base forte" }
+          ],
+          "proprietes": [
+            "Corrosifs.",
+            "Réactions totales.",
+            "Applications industrielles."
+          ],
+          "methodes": [
+            "Identifier l'application.",
+            "Utiliser les formules.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Expliquer pourquoi l'acide chlorhydrique est utilisé pour détartrer les canalisations.",
+            "etapes": [
+              "Le calcaire est une base.",
+              "L'acide réagit avec le calcaire.",
+              "La réaction dissout le calcaire."
+            ],
+            "conclusion": "L'acide dissout le calcaire par réaction acido-basique."
+          },
+          "erreurs_frequentes": [
+            "Oublier les précautions.",
+            "Confondre acide et base."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'application.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Acides et bases fortes : réactions totales.",
+          "liens": {
+            "avant": ["dosage_acide_fort_base_forte"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Calculer le pH d'un acide fort.",
+        "Calculer le pH d'une base forte.",
+        "Étudier un mélange acide fort/base forte.",
+        "Réaliser un dosage acide fort/base forte."
+      ]
+    },
+    {
+      "id": "acide_faible_base_faible",
+      "numero": 3,
+      "titre": "Acide faible, base faible",
+      "description": "Étude des acides faibles et des bases faibles, constantes d'acidité et pH.",
+      "duree_estimee_min": 420,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["acide_fort_base_forte"],
+      "notions": [
+        {
+          "id": "acide_faible_definition",
+          "titre": "Acide faible : définition",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Un acide faible ne se dissocie que partiellement dans l'eau.",
+          "description_longue": "Un acide faible est un acide qui ne réagit que partiellement avec l'eau. Sa dissociation est partielle : $HA + H_2O \\rightleftharpoons H_3O^+ + A^-$. Il s'établit un équilibre chimique. La constante d'acidité $K_a$ caractérise cet équilibre.",
+          "formules": [
+            { "latex": "$HA + H_2O \\rightleftharpoons H_3O^+ + A^-$", "condition": "", "usage": "Dissociation partielle" },
+            { "latex": "$K_a = \\frac{[H_3O^+][A^-]}{[HA]}$", "condition": "", "usage": "Constante d'acidité" }
+          ],
+          "proprietes": [
+            "La dissociation est partielle.",
+            "Il y a un équilibre chimique.",
+            "Le pH dépend de $K_a$ et de $C$."
+          ],
+          "methodes": [
+            "Identifier l'acide faible.",
+            "Écrire l'équation de dissociation.",
+            "Utiliser $K_a$ pour calculer le pH."
+          ],
+          "exemple_resolu": {
+            "enonce": "L'acide acétique $CH_3COOH$ est un acide faible. Écrire l'équation de sa dissociation dans l'eau.",
+            "etapes": [
+              "$CH_3COOH + H_2O \\rightleftharpoons H_3O^+ + CH_3COO^-$."
+            ],
+            "conclusion": "Équation : $CH_3COOH + H_2O \\rightleftharpoons H_3O^+ + CH_3COO^-$."
+          },
+          "erreurs_frequentes": [
+            "Confondre acide fort et acide faible.",
+            "Oublier le double sens de la flèche.",
+            "Erreur dans l'équation."
+          ],
+          "pieges_examen": [
+            "Bien utiliser $\\rightleftharpoons$ pour les équilibres.",
+            "Ne pas confondre avec une réaction totale."
+          ],
+          "mnemo": "Acide faible : dissociation partielle.",
+          "liens": {
+            "avant": [],
+            "apres": ["base_faible_definition"]
+          }
+        },
+        {
+          "id": "base_faible_definition",
+          "titre": "Base faible : définition",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Une base faible ne se dissocie que partiellement dans l'eau.",
+          "description_longue": "Une base faible est une base qui ne réagit que partiellement avec l'eau. Sa dissociation est partielle : $B + H_2O \\rightleftharpoons BH^+ + OH^-$. Il s'établit un équilibre chimique. La constante de basicité $K_b$ caractérise cet équilibre.",
+          "formules": [
+            { "latex": "$B + H_2O \\rightleftharpoons BH^+ + OH^-$", "condition": "", "usage": "Dissociation partielle" },
+            { "latex": "$K_b = \\frac{[BH^+][OH^-]}{[B]}$", "condition": "", "usage": "Constante de basicité" }
+          ],
+          "proprietes": [
+            "La dissociation est partielle.",
+            "Il y a un équilibre chimique.",
+            "Le pH dépend de $K_b$ et de $C$."
+          ],
+          "methodes": [
+            "Identifier la base faible.",
+            "Écrire l'équation de dissociation.",
+            "Utiliser $K_b$ pour calculer le pH."
+          ],
+          "exemple_resolu": {
+            "enonce": "L'ammoniac $NH_3$ est une base faible. Écrire l'équation de sa dissociation dans l'eau.",
+            "etapes": [
+              "$NH_3 + H_2O \\rightleftharpoons NH_4^+ + OH^-$."
+            ],
+            "conclusion": "Équation : $NH_3 + H_2O \\rightleftharpoons NH_4^+ + OH^-$."
+          },
+          "erreurs_frequentes": [
+            "Confondre base forte et base faible.",
+            "Oublier le double sens de la flèche.",
+            "Erreur dans l'équation."
+          ],
+          "pieges_examen": [
+            "Bien utiliser $\\rightleftharpoons$.",
+            "Ne pas confondre avec une réaction totale."
+          ],
+          "mnemo": "Base faible : dissociation partielle.",
+          "liens": {
+            "avant": ["acide_faible_definition"],
+            "apres": ["constante_acidite"]
+          }
+        },
+        {
+          "id": "constante_acidite",
+          "titre": "Constante d'acidité $K_a$",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "$K_a$ caractérise la force d'un acide faible.",
+          "description_longue": "La constante d'acidité $K_a$ est la constante d'équilibre de la réaction de dissociation d'un acide faible dans l'eau : $K_a = \\frac{[H_3O^+][A^-]}{[HA]}$. Plus $K_a$ est grand, plus l'acide est fort. On utilise souvent $pK_a = -\\log K_a$.",
+          "formules": [
+            { "latex": "$K_a = \\frac{[H_3O^+][A^-]}{[HA]}$", "condition": "", "usage": "Constante d'acidité" },
+            { "latex": "$pK_a = -\\log K_a$", "condition": "", "usage": "pKa" },
+            { "latex": "$K_a = 10^{-pK_a}$", "condition": "", "usage": "Relation" }
+          ],
+          "proprietes": [
+            "Plus $K_a$ est grand, plus l'acide est fort.",
+            "Plus $pK_a$ est petit, plus l'acide est fort.",
+            "$K_a$ ne dépend que de la température."
+          ],
+          "methodes": [
+            "Identifier les concentrations à l'équilibre.",
+            "Appliquer la formule de $K_a$.",
+            "Calculer $pK_a$."
+          ],
+          "exemple_resolu": {
+            "enonce": "Pour une solution d'acide acétique à $0{,}1\\,\\text{mol/L}$, on a $[H_3O^+] = 1{,}3 \\times 10^{-3}\\,\\text{mol/L}$. Calculer $K_a$ et $pK_a$.",
+            "etapes": [
+              "$[A^-] = [H_3O^+] = 1{,}3 \\times 10^{-3}\\,\\text{mol/L}$.",
+              "$[HA] = 0{,}1 - 1{,}3 \\times 10^{-3} \\approx 0{,}0987\\,\\text{mol/L}$.",
+              "$K_a = \\frac{(1{,}3 \\times 10^{-3})^2}{0{,}0987} \\approx 1{,}7 \\times 10^{-5}$.",
+              "$pK_a = -\\log(1{,}7 \\times 10^{-5}) \\approx 4{,}8$."
+            ],
+            "conclusion": "$K_a \\approx 1{,}7 \\times 10^{-5}$ et $pK_a \\approx 4{,}8$."
+          },
+          "erreurs_frequentes": [
+            "Oublier de soustraire $[H_3O^+]$ à $C$.",
+            "Confondre $K_a$ et $K_e$.",
+            "Erreur dans le calcul du logarithme."
+          ],
+          "pieges_examen": [
+            "Bien utiliser les concentrations à l'équilibre.",
+            "Vérifier les approximations."
+          ],
+          "mnemo": "$K_a = 10^{-pK_a}$.",
+          "liens": {
+            "avant": ["base_faible_definition"],
+            "apres": ["coefficient_dissociation"]
+          }
+        },
+        {
+          "id": "coefficient_dissociation",
+          "titre": "Coefficient de dissociation $\\alpha$",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "$\\alpha$ mesure la fraction d'acide dissocié.",
+          "description_longue": "Le coefficient de dissociation $\\alpha$ est le rapport entre la quantité d'acide dissocié et la quantité d'acide initial : $\\alpha = \\frac{[A^-]}{C} = \\frac{[H_3O^+]}{C}$. Il varie de 0 (pas de dissociation) à 1 (dissociation totale). Il dépend de la concentration et de $K_a$.",
+          "formules": [
+            { "latex": "$\\alpha = \\frac{[H_3O^+]}{C}$", "condition": "", "usage": "Coefficient de dissociation" },
+            { "latex": "$K_a = \\frac{C\\alpha^2}{1-\\alpha}$", "condition": "", "usage": "Loi de dilution d'Ostwald" }
+          ],
+          "proprietes": [
+            "$0 \\leq \\alpha \\leq 1$.",
+            "$\\alpha$ augmente quand $C$ diminue.",
+            "Pour un acide fort, $\\alpha = 1$."
+          ],
+          "methodes": [
+            "Calculer $[H_3O^+]$.",
+            "Appliquer $\\alpha = \\frac{[H_3O^+]}{C}$.",
+            "Utiliser la loi d'Ostwald si nécessaire."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un acide faible à $C = 0{,}01\\,\\text{mol/L}$ a $[H_3O^+] = 10^{-4}\\,\\text{mol/L}$. Calculer $\\alpha$.",
+            "etapes": [
+              "$\\alpha = \\frac{10^{-4}}{0{,}01} = 0{,}01$.",
+              "Soit $1\\%$."
+            ],
+            "conclusion": "$\\alpha = 0{,}01$ (1%)."
+          },
+          "erreurs_frequentes": [
+            "Confondre $\\alpha$ et $K_a$.",
+            "Oublier que $\\alpha$ dépend de $C$.",
+            "Erreur dans le calcul."
+          ],
+          "pieges_examen": [
+            "Bien utiliser la loi d'Ostwald.",
+            "Vérifier les approximations."
+          ],
+          "mnemo": "$\\alpha = [H_3O^+]/C$.",
+          "liens": {
+            "avant": ["constante_acidite"],
+            "apres": ["ph_acide_faible"]
+          }
+        },
+        {
+          "id": "ph_acide_faible",
+          "titre": "pH d'un acide faible",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "$pH = \\frac{1}{2}(pK_a - \\log C)$.",
+          "description_longue": "Pour un acide faible de concentration $C$ et de constante d'acidité $K_a$, le pH est donné par $pH = \\frac{1}{2}(pK_a - \\log C)$ si l'acide est faiblement dissocié. Cette formule est valable lorsque $\\alpha \\ll 1$.",
+          "formules": [
+            { "latex": "$pH = \\frac{1}{2}(pK_a - \\log C)$", "condition": "$\\alpha \\ll 1$", "usage": "pH d'un acide faible" }
+          ],
+          "proprietes": [
+            "Le pH dépend de $pK_a$ et de $C$.",
+            "Le pH est plus élevé que pour un acide fort.",
+            "Valable pour les acides faibles peu dissociés."
+          ],
+          "methodes": [
+            "Identifier $pK_a$ et $C$.",
+            "Appliquer la formule.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer le pH d'une solution d'acide acétique à $C = 0{,}1\\,\\text{mol/L}$ ($pK_a = 4{,}8$).",
+            "etapes": [
+              "$pH = \\frac{1}{2}(4{,}8 - \\log(0{,}1))$.",
+              "$\\log(0{,}1) = -1$.",
+              "$pH = \\frac{1}{2}(4{,}8 + 1) = \\frac{5{,}8}{2} = 2{,}9$."
+            ],
+            "conclusion": "$pH = 2{,}9$."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec la formule de l'acide fort.",
+            "Oublier le facteur $\\frac{1}{2}$.",
+            "Erreur dans le logarithme."
+          ],
+          "pieges_examen": [
+            "Bien vérifier les conditions d'application.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$pH = \\frac{1}{2}(pK_a - \\log C)$.",
+          "liens": {
+            "avant": ["coefficient_dissociation"],
+            "apres": ["ph_base_faible"]
+          }
+        },
+        {
+          "id": "ph_base_faible",
+          "titre": "pH d'une base faible",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "$pH = 7 + \\frac{1}{2}(pK_a + \\log C)$.",
+          "description_longue": "Pour une base faible de concentration $C$ et de constante d'acidité $K_a$ de son acide conjugué, le pH est donné par $pH = 7 + \\frac{1}{2}(pK_a + \\log C)$. Cette formule est valable lorsque la base est faiblement dissociée.",
+          "formules": [
+            { "latex": "$pH = 7 + \\frac{1}{2}(pK_a + \\log C)$", "condition": "", "usage": "pH d'une base faible" }
+          ],
+          "proprietes": [
+            "Le pH dépend de $pK_a$ et de $C$.",
+            "Le pH est plus faible que pour une base forte.",
+            "Valable pour les bases faibles peu dissociées."
+          ],
+          "methodes": [
+            "Identifier $pK_a$ et $C$.",
+            "Appliquer la formule.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer le pH d'une solution d'ammoniac à $C = 0{,}1\\,\\text{mol/L}$ ($pK_a = 9{,}2$).",
+            "etapes": [
+              "$pH = 7 + \\frac{1}{2}(9{,}2 + \\log(0{,}1))$.",
+              "$\\log(0{,}1) = -1$.",
+              "$pH = 7 + \\frac{1}{2}(9{,}2 - 1) = 7 + \\frac{8{,}2}{2} = 7 + 4{,}1 = 11{,}1$."
+            ],
+            "conclusion": "$pH = 11{,}1$."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec la formule de la base forte.",
+            "Oublier le facteur $\\frac{1}{2}$.",
+            "Erreur dans le logarithme."
+          ],
+          "pieges_examen": [
+            "Bien vérifier les conditions d'application.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "$pH = 7 + \\frac{1}{2}(pK_a + \\log C)$.",
+          "liens": {
+            "avant": ["ph_acide_faible"],
+            "apres": ["relation_ph_pka"]
+          }
+        },
+        {
+          "id": "relation_ph_pka",
+          "titre": "Relation $pH = pK_a + \\log([A^-]/[AH])$",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Relation d'Henderson-Hasselbalch.",
+          "description_longue": "La relation $pH = pK_a + \\log\\left(\\frac{[A^-]}{[AH]}\\right)$ permet de calculer le pH d'une solution contenant un acide faible et sa base conjuguée. Elle est fondamentale pour les solutions tampons.",
+          "formules": [
+            { "latex": "$pH = pK_a + \\log\\left(\\frac{[A^-]}{[AH]}\\right)$", "condition": "", "usage": "Relation d'Henderson-Hasselbalch" }
+          ],
+          "proprietes": [
+            "Si $[A^-] = [AH]$, alors $pH = pK_a$.",
+            "Permet de préparer des solutions tampons.",
+            "Valable pour les couples acide/base faibles."
+          ],
+          "methodes": [
+            "Identifier $pK_a$, $[A^-]$ et $[AH]$.",
+            "Appliquer la relation.",
+            "Calculer le pH."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une solution contient $[CH_3COOH] = 0{,}1\\,\\text{mol/L}$ et $[CH_3COO^-] = 0{,}01\\,\\text{mol/L}$. Calculer le pH ($pK_a = 4{,}8$).",
+            "etapes": [
+              "$pH = 4{,}8 + \\log\\left(\\frac{0{,}01}{0{,}1}\\right)$.",
+              "$\\log(0{,}1) = -1$.",
+              "$pH = 4{,}8 - 1 = 3{,}8$."
+            ],
+            "conclusion": "$pH = 3{,}8$."
+          },
+          "erreurs_frequentes": [
+            "Inverser $[A^-]$ et $[AH]$.",
+            "Confondre $pK_a$ et $pH$.",
+            "Erreur dans le logarithme."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'acide et la base.",
+            "Utiliser la bonne relation."
+          ],
+          "mnemo": "$pH = pK_a + \\log([A^-]/[AH])$.",
+          "liens": {
+            "avant": ["ph_base_faible"],
+            "apres": ["applications_acide_faible_base_faible"]
+          }
+        },
+        {
+          "id": "applications_acide_faible_base_faible",
+          "titre": "Applications",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Applications des acides faibles et bases faibles.",
+          "description_longue": "Les acides faibles et les bases faibles ont de nombreuses applications : solutions tampons en biologie, conservation des aliments, médicaments, et industrie. Leur comportement est plus complexe que celui des acides et bases fortes.",
+          "formules": [
+            { "latex": "$pH = pK_a + \\log\\left(\\frac{[A^-]}{[AH]}\\right)$", "condition": "", "usage": "Relation" }
+          ],
+          "proprietes": [
+            "Solutions tampons.",
+            "Conservation des aliments.",
+            "Applications biologiques."
+          ],
+          "methodes": [
+            "Identifier l'application.",
+            "Utiliser les formules.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Expliquer pourquoi l'acide acétique est utilisé comme conservateur alimentaire.",
+            "etapes": [
+              "L'acide acétique est un acide faible.",
+              "Il abaisse le pH du milieu.",
+              "Cela inhibe la croissance des micro-organismes."
+            ],
+            "conclusion": "L'acide acétique acidifie le milieu et conserve les aliments."
+          },
+          "erreurs_frequentes": [
+            "Confondre acide fort et faible.",
+            "Oublier les applications."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'application.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Acides faibles : applications biologiques.",
+          "liens": {
+            "avant": ["relation_ph_pka"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Calculer le pH d'un acide faible.",
+        "Calculer le pH d'une base faible.",
+        "Calculer $K_a$ et $pK_a$.",
+        "Utiliser la relation d'Henderson-Hasselbalch."
+      ]
+    },
+    {
+      "id": "couples_acide_base",
+      "numero": 4,
+      "titre": "Couples acide/base et classification",
+      "description": "Notion de couple acide/base, théorie de Brønsted et classification.",
+      "duree_estimee_min": 420,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["acide_faible_base_faible"],
+      "notions": [
+        {
+          "id": "couple_acide_base",
+          "titre": "Notion de couple acide/base",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Un couple acide/base est formé d'un acide et de sa base conjuguée.",
+          "description_longue": "Un couple acide/base est constitué d'un acide $AH$ et de sa base conjuguée $A^-$. Ils sont liés par la demi-équation $AH \\rightleftharpoons A^- + H^+$. L'acide cède un proton, la base le capte. Cette notion est fondamentale en chimie des solutions.",
+          "formules": [
+            { "latex": "$AH \\rightleftharpoons A^- + H^+$", "condition": "", "usage": "Demi-équation" },
+            { "latex": "$AH/A^-$", "condition": "", "usage": "Notation du couple" }
+          ],
+          "proprietes": [
+            "L'acide cède un proton.",
+            "La base capte un proton.",
+            "Le couple est noté acide/base."
+          ],
+          "methodes": [
+            "Identifier l'acide et la base.",
+            "Écrire la demi-équation.",
+            "Noter le couple."
+          ],
+          "exemple_resolu": {
+            "enonce": "Identifier le couple acide/base de l'acide acétique.",
+            "etapes": [
+              "L'acide acétique est $CH_3COOH$.",
+              "Sa base conjuguée est $CH_3COO^-$.",
+              "Le couple est $CH_3COOH/CH_3COO^-$."
+            ],
+            "conclusion": "Couple : $CH_3COOH/CH_3COO^-$."
+          },
+          "erreurs_frequentes": [
+            "Confondre acide et base.",
+            "Oublier la demi-équation.",
+            "Inverser le couple."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'acide et la base.",
+            "Utiliser la bonne notation."
+          ],
+          "mnemo": "Couple : acide/base.",
+          "liens": {
+            "avant": [],
+            "apres": ["theorie_bronsted"]
+          }
+        },
+        {
+          "id": "theorie_bronsted",
+          "titre": "Théorie de Brønsted",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Un acide est une espèce qui cède un proton, une base le capte.",
+          "description_longue": "Selon la théorie de Brønsted, un acide est une espèce chimique capable de céder un proton $H^+$, et une base est une espèce capable de capter un proton $H^+$. Cette théorie généralise la notion d'acide et de base et permet de définir des couples acide/base.",
+          "formules": [
+            { "latex": "$AH \\rightleftharpoons A^- + H^+$", "condition": "", "usage": "Acide cède $H^+$" },
+            { "latex": "$B + H^+ \\rightleftharpoons BH^+$", "condition": "", "usage": "Base capte $H^+$" }
+          ],
+          "proprietes": [
+            "Un acide cède un proton.",
+            "Une base capte un proton.",
+            "Un couple est formé d'un acide et d'une base."
+          ],
+          "methodes": [
+            "Identifier l'espèce qui cède ou capte $H^+$.",
+            "Écrire la demi-équation.",
+            "Définir le couple."
+          ],
+          "exemple_resolu": {
+            "enonce": "Dans la réaction $NH_3 + H_2O \\rightleftharpoons NH_4^+ + OH^-$, identifier les acides et les bases.",
+            "etapes": [
+              "$NH_3$ capte $H^+$ : c'est une base.",
+              "$H_2O$ cède $H^+$ : c'est un acide.",
+              "$NH_4^+$ est l'acide conjugué de $NH_3$.",
+              "$OH^-$ est la base conjuguée de $H_2O$."
+            ],
+            "conclusion": "Couples : $NH_4^+/NH_3$ et $H_2O/OH^-$."
+          },
+          "erreurs_frequentes": [
+            "Confondre acide et base.",
+            "Oublier les couples.",
+            "Erreur dans les demi-équations."
+          ],
+          "pieges_examen": [
+            "Bien identifier les transferts de protons.",
+            "Utiliser les couples."
+          ],
+          "mnemo": "Brønsted : acide cède $H^+$, base capte $H^+$.",
+          "liens": {
+            "avant": ["couple_acide_base"],
+            "apres": ["demi_equations"]
+          }
+        },
+        {
+          "id": "demi_equations",
+          "titre": "Demi-équations",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Équations de transfert de protons.",
+          "description_longue": "Une demi-équation acido-basique représente le transfert d'un proton entre un acide et sa base conjuguée : $AH \\rightleftharpoons A^- + H^+$. Elle permet d'écrire les réactions acido-basiques et de déterminer les couples mis en jeu.",
+          "formules": [
+            { "latex": "$AH \\rightleftharpoons A^- + H^+$", "condition": "", "usage": "Demi-équation" }
+          ],
+          "proprietes": [
+            "Le proton est transféré.",
+            "La demi-équation est équilibrée.",
+            "Elle définit un couple."
+          ],
+          "methodes": [
+            "Identifier l'acide et la base.",
+            "Écrire la demi-équation.",
+            "Vérifier l'équilibre."
+          ],
+          "exemple_resolu": {
+            "enonce": "Écrire la demi-équation du couple $CH_3COOH/CH_3COO^-$.",
+            "etapes": [
+              "$CH_3COOH \\rightleftharpoons CH_3COO^- + H^+$."
+            ],
+            "conclusion": "Demi-équation : $CH_3COOH \\rightleftharpoons CH_3COO^- + H^+$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le $H^+$.",
+            "Erreur dans les charges.",
+            "Confondre acide et base."
+          ],
+          "pieges_examen": [
+            "Bien équilibrer les charges.",
+            "Utiliser $\\rightleftharpoons$."
+          ],
+          "mnemo": "Demi-équation : $AH \\rightleftharpoons A^- + H^+$.",
+          "liens": {
+            "avant": ["theorie_bronsted"],
+            "apres": ["classification_couples"]
+          }
+        },
+        {
+          "id": "classification_couples",
+          "titre": "Classification des couples",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Classement des couples selon leur force.",
+          "description_longue": "Les couples acide/base peuvent être classés selon la force de l'acide. Un acide fort a une base conjuguée faible, et inversement. On utilise les $pK_a$ pour classer les couples. Plus le $pK_a$ est petit, plus l'acide est fort.",
+          "formules": [
+            { "latex": "$pK_a = -\\log K_a$", "condition": "", "usage": "pKa" }
+          ],
+          "proprietes": [
+            "Plus $pK_a$ est petit, plus l'acide est fort.",
+            "Un acide fort a une base conjuguée faible.",
+            "Classification selon $pK_a$."
+          ],
+          "methodes": [
+            "Identifier les $pK_a$.",
+            "Classer les couples.",
+            "Comparer les forces."
+          ],
+          "exemple_resolu": {
+            "enonce": "Classer les acides suivants par force croissante : $HCl$ ($pK_a = -7$), $CH_3COOH$ ($pK_a = 4{,}8$), $H_2O$ ($pK_a = 14$).",
+            "etapes": [
+              "Plus le $pK_a$ est petit, plus l'acide est fort.",
+              "$HCl$ ($pK_a = -7$) > $CH_3COOH$ ($pK_a = 4{,}8$) > $H_2O$ ($pK_a = 14$)."
+            ],
+            "conclusion": "Force croissante : $H_2O < CH_3COOH < HCl$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $pK_a$ et force.",
+            "Inverser l'ordre.",
+            "Erreur dans les valeurs."
+          ],
+          "pieges_examen": [
+            "Bien retenir que $pK_a$ petit = acide fort.",
+            "Classer correctement."
+          ],
+          "mnemo": "$pK_a$ petit = acide fort.",
+          "liens": {
+            "avant": ["demi_equations"],
+            "apres": ["force_relative_acides"]
+          }
+        },
+        {
+          "id": "force_relative_acides",
+          "titre": "Force relative des acides",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Comparaison de la force des acides.",
+          "description_longue": "La force d'un acide est caractérisée par sa constante d'acidité $K_a$ ou son $pK_a$. Un acide est d'autant plus fort que son $K_a$ est grand (ou son $pK_a$ petit). Un acide fort a une dissociation totale, un acide faible une dissociation partielle.",
+          "formules": [
+            { "latex": "$K_a = 10^{-pK_a}$", "condition": "", "usage": "Relation" }
+          ],
+          "proprietes": [
+            "Acide fort : $pK_a < 0$.",
+            "Acide faible : $pK_a > 0$.",
+            "Plus $pK_a$ est petit, plus l'acide est fort."
+          ],
+          "methodes": [
+            "Comparer les $pK_a$.",
+            "Classer les acides.",
+            "Conclure."
+          ],
+          "exemple_resolu": {
+            "enonce": "Comparer la force de $HCl$ ($pK_a = -7$) et de $CH_3COOH$ ($pK_a = 4{,}8$).",
+            "etapes": [
+              "$pK_a(HCl) = -7 < pK_a(CH_3COOH) = 4{,}8$.",
+              "$HCl$ est plus fort que $CH_3COOH$."
+            ],
+            "conclusion": "$HCl$ est plus fort que $CH_3COOH$."
+          },
+          "erreurs_frequentes": [
+            "Confondre $pK_a$ et pH.",
+            "Inverser l'ordre.",
+            "Erreur dans les valeurs."
+          ],
+          "pieges_examen": [
+            "Bien comparer les $pK_a$.",
+            "Ne pas confondre avec le pH."
+          ],
+          "mnemo": "$pK_a$ petit = acide fort.",
+          "liens": {
+            "avant": ["classification_couples"],
+            "apres": ["comparaison_ka_pka"]
+          }
+        },
+        {
+          "id": "comparaison_ka_pka",
+          "titre": "Comparaison $K_a$ et $pK_a$",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 20,
+          "description_courte": "Relation entre $K_a$ et $pK_a$.",
+          "description_longue": "$K_a$ et $pK_a$ sont liés par $pK_a = -\\log K_a$ et $K_a = 10^{-pK_a}$. Plus $K_a$ est grand, plus $pK_a$ est petit, plus l'acide est fort. Ces deux grandeurs caractérisent la force d'un acide.",
+          "formules": [
+            { "latex": "$pK_a = -\\log K_a$", "condition": "", "usage": "Relation" },
+            { "latex": "$K_a = 10^{-pK_a}$", "condition": "", "usage": "Relation inverse" }
+          ],
+          "proprietes": [
+            "$K_a$ grand $\\Leftrightarrow$ $pK_a$ petit.",
+            "$K_a$ petit $\\Leftrightarrow$ $pK_a$ grand.",
+            "Ces grandeurs ne dépendent que de la température."
+          ],
+          "methodes": [
+            "Convertir $K_a$ en $pK_a$.",
+            "Convertir $pK_a$ en $K_a$.",
+            "Comparer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un acide a $K_a = 10^{-5}$. Calculer son $pK_a$.",
+            "etapes": [
+              "$pK_a = -\\log(10^{-5}) = 5$."
+            ],
+            "conclusion": "$pK_a = 5$."
+          },
+          "erreurs_frequentes": [
+            "Oublier le signe moins.",
+            "Confondre $K_a$ et $K_e$.",
+            "Erreur dans le logarithme."
+          ],
+          "pieges_examen": [
+            "Bien utiliser la relation.",
+            "Vérifier les calculs."
+          ],
+          "mnemo": "$pK_a = -\\log K_a$.",
+          "liens": {
+            "avant": ["force_relative_acides"],
+            "apres": ["diagramme_predominance"]
+          }
+        },
+        {
+          "id": "diagramme_predominance",
+          "titre": "Diagramme de prédominance",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Représentation graphique des espèces prédominantes en fonction du pH.",
+          "description_longue": "Le diagramme de prédominance indique quelle espèce (acide ou base) est majoritaire en fonction du pH. Pour un couple $AH/A^-$, l'acide prédomine si $pH < pK_a$, la base prédomine si $pH > pK_a$. À $pH = pK_a$, les concentrations sont égales.",
+          "formules": [
+            { "latex": "$pH < pK_a$ : $AH$ prédomine", "condition": "", "usage": "Acide" },
+            { "latex": "$pH > pK_a$ : $A^-$ prédomine", "condition": "", "usage": "Base" },
+            { "latex": "$pH = pK_a$ : $[AH] = [A^-]$", "condition": "", "usage": "Égalité" }
+          ],
+          "proprietes": [
+            "L'acide prédomine en milieu acide.",
+            "La base prédomine en milieu basique.",
+            "À $pH = pK_a$, égalité."
+          ],
+          "methodes": [
+            "Identifier le $pK_a$.",
+            "Comparer le pH au $pK_a$.",
+            "Déterminer l'espèce prédominante."
+          ],
+          "exemple_resolu": {
+            "enonce": "Pour le couple $CH_3COOH/CH_3COO^-$ ($pK_a = 4{,}8$), quelle espèce prédomine à pH = 3 ?",
+            "etapes": [
+              "$pH = 3 < pK_a = 4{,}8$.",
+              "L'acide prédomine."
+            ],
+            "conclusion": "$CH_3COOH$ prédomine."
+          },
+          "erreurs_frequentes": [
+            "Inverser les conditions.",
+            "Confondre $pK_a$ et pH.",
+            "Erreur dans la comparaison."
+          ],
+          "pieges_examen": [
+            "Bien comparer pH et $pK_a$.",
+            "Utiliser le diagramme."
+          ],
+          "mnemo": "$pH < pK_a$ : acide prédomine.",
+          "liens": {
+            "avant": ["comparaison_ka_pka"],
+            "apres": ["applications_couples"]
+          }
+        },
+        {
+          "id": "applications_couples",
+          "titre": "Applications",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Applications des couples acide/base.",
+          "description_longue": "Les couples acide/base ont de nombreuses applications : solutions tampons, dosages, compréhension des phénomènes biologiques, et industrie. Ils sont essentiels en chimie analytique et en biochimie.",
+          "formules": [
+            { "latex": "$pH = pK_a + \\log\\left(\\frac{[A^-]}{[AH]}\\right)$", "condition": "", "usage": "Relation" }
+          ],
+          "proprietes": [
+            "Solutions tampons.",
+            "Dosages.",
+            "Phénomènes biologiques."
+          ],
+          "methodes": [
+            "Identifier l'application.",
+            "Utiliser les formules.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Expliquer le rôle des couples acide/base dans le sang.",
+            "etapes": [
+              "Le sang contient des couples tampons.",
+              "Ils maintiennent le pH sanguin autour de 7,4.",
+              "Le principal couple est $H_2CO_3/HCO_3^-$."
+            ],
+            "conclusion": "Les couples acide/base maintiennent le pH sanguin."
+          },
+          "erreurs_frequentes": [
+            "Oublier les applications.",
+            "Confondre les couples."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'application.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Couples acide/base : applications biologiques.",
+          "liens": {
+            "avant": ["diagramme_predominance"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Identifier un couple acide/base.",
+        "Écrire une demi-équation.",
+        "Classer des couples selon leur force.",
+        "Utiliser un diagramme de prédominance."
+      ]
+    },
+    {
+      "id": "reaction_acido_basique_tampon",
+      "numero": 5,
+      "titre": "Réaction acido-basique et solution tampon",
+      "description": "Réactions acido-basiques, sens d'évolution et solutions tampons.",
+      "duree_estimee_min": 420,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["couples_acide_base"],
+      "notions": [
+        {
+          "id": "reaction_acido_basique",
+          "titre": "Réaction acido-basique",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Réaction entre un acide et une base avec transfert de proton.",
+          "description_longue": "Une réaction acido-basique est une réaction entre l'acide d'un couple et la base d'un autre couple. Elle s'écrit en combinant les demi-équations. Le proton est transféré de l'acide à la base. La réaction est d'autant plus totale que l'acide est fort et la base forte.",
+          "formules": [
+            { "latex": "$AH_1 + A_2^- \\rightleftharpoons A_1^- + AH_2$", "condition": "", "usage": "Réaction acido-basique" }
+          ],
+          "proprietes": [
+            "Transfert de proton.",
+            "Réaction entre deux couples.",
+            "Peut être totale ou limitée."
+          ],
+          "methodes": [
+            "Identifier les couples.",
+            "Écrire les demi-équations.",
+            "Combiner pour obtenir la réaction."
+          ],
+          "exemple_resolu": {
+            "enonce": "Écrire la réaction entre l'acide acétique et l'ammoniac.",
+            "etapes": [
+              "Couples : $CH_3COOH/CH_3COO^-$ et $NH_4^+/NH_3$.",
+              "$CH_3COOH \\rightleftharpoons CH_3COO^- + H^+$.",
+              "$NH_3 + H^+ \\rightleftharpoons NH_4^+$.",
+              "Réaction : $CH_3COOH + NH_3 \\rightleftharpoons CH_3COO^- + NH_4^+$."
+            ],
+            "conclusion": "$CH_3COOH + NH_3 \\rightleftharpoons CH_3COO^- + NH_4^+$."
+          },
+          "erreurs_frequentes": [
+            "Oublier un couple.",
+            "Erreur dans les demi-équations.",
+            "Confondre acide et base."
+          ],
+          "pieges_examen": [
+            "Bien identifier les couples.",
+            "Équilibrer la réaction."
+          ],
+          "mnemo": "Acide + Base → Base + Acide.",
+          "liens": {
+            "avant": [],
+            "apres": ["sens_evolution"]
+          }
+        },
+        {
+          "id": "sens_evolution",
+          "titre": "Sens d'évolution",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "La réaction évolue de l'acide fort vers la base forte.",
+          "description_longue": "Le sens d'évolution d'une réaction acido-basique est déterminé par la comparaison des $pK_a$ des couples mis en jeu. La réaction évolue de l'acide le plus fort vers la base la plus forte. L'acide le plus fort réagit avec la base la plus forte pour donner l'acide le plus faible et la base la plus faible.",
+          "formules": [
+            { "latex": "$\\Delta pK_a = pK_{a2} - pK_{a1}$", "condition": "", "usage": "Écart de pKa" }
+          ],
+          "proprietes": [
+            "La réaction évolue vers les espèces les plus faibles.",
+            "Plus $\\Delta pK_a$ est grand, plus la réaction est totale.",
+            "Si $\\Delta pK_a > 4$, la réaction est quasi-totale."
+          ],
+          "methodes": [
+            "Identifier les couples.",
+            "Comparer les $pK_a$.",
+            "Déterminer le sens."
+          ],
+          "exemple_resolu": {
+            "enonce": "Déterminer le sens de la réaction entre $CH_3COOH$ ($pK_a = 4{,}8$) et $NH_3$ ($pK_a = 9{,}2$).",
+            "etapes": [
+              "$pK_a(CH_3COOH/CH_3COO^-) = 4{,}8$.",
+              "$pK_a(NH_4^+/NH_3) = 9{,}2$.",
+              "L'acide le plus fort est $CH_3COOH$.",
+              "La réaction évolue de $CH_3COOH$ vers $NH_3$."
+            ],
+            "conclusion": "$CH_3COOH + NH_3 \\to CH_3COO^- + NH_4^+$."
+          },
+          "erreurs_frequentes": [
+            "Inverser le sens.",
+            "Confondre $pK_a$ et pH.",
+            "Erreur dans la comparaison."
+          ],
+          "pieges_examen": [
+            "Bien comparer les $pK_a$.",
+            "Utiliser la règle du gamma."
+          ],
+          "mnemo": "Gamma : acide fort + base forte → acide faible + base faible.",
+          "liens": {
+            "avant": ["reaction_acido_basique"],
+            "apres": ["solution_tampon_definition"]
+          }
+        },
+        {
+          "id": "solution_tampon_definition",
+          "titre": "Solution tampon : définition",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Une solution tampon résiste aux variations de pH.",
+          "description_longue": "Une solution tampon est une solution qui contient un acide faible et sa base conjuguée en concentrations voisines. Son pH varie peu par ajout modéré d'acide, de base, ou par dilution. Le pH d'une solution tampon est donné par $pH = pK_a + \\log\\left(\\frac{[A^-]}{[AH]}\\right)$.",
+          "formules": [
+            { "latex": "$pH = pK_a + \\log\\left(\\frac{[A^-]}{[AH]}\\right)$", "condition": "", "usage": "pH d'une solution tampon" },
+            { "latex": "$pH \\approx pK_a$ si $[A^-] \\approx [AH]$", "condition": "", "usage": "Approximation" }
+          ],
+          "proprietes": [
+            "Le pH varie peu.",
+            "Contient un acide faible et sa base conjuguée.",
+            "Le pouvoir tampon est maximal quand $pH = pK_a$."
+          ],
+          "methodes": [
+            "Identifier le couple tampon.",
+            "Utiliser la relation d'Henderson-Hasselbalch.",
+            "Calculer le pH."
+          ],
+          "exemple_resolu": {
+            "enonce": "Une solution tampon contient $[CH_3COOH] = 0{,}1\\,\\text{mol/L}$ et $[CH_3COO^-] = 0{,}1\\,\\text{mol/L}$. Calculer son pH ($pK_a = 4{,}8$).",
+            "etapes": [
+              "$pH = 4{,}8 + \\log\\left(\\frac{0{,}1}{0{,}1}\\right)$.",
+              "$\\log(1) = 0$.",
+              "$pH = 4{,}8$."
+            ],
+            "conclusion": "$pH = 4{,}8$."
+          },
+          "erreurs_frequentes": [
+            "Oublier la relation.",
+            "Confondre avec une solution d'acide faible.",
+            "Erreur dans le logarithme."
+          ],
+          "pieges_examen": [
+            "Bien identifier le couple tampon.",
+            "Utiliser la bonne relation."
+          ],
+          "mnemo": "Tampon : acide faible + base conjuguée.",
+          "liens": {
+            "avant": ["sens_evolution"],
+            "apres": ["preparation_tampon"]
+          }
+        },
+        {
+          "id": "preparation_tampon",
+          "titre": "Préparation d'une solution tampon",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Méthodes de préparation d'une solution tampon.",
+          "description_longue": "Une solution tampon peut être préparée en mélangeant un acide faible et sa base conjuguée, ou en neutralisant partiellement un acide faible par une base forte (ou inversement). Le pH souhaité détermine le choix du couple et les proportions.",
+          "formules": [
+            { "latex": "$pH = pK_a + \\log\\left(\\frac{[A^-]}{[AH]}\\right)$", "condition": "", "usage": "Relation" }
+          ],
+          "proprietes": [
+            "Choix du couple selon le pH souhaité.",
+            "Mélange acide faible + base conjuguée.",
+            "Neutralisation partielle."
+          ],
+          "methodes": [
+            "Choisir le couple dont le $pK_a$ est proche du pH souhaité.",
+            "Calculer les proportions.",
+            "Préparer la solution."
+          ],
+          "exemple_resolu": {
+            "enonce": "Comment préparer une solution tampon de pH 4,8 ?",
+            "etapes": [
+              "Choisir un couple avec $pK_a \\approx 4{,}8$.",
+              "Le couple $CH_3COOH/CH_3COO^-$ convient ($pK_a = 4{,}8$).",
+              "Mélanger $CH_3COOH$ et $CH_3COO^-$ en proportions égales."
+            ],
+            "conclusion": "Mélange équimolaire de $CH_3COOH$ et $CH_3COO^-$."
+          },
+          "erreurs_frequentes": [
+            "Choisir un couple inadapté.",
+            "Erreur dans les proportions.",
+            "Oublier le $pK_a$."
+          ],
+          "pieges_examen": [
+            "Bien choisir le couple.",
+            "Calculer les proportions."
+          ],
+          "mnemo": "Tampon : $pK_a \\approx pH$.",
+          "liens": {
+            "avant": ["solution_tampon_definition"],
+            "apres": ["pouvoir_tampon"]
+          }
+        },
+        {
+          "id": "pouvoir_tampon",
+          "titre": "Pouvoir tampon",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Le pouvoir tampon mesure la résistance aux variations de pH.",
+          "description_longue": "Le pouvoir tampon $\\beta$ d'une solution est sa capacité à résister aux variations de pH. Il est maximal lorsque $pH = pK_a$ et lorsque les concentrations de l'acide et de la base sont élevées. Il est défini par $\\beta = \\frac{dC_b}{dpH}$.",
+          "formules": [
+            { "latex": "$\\beta = \\frac{dC_b}{dpH}$", "condition": "", "usage": "Pouvoir tampon" }
+          ],
+          "proprietes": [
+            "Maximal quand $pH = pK_a$.",
+            "Augmente avec les concentrations.",
+            "Mesure la résistance aux variations."
+          ],
+          "methodes": [
+            "Identifier le couple.",
+            "Calculer le pouvoir tampon.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Pourquoi le pouvoir tampon est-il maximal quand $pH = pK_a$ ?",
+            "etapes": [
+              "Quand $pH = pK_a$, $[A^-] = [AH]$.",
+              "Les deux espèces sont en concentrations égales.",
+              "La solution peut neutraliser aussi bien un acide qu'une base."
+            ],
+            "conclusion": "Le pouvoir tampon est maximal à $pH = pK_a$."
+          },
+          "erreurs_frequentes": [
+            "Confondre pouvoir tampon et pH.",
+            "Oublier les conditions.",
+            "Erreur dans l'interprétation."
+          ],
+          "pieges_examen": [
+            "Bien comprendre la définition.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Pouvoir tampon maximal à $pH = pK_a$.",
+          "liens": {
+            "avant": ["preparation_tampon"],
+            "apres": ["applications_biologiques"]
+          }
+        },
+        {
+          "id": "applications_biologiques",
+          "titre": "Applications biologiques",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Rôle des solutions tampons en biologie.",
+          "description_longue": "Les solutions tampons jouent un rôle crucial en biologie : maintien du pH sanguin, fonctionnement des enzymes, et équilibre des milieux intracellulaires. Le principal tampon sanguin est le couple $H_2CO_3/HCO_3^-$.",
+          "formules": [
+            { "latex": "$pH = pK_a + \\log\\left(\\frac{[HCO_3^-]}{[H_2CO_3]}\\right)$", "condition": "", "usage": "Tampon sanguin" }
+          ],
+          "proprietes": [
+            "Maintien du pH sanguin.",
+            "Fonctionnement des enzymes.",
+            "Équilibre des milieux."
+          ],
+          "methodes": [
+            "Identifier le tampon biologique.",
+            "Utiliser la relation.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Expliquer le rôle du tampon $H_2CO_3/HCO_3^-$ dans le sang.",
+            "etapes": [
+              "Le pH sanguin est maintenu autour de 7,4.",
+              "Le couple $H_2CO_3/HCO_3^-$ a un $pK_a$ de 6,1.",
+              "Il tamponne les variations de pH."
+            ],
+            "conclusion": "Le tampon maintient le pH sanguin à 7,4."
+          },
+          "erreurs_frequentes": [
+            "Confondre les couples.",
+            "Oublier le pH sanguin.",
+            "Erreur dans les valeurs."
+          ],
+          "pieges_examen": [
+            "Bien identifier le tampon biologique.",
+            "Utiliser les bonnes valeurs."
+          ],
+          "mnemo": "Tampon sanguin : $H_2CO_3/HCO_3^-$.",
+          "liens": {
+            "avant": ["pouvoir_tampon"],
+            "apres": ["ph_sanguin"]
+          }
+        },
+        {
+          "id": "ph_sanguin",
+          "titre": "pH sanguin",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Le pH sanguin est maintenu autour de 7,4.",
+          "description_longue": "Le pH du sang humain est maintenu dans un intervalle très étroit autour de 7,4. Une variation de plus de 0,4 unité peut être mortelle. Le maintien de ce pH est assuré par des systèmes tampons et des régulations physiologiques.",
+          "formules": [
+            { "latex": "$pH_{sang} \\approx 7{,}4$", "condition": "", "usage": "pH sanguin" }
+          ],
+          "proprietes": [
+            "pH sanguin : 7,35 à 7,45.",
+            "Régulation par les tampons.",
+            "Variations dangereuses."
+          ],
+          "methodes": [
+            "Identifier le pH.",
+            "Expliquer la régulation.",
+            "Conclure."
+          ],
+          "exemple_resolu": {
+            "enonce": "Quelles sont les conséquences d'une acidose ?",
+            "etapes": [
+              "L'acidose est une baisse du pH sanguin.",
+              "Le pH descend en dessous de 7,35.",
+              "Cela peut être mortel."
+            ],
+            "conclusion": "L'acidose est dangereuse pour l'organisme."
+          },
+          "erreurs_frequentes": [
+            "Confondre acidose et alcalose.",
+            "Oublier les valeurs.",
+            "Erreur dans l'interprétation."
+          ],
+          "pieges_examen": [
+            "Bien retenir les valeurs.",
+            "Comprendre les conséquences."
+          ],
+          "mnemo": "pH sanguin : 7,4.",
+          "liens": {
+            "avant": ["applications_biologiques"],
+            "apres": ["exercices_tampon"]
+          }
+        },
+        {
+          "id": "exercices_tampon",
+          "titre": "Exercices",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Exercices sur les solutions tampons.",
+          "description_longue": "Les exercices sur les solutions tampons portent sur le calcul du pH, la préparation de solutions, le pouvoir tampon, et les applications biologiques. Ils nécessitent la maîtrise des relations acido-basiques.",
+          "formules": [
+            { "latex": "$pH = pK_a + \\log\\left(\\frac{[A^-]}{[AH]}\\right)$", "condition": "", "usage": "Relation" }
+          ],
+          "proprietes": [
+            "Calcul du pH.",
+            "Préparation de tampons.",
+            "Applications."
+          ],
+          "methodes": [
+            "Identifier les données.",
+            "Appliquer les relations.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer le pH d'une solution tampon préparée en mélangeant $0{,}1\\,\\text{mol}$ de $CH_3COOH$ et $0{,}05\\,\\text{mol}$ de $CH_3COONa$ dans $1\\,\\text{L}$ ($pK_a = 4{,}8$).",
+            "etapes": [
+              "$[CH_3COOH] = 0{,}1\\,\\text{mol/L}$.",
+              "$[CH_3COO^-] = 0{,}05\\,\\text{mol/L}$.",
+              "$pH = 4{,}8 + \\log\\left(\\frac{0{,}05}{0{,}1}\\right)$.",
+              "$\\log(0{,}5) = -0{,}3$.",
+              "$pH = 4{,}8 - 0{,}3 = 4{,}5$."
+            ],
+            "conclusion": "$pH = 4{,}5$."
+          },
+          "erreurs_frequentes": [
+            "Erreur dans les concentrations.",
+            "Confondre acide et base.",
+            "Erreur dans le logarithme."
+          ],
+          "pieges_examen": [
+            "Bien identifier les espèces.",
+            "Utiliser la bonne relation."
+          ],
+          "mnemo": "$pH = pK_a + \\log([A^-]/[AH])$.",
+          "liens": {
+            "avant": ["ph_sanguin"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Écrire une réaction acido-basique.",
+        "Déterminer le sens d'évolution.",
+        "Calculer le pH d'une solution tampon.",
+        "Préparer une solution tampon."
+      ]
+    },
+    {
+      "id": "alcools",
+      "numero": 6,
+      "titre": "Alcools",
+      "description": "Étude des alcools : nomenclature, classes, réactions.",
+      "duree_estimee_min": 420,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["chimie_organique"],
+      "notions": [
+        {
+          "id": "definition_alcool",
+          "titre": "Définition d'un alcool",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Un alcool est un composé organique contenant un groupe hydroxyle $-OH$.",
+          "description_longue": "Un alcool est un composé organique qui contient un groupe fonctionnel hydroxyle $-OH$ lié à un atome de carbone saturé. Sa formule générale est $R-OH$ où $R$ est un groupe alkyle. Les alcools sont classés en primaires, secondaires et tertiaires selon le nombre de groupes alkyle liés au carbone portant le $-OH$.",
+          "formules": [
+            { "latex": "$R-OH$", "condition": "", "usage": "Formule générale" }
+          ],
+          "proprietes": [
+            "Groupe fonctionnel $-OH$.",
+            "Carbone saturé.",
+            "Classés en primaires, secondaires, tertiaires."
+          ],
+          "methodes": [
+            "Identifier le groupe $-OH$.",
+            "Déterminer la classe.",
+            "Nommer l'alcool."
+          ],
+          "exemple_resolu": {
+            "enonce": "Identifier la classe de l'alcool $CH_3CH_2OH$.",
+            "etapes": [
+              "Le carbone portant le $-OH$ est lié à un seul carbone.",
+              "C'est un alcool primaire."
+            ],
+            "conclusion": "Alcool primaire (éthanol)."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec un phénol.",
+            "Oublier la classe.",
+            "Erreur dans la nomenclature."
+          ],
+          "pieges_examen": [
+            "Bien distinguer alcool et phénol.",
+            "Déterminer la classe correctement."
+          ],
+          "mnemo": "Alcool : $R-OH$.",
+          "liens": {
+            "avant": [],
+            "apres": ["nomenclature_alcools"]
+          }
+        },
+        {
+          "id": "nomenclature_alcools",
+          "titre": "Nomenclature des alcools",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Règles de nommage des alcools.",
+          "description_longue": "La nomenclature des alcools suit les règles de l'IUPAC : on remplace le 'e' final de l'alcane correspondant par 'ol'. On indique la position du groupe $-OH$ par un numéro. Si nécessaire, on précise la classe.",
+          "formules": [
+            { "latex": "$CH_3OH$ : méthanol", "condition": "", "usage": "Exemple" },
+            { "latex": "$CH_3CH_2OH$ : éthanol", "condition": "", "usage": "Exemple" }
+          ],
+          "proprietes": [
+            "Suffixe -ol.",
+            "Position du $-OH$ indiquée.",
+            "Numérotation la plus petite possible."
+          ],
+          "methodes": [
+            "Identifier la chaîne principale.",
+            "Numéroter.",
+            "Nommer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Nommer l'alcool $CH_3CHOHCH_3$.",
+            "etapes": [
+              "Chaîne à 3 carbones : propane.",
+              "Le $-OH$ est en position 2.",
+              "Nom : propan-2-ol."
+            ],
+            "conclusion": "Propan-2-ol."
+          },
+          "erreurs_frequentes": [
+            "Erreur dans la numérotation.",
+            "Oublier le suffixe.",
+            "Confondre les positions."
+          ],
+          "pieges_examen": [
+            "Bien numéroter.",
+            "Utiliser les bonnes règles."
+          ],
+          "mnemo": "Alcool : suffixe -ol.",
+          "liens": {
+            "avant": ["definition_alcool"],
+            "apres": ["classes_alcools"]
+          }
+        },
+        {
+          "id": "classes_alcools",
+          "titre": "Classes d'alcools",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Les alcools sont classés en primaires, secondaires et tertiaires.",
+          "description_longue": "Un alcool est primaire si le carbone portant le $-OH$ est lié à un seul autre carbone. Il est secondaire s'il est lié à deux carbones, et tertiaire s'il est lié à trois carbones. Cette classification détermine les propriétés chimiques.",
+          "formules": [
+            { "latex": "$R-CH_2OH$ : primaire", "condition": "", "usage": "Alcool primaire" },
+            { "latex": "$R_2CHOH$ : secondaire", "condition": "", "usage": "Alcool secondaire" },
+            { "latex": "$R_3COH$ : tertiaire", "condition": "", "usage": "Alcool tertiaire" }
+          ],
+          "proprietes": [
+            "Primaire : 1 carbone lié.",
+            "Secondaire : 2 carbones liés.",
+            "Tertiaire : 3 carbones liés."
+          ],
+          "methodes": [
+            "Identifier le carbone fonctionnel.",
+            "Compter les carbones liés.",
+            "Déterminer la classe."
+          ],
+          "exemple_resolu": {
+            "enonce": "Déterminer la classe de l'alcool $(CH_3)_3COH$.",
+            "etapes": [
+              "Le carbone portant le $-OH$ est lié à 3 carbones.",
+              "C'est un alcool tertiaire."
+            ],
+            "conclusion": "Alcool tertiaire."
+          },
+          "erreurs_frequentes": [
+            "Confondre les classes.",
+            "Erreur dans le comptage.",
+            "Oublier le carbone fonctionnel."
+          ],
+          "pieges_examen": [
+            "Bien identifier le carbone fonctionnel.",
+            "Compter correctement."
+          ],
+          "mnemo": "Primaire, secondaire, tertiaire.",
+          "liens": {
+            "avant": ["nomenclature_alcools"],
+            "apres": ["oxydation_alcools"]
+          }
+        },
+        {
+          "id": "oxydation_alcools",
+          "titre": "Oxydation des alcools",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Les alcools s'oxydent en aldéhydes, cétones ou acides carboxyliques.",
+          "description_longue": "L'oxydation des alcools dépend de leur classe. Un alcool primaire s'oxyde en aldéhyde puis en acide carboxylique. Un alcool secondaire s'oxyde en cétone. Un alcool tertiaire ne s'oxyde pas dans les conditions habituelles.",
+          "formules": [
+            { "latex": "$R-CH_2OH \\to R-CHO \\to R-COOH$", "condition": "", "usage": "Oxydation primaire" },
+            { "latex": "$R_2CHOH \\to R_2C=O$", "condition": "", "usage": "Oxydation secondaire" }
+          ],
+          "proprietes": [
+            "Primaire : aldéhyde puis acide.",
+            "Secondaire : cétone.",
+            "Tertiaire : pas d'oxydation."
+          ],
+          "methodes": [
+            "Identifier la classe.",
+            "Appliquer l'oxydation.",
+            "Nommer le produit."
+          ],
+          "exemple_resolu": {
+            "enonce": "Quel est le produit d'oxydation ménagée du propan-2-ol ?",
+            "etapes": [
+              "Le propan-2-ol est un alcool secondaire.",
+              "L'oxydation donne une cétone : la propanone."
+            ],
+            "conclusion": "Propanone (acétone)."
+          },
+          "erreurs_frequentes": [
+            "Confondre les produits.",
+            "Oublier la classe.",
+            "Erreur dans l'équation."
+          ],
+          "pieges_examen": [
+            "Bien identifier la classe.",
+            "Utiliser les bons oxydants."
+          ],
+          "mnemo": "Primaire → aldéhyde → acide ; secondaire → cétone.",
+          "liens": {
+            "avant": ["classes_alcools"],
+            "apres": ["deshydratation"]
+          }
+        },
+        {
+          "id": "deshydratation",
+          "titre": "Déshydratation",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Les alcools se déshydratent en alcènes ou en éthers.",
+          "description_longue": "La déshydratation d'un alcool peut donner un alcène (déshydratation intramoléculaire) ou un éther (déshydratation intermoléculaire). La réaction dépend de la température et de l'alcool. À haute température, on obtient un alcène.",
+          "formules": [
+            { "latex": "$R-CH_2-CH_2OH \\to R-CH=CH_2 + H_2O$", "condition": "", "usage": "Déshydratation" }
+          ],
+          "proprietes": [
+            "Intramoléculaire : alcène.",
+            "Intermoléculaire : éther.",
+            "Dépend de la température."
+          ],
+          "methodes": [
+            "Identifier la température.",
+            "Appliquer la réaction.",
+            "Nommer le produit."
+          ],
+          "exemple_resolu": {
+            "enonce": "Quel est le produit de la déshydratation de l'éthanol à haute température ?",
+            "etapes": [
+              "À haute température, déshydratation intramoléculaire.",
+              "$CH_3CH_2OH \\to CH_2=CH_2 + H_2O$."
+            ],
+            "conclusion": "Éthylène (éthène)."
+          },
+          "erreurs_frequentes": [
+            "Confondre les types.",
+            "Oublier la température.",
+            "Erreur dans l'équation."
+          ],
+          "pieges_examen": [
+            "Bien identifier les conditions.",
+            "Utiliser les bonnes formules."
+          ],
+          "mnemo": "Déshydratation : alcène ou éther.",
+          "liens": {
+            "avant": ["oxydation_alcools"],
+            "apres": ["test_lucas"]
+          }
+        },
+        {
+          "id": "test_lucas",
+          "titre": "Test de Lucas",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 20,
+          "description_courte": "Test permettant de distinguer les classes d'alcools.",
+          "description_longue": "Le test de Lucas utilise le réactif de Lucas (chlorure de zinc dans l'acide chlorhydrique concentré). Les alcools tertiaires réagissent immédiatement, les secondaires en quelques minutes, et les primaires ne réagissent pas à froid. La réaction forme un chlorure d'alkyle insoluble.",
+          "formules": [
+            { "latex": "$R-OH + HCl \\to R-Cl + H_2O$", "condition": "", "usage": "Réaction" }
+          ],
+          "proprietes": [
+            "Tertiaire : réaction immédiate.",
+            "Secondaire : réaction lente.",
+            "Primaire : pas de réaction à froid."
+          ],
+          "methodes": [
+            "Ajouter le réactif de Lucas.",
+            "Observer.",
+            "Conclure sur la classe."
+          ],
+          "exemple_resolu": {
+            "enonce": "Un alcool donne un trouble immédiatement avec le réactif de Lucas. Quelle est sa classe ?",
+            "etapes": [
+              "Réaction immédiate.",
+              "C'est un alcool tertiaire."
+            ],
+            "conclusion": "Alcool tertiaire."
+          },
+          "erreurs_frequentes": [
+            "Confondre les temps de réaction.",
+            "Oublier le réactif.",
+            "Erreur d'interprétation."
+          ],
+          "pieges_examen": [
+            "Bien connaître les temps.",
+            "Interpréter correctement."
+          ],
+          "mnemo": "Lucas : tertiaire immédiat.",
+          "liens": {
+            "avant": ["deshydratation"],
+            "apres": ["esterification_alcools"]
+          }
+        },
+        {
+          "id": "esterification_alcools",
+          "titre": "Estérification",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Réaction entre un alcool et un acide carboxylique.",
+          "description_longue": "L'estérification est la réaction entre un alcool et un acide carboxylique pour donner un ester et de l'eau. La réaction est lente, limitée et catalysée par un acide. Elle est réversible : c'est une réaction d'équilibre.",
+          "formules": [
+            { "latex": "$R-COOH + R'-OH \\rightleftharpoons R-COOR' + H_2O$", "condition": "", "usage": "Estérification" }
+          ],
+          "proprietes": [
+            "Réaction lente.",
+            "Réaction limitée.",
+            "Catalysée par un acide."
+          ],
+          "methodes": [
+            "Identifier l'alcool et l'acide.",
+            "Écrire la réaction.",
+            "Nommer l'ester."
+          ],
+          "exemple_resolu": {
+            "enonce": "Écrire la réaction d'estérification entre l'acide acétique et l'éthanol.",
+            "etapes": [
+              "$CH_3COOH + CH_3CH_2OH \\rightleftharpoons CH_3COOCH_2CH_3 + H_2O$."
+            ],
+            "conclusion": "Éthanoate d'éthyle + eau."
+          },
+          "erreurs_frequentes": [
+            "Oublier l'eau.",
+            "Confondre les réactifs.",
+            "Erreur dans la formule."
+          ],
+          "pieges_examen": [
+            "Bien écrire la réaction.",
+            "Nommer l'ester correctement."
+          ],
+          "mnemo": "Estérification : acide + alcool → ester + eau.",
+          "liens": {
+            "avant": ["test_lucas"],
+            "apres": ["applications_industrielles_alcools"]
+          }
+        },
+        {
+          "id": "applications_industrielles_alcools",
+          "titre": "Applications industrielles",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Applications industrielles des alcools.",
+          "description_longue": "Les alcools ont de nombreuses applications industrielles : solvants, carburants, synthèse de composés, boissons, désinfectants, et produits pharmaceutiques. Le méthanol et l'éthanol sont les plus utilisés.",
+          "formules": [
+            { "latex": "$CH_3OH$ : méthanol", "condition": "", "usage": "Exemple" },
+            { "latex": "$CH_3CH_2OH$ : éthanol", "condition": "", "usage": "Exemple" }
+          ],
+          "proprietes": [
+            "Solvants.",
+            "Carburants.",
+            "Synthèse organique."
+          ],
+          "methodes": [
+            "Identifier l'application.",
+            "Utiliser les propriétés.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Pourquoi l'éthanol est-il utilisé comme désinfectant ?",
+            "etapes": [
+              "L'éthanol dénature les protéines.",
+              "Il détruit les micro-organismes.",
+              "Il est utilisé à 70%."
+            ],
+            "conclusion": "L'éthanol est un bon désinfectant."
+          },
+          "erreurs_frequentes": [
+            "Oublier les applications.",
+            "Confondre les alcools."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'application.",
+            "Utiliser les bonnes propriétés."
+          ],
+          "mnemo": "Alcools : solvants et carburants.",
+          "liens": {
+            "avant": ["esterification_alcools"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Nommer un alcool.",
+        "Déterminer la classe d'un alcool.",
+        "Écrire une réaction d'oxydation.",
+        "Écrire une réaction d'estérification."
+      ]
+    },
+    {
+      "id": "acides_carboxyliques",
+      "numero": 7,
+      "titre": "Acides carboxyliques et ses dérivés",
+      "description": "Étude des acides carboxyliques et de leurs dérivés.",
+      "duree_estimee_min": 480,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["alcools"],
+      "notions": [
+        {
+          "id": "definition_acide_carboxylique",
+          "titre": "Définition",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Un acide carboxylique contient le groupe carboxyle $-COOH$.",
+          "description_longue": "Un acide carboxylique est un composé organique qui contient le groupe fonctionnel carboxyle $-COOH$. Sa formule générale est $R-COOH$. Il est à la fois acide (par le groupe $-COOH$) et peut réagir avec les alcools pour former des esters.",
+          "formules": [
+            { "latex": "$R-COOH$", "condition": "", "usage": "Formule générale" }
+          ],
+          "proprietes": [
+            "Groupe carboxyle.",
+            "Propriétés acides.",
+            "Réagit avec les alcools."
+          ],
+          "methodes": [
+            "Identifier le groupe $-COOH$.",
+            "Nommer.",
+            "Étudier les propriétés."
+          ],
+          "exemple_resolu": {
+            "enonce": "Identifier l'acide carboxylique dans $CH_3COOH$.",
+            "etapes": [
+              "Le groupe $-COOH$ est présent.",
+              "C'est l'acide acétique (éthanoïque)."
+            ],
+            "conclusion": "Acide éthanoïque."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec un alcool.",
+            "Oublier le groupe.",
+            "Erreur dans la nomenclature."
+          ],
+          "pieges_examen": [
+            "Bien identifier le groupe.",
+            "Utiliser la bonne nomenclature."
+          ],
+          "mnemo": "Acide carboxylique : $R-COOH$.",
+          "liens": {
+            "avant": [],
+            "apres": ["nomenclature_acides_carboxyliques"]
+          }
+        },
+        {
+          "id": "nomenclature_acides_carboxyliques",
+          "titre": "Nomenclature",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Règles de nommage des acides carboxyliques.",
+          "description_longue": "La nomenclature des acides carboxyliques suit les règles de l'IUPAC : on utilise le nom de l'alcane correspondant avec le suffixe '-oïque' précédé de 'acide'. Par exemple, $CH_3COOH$ est l'acide éthanoïque.",
+          "formules": [
+            { "latex": "$HCOOH$ : acide méthanoïque", "condition": "", "usage": "Exemple" },
+            { "latex": "$CH_3COOH$ : acide éthanoïque", "condition": "", "usage": "Exemple" }
+          ],
+          "proprietes": [
+            "Suffixe -oïque.",
+            "Précédé de 'acide'.",
+            "Numérotation à partir du carboxyle."
+          ],
+          "methodes": [
+            "Identifier la chaîne.",
+            "Numéroter.",
+            "Nommer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Nommer $CH_3CH_2COOH$.",
+            "etapes": [
+              "Chaîne à 3 carbones : propane.",
+              "Suffixe -oïque.",
+              "Nom : acide propanoïque."
+            ],
+            "conclusion": "Acide propanoïque."
+          },
+          "erreurs_frequentes": [
+            "Erreur dans la numérotation.",
+            "Oublier le suffixe.",
+            "Confondre avec les esters."
+          ],
+          "pieges_examen": [
+            "Bien numéroter.",
+            "Utiliser les bonnes règles."
+          ],
+          "mnemo": "Acide ...-oïque.",
+          "liens": {
+            "avant": ["definition_acide_carboxylique"],
+            "apres": ["acidite_acides_carboxyliques"]
+          }
+        },
+        {
+          "id": "acidite_acides_carboxyliques",
+          "titre": "Acidité",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Les acides carboxyliques sont des acides faibles.",
+          "description_longue": "Les acides carboxyliques sont des acides faibles. Ils réagissent partiellement avec l'eau pour donner des ions oxonium et des ions carboxylate. Leur $pK_a$ est généralement compris entre 3 et 5. L'acidité dépend de la longueur de la chaîne et des substituants.",
+          "formules": [
+            { "latex": "$R-COOH + H_2O \\rightleftharpoons R-COO^- + H_3O^+$", "condition": "", "usage": "Dissociation" },
+            { "latex": "$pH = \\frac{1}{2}(pK_a - \\log C)$", "condition": "", "usage": "pH" }
+          ],
+          "proprietes": [
+            "Acides faibles.",
+            "$pK_a$ entre 3 et 5.",
+            "L'acidité dépend des substituants."
+          ],
+          "methodes": [
+            "Identifier le $pK_a$.",
+            "Calculer le pH.",
+            "Comparer l'acidité."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer le pH d'une solution d'acide acétique à $0{,}1\\,\\text{mol/L}$ ($pK_a = 4{,}8$).",
+            "etapes": [
+              "$pH = \\frac{1}{2}(4{,}8 - \\log(0{,}1))$.",
+              "$\\log(0{,}1) = -1$.",
+              "$pH = \\frac{1}{2}(4{,}8 + 1) = 2{,}9$."
+            ],
+            "conclusion": "$pH = 2{,}9$."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec un acide fort.",
+            "Oublier le facteur $\\frac{1}{2}$.",
+            "Erreur dans le logarithme."
+          ],
+          "pieges_examen": [
+            "Bien utiliser la formule de l'acide faible.",
+            "Vérifier les conditions."
+          ],
+          "mnemo": "Acides carboxyliques : acides faibles.",
+          "liens": {
+            "avant": ["nomenclature_acides_carboxyliques"],
+            "apres": ["esterification_acides"]
+          }
+        },
+        {
+          "id": "esterification_acides",
+          "titre": "Estérification",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Réaction entre un acide carboxylique et un alcool.",
+          "description_longue": "L'estérification est la réaction entre un acide carboxylique et un alcool pour donner un ester et de l'eau. La réaction est lente, limitée et catalysée par un acide. Elle est réversible.",
+          "formules": [
+            { "latex": "$R-COOH + R'-OH \\rightleftharpoons R-COOR' + H_2O$", "condition": "", "usage": "Estérification" }
+          ],
+          "proprietes": [
+            "Réaction lente.",
+            "Réaction limitée.",
+            "Catalysée par un acide."
+          ],
+          "methodes": [
+            "Identifier les réactifs.",
+            "Écrire la réaction.",
+            "Nommer l'ester."
+          ],
+          "exemple_resolu": {
+            "enonce": "Écrire la réaction entre l'acide éthanoïque et le méthanol.",
+            "etapes": [
+              "$CH_3COOH + CH_3OH \\rightleftharpoons CH_3COOCH_3 + H_2O$."
+            ],
+            "conclusion": "Éthanoate de méthyle + eau."
+          },
+          "erreurs_frequentes": [
+            "Oublier l'eau.",
+            "Confondre les réactifs.",
+            "Erreur dans la formule."
+          ],
+          "pieges_examen": [
+            "Bien écrire la réaction.",
+            "Nommer l'ester correctement."
+          ],
+          "mnemo": "Estérification : acide + alcool → ester + eau.",
+          "liens": {
+            "avant": ["acidite_acides_carboxyliques"],
+            "apres": ["hydrolyse_esters"]
+          }
+        },
+        {
+          "id": "hydrolyse_esters",
+          "titre": "Hydrolyse des esters",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Réaction inverse de l'estérification.",
+          "description_longue": "L'hydrolyse d'un ester est la réaction inverse de l'estérification. Elle donne un acide carboxylique et un alcool. Elle est lente et limitée. En milieu basique, elle devient totale : c'est la saponification.",
+          "formules": [
+            { "latex": "$R-COOR' + H_2O \\rightleftharpoons R-COOH + R'-OH$", "condition": "", "usage": "Hydrolyse" }
+          ],
+          "proprietes": [
+            "Réaction inverse.",
+            "Lente et limitée.",
+            "Totale en milieu basique."
+          ],
+          "methodes": [
+            "Identifier l'ester.",
+            "Écrire la réaction.",
+            "Nommer les produits."
+          ],
+          "exemple_resolu": {
+            "enonce": "Écrire l'hydrolyse de l'éthanoate d'éthyle.",
+            "etapes": [
+              "$CH_3COOCH_2CH_3 + H_2O \\rightleftharpoons CH_3COOH + CH_3CH_2OH$."
+            ],
+            "conclusion": "Acide éthanoïque + éthanol."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec l'estérification.",
+            "Oublier l'eau.",
+            "Erreur dans les produits."
+          ],
+          "pieges_examen": [
+            "Bien écrire la réaction.",
+            "Nommer les produits."
+          ],
+          "mnemo": "Hydrolyse : ester + eau → acide + alcool.",
+          "liens": {
+            "avant": ["esterification_acides"],
+            "apres": ["saponification"]
+          }
+        },
+        {
+          "id": "saponification",
+          "titre": "Saponification",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Hydrolyse basique d'un ester.",
+          "description_longue": "La saponification est l'hydrolyse d'un ester en milieu basique. Elle donne un carboxylate et un alcool. La réaction est totale. C'est la réaction de fabrication du savon à partir d'un corps gras.",
+          "formules": [
+            { "latex": "$R-COOR' + NaOH \\to R-COONa + R'-OH$", "condition": "", "usage": "Saponification" }
+          ],
+          "proprietes": [
+            "Réaction totale.",
+            "Produit un carboxylate.",
+            "Fabrication du savon."
+          ],
+          "methodes": [
+            "Identifier l'ester.",
+            "Écrire la réaction.",
+            "Nommer les produits."
+          ],
+          "exemple_resolu": {
+            "enonce": "Écrire la saponification de l'éthanoate d'éthyle par la soude.",
+            "etapes": [
+              "$CH_3COOCH_2CH_3 + NaOH \\to CH_3COONa + CH_3CH_2OH$."
+            ],
+            "conclusion": "Éthanoate de sodium + éthanol."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec l'hydrolyse.",
+            "Oublier la soude.",
+            "Erreur dans les produits."
+          ],
+          "pieges_examen": [
+            "Bien écrire la réaction.",
+            "Nommer les produits."
+          ],
+          "mnemo": "Saponification : ester + base → savon + alcool.",
+          "liens": {
+            "avant": ["hydrolyse_esters"],
+            "apres": ["chlorures_acide"]
+          }
+        },
+        {
+          "id": "chlorures_acide",
+          "titre": "Chlorures d'acide",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Dérivés d'acides carboxyliques réactifs.",
+          "description_longue": "Les chlorures d'acide sont des dérivés d'acides carboxyliques de formule $R-COCl$. Ils sont très réactifs et réagissent avec l'eau, les alcools et les amines. Ils sont utilisés en synthèse organique.",
+          "formules": [
+            { "latex": "$R-COOH + SOCl_2 \\to R-COCl + SO_2 + HCl$", "condition": "", "usage": "Synthèse" }
+          ],
+          "proprietes": [
+            "Très réactifs.",
+            "Réagissent avec l'eau.",
+            "Utilisés en synthèse."
+          ],
+          "methodes": [
+            "Identifier le chlorure d'acide.",
+            "Écrire la réaction.",
+            "Nommer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Écrire la réaction du chlorure d'éthanoyle avec l'eau.",
+            "etapes": [
+              "$CH_3COCl + H_2O \\to CH_3COOH + HCl$."
+            ],
+            "conclusion": "Acide éthanoïque + acide chlorhydrique."
+          },
+          "erreurs_frequentes": [
+            "Oublier la réactivité.",
+            "Erreur dans les produits.",
+            "Confondre avec les anhydrides."
+          ],
+          "pieges_examen": [
+            "Bien écrire la réaction.",
+            "Nommer les produits."
+          ],
+          "mnemo": "Chlorure d'acide : $R-COCl$.",
+          "liens": {
+            "avant": ["saponification"],
+            "apres": ["anhydrides"]
+          }
+        },
+        {
+          "id": "anhydrides",
+          "titre": "Anhydrides",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Dérivés d'acides carboxyliques.",
+          "description_longue": "Les anhydrides d'acide sont des dérivés d'acides carboxyliques de formule $R-CO-O-CO-R'$. Ils sont obtenus par déshydratation de deux molécules d'acide. Ils sont réactifs et utilisés en synthèse.",
+          "formules": [
+            { "latex": "$2R-COOH \\to R-CO-O-CO-R + H_2O$", "condition": "", "usage": "Synthèse" }
+          ],
+          "proprietes": [
+            "Réactifs.",
+            "Utilisés en synthèse.",
+            "Réagissent avec l'eau."
+          ],
+          "methodes": [
+            "Identifier l'anhydride.",
+            "Écrire la réaction.",
+            "Nommer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Écrire la réaction de l'anhydride éthanoïque avec l'eau.",
+            "etapes": [
+              "$(CH_3CO)_2O + H_2O \\to 2CH_3COOH$."
+            ],
+            "conclusion": "2 acides éthanoïques."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec les chlorures.",
+            "Erreur dans les produits.",
+            "Oublier l'eau."
+          ],
+          "pieges_examen": [
+            "Bien écrire la réaction.",
+            "Nommer les produits."
+          ],
+          "mnemo": "Anhydride : $R-CO-O-CO-R$.",
+          "liens": {
+            "avant": ["chlorures_acide"],
+            "apres": ["amides_acides"]
+          }
+        },
+        {
+          "id": "amides_acides",
+          "titre": "Amides",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Dérivés d'acides carboxyliques contenant le groupe amide.",
+          "description_longue": "Les amides sont des dérivés d'acides carboxyliques de formule $R-CONH_2$. Ils sont obtenus par réaction d'un acide ou d'un dérivé avec une amine. Ils sont utilisés en synthèse et en biologie (liaison peptidique).",
+          "formules": [
+            { "latex": "$R-COOH + NH_3 \\to R-CONH_2 + H_2O$", "condition": "", "usage": "Synthèse" }
+          ],
+          "proprietes": [
+            "Groupe amide.",
+            "Utilisés en synthèse.",
+            "Liaison peptidique."
+          ],
+          "methodes": [
+            "Identifier l'amide.",
+            "Écrire la réaction.",
+            "Nommer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Écrire la réaction de l'acide éthanoïque avec l'ammoniac.",
+            "etapes": [
+              "$CH_3COOH + NH_3 \\to CH_3CONH_2 + H_2O$."
+            ],
+            "conclusion": "Éthanamide + eau."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec les amines.",
+            "Erreur dans les produits.",
+            "Oublier l'eau."
+          ],
+          "pieges_examen": [
+            "Bien écrire la réaction.",
+            "Nommer les produits."
+          ],
+          "mnemo": "Amide : $R-CONH_2$.",
+          "liens": {
+            "avant": ["anhydrides"],
+            "apres": ["applications_acides_carboxyliques"]
+          }
+        },
+        {
+          "id": "applications_acides_carboxyliques",
+          "titre": "Applications",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Applications des acides carboxyliques.",
+          "description_longue": "Les acides carboxyliques et leurs dérivés ont de nombreuses applications : conservation des aliments, synthèse de médicaments, fabrication de savons, plastiques, et arômes. L'acide acétique est le plus connu.",
+          "formules": [
+            { "latex": "$CH_3COOH$ : acide éthanoïque", "condition": "", "usage": "Exemple" }
+          ],
+          "proprietes": [
+            "Conservation.",
+            "Synthèse.",
+            "Savons et plastiques."
+          ],
+          "methodes": [
+            "Identifier l'application.",
+            "Utiliser les propriétés.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Pourquoi l'acide acétique est-il utilisé comme conservateur ?",
+            "etapes": [
+              "Il abaisse le pH.",
+              "Il inhibe les micro-organismes.",
+              "Il est utilisé dans le vinaigre."
+            ],
+            "conclusion": "L'acide acétique conserve les aliments."
+          },
+          "erreurs_frequentes": [
+            "Oublier les applications.",
+            "Confondre les acides."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'application.",
+            "Utiliser les bonnes propriétés."
+          ],
+          "mnemo": "Acides carboxyliques : conservateurs et synthèse.",
+          "liens": {
+            "avant": ["amides_acides"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Nommer un acide carboxylique.",
+        "Écrire une réaction d'estérification.",
+        "Écrire une réaction de saponification.",
+        "Identifier les dérivés d'acides."
+      ]
+    },
+    {
+      "id": "amines_amides",
+      "numero": 8,
+      "titre": "Amines et amides",
+      "description": "Étude des amines et des amides.",
+      "duree_estimee_min": 420,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": ["acides_carboxyliques"],
+      "notions": [
+        {
+          "id": "definition_amine",
+          "titre": "Définition d'une amine",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Une amine est un composé organique dérivé de l'ammoniac.",
+          "description_longue": "Une amine est un composé organique dérivé de l'ammoniac $NH_3$ par remplacement d'un ou plusieurs atomes d'hydrogène par des groupes alkyle ou aryle. Sa formule générale est $R-NH_2$ (primaire), $R_2NH$ (secondaire) ou $R_3N$ (tertiaire).",
+          "formules": [
+            { "latex": "$R-NH_2$", "condition": "", "usage": "Amine primaire" },
+            { "latex": "$R_2NH$", "condition": "", "usage": "Amine secondaire" },
+            { "latex": "$R_3N$", "condition": "", "usage": "Amine tertiaire" }
+          ],
+          "proprietes": [
+            "Dérivé de $NH_3$.",
+            "Classées en primaires, secondaires, tertiaires.",
+            "Basiques."
+          ],
+          "methodes": [
+            "Identifier le groupe amine.",
+            "Déterminer la classe.",
+            "Nommer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Identifier la classe de l'amine $CH_3NH_2$.",
+            "etapes": [
+              "Le groupe amine est $-NH_2$.",
+              "Un seul groupe alkyle.",
+              "C'est une amine primaire."
+            ],
+            "conclusion": "Amine primaire (méthylamine)."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec un amide.",
+            "Oublier la classe.",
+            "Erreur dans la nomenclature."
+          ],
+          "pieges_examen": [
+            "Bien distinguer amine et amide.",
+            "Déterminer la classe."
+          ],
+          "mnemo": "Amine : dérivé de $NH_3$.",
+          "liens": {
+            "avant": [],
+            "apres": ["classes_amines"]
+          }
+        },
+        {
+          "id": "classes_amines",
+          "titre": "Classes d'amines",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Les amines sont classées en primaires, secondaires et tertiaires.",
+          "description_longue": "Une amine est primaire si l'atome d'azote est lié à un seul carbone, secondaire s'il est lié à deux carbones, et tertiaire s'il est lié à trois carbones. Cette classification détermine les propriétés chimiques.",
+          "formules": [
+            { "latex": "$R-NH_2$ : primaire", "condition": "", "usage": "Amine primaire" },
+            { "latex": "$R_2NH$ : secondaire", "condition": "", "usage": "Amine secondaire" },
+            { "latex": "$R_3N$ : tertiaire", "condition": "", "usage": "Amine tertiaire" }
+          ],
+          "proprietes": [
+            "Primaire : 1 carbone lié.",
+            "Secondaire : 2 carbones liés.",
+            "Tertiaire : 3 carbones liés."
+          ],
+          "methodes": [
+            "Identifier l'atome d'azote.",
+            "Compter les carbones liés.",
+            "Déterminer la classe."
+          ],
+          "exemple_resolu": {
+            "enonce": "Déterminer la classe de l'amine $(CH_3)_2NH$.",
+            "etapes": [
+              "L'azote est lié à 2 carbones.",
+              "C'est une amine secondaire."
+            ],
+            "conclusion": "Amine secondaire (diméthylamine)."
+          },
+          "erreurs_frequentes": [
+            "Confondre les classes.",
+            "Erreur dans le comptage.",
+            "Oublier l'azote."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'azote.",
+            "Compter correctement."
+          ],
+          "mnemo": "Primaire, secondaire, tertiaire.",
+          "liens": {
+            "avant": ["definition_amine"],
+            "apres": ["basicite_amines"]
+          }
+        },
+        {
+          "id": "basicite_amines",
+          "titre": "Basicité des amines",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Les amines sont des bases faibles.",
+          "description_longue": "Les amines sont des bases faibles. Elles captent un proton pour donner un ion ammonium. La basicité dépend de la classe et des substituants. Les amines sont plus basiques que l'ammoniac.",
+          "formules": [
+            { "latex": "$R-NH_2 + H_2O \\rightleftharpoons R-NH_3^+ + OH^-$", "condition": "", "usage": "Basicité" },
+            { "latex": "$pH = 7 + \\frac{1}{2}(pK_a + \\log C)$", "condition": "", "usage": "pH" }
+          ],
+          "proprietes": [
+            "Bases faibles.",
+            "Captent un proton.",
+            "Plus basiques que $NH_3$."
+          ],
+          "methodes": [
+            "Identifier l'amine.",
+            "Écrire la réaction.",
+            "Calculer le pH."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer le pH d'une solution de méthylamine à $0{,}1\\,\\text{mol/L}$ ($pK_a = 10{,}6$).",
+            "etapes": [
+              "$pH = 7 + \\frac{1}{2}(10{,}6 + \\log(0{,}1))$.",
+              "$\\log(0{,}1) = -1$.",
+              "$pH = 7 + \\frac{1}{2}(10{,}6 - 1) = 7 + 4{,}8 = 11{,}8$."
+            ],
+            "conclusion": "$pH = 11{,}8$."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec une base forte.",
+            "Oublier le facteur $\\frac{1}{2}$.",
+            "Erreur dans le logarithme."
+          ],
+          "pieges_examen": [
+            "Bien utiliser la formule de la base faible.",
+            "Vérifier les conditions."
+          ],
+          "mnemo": "Amines : bases faibles.",
+          "liens": {
+            "avant": ["classes_amines"],
+            "apres": ["nomenclature_amides"]
+          }
+        },
+        {
+          "id": "nomenclature_amides",
+          "titre": "Nomenclature des amides",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Règles de nommage des amides.",
+          "description_longue": "La nomenclature des amides suit les règles de l'IUPAC : on remplace le suffixe '-oïque' de l'acide par '-amide'. Par exemple, $CH_3CONH_2$ est l'éthanamide. Si l'azote porte des substituants, on les indique avec le préfixe N-.",
+          "formules": [
+            { "latex": "$CH_3CONH_2$ : éthanamide", "condition": "", "usage": "Exemple" },
+            { "latex": "$CH_3CONHCH_3$ : N-méthyléthanamide", "condition": "", "usage": "Exemple" }
+          ],
+          "proprietes": [
+            "Suffixe -amide.",
+            "Préfixe N- pour les substituants.",
+            "Numérotation à partir du carbonyle."
+          ],
+          "methodes": [
+            "Identifier la chaîne.",
+            "Numéroter.",
+            "Nommer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Nommer $CH_3CH_2CONH_2$.",
+            "etapes": [
+              "Chaîne à 3 carbones : propane.",
+              "Suffixe -amide.",
+              "Nom : propanamide."
+            ],
+            "conclusion": "Propanamide."
+          },
+          "erreurs_frequentes": [
+            "Erreur dans la numérotation.",
+            "Oublier le suffixe.",
+            "Confondre avec les amines."
+          ],
+          "pieges_examen": [
+            "Bien numéroter.",
+            "Utiliser les bonnes règles."
+          ],
+          "mnemo": "Amide : suffixe -amide.",
+          "liens": {
+            "avant": ["basicite_amines"],
+            "apres": ["hydrolyse_amides"]
+          }
+        },
+        {
+          "id": "hydrolyse_amides",
+          "titre": "Hydrolyse des amides",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Les amides s'hydrolysent en acides carboxyliques et amines.",
+          "description_longue": "L'hydrolyse d'un amide donne un acide carboxylique et une amine (ou de l'ammoniac). Elle peut être acide ou basique. En milieu acide, on obtient l'acide et l'ion ammonium. En milieu basique, on obtient le carboxylate et l'amine.",
+          "formules": [
+            { "latex": "$R-CONH_2 + H_2O \\to R-COOH + NH_3$", "condition": "", "usage": "Hydrolyse" }
+          ],
+          "proprietes": [
+            "Hydrolyse acide ou basique.",
+            "Produit un acide et une amine.",
+            "Réaction lente."
+          ],
+          "methodes": [
+            "Identifier l'amide.",
+            "Écrire la réaction.",
+            "Nommer les produits."
+          ],
+          "exemple_resolu": {
+            "enonce": "Écrire l'hydrolyse de l'éthanamide.",
+            "etapes": [
+              "$CH_3CONH_2 + H_2O \\to CH_3COOH + NH_3$."
+            ],
+            "conclusion": "Acide éthanoïque + ammoniac."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec l'estérification.",
+            "Oublier l'eau.",
+            "Erreur dans les produits."
+          ],
+          "pieges_examen": [
+            "Bien écrire la réaction.",
+            "Nommer les produits."
+          ],
+          "mnemo": "Hydrolyse amide : acide + amine.",
+          "liens": {
+            "avant": ["nomenclature_amides"],
+            "apres": ["applications_pharmaceutiques"]
+          }
+        },
+        {
+          "id": "applications_pharmaceutiques",
+          "titre": "Applications pharmaceutiques",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Applications des amines et amides en pharmacie.",
+          "description_longue": "Les amines et amides ont de nombreuses applications pharmaceutiques : médicaments, anesthésiques, antibiotiques, et vitamines. La fonction amide est présente dans de nombreuses molécules biologiques (protéines, peptides).",
+          "formules": [
+            { "latex": "$R-CONH_2$", "condition": "", "usage": "Amide" }
+          ],
+          "proprietes": [
+            "Médicaments.",
+            "Anesthésiques.",
+            "Antibiotiques."
+          ],
+          "methodes": [
+            "Identifier l'application.",
+            "Utiliser les propriétés.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Pourquoi les amides sont-ils importants en pharmacie ?",
+            "etapes": [
+              "Ils sont présents dans les protéines.",
+              "Ils constituent la liaison peptidique.",
+              "Ils sont utilisés dans de nombreux médicaments."
+            ],
+            "conclusion": "Les amides sont essentiels en pharmacie."
+          },
+          "erreurs_frequentes": [
+            "Oublier les applications.",
+            "Confondre amines et amides."
+          ],
+          "pieges_examen": [
+            "Bien identifier l'application.",
+            "Utiliser les bonnes propriétés."
+          ],
+          "mnemo": "Amides : médicaments et protéines.",
+          "liens": {
+            "avant": ["hydrolyse_amides"],
+            "apres": ["exercices_amines_amides"]
+          }
+        },
+        {
+          "id": "exercices_amines_amides",
+          "titre": "Exercices",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Exercices sur les amines et amides.",
+          "description_longue": "Les exercices portent sur la nomenclature, les classes, la basicité, l'hydrolyse, et les applications. Ils nécessitent la maîtrise des propriétés des amines et amides.",
+          "formules": [
+            { "latex": "$pH = 7 + \\frac{1}{2}(pK_a + \\log C)$", "condition": "", "usage": "pH" }
+          ],
+          "proprietes": [
+            "Nomenclature.",
+            "Basicité.",
+            "Hydrolyse."
+          ],
+          "methodes": [
+            "Identifier les données.",
+            "Appliquer les relations.",
+            "Calculer."
+          ],
+          "exemple_resolu": {
+            "enonce": "Calculer le pH d'une solution d'éthylamine à $0{,}05\\,\\text{mol/L}$ ($pK_a = 10{,}7$).",
+            "etapes": [
+              "$pH = 7 + \\frac{1}{2}(10{,}7 + \\log(0{,}05))$.",
+              "$\\log(0{,}05) \\approx -1{,}3$.",
+              "$pH = 7 + \\frac{1}{2}(10{,}7 - 1{,}3) = 7 + 4{,}7 = 11{,}7$."
+            ],
+            "conclusion": "$pH = 11{,}7$."
+          },
+          "erreurs_frequentes": [
+            "Erreur dans le logarithme.",
+            "Confondre avec une base forte.",
+            "Erreur de calcul."
+          ],
+          "pieges_examen": [
+            "Bien utiliser la formule.",
+            "Vérifier les calculs."
+          ],
+          "mnemo": "$pH = 7 + \\frac{1}{2}(pK_a + \\log C)$.",
+          "liens": {
+            "avant": ["applications_pharmaceutiques"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Nommer une amine ou un amide.",
+        "Déterminer la classe.",
+        "Calculer le pH d'une amine.",
+        "Écrire une réaction d'hydrolyse."
+      ]
+    },
+    {
+      "id": "acides_amines_proteines",
+      "numero": 9,
+      "titre": "Acides α-aminés et protéines",
+      "description": "Étude des acides α-aminés et des protéines.",
+      "duree_estimee_min": 420,
+      "difficulte": 4,
+      "obligatoire": true,
+      "prerequis": ["amines_amides"],
+      "notions": [
+        {
+          "id": "definition_acide_amine",
+          "titre": "Définition d'un acide α-aminé",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Un acide α-aminé contient un groupe amine et un groupe carboxyle sur le même carbone.",
+          "description_longue": "Un acide α-aminé est un composé organique qui contient un groupe amine $-NH_2$ et un groupe carboxyle $-COOH$ sur le même atome de carbone (carbone α). Sa formule générale est $H_2N-CHR-COOH$. Les acides α-aminés sont les briques des protéines.",
+          "formules": [
+            { "latex": "$H_2N-CHR-COOH$", "condition": "", "usage": "Formule générale" }
+          ],
+          "proprietes": [
+            "Groupe amine et carboxyle sur le même carbone.",
+            "Briques des protéines.",
+            "Propriétés amphotères."
+          ],
+          "methodes": [
+            "Identifier les groupes.",
+            "Nommer.",
+            "Étudier les propriétés."
+          ],
+          "exemple_resolu": {
+            "enonce": "Identifier l'acide α-aminé dans $H_2N-CH_2-COOH$.",
+            "etapes": [
+              "Le groupe amine est sur le carbone α.",
+              "Le groupe carboxyle est sur le même carbone.",
+              "C'est la glycine."
+            ],
+            "conclusion": "Glycine."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec un acide carboxylique.",
+            "Oublier le carbone α.",
+            "Erreur dans la formule."
+          ],
+          "pieges_examen": [
+            "Bien identifier le carbone α.",
+            "Utiliser la bonne formule."
+          ],
+          "mnemo": "Acide α-aminé : $H_2N-CHR-COOH$.",
+          "liens": {
+            "avant": [],
+            "apres": ["structure_acide_amine"]
+          }
+        },
+        {
+          "id": "structure_acide_amine",
+          "titre": "Structure",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Structure des acides α-aminés.",
+          "description_longue": "Les acides α-aminés ont une structure tétraédrique autour du carbone α. Ils sont chiraux (sauf la glycine) et existent sous deux formes énantiomères : L et D. Les acides α-aminés naturels sont de configuration L.",
+          "formules": [
+            { "latex": "$H_2N-CHR-COOH$", "condition": "", "usage": "Structure" }
+          ],
+          "proprietes": [
+            "Carbone α tétraédrique.",
+            "Chiralité (sauf glycine).",
+            "Configuration L naturelle."
+          ],
+          "methodes": [
+            "Identifier le carbone α.",
+            "Déterminer la chiralité.",
+            "Conclure."
+          ],
+          "exemple_resolu": {
+            "enonce": "La glycine est-elle chirale ?",
+            "etapes": [
+              "La glycine a $R = H$.",
+              "Le carbone α est lié à deux H.",
+              "Elle n'est pas chirale."
+            ],
+            "conclusion": "La glycine n'est pas chirale."
+          },
+          "erreurs_frequentes": [
+            "Oublier la chiralité.",
+            "Confondre L et D.",
+            "Erreur dans la structure."
+          ],
+          "pieges_examen": [
+            "Bien identifier le carbone α.",
+            "Connaître la configuration."
+          ],
+          "mnemo": "Acides α-aminés : chiraux sauf glycine.",
+          "liens": {
+            "avant": ["definition_acide_amine"],
+            "apres": ["proprietes_amphoteres"]
+          }
+        },
+        {
+          "id": "proprietes_amphoteres",
+          "titre": "Propriétés amphotères",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Les acides α-aminés peuvent se comporter comme acide ou comme base.",
+          "description_longue": "Les acides α-aminés sont amphotères : ils peuvent se comporter comme un acide (par le groupe carboxyle) ou comme une base (par le groupe amine). En solution, ils existent sous forme de zwitterion. Le pH pour lequel la forme zwitterionique prédomine est le pH isoélectrique.",
+          "formules": [
+            { "latex": "$H_2N-CHR-COOH \\rightleftharpoons H_3N^+-CHR-COO^-$", "condition": "", "usage": "Zwitterion" }
+          ],
+          "proprietes": [
+            "Amphotères.",
+            "Zwitterion.",
+            "pH isoélectrique."
+          ],
+          "methodes": [
+            "Identifier les groupes.",
+            "Écrire l'équilibre.",
+            "Déterminer le pH isoélectrique."
+          ],
+          "exemple_resolu": {
+            "enonce": "Écrire la forme zwitterionique de la glycine.",
+            "etapes": [
+              "$H_2N-CH_2-COOH \\rightleftharpoons H_3N^+-CH_2-COO^-$."
+            ],
+            "conclusion": "Zwitterion : $H_3N^+-CH_2-COO^-$."
+          },
+          "erreurs_frequentes": [
+            "Confondre acide et base.",
+            "Oublier le zwitterion.",
+            "Erreur dans la forme."
+          ],
+          "pieges_examen": [
+            "Bien écrire le zwitterion.",
+            "Comprendre l'amphotérisme."
+          ],
+          "mnemo": "Amphotère : acide et base.",
+          "liens": {
+            "avant": ["structure_acide_amine"],
+            "apres": ["zwitterion"]
+          }
+        },
+        {
+          "id": "zwitterion",
+          "titre": "Zwitterion",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Forme ionique dipolaire des acides α-aminés.",
+          "description_longue": "Un zwitterion est une espèce chimique qui porte à la fois une charge positive et une charge négative. Pour les acides α-aminés, le zwitterion est $H_3N^+-CHR-COO^-$. Il prédomine au pH isoélectrique.",
+          "formules": [
+            { "latex": "$H_3N^+-CHR-COO^-$", "condition": "", "usage": "Zwitterion" }
+          ],
+          "proprietes": [
+            "Charge globale nulle.",
+            "Prédomine au pH isoélectrique.",
+            "Solubilité minimale."
+          ],
+          "methodes": [
+            "Identifier le pH.",
+            "Écrire le zwitterion.",
+            "Conclure."
+          ],
+          "exemple_resolu": {
+            "enonce": "Quelle est la forme prédominante de la glycine à pH 7 ?",
+            "etapes": [
+              "Le pH isoélectrique de la glycine est 6,0.",
+              "À pH 7, le zwitterion prédomine.",
+              "Forme : $H_3N^+-CH_2-COO^-$."
+            ],
+            "conclusion": "Zwitterion."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec la forme neutre.",
+            "Oublier les charges.",
+            "Erreur dans la forme."
+          ],
+          "pieges_examen": [
+            "Bien écrire le zwitterion.",
+            "Connaître le pH isoélectrique."
+          ],
+          "mnemo": "Zwitterion : charge + et charge -.",
+          "liens": {
+            "avant": ["proprietes_amphoteres"],
+            "apres": ["liaison_peptidique"]
+          }
+        },
+        {
+          "id": "liaison_peptidique",
+          "titre": "Liaison peptidique",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Liaison amide entre deux acides α-aminés.",
+          "description_longue": "La liaison peptidique est une liaison amide formée entre le groupe carboxyle d'un acide α-aminé et le groupe amine d'un autre. Elle donne un dipeptide. La répétition de cette liaison forme des polypeptides et des protéines.",
+          "formules": [
+            { "latex": "$H_2N-CHR-COOH + H_2N-CHR'-COOH \\to H_2N-CHR-CO-NH-CHR'-COOH + H_2O$", "condition": "", "usage": "Liaison peptidique" }
+          ],
+          "proprietes": [
+            "Liaison amide.",
+            "Formation de dipeptides.",
+            "Polymérisation en protéines."
+          ],
+          "methodes": [
+            "Identifier les acides α-aminés.",
+            "Écrire la réaction.",
+            "Nommer le peptide."
+          ],
+          "exemple_resolu": {
+            "enonce": "Écrire la formation d'un dipeptide à partir de la glycine et de l'alanine.",
+            "etapes": [
+              "Glycine : $H_2N-CH_2-COOH$.",
+              "Alanine : $H_2N-CH(CH_3)-COOH$.",
+              "Dipeptide : $H_2N-CH_2-CO-NH-CH(CH_3)-COOH$."
+            ],
+            "conclusion": "Glycyl-alanine."
+          },
+          "erreurs_frequentes": [
+            "Oublier l'eau.",
+            "Confondre les acides.",
+            "Erreur dans la liaison."
+          ],
+          "pieges_examen": [
+            "Bien écrire la liaison.",
+            "Nommer le peptide."
+          ],
+          "mnemo": "Liaison peptidique : -CO-NH-.",
+          "liens": {
+            "avant": ["zwitterion"],
+            "apres": ["proteines_structure"]
+          }
+        },
+        {
+          "id": "proteines_structure",
+          "titre": "Protéines : structure",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Les protéines sont des macromolécules formées d'acides α-aminés.",
+          "description_longue": "Les protéines sont des macromolécules constituées d'une ou plusieurs chaînes de polypeptides. Elles ont quatre niveaux de structure : primaire (séquence), secondaire (hélices, feuillets), tertiaire (repliement 3D) et quaternaire (assemblage). Leur fonction dépend de leur structure.",
+          "formules": [
+            { "latex": "$-CO-NH-$", "condition": "", "usage": "Liaison peptidique" }
+          ],
+          "proprietes": [
+            "Macromolécules.",
+            "Quatre niveaux de structure.",
+            "Fonction liée à la structure."
+          ],
+          "methodes": [
+            "Identifier le niveau de structure.",
+            "Décrire.",
+            "Relier à la fonction."
+          ],
+          "exemple_resolu": {
+            "enonce": "Décrire la structure primaire d'une protéine.",
+            "etapes": [
+              "La structure primaire est la séquence des acides α-aminés.",
+              "Elle est déterminée par les liaisons peptidiques.",
+              "Elle détermine les structures suivantes."
+            ],
+            "conclusion": "Séquence linéaire des acides α-aminés."
+          },
+          "erreurs_frequentes": [
+            "Confondre les niveaux.",
+            "Oublier la séquence.",
+            "Erreur dans la description."
+          ],
+          "pieges_examen": [
+            "Bien distinguer les niveaux.",
+            "Relier structure et fonction."
+          ],
+          "mnemo": "Protéine : primaire, secondaire, tertiaire, quaternaire.",
+          "liens": {
+            "avant": ["liaison_peptidique"],
+            "apres": ["denaturation"]
+          }
+        },
+        {
+          "id": "denaturation",
+          "titre": "Dénaturation",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Perte de la structure tridimensionnelle d'une protéine.",
+          "description_longue": "La dénaturation est la perte de la structure tridimensionnelle d'une protéine, entraînant la perte de sa fonction. Elle est causée par la chaleur, les variations de pH, les agents chimiques, ou les radiations. La structure primaire est généralement conservée.",
+          "formules": [],
+          "proprietes": [
+            "Perte de structure 3D.",
+            "Perte de fonction.",
+            "Causes variées."
+          ],
+          "methodes": [
+            "Identifier la cause.",
+            "Décrire les effets.",
+            "Conclure."
+          ],
+          "exemple_resolu": {
+            "enonce": "Pourquoi la chaleur dénature-t-elle les protéines ?",
+            "etapes": [
+              "La chaleur apporte de l'énergie.",
+              "Elle rompt les liaisons faibles.",
+              "La structure 3D est perdue."
+            ],
+            "conclusion": "La chaleur dénature les protéines en rompant les liaisons faibles."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec la coagulation.",
+            "Oublier les causes.",
+            "Erreur dans les effets."
+          ],
+          "pieges_examen": [
+            "Bien identifier les causes.",
+            "Comprendre les conséquences."
+          ],
+          "mnemo": "Dénaturation : perte de structure 3D.",
+          "liens": {
+            "avant": ["proteines_structure"],
+            "apres": ["applications_biologiques_proteines"]
+          }
+        },
+        {
+          "id": "applications_biologiques_proteines",
+          "titre": "Applications biologiques",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Rôle des acides α-aminés et des protéines en biologie.",
+          "description_longue": "Les acides α-aminés et les protéines jouent un rôle essentiel en biologie : structure des tissus, enzymes, transport, immunité, et régulation. Les protéines sont impliquées dans presque tous les processus biologiques.",
+          "formules": [
+            { "latex": "$-CO-NH-$", "condition": "", "usage": "Liaison peptidique" }
+          ],
+          "proprietes": [
+            "Structure des tissus.",
+            "Enzymes.",
+            "Transport et immunité."
+          ],
+          "methodes": [
+            "Identifier l'application.",
+            "Décrire le rôle.",
+            "Interpréter."
+          ],
+          "exemple_resolu": {
+            "enonce": "Quel est le rôle des enzymes ?",
+            "etapes": [
+              "Les enzymes sont des protéines.",
+              "Elles catalysent les réactions biologiques.",
+              "Leur fonction dépend de leur structure."
+            ],
+            "conclusion": "Les enzymes catalysent les réactions biologiques."
+          },
+          "erreurs_frequentes": [
+            "Oublier les rôles.",
+            "Confondre avec les glucides.",
+            "Erreur dans les fonctions."
+          ],
+          "pieges_examen": [
+            "Bien identifier les rôles.",
+            "Relier structure et fonction."
+          ],
+          "mnemo": "Protéines : enzymes, structure, transport.",
+          "liens": {
+            "avant": ["denaturation"],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Identifier un acide α-aminé.",
+        "Écrire la forme zwitterionique.",
+        "Écrire une liaison peptidique.",
+        "Décrire la structure des protéines."
+      ]
+    }
+  ]
+}
