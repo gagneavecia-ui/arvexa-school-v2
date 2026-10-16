@@ -13,9 +13,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <!-- ✅ KaTeX LOCAL -->
+  <link rel="stylesheet" href="katex/katex.min.css">
+  <script defer src="katex/katex.min.js"></script>
+  <script defer src="katex/contrib/auto-render.min.js"></script>
   <script src="katex-utils.js" defer></script>
   <script src="register-sw.js" defer></script>
 
@@ -1429,11 +1430,6 @@
       }
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-       ARVEXA — POP-UP PREMIUM UNIVERSEL
-       Version 10 — Réduite · Bouton unique
-       ═══════════════════════════════════════════════════════════════ */
-
     .arvexa-popup-overlay {
       position: fixed;
       inset: 0;
@@ -1736,6 +1732,7 @@
     }
   </style>
 </head>
+
 <body>
   <main class="shell">
     <header>
@@ -2007,9 +2004,7 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════
-       POP-UP PREMIUM UNIVERSEL — Mode examen
-       ═══════════════════════════════════════════════════════ -->
+  <!-- POP-UP PREMIUM UNIVERSEL -->
   <div class="arvexa-popup-overlay" id="premiumOverlay">
     <div class="arvexa-popup" role="dialog" aria-modal="true" aria-labelledby="premiumPopupTitle">
 
@@ -2043,7 +2038,7 @@
 
     </div>
   </div>
-
+  
   <script type="importmap">
   {
     "imports": {
@@ -2056,7 +2051,8 @@
 
   <script type="module">
   // ═══════════════════════════════════════════════════════════════
-  // EXAM — Mode examen BAC v6.0
+  // EXAM — Mode examen BAC v6.1
+  // Corrections appliquées : voir commentaires ✅
   // ═══════════════════════════════════════════════════════════════
 
   import { initializeApp } from 'firebase/app';
@@ -2221,10 +2217,15 @@
   var $ = function (id) { return document.getElementById(id); };
   var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
 
+  // ✅ CORRECTION #2 — escapeHtml optimisé (regex au lieu de création DOM)
   function escapeHtml(value) {
-    var div = document.createElement('div');
-    div.textContent = String(value === null || value === undefined ? '' : value);
-    return div.innerHTML;
+    var s = String(value === null || value === undefined ? '' : value);
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   function setStatus(id, message, type) {
@@ -2817,6 +2818,11 @@
     updateTimerDisplay();
   }
 
+  // ✅ CORRECTION #4 — Nettoyage du timer à la fermeture de la page
+  window.addEventListener('beforeunload', function () {
+    if (state.timerId) clearInterval(state.timerId);
+  });
+
   function updateTimerDisplay() {
     var s = Math.max(0, state.remainingSeconds);
     var h = String(Math.floor(s / 3600)).padStart(2, '0');
@@ -2838,11 +2844,21 @@
 
   // ═══════════════════════════════════════════════════════════════
   // CORRECTION
+  // ✅ CORRECTION #1 — Verrou placé EN PREMIER + vérif state.user
   // ═══════════════════════════════════════════════════════════════
   async function submitExam(auto) {
-    if (state.submitting || !state.selectedSubject) return;
-    closeConfirmModal();
+    // Verrou posé immédiatement (avant tout)
+    if (state.submitting) return;
     state.submitting = true;
+
+    // Vérification utilisateur AVANT de continuer
+    if (!state.selectedSubject || !state.user) {
+      state.submitting = false;
+      setStatus('examStatus', 'Connecte-toi pour terminer l\'examen.', 'error');
+      return;
+    }
+
+    closeConfirmModal();
     clearInterval(state.timerId);
     $('finishButton').disabled = true;
     showView('loadingCorrectionView');
@@ -3190,42 +3206,48 @@
     if (e.target === $('premiumOverlay')) hidePremiumPopup();
   });
 
+  // ✅ CORRECTION #3 — try/catch pour éviter un blocage si la session échoue
   async function checkActiveSession() {
-    var session = await loadActiveSession();
-    if (!session || !session.exam) return;
+    try {
+      var session = await loadActiveSession();
+      if (!session || !session.exam) return;
 
-    var subject = session.exam.subjects && session.exam.subjects.find(function (s) { return s.id === session.selectedSubjectId; });
-    if (!subject) { await clearActiveSession(); return; }
+      var subject = session.exam.subjects && session.exam.subjects.find(function (s) { return s.id === session.selectedSubjectId; });
+      if (!subject) { await clearActiveSession(); return; }
 
-    $('resumeMeta').innerHTML =
-      '<div><span class="label">Matière</span><span class="value">' + escapeHtml(session.exam.subject || '—') + '</span></div>' +
-      '<div><span class="label">Sujet</span><span class="value">' + escapeHtml(subject.title || 'Sujet') + '</span></div>' +
-      '<div><span class="label">Exercice</span><span class="value">' + ((Number(session.exerciseIndex) || 0) + 1) + ' / ' + EXAM_CONSTANTS.REQUIRED_EXERCISES + '</span></div>' +
-      '<div><span class="label">Réponses données</span><span class="value">' + Object.keys(session.answers || {}).length + '</span></div>';
+      $('resumeMeta').innerHTML =
+        '<div><span class="label">Matière</span><span class="value">' + escapeHtml(session.exam.subject || '—') + '</span></div>' +
+        '<div><span class="label">Sujet</span><span class="value">' + escapeHtml(subject.title || 'Sujet') + '</span></div>' +
+        '<div><span class="label">Exercice</span><span class="value">' + ((Number(session.exerciseIndex) || 0) + 1) + ' / ' + EXAM_CONSTANTS.REQUIRED_EXERCISES + '</span></div>' +
+        '<div><span class="label">Réponses données</span><span class="value">' + Object.keys(session.answers || {}).length + '</span></div>';
 
-    $('resumeModal').classList.add('show');
+      $('resumeModal').classList.add('show');
 
-    $('resumeContinueBtn').onclick = function () {
-      state.exam = session.exam;
-      state.selectedSubject = subject;
-      state.exerciseIndex = Number(session.exerciseIndex) || 0;
-      state.answers = session.answers || {};
-      state.startedAt = Number(session.startedAt) || Date.now();
-      state.remainingSeconds = Number(session.remainingSeconds) || (state.exam.duration * 60);
-      $('resumeModal').classList.remove('show');
-      $('examTitle').textContent = subject.title || 'Sujet';
-      showView('examView');
-      renderExercise();
-      startTimer();
-    };
+      $('resumeContinueBtn').onclick = function () {
+        state.exam = session.exam;
+        state.selectedSubject = subject;
+        state.exerciseIndex = Number(session.exerciseIndex) || 0;
+        state.answers = session.answers || {};
+        state.startedAt = Number(session.startedAt) || Date.now();
+        state.remainingSeconds = Number(session.remainingSeconds) || (state.exam.duration * 60);
+        $('resumeModal').classList.remove('show');
+        $('examTitle').textContent = subject.title || 'Sujet';
+        showView('examView');
+        renderExercise();
+        startTimer();
+      };
 
-    $('resumeNewBtn').onclick = async function () {
-      await clearActiveSession();
-      $('resumeModal').classList.remove('show');
-      state.exam = null;
-      state.selectedSubject = null;
-      showView('configView');
-    };
+      $('resumeNewBtn').onclick = async function () {
+        await clearActiveSession();
+        $('resumeModal').classList.remove('show');
+        state.exam = null;
+        state.selectedSubject = null;
+        showView('configView');
+      };
+    } catch (e) {
+      // ✅ Empêche un blocage si la session échoue à charger
+      console.warn('[EXAM] checkActiveSession error:', e.message);
+    }
   }
 
   $('backConfigButton').addEventListener('click', function () { showView('configView'); });
@@ -3233,7 +3255,20 @@
   $('nextButton').addEventListener('click', goNext);
   $('finishButton').addEventListener('click', askFinish);
   $('cancelFinishButton').addEventListener('click', closeConfirmModal);
-  $('confirmFinishButton').addEventListener('click', function () { submitExam(false); });
+
+  // ✅ CORRECTION #1 — Vérification renforcée avant soumission
+  $('confirmFinishButton').addEventListener('click', function () {
+    if (!state.user) {
+      closeConfirmModal();
+      setStatus('examStatus', 'Connecte-toi pour terminer l\'examen.', 'error');
+      return;
+    }
+    if (!state.selectedSubject) {
+      closeConfirmModal();
+      return;
+    }
+    submitExam(false);
+  });
 
   $('newExamButton').addEventListener('click', async function () {
     await clearActiveSession();
@@ -3274,7 +3309,7 @@
   });
 
   initSelects();
-  console.log('ARVEXA — Mode examen v6.0 — KaTeX délégué + pop-up universel');
+  console.log('ARVEXA — Mode examen v6.1 — Corrections appliquées');
   </script>
 </body>
 </html>
