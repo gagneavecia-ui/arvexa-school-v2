@@ -202,6 +202,151 @@
       padding: 22px;
     }
 
+    /* ═══ SÉLECTEURS MATIÈRE + CHAPITRE ═══ */
+    .selectors-bar {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    @media (min-width: 620px) {
+      .selectors-bar {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .selector {
+      position: relative;
+      width: 100%;
+      user-select: none;
+    }
+    .selector-trigger {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+      color: var(--text-light);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .selector-trigger:hover {
+      border-color: rgba(224, 184, 74, 0.3);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .selector.open .selector-trigger {
+      border-color: var(--accent-bright);
+      box-shadow: 0 0 0 3px rgba(224, 184, 74, 0.1);
+      background: rgba(184, 134, 11, 0.02);
+    }
+
+    .selector-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      background: rgba(224, 184, 74, 0.1);
+      color: var(--accent-bright);
+      border: 1px solid rgba(224, 184, 74, 0.2);
+      flex-shrink: 0;
+    }
+
+    .selector-value {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .selector-arrow {
+      color: var(--text-muted);
+      font-size: 12px;
+      flex-shrink: 0;
+      transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .selector.open .selector-arrow {
+      transform: rotate(180deg);
+      color: var(--accent-bright);
+    }
+
+    .selector-options {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      z-index: 50;
+      max-height: 320px;
+      overflow-y: auto;
+      background: linear-gradient(145deg, #171717, #101010);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      padding: 6px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px) scale(0.98);
+      transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+      transform-origin: top center;
+    }
+    .selector.open .selector-options {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+    .selector-options::-webkit-scrollbar { width: 4px; }
+    .selector-options::-webkit-scrollbar-thumb {
+      background: rgba(224, 184, 74, 0.2);
+      border-radius: 10px;
+    }
+
+    .selector-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border-radius: 8px;
+      color: var(--text-body);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      position: relative;
+    }
+    .selector-option:hover {
+      background: rgba(224, 184, 74, 0.08);
+      color: var(--text-light);
+    }
+    .selector-option.selected {
+      background: rgba(224, 184, 74, 0.12);
+      color: var(--accent-bright);
+      font-weight: 700;
+    }
+    .selector-option.selected::after {
+      content: '✓';
+      margin-left: auto;
+      color: var(--accent-bright);
+      font-size: 12px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .selector-option .option-emoji {
+      font-size: 15px;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
     /* ═══ HERO PRINCIPAL ═══ */
     .hero-chapter {
       background: linear-gradient(135deg, rgba(184, 134, 11, 0.08), rgba(26, 58, 42, 0.06));
@@ -349,7 +494,6 @@
       transform: translateX(4px);
     }
 
-    /* Variante : action principale (Générer) */
     .action-card.primary {
       background: linear-gradient(135deg, rgba(224, 184, 74, 0.1), rgba(184, 134, 11, 0.05));
       border-color: rgba(224, 184, 74, 0.3);
@@ -511,7 +655,6 @@
       line-height: 1.75;
     }
 
-    /* Formules */
     .formulas-list {
       display: flex;
       flex-direction: column;
@@ -536,7 +679,6 @@
       font-style: italic;
     }
 
-    /* Méthode */
     .method-steps {
       list-style: none;
       padding: 0;
@@ -567,7 +709,6 @@
       justify-content: center;
     }
 
-    /* Exemple */
     .example-enonce {
       padding: 12px 14px;
       border-radius: 10px;
@@ -608,7 +749,6 @@
       font-weight: 600;
     }
 
-    /* Piège */
     .piege-trap {
       font-size: 14px;
       color: var(--text-light);
@@ -629,7 +769,6 @@
       font-weight: 700;
     }
 
-    /* Astuce */
     .block.astuce {
       background: linear-gradient(135deg, rgba(74, 175, 224, 0.06), rgba(74, 175, 224, 0.02));
       border-color: rgba(74, 175, 224, 0.2);
@@ -845,19 +984,6 @@
     }
     .btn.full { width: 100%; }
 
-    .loader {
-      display: none;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(10, 10, 10, 0.25);
-      border-top-color: currentColor;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-    .btn.loading .loader { display: inline-block; }
-    .btn.loading .btn-text { display: none; }
-    .btn.loading .btn-icon { display: none; }
-
     /* ═══ RÉSULTATS QUIZ ═══ */
     .result-hero {
       text-align: center;
@@ -976,6 +1102,8 @@
       .top-btn { padding: 8px 12px; font-size: 11.5px; }
       .result-metrics { gap: 8px; }
       .metric strong { font-size: 18px; }
+      .selector-trigger { padding: 12px 14px; font-size: 13.5px; }
+      .selector-icon { width: 28px; height: 28px; font-size: 13px; }
     }
 
     @media (max-width: 380px) {
@@ -990,9 +1118,7 @@
       }
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-       POP-UP PREMIUM UNIVERSEL
-       ═══════════════════════════════════════════════════════════════ */
+    /* ═══ POP-UP PREMIUM UNIVERSEL ═══ */
     .arvexa-popup-overlay {
       position: fixed;
       inset: 0;
@@ -1161,6 +1287,28 @@
          VUE 1 — ACCUEIL DU RÉVISEUR
          ═══════════════════════════════════════════════════════ -->
     <section class="view active" id="viewHome">
+
+      <!-- ✅ NOUVEAU : Sélecteurs matière + chapitre -->
+      <div class="selectors-bar">
+        <div class="selector" id="subjectSelector">
+          <button type="button" class="selector-trigger">
+            <div class="selector-icon"><i class="fas fa-graduation-cap"></i></div>
+            <span class="selector-value" id="subjectSelectorValue">Mathématiques</span>
+            <i class="fas fa-chevron-down selector-arrow"></i>
+          </button>
+          <div class="selector-options" id="subjectSelectorOptions"></div>
+        </div>
+
+        <div class="selector" id="chapterSelector">
+          <button type="button" class="selector-trigger">
+            <div class="selector-icon"><i class="fas fa-book"></i></div>
+            <span class="selector-value" id="chapterSelectorValue">Nombres complexes</span>
+            <i class="fas fa-chevron-down selector-arrow"></i>
+          </button>
+          <div class="selector-options" id="chapterSelectorOptions"></div>
+        </div>
+      </div>
+
       <div class="hero-chapter">
         <div class="hero-subject">
           <i class="fas fa-book"></i>
@@ -1387,7 +1535,7 @@
 
   <script type="module">
   // ═══════════════════════════════════════════════════════════════
-  // RÉVISEUR v7.0 — Génération progressive + cahier persistant
+  // RÉVISEUR v7.1 — Génération progressive + sélecteurs
   // ═══════════════════════════════════════════════════════════════
 
   import { initializeApp } from 'firebase/app';
@@ -1418,6 +1566,16 @@
     philosophie: 'Philosophie',
     histoire: 'Histoire',
     geographie: 'Géographie'
+  };
+
+  const SUBJECT_EMOJIS = {
+    mathematiques: '📐',
+    physique: '⚡',
+    chimie: '🧪',
+    svt: '🧬',
+    philosophie: '🧠',
+    histoire: '🌍',
+    geographie: '🗺️'
   };
 
   const CHAPTERS = {
@@ -1524,6 +1682,9 @@
     ]
   };
 
+  const STORAGE_KEY_SUBJECT = 'arvexa_reviseur_last_subject';
+  const STORAGE_KEY_CHAPTER = 'arvexa_reviseur_last_chapter';
+
   // ═══════════════════════════════════════════════════════════════
   // STATE
   // ═══════════════════════════════════════════════════════════════
@@ -1603,6 +1764,119 @@
   }
 
   // ═══════════════════════════════════════════════════════════════
+  // SÉLECTEURS
+  // ═══════════════════════════════════════════════════════════════
+  function closeAllSelectors() {
+    document.querySelectorAll('.selector.open').forEach((el) => el.classList.remove('open'));
+  }
+
+  function saveSelection() {
+    try {
+      localStorage.setItem(STORAGE_KEY_SUBJECT, state.subject);
+      localStorage.setItem(STORAGE_KEY_CHAPTER, state.chapter);
+    } catch (e) {}
+  }
+
+  function initSubjectSelector() {
+    const el = document.getElementById('subjectSelector');
+    const trigger = el.querySelector('.selector-trigger');
+    const valueEl = document.getElementById('subjectSelectorValue');
+    const optionsEl = document.getElementById('subjectSelectorOptions');
+
+    function render() {
+      valueEl.textContent = SUBJECTS[state.subject] || state.subject;
+
+      optionsEl.innerHTML = Object.entries(SUBJECTS).map(([key, label]) => `
+        <div class="selector-option ${key === state.subject ? 'selected' : ''}" data-value="${key}">
+          <span class="option-emoji">${SUBJECT_EMOJIS[key] || '📖'}</span>
+          <span>${escapeHtml(label)}</span>
+        </div>
+      `).join('');
+
+      optionsEl.querySelectorAll('.selector-option').forEach((opt) => {
+        opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const newSubject = opt.dataset.value;
+          if (newSubject === state.subject) {
+            closeAllSelectors();
+            return;
+          }
+
+          // Sauvegarde la nouvelle matière
+          state.subject = newSubject;
+          state.chapter = CHAPTERS[newSubject]?.[0] || '';
+          saveSelection();
+
+          // Ferme et redessine
+          closeAllSelectors();
+          render();
+          initChapterSelector();  // Re-render chapitres
+          loadCahier();           // Recharge le cahier
+        });
+      });
+    }
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wasOpen = el.classList.contains('open');
+      closeAllSelectors();
+      if (!wasOpen) el.classList.add('open');
+    });
+
+    render();
+  }
+
+  function initChapterSelector() {
+    const el = document.getElementById('chapterSelector');
+    const trigger = el.querySelector('.selector-trigger');
+    const valueEl = document.getElementById('chapterSelectorValue');
+    const optionsEl = document.getElementById('chapterSelectorOptions');
+
+    const chapters = CHAPTERS[state.subject] || [];
+
+    function render() {
+      valueEl.textContent = state.chapter || 'Choisir un chapitre';
+
+      optionsEl.innerHTML = chapters.map((ch) => `
+        <div class="selector-option ${ch === state.chapter ? 'selected' : ''}" data-value="${escapeHtml(ch)}">
+          <span class="option-emoji">📖</span>
+          <span>${escapeHtml(ch)}</span>
+        </div>
+      `).join('');
+
+      optionsEl.querySelectorAll('.selector-option').forEach((opt) => {
+        opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const newChapter = opt.dataset.value;
+          if (newChapter === state.chapter) {
+            closeAllSelectors();
+            return;
+          }
+
+          state.chapter = newChapter;
+          saveSelection();
+
+          closeAllSelectors();
+          render();
+          loadCahier();
+        });
+      });
+    }
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wasOpen = el.classList.contains('open');
+      closeAllSelectors();
+      if (!wasOpen) el.classList.add('open');
+    });
+
+    render();
+  }
+
+  // Fermer les sélecteurs au clic ailleurs
+  document.addEventListener('click', () => closeAllSelectors());
+
+  // ═══════════════════════════════════════════════════════════════
   // API CALL
   // ═══════════════════════════════════════════════════════════════
   async function callApi(payload) {
@@ -1652,6 +1926,12 @@
     } catch (err) {
       console.error('[Réviseur] loadCahier error:', err);
       showToast(err.message || 'Impossible de charger le cahier', 'error');
+      // Réinitialise pour éviter les états incohérents
+      state.totalAvailable = 0;
+      state.generatedCount = 0;
+      state.notions = [];
+      state.generatedIds = [];
+      updateHomeUI();
     }
   }
 
@@ -1662,6 +1942,14 @@
     // Labels sujet + chapitre
     $('subjectLabel').textContent = SUBJECTS[state.subject] || state.subject;
     $('chapterTitle').textContent = state.chapter;
+
+    // Met à jour la valeur du sélecteur de chapitre
+    const chapterValueEl = document.getElementById('chapterSelectorValue');
+    if (chapterValueEl) chapterValueEl.textContent = state.chapter;
+
+    // Met à jour la valeur du sélecteur de matière
+    const subjectValueEl = document.getElementById('subjectSelectorValue');
+    if (subjectValueEl) subjectValueEl.textContent = SUBJECTS[state.subject] || state.subject;
 
     // Barre de progression
     const percent = state.totalAvailable > 0
@@ -2122,13 +2410,11 @@
   // EVENT LISTENERS
   // ═══════════════════════════════════════════════════════════════
 
-  // Bouton "Voir mes notions"
   $('btnViewNotions').addEventListener('click', () => {
     renderNotionsList();
     showView('viewNotions');
   });
 
-  // Bouton "Générer"
   $('btnGenerate').addEventListener('click', () => {
     if (state.generatedCount === 0) {
       generateInitial();
@@ -2137,42 +2423,33 @@
     }
   });
 
-  // Bouton "Quiz"
   $('btnQuiz').addEventListener('click', generateQuiz);
 
-  // Retour depuis "Mes notions"
   $('backFromNotions').addEventListener('click', () => {
     showView('viewHome');
   });
 
-  // Retour depuis "Détail notion"
   $('backFromNotionDetail').addEventListener('click', () => {
     renderNotionsList();
     showView('viewNotions');
   });
 
-  // Suppression notion
   $('btnDeleteNotion').addEventListener('click', deleteCurrentNotion);
 
-  // Retour depuis "Quiz"
   $('backFromQuiz').addEventListener('click', () => {
     showView('viewHome');
   });
 
-  // Validation quiz
   $('btnValidateQuiz').addEventListener('click', validateQuiz);
 
-  // Nouveau quiz
   $('btnNewQuiz').addEventListener('click', () => {
     generateQuiz();
   });
 
-  // Retour accueil depuis résultats
   $('btnBackHomeFromResults').addEventListener('click', () => {
     showView('viewHome');
   });
 
-  // Premium popup
   $('premiumClose').addEventListener('click', hidePremiumPopup);
   $('premiumOverlay').addEventListener('click', (e) => {
     if (e.target === $('premiumOverlay')) hidePremiumPopup();
@@ -2185,25 +2462,42 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // PRÉREMPLISSAGE DEPUIS URL
+  // PRÉREMPLISSAGE
   // ═══════════════════════════════════════════════════════════════
   function prefillFromUrl() {
     try {
       const params = new URLSearchParams(window.location.search);
-      const subject = params.get('subject');
-      const chapter = params.get('chapter');
+      const urlSubject = params.get('subject');
+      const urlChapter = params.get('chapter');
 
-      if (subject && SUBJECTS[subject]) {
-        state.subject = subject;
-      } else {
-        state.subject = 'mathematiques';
+      // Priorité 1 : URL
+      if (urlSubject && SUBJECTS[urlSubject]) {
+        state.subject = urlSubject;
+        if (urlChapter && CHAPTERS[state.subject]?.includes(urlChapter)) {
+          state.chapter = urlChapter;
+        } else {
+          state.chapter = CHAPTERS[state.subject]?.[0] || 'Nombres complexes';
+        }
+        return;
       }
 
-      if (chapter && CHAPTERS[state.subject]?.includes(chapter)) {
-        state.chapter = chapter;
-      } else {
-        state.chapter = CHAPTERS[state.subject]?.[0] || 'Nombres complexes';
-      }
+      // Priorité 2 : localStorage (dernier choix)
+      try {
+        const savedSubject = localStorage.getItem(STORAGE_KEY_SUBJECT);
+        const savedChapter = localStorage.getItem(STORAGE_KEY_CHAPTER);
+
+        if (savedSubject && SUBJECTS[savedSubject]) {
+          state.subject = savedSubject;
+          if (savedChapter && CHAPTERS[state.subject]?.includes(savedChapter)) {
+            state.chapter = savedChapter;
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // Priorité 3 : défauts
+      state.subject = 'mathematiques';
+      state.chapter = 'Nombres complexes';
     } catch (e) {
       console.warn('[Réviseur] prefillFromUrl error:', e.message);
       state.subject = 'mathematiques';
@@ -2228,13 +2522,17 @@
 
     prefillFromUrl();
 
+    // ✅ Initialise les sélecteurs
+    initSubjectSelector();
+    initChapterSelector();
+
     // Charge le cahier
     await loadCahier();
 
     showView('viewHome');
   });
 
-  console.log('🚀 ARVEXA — Réviseur v7.0 — Génération progressive');
+  console.log('🚀 ARVEXA — Réviseur v7.1 — Sélecteurs + génération progressive');
   </script>
 </body>
 </html>
