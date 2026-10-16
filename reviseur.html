@@ -2720,10 +2720,17 @@
       } catch (e) {}
       showView('viewQuiz');
 
-    } catch (err) {
+       } catch (err) {
       console.error('[Réviseur] quiz error:', err);
-      showToast(err.message || 'Erreur de génération du quiz', 'error');
-      navigateTo('viewHome');
+
+      // ✅ Gestion spécifique du quota dépassé
+      if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
+        showPremiumPopup();
+        navigateTo('viewHome');
+      } else {
+        showToast(err.message || 'Erreur de génération du quiz', 'error');
+        navigateTo('viewHome');
+      }
     } finally {
       state.isGeneratingQuiz = false;
     }
