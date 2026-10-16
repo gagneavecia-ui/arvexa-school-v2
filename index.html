@@ -849,7 +849,7 @@
     }
 
     /* ============================================================
-       ⚡ NOUVEAU — MODALE DE CONFIRMATION (harmonisation avec profil.html)
+       ⚡ MODALE DE CONFIRMATION (harmonisation avec profil.html)
        ============================================================ */
     .arvexa-confirm-overlay {
       position: fixed;
@@ -1478,7 +1478,7 @@
   </div>
 
   <!-- ============================================================
-       ⚡ NOUVEAU — MODALE DE CONFIRMATION DE DÉCONNEXION
+       MODALE DE CONFIRMATION DE DÉCONNEXION
        (harmonisation avec profil.html)
        ============================================================ -->
   <div class="arvexa-confirm-overlay" id="arvexaConfirmModal">
@@ -1507,7 +1507,7 @@
       </div>
     </div>
   </div>
-
+  
   <!-- ============================================================ -->
   <!-- SCRIPTS                                                       -->
   <!-- ============================================================ -->
@@ -1524,6 +1524,7 @@
     <script type="module">
   // ================================================================
   // INDEX — Version robuste avec modale de confirmation
+  // Corrections appliquées (voir commentaires ✅)
   // ================================================================
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -1867,6 +1868,17 @@
 
   updateSubjectsProgress();
 
+  // ✅ CORRECTION #7 — Rafraîchir les compteurs quand l'utilisateur revient sur la page
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) updateSubjectsProgress();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      updateSubjectsProgress();
+    }
+  });
+
   // ================================================================
   // NOTIFICATIONS NON LUES
   // ================================================================
@@ -1880,7 +1892,11 @@
       const snapshot = await getDocs(q);
       const hasUnread = !snapshot.empty;
       if (notifDot) notifDot.classList.toggle('show', hasUnread);
-    } catch (e) {}
+    } catch (e) {
+      // ✅ CORRECTION #8 — On trace l'erreur au lieu de l'avaler complètement
+      console.warn('[Notif] checkUnread:', e.message);
+      if (notifDot) notifDot.classList.remove('show');
+    }
   }
 
   // ================================================================
@@ -1950,15 +1966,14 @@
     updateSubscriptionDisplay(premium, data);
   }
 
+  // ✅ CORRECTION #6 — Nettoyage du code mort (skeletonLoading inexistant)
   function showDashboard() {
-    const skeleton = document.getElementById('skeletonLoading');
     const dynamic = document.getElementById('dynamicContent');
-    if (skeleton) skeleton.style.display = 'none';
     if (dynamic) dynamic.style.display = 'block';
   }
 
   // ================================================================
-  // ⚡ TOAST — UNE SEULE DÉFINITION (dans le module)
+  // TOAST — UNE SEULE DÉFINITION
   // ================================================================
   function showToast(message, type = 'info') {
     let container = document.getElementById('toastContainer');
@@ -2214,6 +2229,8 @@
   let currentUid = null;
   let isRedirecting = false;
   let isAuthResolved = false;
+  // ✅ CORRECTION #2 — Mémoriser le dernier UID écouté pour éviter les doubles abonnements
+  let lastSnapshotUid = null;
 
   // ================================================================
   // MODALE AVIS
@@ -2395,7 +2412,7 @@
   }
 
   // ================================================================
-  // ⚡ NOUVEAU — MODALE DE CONFIRMATION (harmonisation avec profil.html)
+  // MODALE DE CONFIRMATION
   // ================================================================
   const confirmModal = document.getElementById('arvexaConfirmModal');
   const confirmIconBox = document.getElementById('arvexaConfirmIconBox');
@@ -2454,24 +2471,42 @@
   // LOAD USER DATA (temps réel)
   // ================================================================
   function loadUserData(user) {
+    // ✅ CORRECTION #2 — Éviter de recréer une connexion temps réel inutilement
+    if (unsubscribeUser && lastSnapshotUid === user.uid) {
+      return;
+    }
     if (unsubscribeUser) {
       unsubscribeUser();
       unsubscribeUser = null;
     }
+    lastSnapshotUid = user.uid;
+
     const userRef = doc(db, 'users', user.uid);
-       unsubscribeUser = onSnapshot(userRef,
+    unsubscribeUser = onSnapshot(userRef,
       (docSnap) => {
         const cached = getCachedUserData(user.uid);
 
         if (docSnap.exists()) {
           userData = docSnap.data();
 
-          if (userData.accountStatus === 'blocked' || userData.accountStatus === 'paused') {
+          // ✅ CORRECTION #1 — Gestion propre des comptes bloqués et en pause
+          if (userData.accountStatus === 'blocked') {
             if (unsubscribeUser) unsubscribeUser();
             clearSession();
+            try {
+              sessionStorage.setItem('arvexa_account_blocked', '1');
+            } catch (e) {}
             signOut(auth).then(() => {
-              window.location.replace('login.html');
+              window.location.replace('auth-choice.html');
             });
+            return;
+          }
+
+          if (userData.accountStatus === 'paused') {
+            // Ne pas déconnecter : afficher un message et continuer
+            showToast('Ton compte est temporairement en pause. Contacte le support.', 'warning');
+            renderUserData(userData);
+            showDashboard();
             return;
           }
 
@@ -2517,13 +2552,24 @@
       }, 600);
     }
     try {
+      // ✅ CORRECTION #5 — On force un nouveau token + lecture serveur sans casser la connexion temps réel
       await getIdToken(user, true);
-      loadUserData(user);
+      const userRef = doc(db, 'users', user.uid);
+      const snap = await getDoc(userRef, { source: 'server' });
+      if (snap.exists()) {
+        const fresh = snap.data();
+        userData = fresh;
+        saveUserDataToCache(fresh, user.uid);
+        renderUserData(fresh);
+      }
       updateCountdown();
       renderTip();
       updateSubjectsProgress();
       showToast('Données actualisées', 'success');
-    } catch (e) {}
+    } catch (e) {
+      console.warn('[Refresh] erreur:', e.message);
+      showToast('Impossible de rafraîchir. Vérifie ta connexion.', 'error');
+    }
   }
 
   // ================================================================
@@ -2543,6 +2589,7 @@
       if (!isAuthResolved) isAuthResolved = true;
       if (!user) {
         currentUid = null;
+        lastSnapshotUid = null;
         clearSession();
         redirectToLogin();
         return;
@@ -2558,10 +2605,19 @@
   // LANCER LA PROTECTION
   // ================================================================
   initAuthGuard(async (user) => {
+    // ✅ CORRECTION #3 — Ne plus afficher l'abonnement depuis le cache
+    // On affiche tout SAUF les infos sensibles d'abonnement (qui viendront de Firestore)
     const cached = getCachedUserData(user.uid);
     if (cached) {
-      userData = cached;
-      renderUserData(cached);
+      const cachedSafe = { ...cached };
+      delete cachedSafe.premium;
+      delete cachedSafe.isUnlocked;
+      delete cachedSafe.hasDeposited;
+      delete cachedSafe.subscriptionEndDate;
+
+      userData = cachedSafe;
+      updateGreeting(cachedSafe.firstName || 'Élève');
+      // On n'affiche pas encore la carte abonnement : elle viendra de Firestore
       showDashboard();
     }
 
@@ -2573,14 +2629,16 @@
   });
 
   // ================================================================
-  // ⚡ DÉCONNEXION — AVEC MODALE DE CONFIRMATION
+  // DÉCONNEXION — AVEC MODALE DE CONFIRMATION
   // ================================================================
   async function performLogout() {
     isRedirecting = true;
     if (unsubscribeUser) unsubscribeUser();
+    lastSnapshotUid = null;
     clearSession();
     try { await signOut(auth); } catch (e) {}
-    window.location.replace('login.html');
+    // ✅ CORRECTION #4 — Redirection uniforme vers auth-choice.html
+    window.location.replace('auth-choice.html');
   }
 
   function handleLogout() {
@@ -2653,7 +2711,7 @@
     }
   });
 
-  console.log('🚀 ARVEXA School — Index (avec modale de confirmation)');
+  console.log('🚀 ARVEXA School — Index (version corrigée)');
   </script>
 </body>
 </html>
