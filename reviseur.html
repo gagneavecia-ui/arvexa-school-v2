@@ -1879,18 +1879,37 @@
     showView(viewId);
   }
 
-   function goBack() {
+     function goBack() {
     // ✅ Récupère la vue actuelle
     const currentView = document.querySelector('.view.active')?.id;
 
-    // ✅ Si on est sur l'accueil, on sort de la page
+    // ✅ Hiérarchie :
+    // viewNotionDetail → viewNotions → viewHome → sortie de la page
+    // viewQuiz/viewQuizResults → viewHome
+    // viewNotions → viewHome
+    // viewHome → sortie de la page
+
     if (currentView === 'viewHome') {
+      // ✅ On est sur l'accueil → on sort de la page
       window.history.back();
       return;
     }
 
-    // ✅ Sinon, on revient à l'accueil directement (le bouton retour
-    // des vues de détail ramène TOUJOURS à l'accueil)
+    if (currentView === 'viewNotionDetail') {
+      // ✅ Détail notion → retour à la liste
+      renderNotionsList();
+      try {
+        window.history.replaceState(
+          { view: 'viewNotions' },
+          '',
+          window.location.pathname + window.location.search
+        );
+      } catch (e) {}
+      showView('viewNotions');
+      return;
+    }
+
+    // ✅ Pour toutes les autres vues → retour à l'accueil
     try {
       window.history.replaceState(
         { view: 'viewHome' },
@@ -1898,7 +1917,6 @@
         window.location.pathname + window.location.search
       );
     } catch (e) {}
-
     showView('viewHome');
     updateHomeUI();
   }
@@ -1984,12 +2002,19 @@
       });
     }
 
-    trigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const wasOpen = el.classList.contains('open');
-      closeAllSelectors();
-      if (!wasOpen) el.classList.add('open');
-    });
+   trigger.addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const wasOpen = el.classList.contains('open');
+  closeAllSelectors();
+
+  if (!wasOpen) {
+    el.classList.add('open');
+    // ✅ Signale qu'on vient d'ouvrir → le prochain clic global sera ignoré
+    __selectorJustOpened = true;
+  }
+});
 
     render();
   }
