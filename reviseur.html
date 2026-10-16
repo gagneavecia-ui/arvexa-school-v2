@@ -1845,51 +1845,91 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Vue affichée AVEC empilement d'historique (utilisée par les boutons)
+   // ✅ Vues qui NE doivent PAS être empilées dans l'historique
+  const NON_HISTORY_VIEWS = new Set(['viewLoading']);
+
   function navigateTo(viewId, stateData = {}) {
     const currentView = document.querySelector('.view.active')?.id;
 
-    // Ne rien faire si on est déjà sur cette vue
     if (currentView === viewId) {
       showView(viewId);
       return;
     }
 
-    // Empiler une nouvelle entrée d'historique
+    // ✅ Si c'est une vue de chargement, on REMPLACE l'entrée actuelle
+    // au lieu d'en empiler une nouvelle
     try {
-      window.history.pushState(
-        { view: viewId, ...stateData },
-        '',
-        window.location.pathname + window.location.search
-      );
+      if (NON_HISTORY_VIEWS.has(viewId)) {
+        window.history.replaceState(
+          { view: viewId, ...stateData },
+          '',
+          window.location.pathname + window.location.search
+        );
+      } else {
+        window.history.pushState(
+          { view: viewId, ...stateData },
+          '',
+          window.location.pathname + window.location.search
+        );
+      }
     } catch (e) {
-      console.warn('[Réviseur] pushState error:', e.message);
+      console.warn('[Réviseur] history error:', e.message);
     }
 
     showView(viewId);
   }
 
-  // Retour en arrière (comme si on cliquait sur le bouton Retour)
-  function goBack() {
-    window.history.back();
-  }
+   function goBack() {
+    // ✅ Récupère la vue actuelle
+    const currentView = document.querySelector('.view.active')?.id;
 
-  // ✅ Gestion du bouton Retour du téléphone / navigateur
-  window.addEventListener('popstate', (event) => {
+    // ✅ Si on est sur l'accueil, on sort de la page
+    if (currentView === 'viewHome') {
+      window.history.back();
+      return;
+    }
+
+    // ✅ Sinon, on revient à l'accueil directement (le bouton retour
+    // des vues de détail ramène TOUJOURS à l'accueil)
+    try {
+      window.history.replaceState(
+        { view: 'viewHome' },
+        '',
+        window.location.pathname + window.location.search
+      );
+    } catch (e) {}
+
+    showView('viewHome');
+    updateHomeUI();
+  }
+    
+   window.addEventListener('popstate', (event) => {
     const targetView = event.state?.view;
 
-    if (targetView && document.getElementById(targetView)) {
-      // ✅ On revient à la vue précédente
-      showView(targetView);
+    // ✅ Si la vue n'est pas connue ou pas définie → on va sur l'accueil
+    if (!targetView || !document.getElementById(targetView)) {
+      // On empile "home" pour éviter de sortir de la page
+      try {
+        window.history.pushState(
+          { view: 'viewHome' },
+          '',
+          window.location.pathname + window.location.search
+        );
+      } catch (e) {}
 
-      // Rendre les données spécifiques à la vue
-      if (targetView === 'viewNotions') {
-        renderNotionsList();
-      } else if (targetView === 'viewHome') {
-        updateHomeUI();
-      }
+      showView('viewHome');
+      updateHomeUI();
+      return;
     }
-    // Sinon : c'est la sortie de la page, on laisse faire
+
+    // ✅ Vue connue : on l'affiche
+    showView(targetView);
+
+    if (targetView === 'viewNotions') {
+      renderNotionsList();
+    } else if (targetView === 'viewHome') {
+      updateHomeUI();
+    }
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -2145,8 +2185,17 @@
         showToast(state.notions.length + ' notions générées !', 'success');
       }
 
-      updateHomeUI();
-      navigateTo('viewHome');
+           updateHomeUI();
+
+      // ✅ On remplace l'entrée "loading" par "home" (pas d'empilement)
+      try {
+        window.history.replaceState(
+          { view: 'viewHome' },
+          '',
+          window.location.pathname + window.location.search
+        );
+      } catch (e) {}
+      showView('viewHome');
 
     } catch (err) {
       console.error('[Réviseur] generateInitial error:', err);
@@ -2189,7 +2238,17 @@
         showToast('Nouvelles notions générées !', 'success');
       }
 
-      navigateTo('viewHome');
+           updateHomeUI();
+
+      // ✅ On remplace l'entrée "loading" par "home" (pas d'empilement)
+      try {
+        window.history.replaceState(
+          { view: 'viewHome' },
+          '',
+          window.location.pathname + window.location.search
+        );
+      } catch (e) {}
+      showView('viewHome');
 
     } catch (err) {
       console.error('[Réviseur] generateMore error:', err);
@@ -2618,8 +2677,16 @@
         return;
       }
 
-      renderQuiz();
-      navigateTo('viewQuiz');
+           renderQuiz();
+
+      try {
+        window.history.replaceState(
+          { view: 'viewQuiz' },
+          '',
+          window.location.pathname + window.location.search
+        );
+      } catch (e) {}
+      showView('viewQuiz');
 
     } catch (err) {
       console.error('[Réviseur] quiz error:', err);
