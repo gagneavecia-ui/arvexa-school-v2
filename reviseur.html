@@ -13,9 +13,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
- <link rel="stylesheet" href="katex/katex.min.css">
- <script defer src="katex/katex.min.js"></script>
- <script defer src="katex/contrib/auto-render.min.js"></script>
+  <link rel="stylesheet" href="katex/katex.min.css">
+  <script defer src="katex/katex.min.js"></script>
+  <script defer src="katex/contrib/auto-render.min.js"></script>
   <script src="katex-utils.js" defer></script>
   <script src="register-sw.js" defer></script>
 
@@ -69,10 +69,9 @@
 
     body {
       margin: 0;
-      min-height: auto;
+      min-height: 100vh;
       overflow-x: hidden;
       overflow-y: auto;
-      display: block;
       background: transparent;
       color: var(--text-light);
       font: 15px/1.6 var(--font-body);
@@ -156,68 +155,10 @@
     .shell {
       width: min(100% - 28px, 900px);
       margin: 0 auto;
-      padding: 20px 0 30px;
+      padding: 20px 0 40px;
     }
 
-    /* ═══ STEP BAR ═══ */
-    .step-bar {
-      display: none;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-soft);
-      border-radius: 12px;
-      overflow-x: auto;
-    }
-    .step-bar.show { display: flex; }
-    .step-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      white-space: nowrap;
-      color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid transparent;
-      flex-shrink: 0;
-    }
-    .step-item .num {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      font-weight: 800;
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-muted);
-    }
-    .step-item.active {
-      background: rgba(224, 184, 74, 0.1);
-      border-color: rgba(224, 184, 74, 0.25);
-      color: var(--accent-bright);
-    }
-    .step-item.active .num { background: var(--accent-bright); color: #0A0A0A; }
-    .step-item.done { color: var(--success-light); background: rgba(69, 180, 125, 0.06); }
-    .step-item.done .num { background: var(--success-light); color: #0A0A0A; }
-    .step-item.done .num::before { content: '✓'; }
-    .step-item.done .num span { display: none; }
-    .step-sep { color: var(--text-muted); font-size: 10px; opacity: 0.5; }
-
-    /* ═══ PANEL ═══ */
-    .panel {
-      background: var(--bg-card);
-      border: 1px solid var(--border-soft);
-      border-radius: 14px;
-      padding: 22px;
-    }
-
+    /* ═══ VIEWS ═══ */
     .view { display: none; }
     .view.active {
       display: block;
@@ -228,14 +169,14 @@
       to { opacity: 1; transform: none; }
     }
 
-    h1, h2 {
+    h1, h2, h3 {
       margin: 0;
       line-height: 1.2;
       font-family: var(--font-serif);
       color: var(--text-light);
     }
-    h1 { font-size: clamp(24px, 4.5vw, 36px); }
-    h2 { font-size: clamp(19px, 3.5vw, 24px); }
+    h1 { font-size: clamp(24px, 5vw, 34px); }
+    h2 { font-size: clamp(20px, 4vw, 26px); }
 
     .eyebrow {
       color: var(--accent-bright);
@@ -253,144 +194,625 @@
       font-size: 14.5px;
     }
 
-    /* ═══ FORM ═══ */
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-      margin-top: 22px;
-    }
-    .field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
-    .field.full { grid-column: 1 / -1; }
-    label { color: var(--text-light); font-size: 13px; font-weight: 600; }
-
-    /* ═══ CUSTOM SELECT ═══ */
-    .custom-select { position: relative; width: 100%; user-select: none; }
-    .custom-select-trigger {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      width: 100%;
-      min-height: 46px;
-      padding: 12px 14px;
-      background: rgba(0, 0, 0, 0.3);
+    /* ═══ PANEL ═══ */
+    .panel {
+      background: var(--bg-card);
       border: 1px solid var(--border-soft);
-      border-radius: var(--radius-sm);
-      color: var(--text-light);
-      font-size: 14px;
-      text-align: left;
-      cursor: pointer;
-      transition: var(--transition-fast);
-      font-family: inherit;
+      border-radius: var(--radius);
+      padding: 22px;
     }
-    .custom-select-trigger:hover {
-      border-color: rgba(224, 184, 74, 0.3);
-      background: rgba(255, 255, 255, 0.04);
-    }
-    .custom-select.open .custom-select-trigger {
-      border-color: var(--accent-bright);
-      box-shadow: 0 0 0 3px rgba(224, 184, 74, 0.1);
-    }
-    .custom-select-value {
-      flex: 1; min-width: 0;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .custom-select-value .icon-prefix { color: var(--accent-bright); font-size: 13px; }
-    .custom-select-arrow {
-      color: var(--text-muted); font-size: 12px;
-      transition: transform 0.25s ease;
-    }
-    .custom-select.open .custom-select-arrow { transform: rotate(180deg); color: var(--accent-bright); }
-    .custom-select-options {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 0; right: 0;
-      z-index: 50;
-      max-height: 280px;
-      overflow-y: auto;
-      background: #171717;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-      padding: 6px;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-8px);
-      transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
-    }
-    .custom-select.open .custom-select-options {
-      opacity: 1; visibility: visible; transform: translateY(0);
-    }
-    .custom-select-options::-webkit-scrollbar { width: 4px; }
-    .custom-select-options::-webkit-scrollbar-thumb {
-      background: rgba(224, 184, 74, 0.2);
-      border-radius: 10px;
-    }
-    .custom-select-option {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 11px 14px;
-      border-radius: 8px;
-      color: var(--text-body);
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: var(--transition-fast);
+
+    /* ═══ HERO PRINCIPAL ═══ */
+    .hero-chapter {
+      background: linear-gradient(135deg, rgba(184, 134, 11, 0.08), rgba(26, 58, 42, 0.06));
+      border: 1px solid rgba(184, 134, 11, 0.2);
+      border-radius: var(--radius);
+      padding: 24px 22px;
+      margin-bottom: 18px;
       position: relative;
+      overflow: hidden;
     }
-    .custom-select-option:hover {
-      background: rgba(224, 184, 74, 0.08);
-      color: var(--text-light);
+    .hero-chapter::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
     }
-    .custom-select-option.selected {
-      background: rgba(224, 184, 74, 0.12);
-      color: var(--accent-bright);
-      font-weight: 600;
-    }
-    .custom-select-option.selected::after {
-      content: '✓';
-      margin-left: auto;
+    .hero-subject {
       color: var(--accent-bright);
       font-size: 12px;
-      font-weight: 800;
-      flex-shrink: 0;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .custom-select-option .option-prefix {
-      color: var(--accent-bright);
+    .hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(20px, 4vw, 26px);
+      font-weight: 700;
+      color: var(--text-light);
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+    .hero-progress {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .hero-progress-bar {
+      flex: 1;
+      height: 6px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      overflow: hidden;
+    }
+    .hero-progress-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-bright));
+      transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .hero-progress-text {
       font-size: 13px;
-      width: 18px;
-      text-align: center;
+      color: var(--text-dim);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .hero-progress-text strong { color: var(--accent-bright); }
+
+    /* ═══ CARTES D'ACTION ═══ */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .action-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 22px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: left;
+      width: 100%;
+      font-family: inherit;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+    .action-card:hover:not(:disabled) {
+      transform: translateY(-2px);
+      border-color: rgba(184, 134, 11, 0.35);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    .action-card:active:not(:disabled) { transform: translateY(0); }
+    .action-card:disabled { opacity: 0.5; }
+
+    .action-card-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
       flex-shrink: 0;
+      background: rgba(184, 134, 11, 0.1);
+      color: var(--accent-bright);
+      border: 1px solid rgba(184, 134, 11, 0.2);
+    }
+    .action-card-body { flex: 1; min-width: 0; }
+    .action-card-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .action-card-title .free-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 8px;
+      background: rgba(58, 182, 126, 0.15);
+      color: #7ce0aa;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .action-card-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .action-card-arrow {
+      color: var(--text-muted);
+      font-size: 16px;
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+    .action-card:hover:not(:disabled) .action-card-arrow {
+      color: var(--accent-bright);
+      transform: translateX(4px);
     }
 
-    /* ═══ CHIPS ═══ */
-    .chips-row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .chip {
-      padding: 8px 16px;
-      border-radius: 20px;
+    /* Variante : action principale (Générer) */
+    .action-card.primary {
+      background: linear-gradient(135deg, rgba(224, 184, 74, 0.1), rgba(184, 134, 11, 0.05));
+      border-color: rgba(224, 184, 74, 0.3);
+    }
+    .action-card.primary .action-card-icon {
+      background: linear-gradient(135deg, rgba(224, 184, 74, 0.25), rgba(184, 134, 11, 0.15));
+      border-color: rgba(224, 184, 74, 0.4);
+      color: var(--accent-bright);
+    }
+
+    /* ═══ LISTE DE NOTIONS ═══ */
+    .notions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .notion-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: left;
+      width: 100%;
+      font-family: inherit;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+    .notion-row::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--accent-bright), var(--accent));
+      opacity: 0.7;
+    }
+    .notion-row:hover {
+      border-color: rgba(224, 184, 74, 0.3);
+      transform: translateX(2px);
+    }
+    .notion-row-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-serif);
+      font-size: 15px;
+      font-weight: 700;
+      background: rgba(224, 184, 74, 0.1);
+      color: var(--accent-bright);
+      border: 1px solid rgba(224, 184, 74, 0.2);
+      flex-shrink: 0;
+    }
+    .notion-row-body { flex: 1; min-width: 0; }
+    .notion-row-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 4px;
+      overflow-wrap: break-word;
+    }
+    .notion-row-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .notion-row-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .notion-row-tag i { font-size: 10px; color: var(--accent-bright); }
+    .notion-row-arrow {
+      color: var(--text-muted);
+      font-size: 14px;
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+    .notion-row:hover .notion-row-arrow {
+      color: var(--accent-bright);
+      transform: translateX(3px);
+    }
+
+    /* ═══ DÉTAIL NOTION ═══ */
+    .notion-detail-header {
+      margin-bottom: 20px;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
       border: 1px solid var(--border-soft);
       background: transparent;
       color: var(--text-dim);
-      font-size: 12.5px;
+      font-size: 13px;
       font-weight: 600;
+      cursor: pointer;
       transition: var(--transition);
+      font-family: inherit;
+      margin-bottom: 16px;
     }
-    .chip.active {
-      background: rgba(224, 184, 74, 0.12);
-      border-color: rgba(224, 184, 74, 0.3);
-      color: var(--accent-bright);
+    .back-btn:hover {
+      color: var(--text-light);
+      border-color: var(--accent-bright);
+      background: rgba(184, 134, 11, 0.06);
     }
 
-    /* ═══ BUTTONS ═══ */
-    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+    .notion-detail-title {
+      font-family: var(--font-serif);
+      font-size: clamp(22px, 4.5vw, 28px);
+      font-weight: 700;
+      color: var(--text-light);
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .notion-detail-meta {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* Blocs de contenu */
+    .block {
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 12px;
+    }
+    .block-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-bright);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .block-label i { font-size: 12px; }
+    .block-text {
+      font-size: 14.5px;
+      color: var(--text-body);
+      line-height: 1.75;
+    }
+
+    /* Formules */
+    .formulas-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .formula-item {
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.25);
+      text-align: center;
+    }
+    .formula-latex {
+      font-size: 15px;
+      color: var(--text-light);
+      padding: 4px 0;
+      overflow-x: auto;
+    }
+    .formula-condition {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    /* Méthode */
+    .method-steps {
+      list-style: none;
+      padding: 0;
+      counter-reset: step;
+    }
+    .method-steps li {
+      position: relative;
+      padding-left: 32px;
+      counter-increment: step;
+      font-size: 14px;
+      color: var(--text-body);
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+    .method-steps li:last-child { margin-bottom: 0; }
+    .method-steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0; top: 1px;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(224, 184, 74, 0.15);
+      color: var(--accent-bright);
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Exemple */
+    .example-enonce {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      font-size: 14px;
+      color: var(--text-light);
+      line-height: 1.65;
+      margin-bottom: 12px;
+    }
+    .example-steps {
+      list-style: none;
+      padding: 0;
+      counter-reset: e;
+      margin-bottom: 12px;
+    }
+    .example-steps li {
+      position: relative;
+      padding-left: 28px;
+      counter-increment: e;
+      font-size: 14px;
+      color: var(--text-body);
+      line-height: 1.7;
+      margin-bottom: 8px;
+    }
+    .example-steps li::before {
+      content: counter(e) '.';
+      position: absolute;
+      left: 0; top: 0;
+      color: var(--accent-bright);
+      font-weight: 700;
+    }
+    .example-conclusion {
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(69, 180, 125, 0.08);
+      font-size: 14px;
+      color: #7ce0aa;
+      font-weight: 600;
+    }
+
+    /* Piège */
+    .piege-trap {
+      font-size: 14px;
+      color: var(--text-light);
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+    .piege-solution {
+      position: relative;
+      padding-left: 22px;
+      font-size: 13.5px;
+      color: #7ce0aa;
+      line-height: 1.7;
+    }
+    .piege-solution::before {
+      content: '→';
+      position: absolute;
+      left: 0; top: 0;
+      font-weight: 700;
+    }
+
+    /* Astuce */
+    .block.astuce {
+      background: linear-gradient(135deg, rgba(74, 175, 224, 0.06), rgba(74, 175, 224, 0.02));
+      border-color: rgba(74, 175, 224, 0.2);
+    }
+    .block.astuce .block-label { color: var(--info); }
+
+    /* ═══ LOADING ═══ */
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 60px 20px;
+      text-align: center;
+    }
+    .loader-spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(224, 184, 74, 0.15);
+      border-top-color: var(--accent-bright);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state h3 {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      color: var(--text-light);
+    }
+    .loading-state p {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 320px;
+      line-height: 1.6;
+    }
+
+    /* ═══ EMPTY ═══ */
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .empty-state-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: rgba(184, 134, 11, 0.06);
+      border: 1px solid rgba(184, 134, 11, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: var(--text-muted);
+    }
+    .empty-state h3 {
+      font-family: var(--font-serif);
+      font-size: 19px;
+      color: var(--text-light);
+    }
+    .empty-state p {
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 360px;
+    }
+
+    /* ═══ QUIZ ═══ */
+    .quiz-question {
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 12px;
+    }
+    .quiz-q-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .quiz-q-num {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-bright);
+    }
+    .quiz-q-text {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--text-light);
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .quiz-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      background: rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-body);
+      line-height: 1.5;
+      transition: var(--transition-fast);
+      text-align: left;
+      width: 100%;
+      font-family: inherit;
+    }
+    .quiz-option:hover:not(.disabled) {
+      border-color: rgba(224, 184, 74, 0.3);
+      background: rgba(224, 184, 74, 0.04);
+    }
+    .quiz-option.correct {
+      border-color: var(--success-light);
+      background: rgba(58, 182, 126, 0.12);
+      color: #7ce0aa;
+    }
+    .quiz-option.wrong {
+      border-color: var(--danger-light);
+      background: rgba(215, 101, 74, 0.12);
+      color: #ff9a84;
+    }
+    .quiz-option.disabled { cursor: not-allowed; }
+    .quiz-letter {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .quiz-option.correct .quiz-letter {
+      background: var(--success-light);
+      color: #fff;
+    }
+    .quiz-option.wrong .quiz-letter {
+      background: var(--danger-light);
+      color: #fff;
+    }
+    .quiz-explanation {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: rgba(74, 175, 224, 0.06);
+      border-radius: 10px;
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: var(--text-body);
+      display: none;
+    }
+    .quiz-explanation.show { display: block; }
+    .quiz-explanation strong { color: var(--info); }
+
+    /* ═══ BOUTONS ═══ */
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
     .btn {
-      min-height: 46px;
+      min-height: 48px;
       border: 1px solid transparent;
       border-radius: 30px;
-      padding: 12px 22px;
+      padding: 13px 24px;
       color: var(--text-light);
       background: rgba(255, 255, 255, 0.04);
       font-weight: 700;
@@ -411,10 +833,10 @@
     .btn.primary {
       background: linear-gradient(135deg, var(--accent-bright), var(--accent));
       color: #0A0A0A;
-      box-shadow: 0 4px 16px rgba(184, 134, 11, 0.2);
+      box-shadow: 0 4px 16px rgba(184, 134, 11, 0.25);
     }
     .btn.primary:hover:not(:disabled) {
-      box-shadow: 0 8px 28px rgba(184, 134, 11, 0.35);
+      box-shadow: 0 8px 28px rgba(184, 134, 11, 0.4);
     }
     .btn.secondary {
       background: transparent;
@@ -425,964 +847,140 @@
 
     .loader {
       display: none;
-      width: 18px; height: 18px;
+      width: 16px;
+      height: 16px;
       border: 2px solid rgba(10, 10, 10, 0.25);
       border-top-color: currentColor;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
-    .btn.secondary .loader {
-      border-color: rgba(255, 255, 255, 0.2);
-      border-top-color: var(--text-light);
-    }
     .btn.loading .loader { display: inline-block; }
     .btn.loading .btn-text { display: none; }
     .btn.loading .btn-icon { display: none; }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
-    .status { min-height: 20px; margin-top: 12px; color: var(--text-dim); font-size: 13px; }
-    .status.error { color: #ff9a84; }
-    .status.info { color: var(--accent-bright); }
-
-    /* ═══ LOADING STEPS ═══ */
-    .loading-steps {
-      margin-top: 26px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 22px;
-    }
-    .loader-spinner {
-      width: 52px; height: 52px;
-      border: 3px solid rgba(224, 184, 74, 0.15);
-      border-top-color: var(--accent-bright);
-      border-radius: 50%;
-      animation: spin 0.9s linear infinite;
-    }
-    .steps-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      width: 100%;
-      max-width: 460px;
-    }
-    .loading-step {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: rgba(20, 20, 20, 0.5);
-      border: 1px solid var(--border-soft);
-      opacity: 0.5;
-      transition: all 0.3s ease;
-    }
-    .loading-step.active { opacity: 1; background: rgba(224, 184, 74, 0.06); border-color: rgba(224, 184, 74, 0.2); }
-    .loading-step.done { opacity: 0.85; background: rgba(69, 180, 125, 0.04); border-color: rgba(69, 180, 125, 0.15); }
-    .loading-step.done::after {
-      content: '✓';
-      margin-left: auto;
-      color: var(--success-light);
-      font-weight: 800;
-      font-size: 15px;
-    }
-    .step-icon { font-size: 20px; line-height: 1; width: 26px; text-align: center; opacity: 0.7; }
-    .loading-step.active .step-icon { opacity: 1; }
-    .step-content { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
-    .step-label { font-size: 13.5px; font-weight: 600; color: var(--text-light); }
-    .loading-step.active .step-label { color: var(--accent-bright); }
-    .loading-step.done .step-label { color: var(--success-light); }
-    .step-desc { font-size: 11.5px; color: var(--text-muted); }
-    .loading-status { font-size: 13px; color: var(--text-muted); text-align: center; min-height: 20px; }
-    .loading-status.active { color: var(--accent-bright); font-weight: 600; }
-
-    /* ═══ SESSION HEAD ═══ */
-    .session-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 12px;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-    }
-    .session-head h2 { font-size: clamp(18px, 3vw, 22px); }
-    .session-meta {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 8px;
-    }
-    .session-meta span {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-soft);
-    }
-    .session-meta i { color: var(--accent-bright); font-size: 11px; }
-
-    /* ═══ FICHE ═══ */
-    .notion-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-soft);
-      border-radius: 12px;
-      margin-bottom: 10px;
-      overflow: hidden;
-      transition: var(--transition);
-    }
-    .notion-card.open { border-color: rgba(224, 184, 74, 0.25); }
-    .notion-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .notion-header:hover { background: rgba(255, 255, 255, 0.02); }
-    .notion-num {
-      width: 30px; height: 30px;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font: 700 13px 'Playfair Display', serif;
-      background: rgba(224, 184, 74, 0.1);
-      color: var(--accent-bright);
-      border: 1px solid rgba(224, 184, 74, 0.15);
-      flex-shrink: 0;
-    }
-    .notion-title-wrap { flex: 1; min-width: 0; }
-    .notion-title {
-      font: 600 14.5px 'Inter', sans-serif;
-      color: var(--text-light);
-      line-height: 1.35;
-    }
-    .notion-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-    .notion-toggle {
-      width: 26px; height: 26px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text-muted);
-      font-size: 11px;
-      flex-shrink: 0;
-      transition: transform 0.3s ease, color 0.2s ease;
-    }
-    .notion-card.open .notion-toggle { transform: rotate(180deg); color: var(--accent-bright); }
-    .notion-body {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-      will-change: max-height;
-    }
-    .notion-card.open .notion-body {
-      max-height: 5000px;
-      overflow: visible;
-    }
-    .notion-content {
-      padding: 14px 16px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      border-top: 1px solid var(--border-soft);
-    }
-
-    .block {
-      background: rgba(0, 0, 0, 0.25);
-      border-radius: 10px;
-      padding: 12px 14px;
-      overflow-wrap: break-word;
-    }
-    .block-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--accent-bright);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .block-label i { font-size: 11px; }
-    .block-text {
-      font-size: 14px;
-      color: var(--text-body);
-      line-height: 1.7;
-    }
-
-    .formula-list { display: flex; flex-direction: column; gap: 10px; }
-    .formula-item { padding: 10px 0; text-align: center; }
-    .formula-latex {
-      font-size: 15px;
-      color: var(--text-light);
-      padding: 4px 0;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .formula-meta {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px;
-      margin-top: 8px;
-      font-size: 11px;
-    }
-    .formula-meta .tag {
-      padding: 2px 8px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-dim);
-    }
-
-    .method-steps { list-style: none; padding: 0; counter-reset: step; }
-    .method-steps li {
-      position: relative;
-      padding-left: 28px;
-      counter-increment: step;
-      font-size: 13.5px;
-      color: var(--text-body);
-      line-height: 1.7;
-      margin-bottom: 8px;
-    }
-    .method-steps li:last-child { margin-bottom: 0; }
-    .method-steps li::before {
-      content: counter(step);
-      position: absolute;
-      left: 0; top: 2px;
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      background: rgba(224, 184, 74, 0.12);
-      color: var(--accent-bright);
-      font-size: 10px;
-      font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    .example-enonce {
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.3);
-      font-size: 13.5px;
-      color: var(--text-light);
-      line-height: 1.6;
-      margin-bottom: 10px;
-    }
-    .example-steps {
-      list-style: none;
-      padding: 0;
-      counter-reset: estep;
-      margin-bottom: 10px;
-    }
-    .example-steps li {
-      position: relative;
-      padding-left: 26px;
-      counter-increment: estep;
-      font-size: 13.5px;
-      color: var(--text-body);
-      line-height: 1.7;
-      margin-bottom: 6px;
-    }
-    .example-steps li::before {
-      content: counter(estep) '.';
-      position: absolute;
-      left: 0; top: 0;
-      color: var(--accent-bright);
-      font-weight: 700;
-    }
-    .example-conclusion {
-      padding: 8px 12px;
-      border-radius: 8px;
-      background: rgba(69, 180, 125, 0.08);
-      font-size: 13.5px;
-      color: #7ce0aa;
-      font-weight: 600;
-    }
-
-    .piege-trap {
-      font-size: 13.5px;
-      color: var(--text-light);
-      line-height: 1.65;
-      margin-bottom: 8px;
-    }
-    .piege-solution {
-      position: relative;
-      padding-left: 18px;
-      font-size: 13px;
-      color: #7ce0aa;
-      line-height: 1.65;
-    }
-    .piege-solution::before {
-      content: '→';
-      position: absolute;
-      left: 0; top: 0;
-      font-weight: 700;
-    }
-
-    .global-block {
-      padding: 14px 16px;
-      border-radius: 10px;
-      margin-bottom: 12px;
-      background: rgba(255, 255, 255, 0.015);
-      border: 1px solid var(--border-soft);
-    }
-    .global-title {
-      font-size: 11.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--accent-bright);
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .global-list { list-style: none; padding: 0; }
-    .global-list li {
-      position: relative;
-      padding-left: 18px;
-      font-size: 14px;
-      color: var(--text-body);
-      line-height: 1.7;
-      margin-bottom: 6px;
-    }
-    .global-list li::before {
-      content: '•';
-      position: absolute;
-      left: 4px; top: 0;
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    .sections-label {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font: 700 16px 'Playfair Display', serif;
-      color: var(--text-light);
-      margin: 20px 0 12px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--border-soft);
-    }
-    .sections-label i { color: var(--accent-bright); font-size: 14px; }
-    .sections-label .count {
-      margin-left: auto;
-      font-family: 'Inter', sans-serif;
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    /* ═══ FLASHCARDS ═══ */
-    .flashcard-progress {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-      font-size: 12px;
-      color: var(--text-muted);
-      flex-wrap: wrap;
-    }
-    .flashcard-progress .counter { font-weight: 700; color: var(--accent-bright); }
-    .flashcard-track {
-      flex: 1; min-width: 100px; height: 4px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.06);
-      overflow: hidden;
-    }
-    .flashcard-track-fill {
-      height: 100%; border-radius: 4px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-bright));
-      transition: width 0.4s ease;
-    }
-    .flashcard { perspective: 1400px; margin-bottom: 16px; }
-    .flashcard-inner {
-      position: relative;
-      width: 100%;
-      height: 280px;
-      transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-      transform-style: preserve-3d;
-      cursor: pointer;
-    }
-    .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
-    .flashcard-face {
-      position: absolute; inset: 0;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-      border-radius: 12px;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      border: 1px solid var(--border-soft);
-      background: var(--bg-card);
-      overflow-y: auto;
-    }
-    .flashcard-back {
-      transform: rotateY(180deg);
-      border-color: rgba(224, 184, 74, 0.25);
-    }
-    .flashcard-type-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 9.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 12px;
-      background: rgba(224, 184, 74, 0.1);
-      color: var(--accent-bright);
-    }
-    .flashcard-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-    }
-    .flashcard-text {
-      font-size: 16px;
-      line-height: 1.6;
-      color: var(--text-light);
-      font-weight: 500;
-      word-break: break-word;
-      width: 100%;
-    }
-    .flashcard-hint {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 14px;
-      font-style: italic;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .flashcard-hint i { color: var(--accent-bright); font-size: 11px; }
-    .flashcard-flip-hint {
-      text-align: center;
-      font-size: 11.5px;
-      color: var(--text-muted);
-      margin-bottom: 14px;
-      font-style: italic;
-    }
-    .flashcard-feedback {
-      display: none;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    .flashcard-feedback.show {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-    }
-    .feedback-btn {
-      padding: 12px 8px;
-      border-radius: 10px;
-      border: 1px solid var(--border-soft);
-      background: rgba(255, 255, 255, 0.02);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      color: var(--text-dim);
-      transition: all 0.15s ease;
-      font-family: inherit;
-    }
-    .feedback-btn i { font-size: 16px; }
-    .feedback-btn.hard:hover { background: rgba(215, 101, 74, 0.1); border-color: rgba(215, 101, 74, 0.3); color: #ff9a84; }
-    .feedback-btn.medium:hover { background: rgba(212, 160, 23, 0.1); border-color: rgba(212, 160, 23, 0.3); color: #fbbf24; }
-    .feedback-btn.easy:hover { background: rgba(69, 180, 125, 0.1); border-color: rgba(69, 180, 125, 0.3); color: #7ce0aa; }
-
-    /* ═══ QUIZ ═══ */
-    .progress {
-      height: 4px;
-      border-radius: 10px;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.06);
-      margin: 12px 0 20px;
-    }
-    .progress span {
-      display: block;
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent-bright));
-      transition: width 0.3s ease;
-      width: 0%;
-    }
-    .quiz-question {
-      background: var(--bg-card);
-      border: 1px solid var(--border-soft);
-      border-radius: 12px;
-      padding: 16px 18px;
-      margin-bottom: 12px;
-    }
-    .quiz-q-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-    .quiz-q-number {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--accent-bright);
-    }
-    .quiz-q-level {
-      font-size: 10px;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 10px;
-      text-transform: uppercase;
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-dim);
-    }
-    .quiz-q-text {
-      font-size: 15px;
-      line-height: 1.65;
-      color: var(--text-light);
-      font-weight: 500;
-      margin-bottom: 14px;
-    }
-    .quiz-options { display: flex; flex-direction: column; gap: 8px; }
-    .quiz-option {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid var(--border-soft);
-      background: rgba(0, 0, 0, 0.25);
-      cursor: pointer;
-      font-size: 14px;
-      color: var(--text-body);
-      line-height: 1.5;
-      transition: all 0.15s ease;
-      font-family: inherit;
-      text-align: left;
-      width: 100%;
-    }
-    .quiz-option:hover:not(.disabled) {
-      border-color: rgba(224, 184, 74, 0.4);
-      background: rgba(224, 184, 74, 0.04);
-    }
-    .quiz-option.selected { border-color: var(--accent-bright); background: rgba(224, 184, 74, 0.1); color: var(--text-light); }
-    .quiz-option.correct { border-color: var(--success-light); background: rgba(69, 180, 125, 0.12); color: #7ce0aa; }
-    .quiz-option.wrong { border-color: var(--danger); background: rgba(215, 101, 74, 0.12); color: #ff9a84; }
-    .quiz-option.disabled { cursor: not-allowed; }
-    .quiz-option-letter {
-      width: 24px; height: 24px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.04);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      flex-shrink: 0;
-    }
-    .quiz-option.selected .quiz-option-letter { background: var(--accent-bright); color: #0A0A0A; }
-    .quiz-option.correct .quiz-option-letter { background: var(--success-light); color: #fff; }
-    .quiz-option.wrong .quiz-option-letter { background: var(--danger); color: #fff; }
-
-    .quiz-explanation {
-      margin-top: 12px;
-      padding: 10px 12px;
-      background: rgba(74, 175, 224, 0.06);
-      border-radius: 8px;
-      font-size: 13px;
-      line-height: 1.65;
-      color: var(--text-body);
-      display: none;
-    }
-    .quiz-explanation.show { display: block; }
-    .quiz-explanation strong { color: #4AAFE0; }
-
-    /* ═══ RESULTS ═══ */
+    /* ═══ RÉSULTATS QUIZ ═══ */
     .result-hero {
       text-align: center;
-      padding: 28px 22px;
+      padding: 32px 22px;
       background: var(--bg-card);
       border: 1px solid var(--border-soft);
-      border-radius: 12px;
+      border-radius: var(--radius);
       margin-bottom: 18px;
     }
-    .result-hero .emoji { font-size: 52px; display: block; margin-bottom: 12px; }
-    .result-hero h2 { font-size: clamp(20px, 4vw, 26px); margin-bottom: 6px; }
-    .result-hero p { color: var(--text-dim); font-size: 14px; }
-
-    .result-summary {
+    .result-hero .emoji {
+      font-size: 56px;
+      display: block;
+      margin-bottom: 12px;
+    }
+    .result-hero h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    .result-hero p {
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+    .result-metrics {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       margin-bottom: 18px;
     }
     .metric {
-      border: 1px solid var(--border-soft);
-      border-radius: 10px;
-      padding: 14px 10px;
+      padding: 16px 12px;
+      border-radius: 12px;
       background: var(--bg-card);
+      border: 1px solid var(--border-soft);
       text-align: center;
     }
     .metric strong {
       display: block;
-      color: var(--accent-bright);
+      font-family: var(--font-serif);
       font-size: 22px;
-      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      color: var(--accent-bright);
       line-height: 1.1;
       margin-bottom: 4px;
     }
     .metric small {
       display: block;
-      color: var(--text-muted);
       font-size: 10px;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       font-weight: 700;
     }
 
-    .mastery-block {
-      padding: 16px 18px;
-      border-radius: 10px;
-      border: 1px solid var(--border-soft);
-      margin-bottom: 14px;
-      background: var(--bg-card);
-    }
-    .mastery-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .mastery-head .label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-dim);
-    }
-    .mastery-head .value {
-      font-family: 'Playfair Display', serif;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--accent-bright);
-    }
-    .mastery-track {
-      height: 6px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.06);
-      overflow: hidden;
-      margin-bottom: 10px;
-    }
-    .mastery-track-fill {
-      height: 100%; border-radius: 6px;
-      transition: width 1s ease;
-    }
-    .mastery-label-text { font-size: 13px; color: var(--text-dim); line-height: 1.55; }
-
-    .recommendations {
-      padding: 16px 18px;
-      border-radius: 10px;
-      border: 1px solid var(--border-soft);
-      background: rgba(74, 175, 224, 0.04);
-      margin-bottom: 14px;
-    }
-    .recommendations .rec-title {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #4AAFE0;
-      margin-bottom: 10px;
-    }
-    .recommendations .rec-list { list-style: none; padding: 0; }
-    .recommendations .rec-list li {
-      position: relative;
-      padding-left: 18px;
-      font-size: 13.5px;
-      color: var(--text-body);
-      line-height: 1.65;
-      margin-bottom: 6px;
-    }
-    .recommendations .rec-list li::before {
-      content: '•';
-      position: absolute;
-      left: 4px; top: 0;
-      color: #4AAFE0;
-      font-weight: 700;
-    }
-
-    /* ═══ ÉCRAN PREMIUM ═══ */
-    .premium-lock-screen {
-      text-align: center;
-      padding: 40px 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-    .premium-lock-icon {
-      width: 100px; height: 100px;
-      border-radius: 28px;
-      background: linear-gradient(135deg, rgba(184, 134, 11, 0.18), rgba(26, 58, 42, 0.1));
-      border: 2px solid rgba(224, 184, 74, 0.3);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 44px;
-      animation: crownPulse 2.5s ease-in-out infinite;
-    }
-    @keyframes crownPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(224, 184, 74, 0.3); transform: scale(1); }
-      50% { box-shadow: 0 0 30px 10px rgba(224, 184, 74, 0.15); transform: scale(1.03); }
-    }
-    .premium-lock-screen h1 {
-      font-family: var(--font-serif);
-      font-size: clamp(22px, 5vw, 30px);
-      font-weight: 700;
-      color: var(--text-light);
-      line-height: 1.2;
-      max-width: 500px;
-    }
-    .premium-lock-screen h1 em { color: var(--accent-bright); font-style: italic; }
-    .premium-lock-screen p {
-      color: var(--text-dim);
-      font-size: 15px;
-      line-height: 1.7;
-      max-width: 460px;
-    }
-    .premium-lock-screen p strong { color: var(--accent-bright); font-weight: 700; }
-    .premium-features-list {
-      list-style: none;
-      padding: 0;
-      margin: 12px 0 0;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      width: 100%;
-      max-width: 400px;
-      text-align: left;
-    }
-    .premium-features-list li {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border-soft);
-      font-size: 14px;
-      color: var(--text-body);
-    }
-    .premium-features-list li i {
-      color: var(--accent-bright);
-      font-size: 16px;
-      flex-shrink: 0;
-    }
-    .premium-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 16px 32px;
-      border-radius: 30px;
-      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
-      color: #0A0A0A;
-      font-weight: 700;
-      font-size: 15px;
-      text-decoration: none;
-      transition: var(--transition);
-      box-shadow: 0 8px 24px rgba(184, 134, 11, 0.25);
-      margin-top: 12px;
-    }
-    .premium-cta:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(184, 134, 11, 0.4);
-    }
-    .premium-cta i { font-size: 14px; }
-
-    /* ═══ EMPTY / UNAVAILABLE ═══ */
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
-    }
-    .empty-state .empty-icon {
-      width: 72px; height: 72px;
-      border-radius: 20px;
-      background: rgba(184, 134, 11, 0.06);
-      border: 1px solid rgba(184, 134, 11, 0.12);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 28px;
-      color: var(--text-muted);
-    }
-    .empty-state h3 {
-      font-family: var(--font-serif);
-      font-size: 19px;
-      color: var(--text-light);
-    }
-    .empty-state p {
-      color: var(--text-dim);
-      font-size: 14px;
-      line-height: 1.6;
-      max-width: 360px;
-    }
-
-    /* ═══ HISTORIQUE ═══ */
-    .history-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .history-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      width: 100%;
-      padding: 16px 18px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border-soft);
-      background: var(--bg-card);
-      cursor: pointer;
-      transition: var(--transition);
-      text-align: left;
-      color: inherit;
-      font-family: inherit;
-      position: relative;
-      overflow: hidden;
-    }
-    .history-item::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 3px;
-      background: linear-gradient(180deg, var(--accent-bright), var(--accent));
-      opacity: 0.7;
-    }
-    .history-item:hover {
-      border-color: rgba(224, 184, 74, 0.3);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    }
-    .history-item-icon {
-      width: 44px; height: 44px;
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-      background: rgba(224, 184, 74, 0.08);
-      border: 1px solid rgba(224, 184, 74, 0.15);
-    }
-    .history-item-body { flex: 1; min-width: 0; }
-    .history-item-title {
-      font-size: 14.5px;
-      font-weight: 700;
-      color: var(--text-light);
-      margin-bottom: 4px;
-      line-height: 1.35;
-      overflow-wrap: break-word;
-    }
-    .history-item-meta {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-    .history-item-meta .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px 8px;
-      border-radius: 8px;
-      background: rgba(224, 184, 74, 0.08);
-      color: var(--accent-bright);
-      font-weight: 600;
-      text-transform: capitalize;
-    }
-    .history-item-arrow {
-      color: var(--text-muted);
-      font-size: 14px;
-      flex-shrink: 0;
-      transition: var(--transition);
-    }
-    .history-item:hover .history-item-arrow {
-      color: var(--accent-bright);
-      transform: translateX(4px);
-    }
-
     /* ═══ TOAST ═══ */
-    .toast {
+    .toast-container {
       position: fixed;
-      top: calc(var(--safe-top) + 20px);
+      top: calc(var(--safe-top) + 16px);
       left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      padding: 12px 20px;
-      border-radius: 10px;
+      transform: translateX(-50%);
+      z-index: 9999;
+      width: calc(100% - 32px);
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 12px;
       background: rgba(20, 22, 20, 0.96);
       backdrop-filter: blur(16px);
-      border: 1px solid rgba(224, 184, 74, 0.3);
+      border: 1px solid var(--border-soft);
       color: var(--text-light);
       font-size: 13px;
-      z-index: 300;
-      opacity: 0;
-      transition: all 0.3s ease;
-      display: flex; align-items: center; gap: 10px;
-      pointer-events: none;
-      max-width: 90vw;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      pointer-events: auto;
+      animation: toastIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .toast.error { border-color: rgba(215, 101, 74, 0.4); }
-    .toast.success { border-color: rgba(69, 180, 125, 0.4); }
-
-    /* ═══ SCROLL TOP ═══ */
-    .scroll-top {
-      position: fixed;
-      bottom: calc(20px + var(--safe-bottom));
-      right: 20px;
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      border: 1px solid var(--border-soft);
-      background: rgba(20, 20, 20, 0.95);
-      color: var(--accent-bright);
-      font-size: 14px;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; visibility: hidden;
-      transform: translateY(10px);
-      transition: all 0.3s ease;
-      z-index: 40;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    .toast.success { border-color: rgba(58, 182, 126, 0.5); }
+    .toast.success i { color: #7ce0aa; }
+    .toast.error { border-color: rgba(215, 101, 74, 0.5); }
+    .toast.error i { color: #ff9a84; }
+    .toast.info { border-color: rgba(74, 175, 224, 0.5); }
+    .toast.info i { color: var(--info); }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    .scroll-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
 
     /* ═══ KaTeX ═══ */
-    .katex { font-size: 1.05em; }
-    .katex-display { margin: 8px 0; overflow-x: auto; padding: 4px 0; }
+    .katex { font-size: 1.05em; color: inherit; }
+    .katex-display {
+      margin: 8px 0;
+      overflow-x: auto;
+      padding: 4px 0;
+    }
 
     /* ═══ RESPONSIVE ═══ */
     @media (max-width: 620px) {
-      .shell { width: min(100% - 20px, 900px); padding: 14px 0 20px; }
-      .panel { padding: 16px; }
-      .form-grid { grid-template-columns: 1fr; }
-      .field.full { grid-column: auto; }
-      .actions .btn { flex: 1 1 100%; }
-      .notion-content { padding: 12px 14px 14px; }
-      .flashcard-inner { height: 260px; }
+      .shell { width: min(100% - 20px, 900px); padding: 14px 0 30px; }
+      .panel { padding: 18px; }
+      .hero-chapter { padding: 20px 18px; }
+      .action-card { padding: 16px 18px; gap: 12px; }
+      .action-card-icon { width: 46px; height: 46px; font-size: 20px; }
+      .action-card-title { font-size: 14.5px; }
+      .action-card-desc { font-size: 12.5px; }
+      .notion-row { padding: 14px 15px; gap: 12px; }
+      .notion-row-num { width: 32px; height: 32px; font-size: 14px; }
+      .notion-row-title { font-size: 14px; }
+      .block { padding: 16px; }
       .top-btn { padding: 8px 12px; font-size: 11.5px; }
-      .header-actions { gap: 6px; }
+      .result-metrics { gap: 8px; }
+      .metric strong { font-size: 18px; }
+    }
+
+    @media (max-width: 380px) {
+      .hero-title { font-size: 20px; }
+      .notion-row-tags { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1393,10 +991,8 @@
     }
 
     /* ═══════════════════════════════════════════════════════════════
-       ARVEXA — POP-UP PREMIUM UNIVERSEL
-       Version 10 — Réduite · Bouton unique
+       POP-UP PREMIUM UNIVERSEL
        ═══════════════════════════════════════════════════════════════ */
-
     .arvexa-popup-overlay {
       position: fixed;
       inset: 0;
@@ -1434,13 +1030,11 @@
       box-shadow:
         0 0 0 1px rgba(255, 255, 255, 0.02),
         0 0 60px rgba(224, 184, 74, 0.08),
-        0 24px 60px rgba(0, 0, 0, 0.70),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        0 24px 60px rgba(0, 0, 0, 0.70);
       transform: scale(0.94) translateY(20px);
       transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
       text-align: center;
       overflow: hidden;
-      isolation: isolate;
     }
     .arvexa-popup-overlay.show .arvexa-popup {
       transform: scale(1) translateY(0);
@@ -1452,29 +1046,12 @@
       left: 20%;
       right: 20%;
       height: 2px;
-      border-radius: 0 0 4px 4px;
       background: linear-gradient(90deg,
         transparent 0%,
         rgba(224, 184, 74, 0.4) 20%,
         #E0B84A 50%,
         rgba(224, 184, 74, 0.4) 80%,
         transparent 100%);
-      opacity: 0.9;
-      z-index: 2;
-    }
-    .arvexa-popup::after {
-      content: '';
-      position: absolute;
-      top: -50px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 160px;
-      height: 100px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(224, 184, 74, 0.18) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-      filter: blur(6px);
     }
     .arvexa-popup-close {
       position: absolute;
@@ -1485,23 +1062,18 @@
       border-radius: 50%;
       border: none;
       background: rgba(255, 255, 255, 0.03);
-      color: #6A6A5A;
+      color: var(--text-muted);
       font-size: 12px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-      z-index: 4;
-      -webkit-tap-highlight-color: transparent;
+      transition: var(--transition);
     }
     .arvexa-popup-close:hover {
       background: rgba(224, 184, 74, 0.12);
-      color: #E0B84A;
-      transform: rotate(90deg) scale(1.05);
-    }
-    .arvexa-popup-close:active {
-      transform: rotate(90deg) scale(0.95);
+      color: var(--accent-bright);
+      transform: rotate(90deg);
     }
     .arvexa-popup-icon {
       display: inline-flex;
@@ -1510,113 +1082,39 @@
       width: 60px;
       height: 60px;
       border-radius: 50%;
-      background:
-        radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
+      background: radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
       border: 1px solid rgba(224, 184, 74, 0.28);
-      color: #E0B84A;
+      color: var(--accent-bright);
       font-size: 26px;
       margin: 0 auto 16px;
-      position: relative;
-      z-index: 1;
-      animation: arvexaCrownPulse 3s ease-in-out infinite;
-      box-shadow:
-        0 0 20px rgba(224, 184, 74, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      animation: crownPulse 3s ease-in-out infinite;
     }
-    @keyframes arvexaCrownPulse {
-      0%, 100% {
-        transform: scale(1);
-        box-shadow:
-          0 0 20px rgba(224, 184, 74, 0.15),
-          inset 0 1px 0 rgba(255, 255, 255, 0.08);
-      }
-      50% {
-        transform: scale(1.04);
-        box-shadow:
-          0 0 34px rgba(224, 184, 74, 0.32),
-          inset 0 1px 0 rgba(255, 255, 255, 0.08);
-      }
+    @keyframes crownPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(224, 184, 74, 0.15); }
+      50% { transform: scale(1.04); box-shadow: 0 0 34px rgba(224, 184, 74, 0.32); }
     }
     .arvexa-popup-title {
-      font-family: 'Playfair Display', Georgia, serif;
+      font-family: var(--font-serif);
       font-size: 22px;
       font-weight: 700;
-      color: #F5F0E8;
+      color: var(--text-light);
       line-height: 1.25;
       margin: 0 0 10px;
-      letter-spacing: -0.015em;
-      position: relative;
-      z-index: 1;
     }
-    .arvexa-popup-title em {
-      color: #E0B84A;
-      font-style: italic;
-      font-weight: 700;
-    }
+    .arvexa-popup-title em { color: var(--accent-bright); font-style: italic; }
     .arvexa-popup-message {
       font-size: 13.5px;
-      color: #8A8A7A;
+      color: var(--text-dim);
       line-height: 1.6;
       margin: 0 auto 20px;
       max-width: 280px;
-      position: relative;
-      z-index: 1;
     }
-    .arvexa-popup-message strong {
-      color: #E0B84A;
-      font-weight: 700;
-    }
-    .arvexa-popup-benefits {
-      display: none;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 22px;
-      padding: 14px 0;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      position: relative;
-      z-index: 1;
-    }
-    .arvexa-popup-benefits span {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 6px;
-      font-size: 11px;
-      color: #8A8A7A;
-      line-height: 1.35;
-      text-align: center;
-      font-weight: 500;
-    }
-    .arvexa-popup-benefits span::before {
-      content: '✓';
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: rgba(224, 184, 74, 0.10);
-      border: 1px solid rgba(224, 184, 74, 0.22);
-      color: #E0B84A;
-      font-weight: 800;
-      font-size: 11px;
-      line-height: 1;
-    }
-    @media (min-width: 600px) {
-      .arvexa-popup-benefits { display: grid; }
-    }
+    .arvexa-popup-message strong { color: var(--accent-bright); font-weight: 700; }
     .arvexa-popup-actions {
       display: flex;
-      position: relative;
-      z-index: 1;
-    }
-    .arvexa-popup-actions .arvexa-popup-btn {
-      flex: 1;
-      width: 100%;
     }
     .arvexa-popup-btn {
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1630,72 +1128,16 @@
       font-weight: 700;
       text-decoration: none;
       cursor: pointer;
-      transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
-      letter-spacing: 0.01em;
-      white-space: nowrap;
-      overflow: hidden;
-      position: relative;
-      -webkit-tap-highlight-color: transparent;
+      transition: var(--transition);
     }
     .arvexa-popup-btn.primary {
-      background: linear-gradient(135deg, #E0B84A 0%, #B8860B 100%);
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
       color: #0A0A0A;
       box-shadow: 0 4px 16px rgba(224, 184, 74, 0.28);
     }
-    .arvexa-popup-btn.primary::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -120%;
-      width: 60%;
-      height: 100%;
-      background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.30) 50%,
-        transparent 100%);
-      transform: skewX(-20deg);
-      transition: left 0.7s cubic-bezier(0.25, 1, 0.5, 1);
-      pointer-events: none;
-    }
-    .arvexa-popup-btn.primary:hover::before { left: 130%; }
     .arvexa-popup-btn.primary:hover {
       transform: translateY(-1px);
       box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
-    }
-    .arvexa-popup-btn.primary:active { transform: translateY(0) scale(0.97); }
-    .arvexa-popup-btn.primary i { font-size: 12px; }
-    @media (max-width: 599px) {
-      .arvexa-popup-overlay { padding: 16px; }
-      .arvexa-popup { max-width: 100%; padding: 28px 22px 20px; border-radius: 20px; }
-      .arvexa-popup-icon { width: 56px; height: 56px; font-size: 24px; margin-bottom: 14px; }
-      .arvexa-popup-title { font-size: 21px; }
-      .arvexa-popup-message { font-size: 13.5px; margin-bottom: 18px; }
-      .arvexa-popup-btn { min-height: 46px; font-size: 13.5px; }
-    }
-    @media (max-width: 380px) {
-      .arvexa-popup-overlay { padding: 12px; }
-      .arvexa-popup { padding: 24px 18px 16px; border-radius: 18px; }
-      .arvexa-popup::before { left: 24%; right: 24%; }
-      .arvexa-popup-icon { width: 50px; height: 50px; font-size: 21px; margin-bottom: 12px; }
-      .arvexa-popup-title { font-size: 19px; }
-      .arvexa-popup-message { font-size: 13px; margin-bottom: 16px; }
-      .arvexa-popup-btn { min-height: 44px; font-size: 13px; padding: 12px 14px; }
-      .arvexa-popup-close { width: 28px; height: 28px; top: 10px; right: 10px; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .arvexa-popup,
-      .arvexa-popup-overlay,
-      .arvexa-popup-icon,
-      .arvexa-popup-btn {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-    .arvexa-popup-btn:focus-visible,
-    .arvexa-popup-close:focus-visible {
-      outline: 2px solid #E0B84A;
-      outline-offset: 3px;
     }
   </style>
 </head>
@@ -1715,285 +1157,193 @@
 
   <main class="shell">
 
-    <div class="step-bar" id="stepBar">
-      <div class="step-item active" data-step="fiche"><div class="num"><span>1</span></div><span>Fiche</span></div>
-      <span class="step-sep">›</span>
-      <div class="step-item" data-step="flashcard"><div class="num"><span>2</span></div><span>Flashcards</span></div>
-      <span class="step-sep">›</span>
-      <div class="step-item" data-step="quiz"><div class="num"><span>3</span></div><span>Quiz</span></div>
-      <span class="step-sep">›</span>
-      <div class="step-item" data-step="results"><div class="num"><span>4</span></div><span>Résultats</span></div>
-    </div>
+    <!-- ═══════════════════════════════════════════════════════
+         VUE 1 — ACCUEIL DU RÉVISEUR
+         ═══════════════════════════════════════════════════════ -->
+    <section class="view active" id="viewHome">
+      <div class="hero-chapter">
+        <div class="hero-subject">
+          <i class="fas fa-book"></i>
+          <span id="subjectLabel">Chargement...</span>
+        </div>
+        <div class="hero-title" id="chapterTitle">—</div>
+        <div class="hero-progress">
+          <div class="hero-progress-bar">
+            <div class="hero-progress-fill" id="progressFill" style="width: 0%"></div>
+          </div>
+          <div class="hero-progress-text">
+            <strong id="progressCurrent">0</strong>
+            <span id="progressTotal">/ 0 notions</span>
+          </div>
+        </div>
+      </div>
 
-    <!-- VUE 1 : CONFIGURATION -->
-    <section class="view active" id="configView">
-      <div class="panel">
-        <div class="eyebrow">Réviseur</div>
-        <h1>Révise <em style="color:var(--accent-bright);font-style:italic;">efficacement</em>.</h1>
-        <p class="lead">Fiche détaillée, flashcards actives, quiz varié. Un seul objectif : ta réussite au BAC.</p>
-
-        <form id="configForm" class="form-grid">
-          <div class="field">
-            <label>Matière</label>
-            <div class="custom-select" id="subjectSelect" data-name="subject">
-              <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
-                <span class="custom-select-value"></span>
-                <i class="fas fa-chevron-down custom-select-arrow"></i>
-              </button>
-              <div class="custom-select-options">
-                <div class="custom-select-option" data-value="mathematiques"><span class="option-prefix">📐</span> Mathématiques</div>
-                <div class="custom-select-option" data-value="physique"><span class="option-prefix">⚡</span> Physique</div>
-                <div class="custom-select-option" data-value="chimie"><span class="option-prefix">🧪</span> Chimie</div>
-                <div class="custom-select-option" data-value="svt"><span class="option-prefix">🧬</span> SVT</div>
-                <div class="custom-select-option" data-value="philosophie"><span class="option-prefix">🧠</span> Philosophie</div>
-                <div class="custom-select-option" data-value="histoire"><span class="option-prefix">🌍</span> Histoire</div>
-                <div class="custom-select-option" data-value="geographie"><span class="option-prefix">🗺️</span> Géographie</div>
-              </div>
+      <div class="action-grid">
+        <button class="action-card" id="btnViewNotions">
+          <div class="action-card-icon"><i class="fas fa-book-open"></i></div>
+          <div class="action-card-body">
+            <div class="action-card-title">
+              Voir mes notions
+              <span class="free-badge"><i class="fas fa-gift"></i> Gratuit</span>
+            </div>
+            <div class="action-card-desc" id="viewNotionsDesc">
+              Consulte tes notions déjà générées. Aucun coût.
             </div>
           </div>
+          <i class="fas fa-chevron-right action-card-arrow"></i>
+        </button>
 
-          <div class="field">
-            <label>Chapitre</label>
-            <div class="custom-select" id="chapterSelect" data-name="chapter">
-              <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
-                <span class="custom-select-value"></span>
-                <i class="fas fa-chevron-down custom-select-arrow"></i>
-              </button>
-              <div class="custom-select-options" id="chapterOptions"></div>
+        <button class="action-card primary" id="btnGenerate">
+          <div class="action-card-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+          <div class="action-card-body">
+            <div class="action-card-title" id="btnGenerateTitle">
+              Générer mes premières notions
+            </div>
+            <div class="action-card-desc" id="btnGenerateDesc">
+              4 notions · ~15 secondes
             </div>
           </div>
+          <i class="fas fa-chevron-right action-card-arrow"></i>
+        </button>
 
-          <div class="field full">
-            <label>Mode de départ</label>
-            <div class="chips-row" id="modeChips">
-              <button type="button" class="chip active" data-mode="fiche">Fiche</button>
-              <button type="button" class="chip" data-mode="flashcard">Flashcards</button>
+        <button class="action-card" id="btnQuiz" disabled>
+          <div class="action-card-icon"><i class="fas fa-circle-question"></i></div>
+          <div class="action-card-body">
+            <div class="action-card-title">Faire un quiz</div>
+            <div class="action-card-desc" id="btnQuizDesc">
+              Génère d'abord des notions
             </div>
           </div>
-
-          <div class="field">
-            <label>Difficulté quiz</label>
-            <div class="chips-row" id="difficultyChips">
-              <button type="button" class="chip" data-diff="1">Facile</button>
-              <button type="button" class="chip active" data-diff="2">Moyen</button>
-              <button type="button" class="chip" data-diff="3">Difficile</button>
-              <button type="button" class="chip" data-diff="4">BAC</button>
-            </div>
-          </div>
-
-          <div class="field">
-            <label>Nombre de questions</label>
-            <div class="chips-row" id="quizCountChips">
-              <button type="button" class="chip" data-qcount="5">5</button>
-              <button type="button" class="chip active" data-qcount="10">10</button>
-              <button type="button" class="chip" data-qcount="15">15</button>
-            </div>
-          </div>
-
-          <div class="field full">
-            <button class="btn primary full" id="generateBtn" type="submit">
-              <span class="btn-text">Générer</span>
-              <span class="loader"></span>
-            </button>
-          </div>
-        </form>
-
-        <div class="status" id="configStatus"></div>
+          <i class="fas fa-chevron-right action-card-arrow"></i>
+        </button>
       </div>
     </section>
 
-    <!-- VUE 2 : LOADING FICHE -->
-    <section class="view" id="loadingView">
+    <!-- ═══════════════════════════════════════════════════════
+         VUE 2 — CHARGEMENT
+         ═══════════════════════════════════════════════════════ -->
+    <section class="view" id="viewLoading">
       <div class="panel">
-        <div class="eyebrow">Génération</div>
-        <h2>Préparation de la fiche...</h2>
-        <div class="loading-steps">
+        <div class="loading-state">
           <div class="loader-spinner"></div>
-          <div class="steps-list">
-            <div class="loading-step" id="genStep1"><span class="step-icon">🔍</span><div class="step-content"><span class="step-label">Analyse du chapitre</span></div></div>
-            <div class="loading-step" id="genStep2"><span class="step-icon">🧠</span><div class="step-content"><span class="step-label">Extraction des notions</span></div></div>
-            <div class="loading-step" id="genStep3"><span class="step-icon">✍️</span><div class="step-content"><span class="step-label">Rédaction enrichie</span></div></div>
-            <div class="loading-step" id="genStep4"><span class="step-icon">✅</span><div class="step-content"><span class="step-label">Vérification</span></div></div>
-            <div class="loading-step" id="genStep5"><span class="step-icon">✨</span><div class="step-content"><span class="step-label">Finalisation</span></div></div>
-          </div>
-          <div class="loading-status" id="genLoadingStatus">Préparation...</div>
+          <h3 id="loadingTitle">Préparation...</h3>
+          <p id="loadingMessage">Cela peut prendre 10 à 20 secondes.</p>
         </div>
       </div>
     </section>
 
-    <!-- VUE 3 : LOADING FLASHCARDS -->
-    <section class="view" id="loadingFlashView">
-      <div class="panel">
-        <div class="eyebrow">Génération</div>
-        <h2>Préparation des flashcards...</h2>
-        <div class="loading-steps">
-          <div class="loader-spinner"></div>
-          <div class="steps-list">
-            <div class="loading-step" id="flStep1"><span class="step-icon">🔍</span><div class="step-content"><span class="step-label">Analyse du chapitre</span></div></div>
-            <div class="loading-step" id="flStep2"><span class="step-icon">🧠</span><div class="step-content"><span class="step-label">Extraction des notions</span></div></div>
-            <div class="loading-step" id="flStep3"><span class="step-icon">⚡</span><div class="step-content"><span class="step-label">Génération des cartes</span></div></div>
-            <div class="loading-step" id="flStep4"><span class="step-icon">✅</span><div class="step-content"><span class="step-label">Vérification</span></div></div>
-            <div class="loading-step" id="flStep5"><span class="step-icon">✨</span><div class="step-content"><span class="step-label">Finalisation</span></div></div>
-          </div>
-          <div class="loading-status" id="flLoadingStatus">Préparation...</div>
-        </div>
+    <!-- ═══════════════════════════════════════════════════════
+         VUE 3 — LISTE DES NOTIONS
+         ═══════════════════════════════════════════════════════ -->
+    <section class="view" id="viewNotions">
+      <div class="notion-detail-header">
+        <button class="back-btn" id="backFromNotions">
+          <i class="fas fa-arrow-left"></i> Retour
+        </button>
+        <div class="eyebrow">Mes notions</div>
+        <div class="notion-detail-title" id="notionsListTitle">Notions générées</div>
+        <div class="notion-detail-meta" id="notionsListMeta">—</div>
+      </div>
+
+      <div class="notions-list" id="notionsList"></div>
+
+      <div class="empty-state" id="notionsEmpty" style="display:none;">
+        <div class="empty-state-icon"><i class="fas fa-book"></i></div>
+        <h3>Aucune notion générée</h3>
+        <p>Retourne à l'accueil pour générer tes premières notions.</p>
       </div>
     </section>
 
-    <!-- VUE 4 : LOADING QUIZ -->
-    <section class="view" id="loadingQuizView">
-      <div class="panel">
-        <div class="eyebrow">Génération</div>
-        <h2>Préparation du quiz...</h2>
-        <div class="loading-steps">
-          <div class="loader-spinner"></div>
-          <div class="steps-list">
-            <div class="loading-step" id="qzStep1"><span class="step-icon">🔍</span><div class="step-content"><span class="step-label">Analyse du chapitre</span></div></div>
-            <div class="loading-step" id="qzStep2"><span class="step-icon">🧠</span><div class="step-content"><span class="step-label">Extraction des notions</span></div></div>
-            <div class="loading-step" id="qzStep3"><span class="step-icon">❓</span><div class="step-content"><span class="step-label">Génération des questions</span></div></div>
-            <div class="loading-step" id="qzStep4"><span class="step-icon">✅</span><div class="step-content"><span class="step-label">Vérification</span></div></div>
-            <div class="loading-step" id="qzStep5"><span class="step-icon">✨</span><div class="step-content"><span class="step-label">Finalisation</span></div></div>
-          </div>
-          <div class="loading-status" id="qzLoadingStatus">Préparation...</div>
-        </div>
+    <!-- ═══════════════════════════════════════════════════════
+         VUE 4 — DÉTAIL D'UNE NOTION
+         ═══════════════════════════════════════════════════════ -->
+    <section class="view" id="viewNotionDetail">
+      <div class="notion-detail-header">
+        <button class="back-btn" id="backFromNotionDetail">
+          <i class="fas fa-arrow-left"></i> Retour
+        </button>
+        <div class="eyebrow" id="notionDetailEyebrow">Notion</div>
+        <div class="notion-detail-title" id="notionDetailTitle">—</div>
+        <div class="notion-detail-meta" id="notionDetailMeta"></div>
+      </div>
+
+      <div id="notionDetailContent"></div>
+
+      <div class="actions">
+        <button class="btn secondary full" id="btnDeleteNotion">
+          <i class="fas fa-trash"></i>
+          <span>Supprimer cette notion</span>
+        </button>
       </div>
     </section>
 
-    <!-- VUE 5 : FICHE -->
-    <section class="view" id="ficheView">
-      <div class="panel">
-        <div class="session-head">
-          <div>
-            <div class="eyebrow">Fiche</div>
-            <h2 id="ficheTitle">Fiche</h2>
-            <div class="session-meta" id="ficheMeta"></div>
-          </div>
-          <button class="btn secondary" id="newFicheBtn"><i class="fas fa-plus"></i> Nouvelle</button>
-        </div>
-        <div id="ficheContent"></div>
-        <div class="actions">
-          <button class="btn primary full" id="startFlashcardsBtn">
-            <span class="btn-icon"><i class="fas fa-clone"></i></span>
-            <span class="btn-text">Continuer avec les flashcards</span>
-            <span class="loader"></span>
-          </button>
-          <button class="btn secondary full" id="skipToQuizBtn">
-            <i class="fas fa-forward"></i> Passer au quiz
-          </button>
-        </div>
+    <!-- ═══════════════════════════════════════════════════════
+         VUE 5 — QUIZ
+         ═══════════════════════════════════════════════════════ -->
+    <section class="view" id="viewQuiz">
+      <div class="notion-detail-header">
+        <button class="back-btn" id="backFromQuiz">
+          <i class="fas fa-arrow-left"></i> Retour
+        </button>
+        <div class="eyebrow">Quiz</div>
+        <div class="notion-detail-title">Teste tes connaissances</div>
+        <div class="notion-detail-meta" id="quizMeta"></div>
+      </div>
+
+      <div id="quizContent"></div>
+
+      <div class="actions">
+        <button class="btn primary full" id="btnValidateQuiz" disabled>
+          <i class="fas fa-check-circle"></i>
+          <span>Valider mes réponses</span>
+        </button>
       </div>
     </section>
 
-    <!-- VUE 6 : FLASHCARDS -->
-    <section class="view" id="flashcardView">
-      <div class="panel">
-        <div class="session-head">
-          <div>
-            <div class="eyebrow">Flashcards</div>
-            <h2>Cartes de mémorisation</h2>
-            <div class="session-meta" id="flashMeta"></div>
-          </div>
-          <button class="btn secondary" id="newFlashBtn"><i class="fas fa-plus"></i> Nouvelle</button>
+    <!-- ═══════════════════════════════════════════════════════
+         VUE 6 — RÉSULTATS DU QUIZ
+         ═══════════════════════════════════════════════════════ -->
+    <section class="view" id="viewQuizResults">
+      <div class="result-hero">
+        <span class="emoji" id="quizResultEmoji">🎉</span>
+        <h2 id="quizResultTitle">Bravo !</h2>
+        <p id="quizResultSub">Continue comme ça !</p>
+      </div>
+
+      <div class="result-metrics">
+        <div class="metric">
+          <strong id="metricCorrect">0/10</strong>
+          <small>Correctes</small>
         </div>
-
-        <div class="flashcard-progress">
-          <span>Progression</span>
-          <div class="flashcard-track"><div class="flashcard-track-fill" id="flashcardTrackFill"></div></div>
-          <span class="counter" id="flashCounter">0 / 10</span>
+        <div class="metric">
+          <strong id="metricScore">0/20</strong>
+          <small>Score</small>
         </div>
-
-        <div class="flashcard" id="flashcardEl">
-          <div class="flashcard-inner">
-            <div class="flashcard-face flashcard-front">
-              <div class="flashcard-type-badge" id="flashTypeBadge" style="display:none;"></div>
-              <div class="flashcard-label">Question</div>
-              <div class="flashcard-text" id="flashFront"></div>
-              <div class="flashcard-hint" id="flashHint" style="display:none;">
-                <i class="fas fa-lightbulb"></i><span id="flashHintText"></span>
-              </div>
-            </div>
-            <div class="flashcard-face flashcard-back">
-              <div class="flashcard-label">Réponse</div>
-              <div class="flashcard-text" id="flashBack"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="flashcard-flip-hint"><i class="fas fa-hand-pointer"></i> Clique pour voir la réponse</div>
-
-        <div class="flashcard-feedback" id="flashFeedback">
-          <button class="feedback-btn hard" data-rating="hard" type="button"><i class="fas fa-times-circle"></i><span>Oublié</span></button>
-          <button class="feedback-btn medium" data-rating="medium" type="button"><i class="fas fa-circle-half-stroke"></i><span>Hésité</span></button>
-          <button class="feedback-btn easy" data-rating="easy" type="button"><i class="fas fa-check-circle"></i><span>Je savais</span></button>
-        </div>
-
-        <div class="actions">
-          <button class="btn primary full" id="finishFlashBtn"><i class="fas fa-arrow-right"></i> Passer au quiz</button>
+        <div class="metric">
+          <strong id="metricPercent">0%</strong>
+          <small>Réussite</small>
         </div>
       </div>
-    </section>
 
-    <!-- VUE 7 : QUIZ -->
-    <section class="view" id="quizView">
-      <div class="panel">
-        <div class="session-head">
-          <div>
-            <div class="eyebrow">Quiz</div>
-            <h2>Teste tes connaissances</h2>
-            <div class="session-meta" id="quizMeta"></div>
-          </div>
-        </div>
-        <div class="progress"><span id="quizProgress"></span></div>
-        <div id="quizContent"></div>
-        <div class="actions">
-          <button class="btn primary full" id="validateQuizBtn" disabled>
-            <i class="fas fa-check-circle"></i>
-            <span class="btn-text">Valider</span>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- VUE 8 : RÉSULTATS -->
-    <section class="view" id="resultsView">
-      <div class="panel">
-        <div class="result-hero">
-          <span class="emoji" id="resultsEmoji">🎉</span>
-          <h2 id="resultsTitle">Bravo !</h2>
-          <p id="resultsSub">Continue comme ça !</p>
-        </div>
-        <div class="result-summary">
-          <div class="metric"><strong id="metricCorrect">0/5</strong><small>Correctes</small></div>
-          <div class="metric"><strong id="metricScore">0/20</strong><small>Score</small></div>
-          <div class="metric"><strong id="metricPercent">0%</strong><small>Pourcentage</small></div>
-        </div>
-        <div class="mastery-block">
-          <div class="mastery-head">
-            <span class="label">Score de maîtrise</span>
-            <span class="value" id="masteryValue">0%</span>
-          </div>
-          <div class="mastery-track"><div class="mastery-track-fill" id="masteryFill"></div></div>
-          <div class="mastery-label-text" id="masteryText"></div>
-        </div>
-        <div class="recommendations">
-          <div class="rec-title">Recommandations</div>
-          <ul class="rec-list" id="recommendationsList"></ul>
-        </div>
-        <div class="actions">
-          <button class="btn primary full" id="restartBtn"><i class="fas fa-redo"></i> Nouvelle révision</button>
-        </div>
+      <div class="actions">
+        <button class="btn primary full" id="btnNewQuiz">
+          <i class="fas fa-redo"></i>
+          <span>Nouveau quiz</span>
+        </button>
+        <button class="btn secondary full" id="btnBackHomeFromResults">
+          <i class="fas fa-home"></i>
+          <span>Retour à l'accueil</span>
+        </button>
       </div>
     </section>
 
   </main>
 
-  <button class="scroll-top" id="scrollTop" type="button" aria-label="Haut de page"><i class="fas fa-arrow-up"></i></button>
-
   <!-- ═══════════════════════════════════════════════════════
-       POP-UP PREMIUM UNIVERSEL — Réviseur
+       POP-UP PREMIUM UNIVERSEL
        ═══════════════════════════════════════════════════════ -->
   <div class="arvexa-popup-overlay" id="premiumOverlay">
-    <div class="arvexa-popup" role="dialog" aria-modal="true" aria-labelledby="premiumPopupTitle">
+    <div class="arvexa-popup" role="dialog" aria-modal="true">
 
       <button class="arvexa-popup-close" id="premiumClose" aria-label="Fermer">
         <i class="fas fa-times"></i>
@@ -2002,19 +1352,13 @@
       <i class="fas fa-crown arvexa-popup-icon"></i>
 
       <h2 class="arvexa-popup-title" id="premiumPopupTitle">
-        Limite de révisions <em>atteinte</em>
+        Limite <em>atteinte</em>
       </h2>
 
       <p class="arvexa-popup-message" id="premiumMessage">
-        Tu as utilisé tes <strong>2 révisions gratuites</strong>.
+        Tu as utilisé tes <strong>3 générations gratuites</strong> aujourd'hui.
         Passe à Premium pour réviser sans limite.
       </p>
-
-      <div class="arvexa-popup-benefits">
-        <span>Révisions illimitées</span>
-        <span>Fiches complètes</span>
-        <span>Quiz avancés</span>
-      </div>
 
       <div class="arvexa-popup-actions">
         <a href="abonnement.html" class="arvexa-popup-btn primary">
@@ -2026,34 +1370,55 @@
     </div>
   </div>
 
-  <div class="toast" id="toast">
-    <i class="fas fa-info-circle"></i>
-    <span id="toastText"></span>
-  </div>
+  <!-- ═══════════════════════════════════════════════════════
+       TOASTS
+       ═══════════════════════════════════════════════════════ -->
+  <div class="toast-container" id="toastContainer"></div>
   
   <script type="importmap">
-  { "imports": {
-    "firebase/app": "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js",
-    "firebase/auth": "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js",
-    "firebase/firestore": "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"
-  } }
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"
+    }
+  }
   </script>
 
   <script type="module">
-  import { initializeApp } from "firebase/app";
-  import { getAuth, onAuthStateChanged, getIdToken } from "firebase/auth";
-  import { getFirestore, doc, getDoc } from "firebase/firestore";
+  // ═══════════════════════════════════════════════════════════════
+  // RÉVISEUR v7.0 — Génération progressive + cahier persistant
+  // ═══════════════════════════════════════════════════════════════
 
-  const app = initializeApp({
-    apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
-    authDomain: "arvexa-fbf10.firebaseapp.com",
-    projectId: "arvexa-fbf10",
-    storageBucket: "arvexa-fbf10.firebasestorage.app",
-    messagingSenderId: "920108330053",
-    appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
-  });
+  import { initializeApp } from 'firebase/app';
+  import { getAuth, onAuthStateChanged, getIdToken } from 'firebase/auth';
+  import { getFirestore, doc, getDoc } from 'firebase/firestore';
+
+  const firebaseConfig = {
+    apiKey: 'AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE',
+    authDomain: 'arvexa-fbf10.firebaseapp.com',
+    projectId: 'arvexa-fbf10',
+    storageBucket: 'arvexa-fbf10.firebasestorage.app',
+    messagingSenderId: '920108330053',
+    appId: '1:920108330053:web:f532d71cbc2c824bc7472c'
+  };
+
+  const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+
+  // ═══════════════════════════════════════════════════════════════
+  // CONFIG
+  // ═══════════════════════════════════════════════════════════════
+  const SUBJECTS = {
+    mathematiques: 'Mathématiques',
+    physique: 'Physique',
+    chimie: 'Chimie',
+    svt: 'SVT',
+    philosophie: 'Philosophie',
+    histoire: 'Histoire',
+    geographie: 'Géographie'
+  };
 
   const CHAPTERS = {
     mathematiques: [
@@ -2103,23 +1468,23 @@
       'Notion de l\'IG',
       'Nature chimique et structure de l\'IG : la molécule d\'ADN',
       'La reproduction conforme',
-      'Notion de cycle cellulaire et évolution de la quantité d\'ADN au cours du cycle',
+      'Cycle cellulaire et évolution de la quantité d\'ADN',
       'Protéines',
-      'Mécanismes d\'expression des gènes : la synthèse des protéines',
+      'Synthèse des protéines',
       'Reproduction sexuée',
       'Brassage des gènes',
-      'Transmission des caractères héréditaires chez l\'Homme',
+      'Transmission des caractères héréditaires',
       'Anomalies chromosomiques',
-      'Tissus nerveux et notions de réflexes',
+      'Tissus nerveux et réflexes',
       'Messages nerveux',
       'La glycémie',
-      'Les appareils génitaux et leur fonctionnement',
-      'Régulation du fonctionnement des organes génitaux',
+      'Appareils génitaux',
+      'Régulation des organes génitaux',
       'De la fécondation à la nidation',
-      'La régulation des naissances',
+      'Régulation des naissances',
       'Le soi et le non soi',
-      'Les réponses immunitaires',
-      'Dysfonctionnement du système immunitaire : cas du VIH/SIDA'
+      'Réponses immunitaires',
+      'VIH/SIDA'
     ],
     philosophie: [
       'Conscience - Inconscient',
@@ -2143,7 +1508,7 @@
       'Le bilan de la Seconde Guerre mondiale',
       'Les conditions de la lutte de libération',
       'La libération de l\'Algérie',
-      'La décolonisation en Afrique occidentale française (AOF)',
+      'La décolonisation en AOF',
       'Les problèmes des pays décolonisés'
     ],
     geographie: [
@@ -2159,31 +1524,18 @@
     ]
   };
 
-  const SUBJECT_LABELS = {
-    mathematiques: 'Mathématiques',
-    physique: 'Physique',
-    chimie: 'Chimie',
-    svt: 'SVT',
-    philosophie: 'Philosophie',
-    histoire: 'Histoire',
-    geographie: 'Géographie'
-  };
-
-  const DIFFICULTY_LABELS = { 1: 'Facile', 2: 'Moyen', 3: 'Difficile', 4: 'Niveau BAC' };
-  const TYPE_LABELS = { definition: 'Définition', formule: 'Formule', methode: 'Méthode', piege: 'Piège', application: 'Application' };
-
+  // ═══════════════════════════════════════════════════════════════
+  // STATE
+  // ═══════════════════════════════════════════════════════════════
   const state = {
-    subject: 'mathematiques',
-    chapter: 'all',
-    mode: 'fiche',
-    difficulty: 2,
-    quizCount: 10,
     user: null,
-    isPremium: false,
-    currentSession: null,
-    flashcards: [],
-    currentFlashIndex: 0,
-    flashRatings: {},
+    subject: null,
+    chapter: null,
+    totalAvailable: 0,
+    generatedCount: 0,
+    notions: [],
+    generatedIds: [],
+    currentNotion: null,
     quiz: [],
     quizAnswers: {},
     isGenerating: false,
@@ -2191,51 +1543,12 @@
   };
 
   const $ = (id) => document.getElementById(id);
-  const views = ['configView','loadingView','loadingFlashView','loadingQuizView','ficheView','flashcardView','quizView','resultsView'];
 
   // ═══════════════════════════════════════════════════════════════
-  // UTILITAIRES TEXTE
+  // UTILITAIRES
   // ═══════════════════════════════════════════════════════════════
-  function toPlainText(value) {
-    if (value === null || value === undefined) return '';
-    if (typeof value === 'string') return value;
-    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-    if (Array.isArray(value)) return value.map((v) => toPlainText(v)).filter(Boolean).join('\n');
-    if (typeof value === 'object') {
-      const keys = ['text', 'latex', 'formule', 'expression', 'content', 'value', 'label', 'titre', 'title', 'description'];
-      for (const k of keys) {
-        if (typeof value[k] === 'string' && value[k].trim()) return value[k];
-      }
-      return Object.values(value)
-        .map((v) => (typeof v === 'string' ? v : (typeof v === 'number' ? String(v) : '')))
-        .filter(Boolean)
-        .join(' — ');
-    }
-    return '';
-  }
-
-  function safeText(value) {
-    const txt = toPlainText(value);
-    return txt.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
-  function safeLatex(value) {
-    const txt = toPlainText(value);
-    return txt.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
-  function cleanLatex(value) {
-    let txt = toPlainText(value).trim();
-    txt = txt.replace(/^\$\$([\s\S]*)\$\$$/, '$1');
-    txt = txt.replace(/^\$([\s\S]*)\$$/, '$1');
-    txt = txt.replace(/^\\\[([\s\S]*)\\\]$/, '$1');
-    txt = txt.replace(/^\\\(([\s\S]*)\\\)$/, '$1');
-    return txt.trim();
-  }
-
-  // ✅ CORRECTION #5 — escapeHtml optimisé (plus de création DOM)
   function escapeHtml(text) {
-    return toPlainText(text)
+    return String(text === null || text === undefined ? '' : text)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -2243,787 +1556,685 @@
       .replace(/'/g, '&#39;');
   }
 
-  function showView(id) {
-    views.forEach((v) => {
-      const el = $(v);
-      if (el) el.classList.toggle('active', v === id);
-    });
-    const stepMap = { ficheView: 'fiche', flashcardView: 'flashcard', quizView: 'quiz', resultsView: 'results' };
-    const current = stepMap[id];
-    if (current) {
-      const order = ['fiche','flashcard','quiz','results'];
-      const idx = order.indexOf(current);
-      document.querySelectorAll('.step-item').forEach((el) => {
-        const i = order.indexOf(el.dataset.step);
-        el.classList.toggle('active', i === idx);
-        el.classList.toggle('done', i < idx);
-      });
-      $('stepBar').classList.add('show');
-    } else {
-      $('stepBar').classList.remove('show');
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  function safeText(value) {
+    const txt = String(value === null || value === undefined ? '' : value);
+    const parts = txt.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$)/g);
+    return parts.map((part, i) => {
+      if (i % 2 === 1) return part;
+      return escapeHtml(part);
+    }).join('');
   }
 
-  function setStatus(id, msg, type = '') {
-    const el = $(id);
-    if (!el) return;
-    el.textContent = msg;
-    el.className = `status ${type}`;
+  function cleanLatex(value) {
+    let txt = String(value || '').trim();
+    txt = txt.replace(/^\$\$([\s\S]*)\$\$$/, '$1');
+    txt = txt.replace(/^\$([\s\S]*)\$$/, '$1');
+    return txt.trim();
   }
 
   function showToast(message, type = 'info') {
-    const toast = $('toast');
-    $('toastText').textContent = toPlainText(message);
-    toast.className = `toast show ${type}`;
-    clearTimeout(window.__toastTimer);
-    window.__toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+    const icons = {
+      success: 'fa-check-circle',
+      error: 'fa-exclamation-circle',
+      info: 'fa-info-circle'
+    };
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span>${escapeHtml(message)}</span>`;
+    $('toastContainer').appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 250);
+    }, 3200);
+  }
+
+  function showView(id) {
+    document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
+    const target = $(id);
+    if (target) target.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showPremiumPopup() {
+    $('premiumOverlay').classList.add('show');
+  }
+  function hidePremiumPopup() {
+    $('premiumOverlay').classList.remove('show');
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // CUSTOM SELECT
-  // ═══════════════════════════════════════════════════════════════
-  class CustomSelect {
-    constructor(element) {
-      this.element = element;
-      this.name = element.dataset.name;
-      this.trigger = element.querySelector('.custom-select-trigger');
-      this.valueEl = element.querySelector('.custom-select-value');
-      this.optionsContainer = element.querySelector('.custom-select-options');
-      this.options = []; this.value = null; this.isOpen = false;
-      this.init();
-    }
-    init() {
-      this.trigger.addEventListener('click', (e) => { e.stopPropagation(); this.toggle(); });
-      document.addEventListener('click', (e) => { if (!this.element.contains(e.target)) this.close(); });
-      this.refreshOptions();
-    }
-    refreshOptions() {
-      this.options = Array.from(this.optionsContainer.querySelectorAll('.custom-select-option'));
-      this.options.forEach((opt) => opt.addEventListener('click', (e) => { e.stopPropagation(); this.select(opt.dataset.value); }));
-      if (!this.value && this.options.length > 0) this.select(this.options[0].dataset.value, true);
-    }
-    setOptions(options) {
-      this.optionsContainer.innerHTML = '';
-      options.forEach((opt) => {
-        const div = document.createElement('div');
-        div.className = 'custom-select-option';
-        div.dataset.value = opt.value;
-        div.innerHTML = opt.prefix ? `<span class="option-prefix">${escapeHtml(opt.prefix)}</span> ${escapeHtml(opt.label)}` : escapeHtml(opt.label);
-        this.optionsContainer.appendChild(div);
-      });
-      this.value = null;
-      this.refreshOptions();
-    }
-    select(value, silent) {
-      this.value = value;
-      const selected = this.options.find((o) => o.dataset.value === String(value));
-      if (!selected) return;
-      const prefix = selected.querySelector('.option-prefix');
-      const prefixHTML = prefix ? prefix.outerHTML : '';
-      const label = selected.textContent.replace(prefix?.textContent || '', '').trim();
-      this.valueEl.innerHTML = `${prefixHTML} <span>${escapeHtml(label)}</span>`;
-      this.options.forEach((o) => o.classList.toggle('selected', o.dataset.value === String(value)));
-      this.close();
-      if (!silent) this.element.dispatchEvent(new CustomEvent('change'));
-    }
-    toggle() { this.isOpen ? this.close() : this.open(); }
-    open() { this.element.classList.add('open'); this.isOpen = true; }
-    close() { this.element.classList.remove('open'); this.isOpen = false; }
-    getValue() { return this.value; }
-  }
-
-  const cs = { subject: null, chapter: null };
-
-  function initCustomSelects() {
-    cs.subject = new CustomSelect($('subjectSelect'));
-    cs.chapter = new CustomSelect($('chapterSelect'));
-    cs.subject.element.addEventListener('change', updateChapters);
-    cs.subject.select('mathematiques', true);
-    updateChapters();
-  }
-
-  function updateChapters() {
-    const s = cs.subject.getValue();
-    cs.chapter.setOptions([
-      { value: 'all', label: 'Tous les chapitres', prefix: '📚' },
-      ...(CHAPTERS[s] || []).map((ch) => ({ value: ch, label: ch, prefix: '📖' }))
-    ]);
-  }
-
-  function initChips() {
-    ['modeChips','difficultyChips','quizCountChips'].forEach((id) => {
-      const chips = document.querySelectorAll(`#${id} .chip`);
-      chips.forEach((c) => c.addEventListener('click', () => {
-        chips.forEach((x) => x.classList.remove('active'));
-        c.classList.add('active');
-        if (id === 'modeChips') state.mode = c.dataset.mode;
-        if (id === 'difficultyChips') state.difficulty = Number(c.dataset.diff);
-        if (id === 'quizCountChips') state.quizCount = Number(c.dataset.qcount);
-      }));
-    });
-  }
-
-  function syncModeFromChips() {
-    const active = document.querySelector('#modeChips .chip.active');
-    if (active) state.mode = active.dataset.mode;
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // API
+  // API CALL
   // ═══════════════════════════════════════════════════════════════
   async function callApi(payload) {
+    if (!state.user) throw new Error('Non authentifié.');
     const token = await getIdToken(state.user);
     const res = await fetch('/api/reviseur', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
       body: JSON.stringify(payload)
     });
     const data = await res.json().catch(() => null);
-    return { res, data };
+
+    if (res.status === 401 && data?.code === 'AUTH_REQUIRED') {
+      window.location.replace('auth-choice.html');
+      throw new Error('Session expirée');
+    }
+
+    if (!res.ok || !data?.success) {
+      const err = new Error(data?.error || `Erreur ${res.status}`);
+      err.code = data?.code;
+      err.status = res.status;
+      throw err;
+    }
+    return data;
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // FICHE — SUBMIT
+  // CHARGEMENT DU CAHIER
   // ═══════════════════════════════════════════════════════════════
-  $('configForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (state.isGenerating) return;
-    if (!state.user) return;
-    state.isGenerating = true;
-    state.subject = cs.subject.getValue();
-    state.chapter = cs.chapter.getValue();
-
-    if (state.mode === 'flashcard') return generateFlashcards();
-
-    $('generateBtn').disabled = true;
-    $('generateBtn').classList.add('loading');
-    setStatus('configStatus', '');
-
-    showView('loadingView');
-    resetSteps('gen');
-
+  async function loadCahier() {
     try {
-      activateStep('genStep1', $('genLoadingStatus'), 'Analyse...');
-      await new Promise((r) => setTimeout(r, 400));
-      activateStep('genStep2', $('genLoadingStatus'), 'Extraction...');
-
-      const resPromise = callApi({
-        action: 'generate',
+      const data = await callApi({
+        action: 'loadCahier',
         subject: state.subject,
-        chapter: state.chapter,
-        mode: 'fiche',
-        includeFlashcards: true
+        chapter: state.chapter
       });
 
-      await new Promise((r) => setTimeout(r, 1200));
-      activateStep('genStep3', $('genLoadingStatus'), 'Rédaction...');
+      state.totalAvailable = data.totalAvailable || 0;
+      state.generatedCount = data.generatedCount || 0;
+      state.notions = data.notions || [];
+      state.generatedIds = data.generatedIds || [];
 
-      const { res, data: payload } = await resPromise;
-
-      if (res.status === 429) { showView('configView'); showPremiumPopup(payload?.used, payload?.limit); return; }
-      if (res.status === 400 && (payload?.code === 'SUBJECT_NOT_READY' || payload?.code === 'CHAPTER_NOT_FOUND')) {
-        showView('configView');
-        setStatus('configStatus', payload.error || 'Erreur.', 'error');
-        return;
-      }
-      if (!res.ok || !payload?.success) throw new Error(payload?.error || 'Erreur de génération.');
-
-      activateStep('genStep4', $('genLoadingStatus'), 'Vérification...');
-      await new Promise((r) => setTimeout(r, 600));
-      state.currentSession = payload.session;
-      activateStep('genStep5', $('genLoadingStatus'), 'Finalisation...');
-      await new Promise((r) => setTimeout(r, 400));
-      finishAllSteps('gen', $('genLoadingStatus'), '✅ Prête !');
-      await new Promise((r) => setTimeout(r, 300));
-
-      renderFiche();
-      showView('ficheView');
+      updateHomeUI();
     } catch (err) {
-      console.error('[REVISEUR] Fiche erreur:', err);
-      showView('configView');
-      setStatus('configStatus', err.message || 'Erreur réseau. Réessaie.', 'error');
-    } finally {
-      state.isGenerating = false;
-      $('generateBtn').disabled = false;
-      $('generateBtn').classList.remove('loading');
-    }
-  });
-
-  async function generateFlashcards() {
-    $('generateBtn').disabled = true;
-    $('generateBtn').classList.add('loading');
-    setStatus('configStatus', '');
-    showView('loadingFlashView');
-    resetSteps('fl');
-
-    try {
-      activateStep('flStep1', $('flLoadingStatus'), 'Analyse...');
-      await new Promise((r) => setTimeout(r, 400));
-      activateStep('flStep2', $('flLoadingStatus'), 'Extraction...');
-
-      const resPromise = callApi({ action: 'generate', subject: state.subject, chapter: state.chapter, mode: 'flashcard' });
-
-      await new Promise((r) => setTimeout(r, 1200));
-      activateStep('flStep3', $('flLoadingStatus'), 'Génération...');
-
-      const { res, data: payload } = await resPromise;
-      if (res.status === 429) { showView('configView'); showPremiumPopup(payload?.used, payload?.limit); return; }
-      if (res.status === 400 && (payload?.code === 'SUBJECT_NOT_READY' || payload?.code === 'CHAPTER_NOT_FOUND')) {
-        showView('configView');
-        setStatus('configStatus', payload.error, 'error');
-        return;
-      }
-      if (!res.ok || !payload?.success) throw new Error(payload?.error || 'Erreur de génération.');
-
-      activateStep('flStep4', $('flLoadingStatus'), 'Vérification...');
-      await new Promise((r) => setTimeout(r, 500));
-      state.flashcards = Array.isArray(payload.session?.flashcards) ? payload.session.flashcards : [];
-      state.currentFlashIndex = 0;
-      state.flashRatings = {};
-
-      if (state.flashcards.length === 0) {
-        showView('configView');
-        setStatus('configStatus', 'Aucune flashcard générée. Réessaie.', 'error');
-        return;
-      }
-
-      activateStep('flStep5', $('flLoadingStatus'), 'Finalisation...');
-      await new Promise((r) => setTimeout(r, 400));
-      finishAllSteps('fl', $('flLoadingStatus'), '✅ Prêtes !');
-      await new Promise((r) => setTimeout(r, 300));
-      renderFlashcard();
-      showView('flashcardView');
-    } catch (err) {
-      console.error('[REVISEUR] Flashcards erreur:', err);
-      showView('configView');
-      setStatus('configStatus', err.message || 'Erreur réseau. Réessaie.', 'error');
-    } finally {
-      state.isGenerating = false;
-      $('generateBtn').disabled = false;
-      $('generateBtn').classList.remove('loading');
+      console.error('[Réviseur] loadCahier error:', err);
+      showToast(err.message || 'Impossible de charger le cahier', 'error');
     }
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // MISE À JOUR UI ACCUEIL
+  // ═══════════════════════════════════════════════════════════════
+  function updateHomeUI() {
+    // Labels sujet + chapitre
+    $('subjectLabel').textContent = SUBJECTS[state.subject] || state.subject;
+    $('chapterTitle').textContent = state.chapter;
+
+    // Barre de progression
+    const percent = state.totalAvailable > 0
+      ? Math.round((state.generatedCount / state.totalAvailable) * 100)
+      : 0;
+    $('progressFill').style.width = percent + '%';
+    $('progressCurrent').textContent = state.generatedCount;
+    $('progressTotal').textContent = '/ ' + state.totalAvailable + ' notions';
+
+    // Bouton "Voir mes notions"
+    if (state.generatedCount > 0) {
+      $('btnViewNotions').disabled = false;
+      $('viewNotionsDesc').textContent = state.generatedCount + ' notion' + (state.generatedCount > 1 ? 's' : '') + ' disponible' + (state.generatedCount > 1 ? 's' : '') + '. Lecture gratuite.';
+    } else {
+      $('btnViewNotions').disabled = true;
+      $('viewNotionsDesc').textContent = 'Aucune notion générée pour le moment.';
+    }
+
+    // Bouton "Générer"
+    const remaining = state.totalAvailable - state.generatedCount;
+
+    if (state.generatedCount === 0) {
+      $('btnGenerate').disabled = false;
+      $('btnGenerateTitle').textContent = 'Générer mes premières notions';
+      $('btnGenerateDesc').textContent = '4 notions · ~15 secondes';
+    } else if (remaining === 0) {
+      $('btnGenerate').disabled = true;
+      $('btnGenerateTitle').textContent = 'Toutes les notions sont générées ✅';
+      $('btnGenerateDesc').textContent = 'Tu as terminé ce chapitre !';
+    } else {
+      $('btnGenerate').disabled = false;
+      const count = Math.min(3, remaining);
+      $('btnGenerateTitle').textContent = 'Générer de nouvelles notions';
+      $('btnGenerateDesc').textContent = count + ' notion' + (count > 1 ? 's' : '') + ' · ' + remaining + ' restante' + (remaining > 1 ? 's' : '');
+    }
+
+    // Bouton Quiz
+    if (state.generatedCount >= 3) {
+      $('btnQuiz').disabled = false;
+      $('btnQuizDesc').textContent = 'Teste tes connaissances sur ' + state.generatedCount + ' notions';
+    } else {
+      $('btnQuiz').disabled = true;
+      $('btnQuizDesc').textContent = 'Génère au moins 3 notions d\'abord';
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // GÉNÉRATION INITIALE
+  // ═══════════════════════════════════════════════════════════════
+  async function generateInitial() {
+    if (state.isGenerating) return;
+    state.isGenerating = true;
+
+    showView('viewLoading');
+    $('loadingTitle').textContent = 'Génération de tes premières notions';
+    $('loadingMessage').textContent = 'L\'IA prépare 4 notions complètes. Cela peut prendre 15 à 20 secondes.';
+
+    try {
+      const data = await callApi({
+        action: 'generateInitial',
+        subject: state.subject,
+        chapter: state.chapter
+      });
+
+      state.notions = data.notions || [];
+      state.generatedCount = data.generatedCount || state.notions.length;
+      state.totalAvailable = data.totalAvailable || 0;
+
+      if (data.message) {
+        showToast(data.message, 'success');
+      } else {
+        showToast(state.notions.length + ' notions générées !', 'success');
+      }
+
+      updateHomeUI();
+      showView('viewHome');
+    } catch (err) {
+      console.error('[Réviseur] generateInitial error:', err);
+      if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
+        showPremiumPopup();
+        showView('viewHome');
+      } else {
+        showToast(err.message || 'Erreur de génération', 'error', 5000);
+        showView('viewHome');
+      }
+    } finally {
+      state.isGenerating = false;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // GÉNÉRATION SUPPLÉMENTAIRE
+  // ═══════════════════════════════════════════════════════════════
+  async function generateMore() {
+    if (state.isGenerating) return;
+    state.isGenerating = true;
+
+    showView('viewLoading');
+    $('loadingTitle').textContent = 'Génération de nouvelles notions';
+    $('loadingMessage').textContent = 'L\'IA prépare 3 nouvelles notions. Cela peut prendre 10 à 15 secondes.';
+
+    try {
+      const data = await callApi({
+        action: 'generateMore',
+        subject: state.subject,
+        chapter: state.chapter
+      });
+
+      // Recharger le cahier complet pour être sûr
+      await loadCahier();
+
+      if (data.message) {
+        showToast(data.message, 'success');
+      } else {
+        showToast('Nouvelles notions générées !', 'success');
+      }
+
+      showView('viewHome');
+    } catch (err) {
+      console.error('[Réviseur] generateMore error:', err);
+      if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
+        showPremiumPopup();
+        showView('viewHome');
+      } else {
+        showToast(err.message || 'Erreur de génération', 'error', 5000);
+        showView('viewHome');
+      }
+    } finally {
+      state.isGenerating = false;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // LISTE DES NOTIONS
+  // ═══════════════════════════════════════════════════════════════
+  function renderNotionsList() {
+    const list = $('notionsList');
+    const empty = $('notionsEmpty');
+
+    $('notionsListTitle').textContent = state.chapter;
+    $('notionsListMeta').textContent = state.generatedCount + ' notion' + (state.generatedCount > 1 ? 's' : '') + ' générée' + (state.generatedCount > 1 ? 's' : '');
+
+    if (state.notions.length === 0) {
+      list.innerHTML = '';
+      empty.style.display = 'flex';
+      return;
+    }
+
+    empty.style.display = 'none';
+    list.innerHTML = state.notions.map((n, i) => {
+      const hasFormules = Array.isArray(n.formules) && n.formules.length > 0;
+      const hasMethode = n.methode && (Array.isArray(n.methode.steps) ? n.methode.steps.length > 0 : false);
+      const hasExemple = n.exempleResolu && n.exempleResolu.enonce;
+      const hasPiege = n.piegeBAC && n.piegeBAC.trap;
+
+      const tags = [];
+      if (hasFormules) tags.push('<span class="notion-row-tag"><i class="fas fa-square-root-variable"></i> Formules</span>');
+      if (hasMethode) tags.push('<span class="notion-row-tag"><i class="fas fa-list-ol"></i> Méthode</span>');
+      if (hasExemple) tags.push('<span class="notion-row-tag"><i class="fas fa-check-circle"></i> Exemple</span>');
+      if (hasPiege) tags.push('<span class="notion-row-tag"><i class="fas fa-triangle-exclamation"></i> Piège</span>');
+
+      return `
+        <button class="notion-row" data-notion-index="${i}">
+          <div class="notion-row-num">${i + 1}</div>
+          <div class="notion-row-body">
+            <div class="notion-row-title">${escapeHtml(n.notionTitle || 'Sans titre')}</div>
+            <div class="notion-row-tags">${tags.join('')}</div>
+          </div>
+          <i class="fas fa-chevron-right notion-row-arrow"></i>
+        </button>
+      `;
+    }).join('');
+
+    list.querySelectorAll('.notion-row').forEach((row) => {
+      row.addEventListener('click', () => {
+        const idx = Number(row.dataset.notionIndex);
+        openNotionDetail(idx);
+      });
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // DÉTAIL D'UNE NOTION
+  // ═══════════════════════════════════════════════════════════════
+  function openNotionDetail(index) {
+    const notion = state.notions[index];
+    if (!notion) return;
+
+    state.currentNotion = notion;
+
+    $('notionDetailEyebrow').textContent = 'Notion ' + (index + 1);
+    $('notionDetailTitle').textContent = notion.notionTitle || 'Notion';
+    $('notionDetailMeta').textContent = state.chapter + ' · ' + (SUBJECTS[state.subject] || state.subject);
+
+    const content = $('notionDetailContent');
+    content.innerHTML = renderNotionContent(notion);
+
+    showView('viewNotionDetail');
+  }
+
+  function renderNotionContent(n) {
+    let html = '';
+
+    // COMPRENDRE
+    if (n.comprendre && n.comprendre.trim()) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-lightbulb"></i> Comprendre</div>
+          <div class="block-text">${safeText(n.comprendre)}</div>
+        </div>
+      `;
+    }
+
+    // FORMULES
+    if (Array.isArray(n.formules) && n.formules.length > 0) {
+      const formulesHtml = n.formules.map((f) => {
+        const latex = cleanLatex(f.latex || '');
+        if (!latex) return '';
+        return `
+          <div class="formula-item">
+            <div class="formula-latex">$$${safeText(latex)}$$</div>
+            ${f.condition ? `<div class="formula-condition">${safeText(f.condition)}</div>` : ''}
+          </div>
+        `;
+      }).filter(Boolean).join('');
+
+      if (formulesHtml) {
+        html += `
+          <div class="block">
+            <div class="block-label"><i class="fas fa-square-root-variable"></i> Formules clés</div>
+            <div class="formulas-list">${formulesHtml}</div>
+          </div>
+        `;
+      }
+    }
+
+    // MÉTHODE
+    if (n.methode && n.methode.steps && Array.isArray(n.methode.steps) && n.methode.steps.length > 0) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-list-ol"></i> ${escapeHtml(n.methode.title || 'Méthode pas-à-pas')}</div>
+          <ol class="method-steps">
+            ${n.methode.steps.map((s) => `<li>${safeText(s)}</li>`).join('')}
+          </ol>
+        </div>
+      `;
+    }
+
+    // EXEMPLE RÉSOLU
+    if (n.exempleResolu && (n.exempleResolu.enonce || (Array.isArray(n.exempleResolu.etapes) && n.exempleResolu.etapes.length > 0))) {
+      let exHtml = '<div class="block"><div class="block-label"><i class="fas fa-check-circle"></i> Exemple résolu</div>';
+      if (n.exempleResolu.enonce) {
+        exHtml += `<div class="example-enonce">${safeText(n.exempleResolu.enonce)}</div>`;
+      }
+      if (Array.isArray(n.exempleResolu.etapes) && n.exempleResolu.etapes.length > 0) {
+        exHtml += `<ol class="example-steps">${n.exempleResolu.etapes.map((e) => `<li>${safeText(e)}</li>`).join('')}</ol>`;
+      }
+      if (n.exempleResolu.conclusion) {
+        exHtml += `<div class="example-conclusion">${safeText(n.exempleResolu.conclusion)}</div>`;
+      }
+      exHtml += '</div>';
+      html += exHtml;
+    }
+
+    // PIÈGE DU BAC
+    if (n.piegeBAC && (n.piegeBAC.trap || n.piegeBAC.solution)) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-triangle-exclamation"></i> Piège du BAC</div>
+          ${n.piegeBAC.trap ? `<div class="piege-trap">${safeText(n.piegeBAC.trap)}</div>` : ''}
+          ${n.piegeBAC.solution ? `<div class="piege-solution">${safeText(n.piegeBAC.solution)}</div>` : ''}
+        </div>
+      `;
+    }
+
+    // ASTUCE
+    if (n.astuce && n.astuce.trim()) {
+      html += `
+        <div class="block astuce">
+          <div class="block-label"><i class="fas fa-star"></i> Astuce</div>
+          <div class="block-text">${safeText(n.astuce)}</div>
+        </div>
+      `;
+    }
+
+    // Fallback
+    if (!html) {
+      html = `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-info-circle"></i> Information</div>
+          <div class="block-text">Le contenu de cette notion n'est pas disponible.</div>
+        </div>
+      `;
+    }
+
+    return html;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SUPPRESSION D'UNE NOTION
+  // ═══════════════════════════════════════════════════════════════
+  async function deleteCurrentNotion() {
+    if (!state.currentNotion) return;
+
+    const confirmed = window.confirm('Supprimer cette notion ? Elle pourra être régénérée plus tard.');
+    if (!confirmed) return;
+
+    try {
+      await callApi({
+        action: 'deleteNotion',
+        subject: state.subject,
+        chapter: state.chapter,
+        notionId: state.currentNotion.notionId
+      });
+
+      showToast('Notion supprimée', 'success');
+      state.currentNotion = null;
+      await loadCahier();
+      showView('viewHome');
+    } catch (err) {
+      console.error('[Réviseur] deleteNotion error:', err);
+      showToast(err.message || 'Erreur de suppression', 'error');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // QUIZ
+  // ═══════════════════════════════════════════════════════════════
   async function generateQuiz() {
     if (state.isGeneratingQuiz) return;
     state.isGeneratingQuiz = true;
 
-    showView('loadingQuizView');
-    resetSteps('qz');
+    showView('viewLoading');
+    $('loadingTitle').textContent = 'Génération du quiz';
+    $('loadingMessage').textContent = 'L\'IA prépare 10 questions sur tes notions. ~10 secondes.';
 
     try {
-      activateStep('qzStep1', $('qzLoadingStatus'), 'Analyse...');
-      await new Promise((r) => setTimeout(r, 400));
-      activateStep('qzStep2', $('qzLoadingStatus'), 'Extraction...');
-
-      const resPromise = callApi({
+      const data = await callApi({
         action: 'quiz',
         subject: state.subject,
         chapter: state.chapter,
-        difficulty: state.difficulty,
-        count: state.quizCount
+        count: 10
       });
 
-      await new Promise((r) => setTimeout(r, 1200));
-      activateStep('qzStep3', $('qzLoadingStatus'), 'Génération...');
-
-      const { res, data: payload } = await resPromise;
-      if (res.status === 400 && (payload?.code === 'SUBJECT_NOT_READY' || payload?.code === 'CHAPTER_NOT_FOUND')) {
-        showView('configView');
-        setStatus('configStatus', payload.error, 'error');
-        return;
-      }
-      if (!res.ok || !payload?.success) throw new Error(payload?.error || 'Erreur.');
-
-      activateStep('qzStep4', $('qzLoadingStatus'), 'Vérification...');
-      await new Promise((r) => setTimeout(r, 500));
-      state.quiz = Array.isArray(payload.quiz) ? payload.quiz : [];
+      state.quiz = data.quiz || [];
       state.quizAnswers = {};
 
       if (state.quiz.length === 0) {
-        showView('configView');
-        setStatus('configStatus', 'Quiz vide. Réessaie.', 'error');
+        showToast('Aucune question générée. Réessaie.', 'error');
+        showView('viewHome');
         return;
       }
 
-      activateStep('qzStep5', $('qzLoadingStatus'), 'Finalisation...');
-      await new Promise((r) => setTimeout(r, 400));
-      finishAllSteps('qz', $('qzLoadingStatus'), '✅ Prêt !');
-      await new Promise((r) => setTimeout(r, 300));
       renderQuiz();
-      showView('quizView');
+      showView('viewQuiz');
     } catch (err) {
-      console.error('[REVISEUR] Quiz erreur:', err);
-      showView('configView');
-      setStatus('configStatus', err.message || 'Erreur réseau. Réessaie.', 'error');
+      console.error('[Réviseur] quiz error:', err);
+      showToast(err.message || 'Erreur de génération du quiz', 'error');
+      showView('viewHome');
     } finally {
       state.isGeneratingQuiz = false;
     }
   }
 
-  function resetSteps(prefix) {
-    ['1','2','3','4','5'].forEach((n) => $(`${prefix}Step${n}`)?.classList.remove('active','done'));
-  }
-  function activateStep(stepId, statusEl, label) {
-    document.querySelectorAll('.loading-step').forEach((s) => {
-      if (s.id === stepId) { s.classList.add('active'); s.classList.remove('done'); }
-      else if (s.classList.contains('active')) { s.classList.remove('active'); s.classList.add('done'); }
-    });
-    if (statusEl) { statusEl.textContent = label; statusEl.classList.add('active'); }
-  }
-  function finishAllSteps(prefix, statusEl, finalLabel) {
-    ['1','2','3','4','5'].forEach((n) => $(`${prefix}Step${n}`)?.classList.remove('active'));
-    ['1','2','3','4','5'].forEach((n) => $(`${prefix}Step${n}`)?.classList.add('done'));
-    if (statusEl) { statusEl.textContent = finalLabel; statusEl.classList.remove('active'); }
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // RENDU FICHE
-  // ═══════════════════════════════════════════════════════════════
-  function renderFiche() {
-    const s = state.currentSession;
-    if (!s) return;
-    const sections = Array.isArray(s.sections) ? s.sections : [];
-    $('ficheTitle').textContent = toPlainText(s.chapterTitle) || 'Fiche';
-    $('ficheMeta').innerHTML = `
-      <span><i class="fas fa-book"></i> ${escapeHtml(SUBJECT_LABELS[state.subject] || state.subject)}</span>
-      <span><i class="fas fa-list"></i> ${sections.length} sections</span>
-    `;
-    const container = $('ficheContent');
-    container.innerHTML = '';
-
-    if (sections.length === 0) {
-      container.innerHTML = `<div class="global-block"><div class="global-title"><i class="fas fa-exclamation-triangle"></i> Aucun contenu</div><div class="block-text">Aucune section générée pour ce chapitre. Réessaie.</div></div>`;
-      return;
-    }
-
-    if (Array.isArray(s.keyPoints) && s.keyPoints.length > 0) {
-      const b = document.createElement('div');
-      b.className = 'global-block';
-      b.innerHTML = `<div class="global-title"><i class="fas fa-star"></i> Points clés</div><ul class="global-list">${s.keyPoints.map((p) => `<li>${safeText(p)}</li>`).join('')}</ul>`;
-      container.appendChild(b);
-    }
-
-    const label = document.createElement('div');
-    label.className = 'sections-label';
-    label.innerHTML = `<i class="fas fa-layer-group"></i> Détail par notion <span class="count">${sections.length} notions</span>`;
-    container.appendChild(label);
-
-    sections.forEach((sec, i) => container.appendChild(buildNotionCard(sec, i)));
-
-    // Rendu KaTeX automatique (katex-utils.js MutationObserver)
-    const first = container.querySelector('.notion-card');
-    if (first) setTimeout(() => toggleNotion(first), 200);
-  }
-
-  function buildNotionCard(section, index) {
-    const card = document.createElement('div');
-    card.className = 'notion-card';
-    const title = toPlainText(section.notionTitle || section.title || `Notion ${index + 1}`);
-    const id = toPlainText(section.notionId || '');
-
-    let comprendreHTML = '';
-    const comprendreTxt = toPlainText(section.comprendre);
-    if (comprendreTxt.trim()) {
-      comprendreHTML = `<div class="block"><div class="block-label"><i class="fas fa-lightbulb"></i> Comprendre</div><div class="block-text">${safeText(comprendreTxt)}</div></div>`;
-    }
-
-    let formulesHTML = '';
-    if (Array.isArray(section.formules) && section.formules.length > 0) {
-      const valid = section.formules
-        .map((f) => {
-          if (!f) return null;
-          if (typeof f === 'string') return f.trim() ? { latex: f, condition: '', usage: '' } : null;
-          if (typeof f === 'object') {
-            const latex = f.latex || f.formule || f.expression || f.text || '';
-            if (!latex) return null;
-            return { latex, condition: toPlainText(f.condition || ''), usage: toPlainText(f.usage || '') };
-          }
-          return null;
-        })
-        .filter(Boolean);
-
-      if (valid.length > 0) {
-        formulesHTML = `
-          <div class="block">
-            <div class="block-label"><i class="fas fa-square-root-variable"></i> Formules clés</div>
-            <div class="formula-list">
-              ${valid.map((f) => {
-                const latexClean = cleanLatex(f.latex);
-                if (!latexClean) return '';
-                return `
-                  <div class="formula-item">
-                    <div class="formula-latex">$$${safeLatex(latexClean)}$$</div>
-                    ${(f.condition || f.usage) ? `<div class="formula-meta">${f.condition ? `<span class="tag">${safeText(f.condition)}</span>` : ''}${f.usage ? `<span class="tag">${safeText(f.usage)}</span>` : ''}</div>` : ''}
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    let methodeHTML = '';
-    let steps = [];
-    let methTitle = 'Méthode pas-à-pas';
-    if (section.methode && typeof section.methode === 'object' && !Array.isArray(section.methode)) {
-      methTitle = toPlainText(section.methode.title) || methTitle;
-      steps = Array.isArray(section.methode.steps) ? section.methode.steps : [];
-    } else if (Array.isArray(section.methode)) {
-      steps = section.methode;
-    } else if (typeof section.methode === 'string') {
-      steps = [section.methode];
-    }
-    if (steps.length > 0) {
-      methodeHTML = `<div class="block"><div class="block-label"><i class="fas fa-list-ol"></i> ${safeText(methTitle)}</div><ol class="method-steps">${steps.map((st) => `<li>${safeText(st)}</li>`).join('')}</ol></div>`;
-    }
-
-    let exempleHTML = '';
-    if (section.exempleResolu && typeof section.exempleResolu === 'object') {
-      const ex = section.exempleResolu;
-      const enonce = toPlainText(ex.enonce);
-      const et = Array.isArray(ex.etapes) ? ex.etapes : [];
-      const conclusion = toPlainText(ex.conclusion);
-      if (enonce || et.length > 0 || conclusion) {
-        exempleHTML = `
-          <div class="block">
-            <div class="block-label"><i class="fas fa-check-circle"></i> Exemple résolu</div>
-            ${enonce ? `<div class="example-enonce">${safeText(enonce)}</div>` : ''}
-            ${et.length > 0 ? `<ol class="example-steps">${et.map((e) => `<li>${safeText(e)}</li>`).join('')}</ol>` : ''}
-            ${conclusion ? `<div class="example-conclusion">${safeText(conclusion)}</div>` : ''}
-          </div>
-        `;
-      }
-    }
-
-    let piegeHTML = '';
-    if (section.piegeBAC && typeof section.piegeBAC === 'object') {
-      const trap = toPlainText(section.piegeBAC.trap);
-      const solution = toPlainText(section.piegeBAC.solution);
-      if (trap || solution) {
-        piegeHTML = `<div class="block"><div class="block-label"><i class="fas fa-triangle-exclamation"></i> Piège du BAC</div>${trap ? `<div class="piege-trap">${safeText(trap)}</div>` : ''}${solution ? `<div class="piege-solution">${safeText(solution)}</div>` : ''}</div>`;
-      }
-    }
-
-    let astuceHTML = '';
-    const astuceTxt = toPlainText(section.astuce);
-    if (astuceTxt.trim()) {
-      astuceHTML = `<div class="block"><div class="block-label"><i class="fas fa-star"></i> Astuce</div><div class="block-text">${safeText(astuceTxt)}</div></div>`;
-    }
-
-    const hasContent = comprendreHTML || formulesHTML || methodeHTML || exempleHTML || piegeHTML || astuceHTML;
-    let fallbackHTML = '';
-    if (!hasContent) {
-      fallbackHTML = `<div class="block"><div class="block-label"><i class="fas fa-info-circle"></i> Information</div><div class="block-text">Cette notion n'a pas pu être détaillée. Réessaie la génération.</div></div>`;
-    }
-
-    card.innerHTML = `
-      <div class="notion-header">
-        <div class="notion-num">${index + 1}</div>
-        <div class="notion-title-wrap">
-          <div class="notion-title">${safeText(title)}</div>
-          <div class="notion-sub">${id ? escapeHtml(id) : 'Notion'}</div>
-        </div>
-        <div class="notion-toggle"><i class="fas fa-chevron-down"></i></div>
-      </div>
-      <div class="notion-body">
-        <div class="notion-content">
-          ${comprendreHTML}${formulesHTML}${methodeHTML}${exempleHTML}${piegeHTML}${astuceHTML}${fallbackHTML}
-        </div>
-      </div>
-    `;
-
-    card.querySelector('.notion-header').addEventListener('click', () => toggleNotion(card));
-    return card;
-  }
-
-  function toggleNotion(card) {
-    const open = card.classList.contains('open');
-    document.querySelectorAll('.notion-card.open').forEach((o) => { if (o !== card) o.classList.remove('open'); });
-    card.classList.toggle('open', !open);
-    // Rendu KaTeX automatique via MutationObserver
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // RENDU FLASHCARDS
-  // ═══════════════════════════════════════════════════════════════
-  function renderFlashcard() {
-    if (!state.flashcards || state.flashcards.length === 0) { showView('configView'); return; }
-    $('flashMeta').innerHTML = `<span><i class="fas fa-layer-group"></i> ${state.flashcards.length} cartes</span>`;
-    updateFlashcardContent();
-  }
-
-  function updateFlashcardContent() {
-    const c = state.flashcards[state.currentFlashIndex];
-    if (!c) return;
-    const question = toPlainText(c.question || c.front || '');
-    const answer = toPlainText(c.answer || c.back || c.reponse || '');
-    $('flashFront').innerHTML = safeText(question);
-    $('flashBack').innerHTML = safeText(answer);
-    const badge = $('flashTypeBadge');
-    const typeKey = toPlainText(c.type || '');
-    if (typeKey && TYPE_LABELS[typeKey]) {
-      badge.textContent = TYPE_LABELS[typeKey];
-      badge.style.display = 'inline-flex';
-    } else badge.style.display = 'none';
-    const hint = toPlainText(c.hint);
-    if (hint) { $('flashHint').style.display = 'flex'; $('flashHintText').textContent = hint; }
-    else $('flashHint').style.display = 'none';
-    $('flashCounter').textContent = `${state.currentFlashIndex + 1} / ${state.flashcards.length}`;
-    $('flashcardTrackFill').style.width = `${((state.currentFlashIndex) / state.flashcards.length) * 100}%`;
-    $('flashcardEl').classList.remove('flipped');
-    $('flashFeedback').classList.remove('show');
-    // Rendu KaTeX automatique via MutationObserver
-  }
-
-  let flipTimer = null;
-  $('flashcardEl').addEventListener('click', () => {
-    clearTimeout(flipTimer);
-    const el = $('flashcardEl');
-    el.classList.toggle('flipped');
-    if (el.classList.contains('flipped')) {
-      flipTimer = setTimeout(() => $('flashFeedback').classList.add('show'), 300);
-    } else {
-      $('flashFeedback').classList.remove('show');
-    }
-  });
-
-  // ✅ CORRECTION #2 — Verrou anti-double saut de flashcards
-  let feedbackLock = false;
-
-  document.querySelectorAll('.feedback-btn').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (feedbackLock) return;  // ✅ On ignore si déjà en cours
-      feedbackLock = true;
-
-      state.flashRatings[state.currentFlashIndex] = btn.dataset.rating;
-      const card = $('flashcardEl');
-      card.style.opacity = '0';
-      setTimeout(() => {
-        if (state.currentFlashIndex < state.flashcards.length - 1) {
-          state.currentFlashIndex++;
-          updateFlashcardContent();
-          card.style.opacity = '1';
-        } else {
-          card.style.opacity = '1';
-          $('flashFeedback').classList.remove('show');
-          $('flashcardTrackFill').style.width = '100%';
-        }
-        feedbackLock = false;  // ✅ Libération après traitement
-      }, 200);
-    });
-  });
-
-  // ✅ CORRECTION #3 — Verrou anti-double quiz
-  function safeGenerateQuiz() {
-    if (state.isGeneratingQuiz) return;
-    generateQuiz();
-  }
-
-  $('finishFlashBtn').addEventListener('click', safeGenerateQuiz);
-
-  // ═══════════════════════════════════════════════════════════════
-  // RENDU QUIZ
-  // ═══════════════════════════════════════════════════════════════
   function renderQuiz() {
     const container = $('quizContent');
     container.innerHTML = '';
 
-    state.quiz = (state.quiz || []).filter((q) => q && Array.isArray(q.options) && q.options.length === 4);
-    if (state.quiz.length === 0) {
-      showView('configView');
-      setStatus('configStatus', 'Aucune question valide générée. Réessaie.', 'error');
-      return;
-    }
-
-    $('quizMeta').innerHTML = `
-      <span><i class="fas fa-question-circle"></i> ${state.quiz.length} questions</span>
-      <span><i class="fas fa-signal"></i> ${DIFFICULTY_LABELS[state.difficulty]}</span>
-    `;
+    $('quizMeta').textContent = state.quiz.length + ' questions · ' + state.chapter;
 
     state.quiz.forEach((q, i) => {
       const div = document.createElement('div');
       div.className = 'quiz-question';
       div.dataset.index = i;
-      const questionTxt = toPlainText(q.question || q.text || '');
-      const opts = (q.options || []).map((opt, optIdx) => {
-        const text = toPlainText(typeof opt === 'string' ? opt : (opt.text || opt.label || ''));
-        const id = typeof opt === 'string' ? String.fromCharCode(65 + optIdx) : toPlainText(opt.id || String.fromCharCode(65 + optIdx));
-        return `<button class="quiz-option" data-option="${escapeHtml(id)}" data-qindex="${i}" type="button"><span class="quiz-option-letter">${escapeHtml(id)}</span><span>${safeText(text)}</span></button>`;
-      }).join('');
+
+      const opts = (q.options || []).map((opt) => `
+        <button class="quiz-option" data-option="${escapeHtml(opt.id)}" data-qindex="${i}" type="button">
+          <span class="quiz-letter">${escapeHtml(opt.id)}</span>
+          <span>${safeText(opt.text)}</span>
+        </button>
+      `).join('');
+
       div.innerHTML = `
         <div class="quiz-q-header">
-          <div class="quiz-q-number">Question ${i + 1}</div>
-          <div class="quiz-q-level">Niveau ${q.level || 1}</div>
+          <div class="quiz-q-num">Question ${i + 1}</div>
         </div>
-        <div class="quiz-q-text">${safeText(questionTxt)}</div>
+        <div class="quiz-q-text">${safeText(q.question)}</div>
         <div class="quiz-options">${opts}</div>
-        <div class="quiz-explanation" id="exp-${i}"></div>
+        <div class="quiz-explanation" id="expl-${i}"></div>
       `;
       container.appendChild(div);
     });
 
-    // Rendu KaTeX automatique via MutationObserver
-
     container.querySelectorAll('.quiz-option').forEach((opt) => {
-      opt.addEventListener('click', () => {
-        const i = parseInt(opt.dataset.qindex);
-        if (state.quizAnswers[i]) return;
-        const q = state.quiz[i];
-        state.quizAnswers[i] = opt.dataset.option;
-        const question = container.querySelector(`[data-index="${i}"]`);
-        question.querySelectorAll('.quiz-option').forEach((o) => {
-          o.classList.add('disabled');
-          if (o.dataset.option === q.correctAnswer) o.classList.add('correct');
-          else if (o.dataset.option === opt.dataset.option) o.classList.add('wrong');
-        });
-        const exp = $(`exp-${i}`);
-        const explTxt = toPlainText(q.explanation);
-        if (explTxt) {
-          exp.innerHTML = `<strong>💡</strong> ${safeText(explTxt)}`;
-          exp.classList.add('show');
-          // Rendu KaTeX automatique
-        }
-        const answered = Object.keys(state.quizAnswers).length;
-        $('validateQuizBtn').disabled = answered < state.quiz.length;
-        $('quizProgress').style.width = `${(answered / state.quiz.length) * 100}%`;
-      });
+      opt.addEventListener('click', () => handleQuizAnswer(opt));
     });
+
+    $('btnValidateQuiz').disabled = true;
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // VALIDATION QUIZ
-  // ═══════════════════════════════════════════════════════════════
-  $('validateQuizBtn').addEventListener('click', () => {
+  function handleQuizAnswer(opt) {
+    const i = parseInt(opt.dataset.qindex);
+    if (state.quizAnswers[i]) return;
+
+    const q = state.quiz[i];
+    state.quizAnswers[i] = opt.dataset.option;
+
+    const question = document.querySelector(`.quiz-question[data-index="${i}"]`);
+    question.querySelectorAll('.quiz-option').forEach((o) => {
+      o.classList.add('disabled');
+      if (o.dataset.option === q.correctAnswer) {
+        o.classList.add('correct');
+      } else if (o.dataset.option === opt.dataset.option) {
+        o.classList.add('wrong');
+      }
+    });
+
+    const expl = document.getElementById('expl-' + i);
+    if (q.explanation) {
+      expl.innerHTML = `<strong>💡</strong> ${safeText(q.explanation)}`;
+      expl.classList.add('show');
+    }
+
+    const answered = Object.keys(state.quizAnswers).length;
+    $('btnValidateQuiz').disabled = answered < state.quiz.length;
+  }
+
+  function validateQuiz() {
     let correct = 0;
-    state.quiz.forEach((q, i) => { if (state.quizAnswers[i] === q.correctAnswer) correct++; });
+    state.quiz.forEach((q, i) => {
+      if (state.quizAnswers[i] === q.correctAnswer) correct++;
+    });
+
     const total = state.quiz.length;
     if (total === 0) return;
+
     const score = Math.round((correct / total) * 20);
     const percent = Math.round((correct / total) * 100);
-    $('metricCorrect').textContent = `${correct}/${total}`;
-    $('metricScore').textContent = `${score}/20`;
-    $('metricPercent').textContent = `${percent}%`;
-    let emoji = percent >= 90 ? '🏆' : percent >= 70 ? '🎉' : percent >= 50 ? '📚' : '💪';
-    let title = percent >= 90 ? 'Excellent !' : percent >= 70 ? 'Bravo !' : percent >= 50 ? 'Pas mal' : 'Courage';
-    let sub = percent >= 90 ? 'Chapitre maîtrisé !' : percent >= 70 ? 'Bonne voie.' : percent >= 50 ? 'Continue.' : 'Retravaille.';
-    $('resultsEmoji').textContent = emoji;
-    $('resultsTitle').textContent = title;
-    $('resultsSub').textContent = sub;
 
-    $('masteryValue').textContent = `${percent}%`;
-    const fill = $('masteryFill');
-    fill.style.background = percent >= 75 ? 'linear-gradient(90deg, #45b47d, #6fd99a)' : percent >= 50 ? 'linear-gradient(90deg, #E0B84A, #F0CC65)' : 'linear-gradient(90deg, #d7654a, #e88a72)';
-    fill.style.width = '0%';
-    setTimeout(() => { fill.style.width = `${percent}%`; }, 100);
-    $('masteryText').textContent = percent >= 75 ? 'Chapitre solide.' : percent >= 50 ? 'À consolider.' : 'À retravailler.';
+    $('metricCorrect').textContent = correct + '/' + total;
+    $('metricScore').textContent = score + '/20';
+    $('metricPercent').textContent = percent + '%';
 
-    const recs = [
-      percent === 100 ? 'Continue, teste un autre chapitre.' : percent >= 70 ? 'Revois les questions manquées.' : 'Refais une session dans 2-3 jours.'
-    ];
-    $('recommendationsList').innerHTML = recs.map((r) => `<li>${r}</li>`).join('');
-    showView('resultsView');
-  });
+    let emoji, title, sub;
+    if (percent >= 90) { emoji = '🏆'; title = 'Excellent !'; sub = 'Chapitre maîtrisé !'; }
+    else if (percent >= 70) { emoji = '🎉'; title = 'Bravo !'; sub = 'Bonne progression.'; }
+    else if (percent >= 50) { emoji = '📚'; title = 'Pas mal'; sub = 'Continue à réviser.'; }
+    else { emoji = '💪'; title = 'Courage'; sub = 'Retravaille ce chapitre.'; }
 
-  // ═══════════════════════════════════════════════════════════════
-  // BOUTONS
-  // ═══════════════════════════════════════════════════════════════
-  $('newFicheBtn').addEventListener('click', () => { syncModeFromChips(); showView('configView'); });
-  $('newFlashBtn').addEventListener('click', () => { syncModeFromChips(); showView('configView'); });
-  $('restartBtn').addEventListener('click', () => { syncModeFromChips(); showView('configView'); });
+    $('quizResultEmoji').textContent = emoji;
+    $('quizResultTitle').textContent = title;
+    $('quizResultSub').textContent = sub;
 
-  // ⚡ Réutiliser les flashcards déjà générées avec la fiche
-  $('startFlashcardsBtn').addEventListener('click', async () => {
-    if (state.currentSession?.flashcards?.length > 0) {
-      state.flashcards = state.currentSession.flashcards;
-      state.currentFlashIndex = 0;
-      state.flashRatings = {};
-      renderFlashcard();
-      showView('flashcardView');
-      return;
-    }
-    state.flashcards = [];
-    state.currentFlashIndex = 0;
-    state.flashRatings = {};
-    state.mode = 'flashcard';
-    await generateFlashcards();
-  });
-
-  // ✅ CORRECTION #3 — Utilise safeGenerateQuiz
-  $('skipToQuizBtn').addEventListener('click', safeGenerateQuiz);
-
-  window.addEventListener('scroll', () => {
-    $('scrollTop').classList.toggle('show', window.scrollY > 300);
-  }, { passive: true });
-  $('scrollTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-
-  // ═══════════════════════════════════════════════════════════════
-  // POP-UP PREMIUM UNIVERSEL
-  // ═══════════════════════════════════════════════════════════════
-  function showPremiumPopup(used, limit) {
-    const msgEl = $('premiumMessage');
-    if (used && limit && msgEl) {
-      msgEl.innerHTML = `Tu as utilisé tes <strong>${limit} révisions gratuites</strong>. Passe à Premium pour réviser sans limite.`;
-    }
-    $('premiumOverlay').classList.add('show');
+    showView('viewQuizResults');
   }
 
-  function hidePremiumPopup() {
-    $('premiumOverlay').classList.remove('show');
-  }
+  // ═══════════════════════════════════════════════════════════════
+  // EVENT LISTENERS
+  // ═══════════════════════════════════════════════════════════════
 
-  $('premiumClose')?.addEventListener('click', hidePremiumPopup);
-  $('premiumOverlay')?.addEventListener('click', (e) => {
+  // Bouton "Voir mes notions"
+  $('btnViewNotions').addEventListener('click', () => {
+    renderNotionsList();
+    showView('viewNotions');
+  });
+
+  // Bouton "Générer"
+  $('btnGenerate').addEventListener('click', () => {
+    if (state.generatedCount === 0) {
+      generateInitial();
+    } else {
+      generateMore();
+    }
+  });
+
+  // Bouton "Quiz"
+  $('btnQuiz').addEventListener('click', generateQuiz);
+
+  // Retour depuis "Mes notions"
+  $('backFromNotions').addEventListener('click', () => {
+    showView('viewHome');
+  });
+
+  // Retour depuis "Détail notion"
+  $('backFromNotionDetail').addEventListener('click', () => {
+    renderNotionsList();
+    showView('viewNotions');
+  });
+
+  // Suppression notion
+  $('btnDeleteNotion').addEventListener('click', deleteCurrentNotion);
+
+  // Retour depuis "Quiz"
+  $('backFromQuiz').addEventListener('click', () => {
+    showView('viewHome');
+  });
+
+  // Validation quiz
+  $('btnValidateQuiz').addEventListener('click', validateQuiz);
+
+  // Nouveau quiz
+  $('btnNewQuiz').addEventListener('click', () => {
+    generateQuiz();
+  });
+
+  // Retour accueil depuis résultats
+  $('btnBackHomeFromResults').addEventListener('click', () => {
+    showView('viewHome');
+  });
+
+  // Premium popup
+  $('premiumClose').addEventListener('click', hidePremiumPopup);
+  $('premiumOverlay').addEventListener('click', (e) => {
     if (e.target === $('premiumOverlay')) hidePremiumPopup();
   });
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && $('premiumOverlay')?.classList.contains('show')) {
+    if (e.key === 'Escape' && $('premiumOverlay').classList.contains('show')) {
       hidePremiumPopup();
     }
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // AUTH
+  // PRÉREMPLISSAGE DEPUIS URL
   // ═══════════════════════════════════════════════════════════════
-  function isUserPremium(data) {
-    if (!data) return false;
-    const status = data.subscriptionStatus || 'none';
-    if (status === 'pending') return false;
-    const active = data.premium === true || data.isUnlocked === true || data.hasDeposited === true;
-    if (!active) return false;
-    const end = data.subscriptionEndDate?.toDate?.() ||
-      (data.subscriptionEndDate?.seconds ? new Date(data.subscriptionEndDate.seconds * 1000) : null);
-    if (end) return end.getTime() > Date.now();
-    if (status === 'expired') return false;
-    return true;
+  function prefillFromUrl() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const subject = params.get('subject');
+      const chapter = params.get('chapter');
+
+      if (subject && SUBJECTS[subject]) {
+        state.subject = subject;
+      } else {
+        state.subject = 'mathematiques';
+      }
+
+      if (chapter && CHAPTERS[state.subject]?.includes(chapter)) {
+        state.chapter = chapter;
+      } else {
+        state.chapter = CHAPTERS[state.subject]?.[0] || 'Nombres complexes';
+      }
+    } catch (e) {
+      console.warn('[Réviseur] prefillFromUrl error:', e.message);
+      state.subject = 'mathematiques';
+      state.chapter = 'Nombres complexes';
+    }
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // AUTH
+  // ═══════════════════════════════════════════════════════════════
   onAuthStateChanged(auth, async (user) => {
     const conn = $('connectionState');
+
     if (!user) {
-      // ✅ CORRECTION #1 — Redirection vers auth-choice.html
       window.location.replace('auth-choice.html');
       return;
     }
+
     state.user = user;
     conn.textContent = 'Connecté';
     conn.classList.add('online');
-    try {
-      const snap = await getDoc(doc(db, 'users', user.uid));
-      if (snap.exists()) {
-        const d = snap.data();
-        state.isPremium = isUserPremium(d);
-        conn.textContent = state.isPremium ? 'Premium' : 'Gratuit';
-      }
-    } catch (e) {}
+
+    prefillFromUrl();
+
+    // Charge le cahier
+    await loadCahier();
+
+    showView('viewHome');
   });
 
-  initCustomSelects();
-  initChips();
-  console.log('🎓 ARVEXA — Réviseur v7.1 — Corrections appliquées');
+  console.log('🚀 ARVEXA — Réviseur v7.0 — Génération progressive');
   </script>
 </body>
 </html>
