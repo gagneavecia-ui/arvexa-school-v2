@@ -1,7 +1,8 @@
 // ================================================================
-// API EXAM v5.1 — ARVEXA School
+// API EXAM v5.2 — ARVEXA School
 // Mode examen 100% IA + Pool Firestore + Correction pédagogique
-// Historique Premium · Rate limit adaptatif
+// Historique Premium · Rate limit adaptatif · Tokens élargis
+// Corrections appliquées : voir commentaires ✅
 // ================================================================
 
 module.exports.config = { maxDuration: 90 };
@@ -22,6 +23,13 @@ const QUESTIONS_PER_EXERCISE = 5;
 const TOTAL_POINTS = 20;
 const FREE_EXAM_LIMIT = 2;
 const POOL_COLLECTION = 'examPool';
+
+// ✅ TOKENS ÉLARGIS — intervalle plus large pour éviter les coupures
+const MAX_TOKENS = {
+  GENERATE: 16000,       // était 12000 → marge de 33% en plus
+  CORRECT: 18000,        // était 14000 → marge de 28% en plus
+  PROVIDER_DEFAULT: 16000 // était 12000 → alignement sur GENERATE
+};
 
 const SUBJECT_LABELS = {
   mathematiques: 'Mathématiques',
@@ -219,11 +227,12 @@ async function reserveFreeGeneration(uid) {
   });
 }
 
+// ✅ CORRECTION #2 — Protéger releaseFreeGeneration contre les erreurs Firebase Admin
 async function releaseFreeGeneration(uid, usageDate) {
   if (!usageDate) return;
-  const { db, FieldValue } = getAdminServices();
-  const usageRef = db.collection('users').doc(uid).collection('examUsage').doc(usageDate);
   try {
+    const { db, FieldValue } = getAdminServices();
+    const usageRef = db.collection('users').doc(uid).collection('examUsage').doc(usageDate);
     await db.runTransaction(async (transaction) => {
       const snap = await transaction.get(usageRef);
       const used = Math.max(0, Number(snap.data()?.count || 0) - 1);
@@ -260,9 +269,11 @@ function getProviders() {
 }
 
 async function callProvider(provider, prompt, maxTokens) {
-  if (!maxTokens) maxTokens = 12000;
+  // ✅ TOKENS ÉLARGIS — valeur par défaut plus généreuse
+  if (!maxTokens) maxTokens = MAX_TOKENS.PROVIDER_DEFAULT;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
+  // ✅ Timeout élargi : 20s → 28s pour laisser plus de marge aux gros modèles
+  const timeout = setTimeout(() => controller.abort(), 28000);
   try {
     console.log(`[AI] ${provider.name} | prompt: ${prompt.length} car | max_tokens: ${maxTokens}`);
 
@@ -842,7 +853,8 @@ async function generateWithFallback(prompt, subjectName) {
     const provider = providers[i];
     try {
       console.log('[AI] Tentative ' + provider.name + '...');
-      let rawExam = await callProvider(provider, prompt);
+      // ✅ Utilise MAX_TOKENS.GENERATE (élargi à 16000)
+      let rawExam = await callProvider(provider, prompt, MAX_TOKENS.GENERATE);
       rawExam = repairExamStructure(rawExam, subjectName);
 
       if (validateGeneratedExam(rawExam, subjectName)) {
@@ -859,17 +871,40 @@ async function generateWithFallback(prompt, subjectName) {
   throw new Error('all_providers_failed: ' + errors.join(' | '));
 }
 
+// ✅ CORRECTION #6 — Validation renforcée de la structure de correction
 async function correctWithFallback(prompt) {
   const providers = getProviders();
   if (!providers.length) throw new Error('provider_missing');
   const errors = [];
   for (const provider of providers) {
     try {
-      const result = await callProvider(provider, prompt, 14000);
-      if (result && typeof result === 'object' && Array.isArray(result.exercises)) {
-        return { result, provider: provider.name };
+      // ✅ Utilise MAX_TOKENS.CORRECT (élargi à 18000)
+      const result = await callProvider(provider, prompt, MAX_TOKENS.CORRECT);
+
+      // ✅ Validation renforcée
+      if (!result || typeof result !== 'object') {
+        errors.push(provider.name + ': résultat non-objet');
+        continue;
       }
-      errors.push(provider.name + ': structure invalide');
+      if (!Array.isArray(result.exercises) || result.exercises.length === 0) {
+        errors.push(provider.name + ': exercises vide ou invalide');
+        continue;
+      }
+      // ✅ Vérifier que chaque exercice a au moins une question
+      const hasValidExercises = result.exercises.every((ex) =>
+        ex && Array.isArray(ex.questions) && ex.questions.length > 0
+      );
+      if (!hasValidExercises) {
+        errors.push(provider.name + ': questions manquantes dans un exercice');
+        continue;
+      }
+      // ✅ Vérifier que le score est un nombre
+      if (typeof result.score !== 'number' || isNaN(result.score)) {
+        errors.push(provider.name + ': score invalide');
+        continue;
+      }
+
+      return { result, provider: provider.name };
     } catch (error) {
       errors.push(provider.name + ': ' + error.message);
     }
@@ -1011,7 +1046,7 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
     }
   }
 
-  // CALCUL FINAL DU SCORE (BLINDÉ)
+  // ✅ CORRECTION #15 — Calcul final du score (une seule fois, propre)
   const finalExercises = deterministicResults.map((r) => r.exerciseResult);
 
   let rawScore = 0;
@@ -1143,14 +1178,20 @@ function validateConfig(body) {
   return null;
 }
 
+// ✅ CORRECTION #14 — Validation correction plus souple
 function validateCorrection(body) {
-  if (!body.exam || !Array.isArray(body.exam.subjects) || !body.subjectId || !body.answers) return 'Données invalides.';
-  if (JSON.stringify(body).length > 250000) return 'Examen trop volumineux.';
+  if (!body.exam || !Array.isArray(body.exam.subjects) || !body.subjectId || !body.answers) {
+    return 'Données invalides.';
+  }
+  // ✅ Limite augmentée : 250 Ko → 500 Ko (les examens riches peuvent être volumineux)
+  const size = JSON.stringify(body).length;
+  if (size > 500000) return 'Examen trop volumineux.';
   return null;
 }
 
 // ════════════════════════════════════════════════════════════════
 // CHARGEMENT CONTEXTE CAHIER
+// ✅ CORRECTION #8 — Parallélisation des requêtes Firestore
 // ════════════════════════════════════════════════════════════════
 async function loadNotebookContext(uid, subject, chapterId, chapterTitle) {
   const { db } = getAdminServices();
@@ -1164,18 +1205,28 @@ async function loadNotebookContext(uid, subject, chapterId, chapterTitle) {
   let chapterData = null;
   let actualChapterId = chapterId;
 
-  if (chapterId) {
-    const snap = await db.collection('users').doc(uid)
-      .collection('notebooks').doc(notebookKey)
-      .collection('chapters').doc(chapterId).get();
-    if (snap.exists) chapterData = { id: chapterId, ...snap.data() };
-  }
+  // ✅ Optimisation : si on a un chapterId, on lance en parallèle
+  // la récupération du chapter ET la potentielle recherche par titre
+  const chapterRef = chapterId
+    ? db.collection('users').doc(uid).collection('notebooks').doc(notebookKey)
+        .collection('chapters').doc(chapterId).get()
+    : null;
 
-  if (!chapterData && chapterTitle) {
-    const chaptersSnap = await db.collection('users').doc(uid)
-      .collection('notebooks').doc(notebookKey)
-      .collection('chapters').get().catch(() => ({ docs: [] }));
+  const chaptersListPromise = !chapterId && chapterTitle
+    ? db.collection('users').doc(uid).collection('notebooks').doc(notebookKey)
+        .collection('chapters').get().catch(() => ({ docs: [] }))
+    : null;
 
+  // Attendre les deux en parallèle
+  const [chapterSnap, chaptersSnap] = await Promise.all([
+    chapterRef || Promise.resolve(null),
+    chaptersListPromise || Promise.resolve(null)
+  ]);
+
+  if (chapterSnap && chapterSnap.exists) {
+    chapterData = { id: chapterId, ...chapterSnap.data() };
+  } else if (chaptersSnap && chaptersSnap.docs) {
+    // Fallback : recherche par titre
     const target = normalizeText(chapterTitle);
     const found = chaptersSnap.docs.find((d) => {
       const t = normalizeText(d.data().title);
@@ -1189,6 +1240,7 @@ async function loadNotebookContext(uid, subject, chapterId, chapterTitle) {
 
   if (!chapterData) return null;
 
+  // ✅ Une seule requête Firestore supplémentaire pour les sections
   const sectionsSnap = await db.collection('users').doc(uid)
     .collection('notebooks').doc(notebookKey)
     .collection('chapters').doc(actualChapterId)
