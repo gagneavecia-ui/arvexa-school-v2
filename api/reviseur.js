@@ -1,5 +1,5 @@
 // ================================================================
-// API RÉVISEUR v7.0 — ARVEXA School
+// API RÉVISEUR v7.0.1 — ARVEXA School
 // Refonte : génération progressive + cahier persistant + lecture gratuite
 // Providers : OpenRouter (principal) + Groq (fallback)
 // ================================================================
@@ -17,30 +17,26 @@ const MAX_REQUESTS_PER_WINDOW_LIGHT = 60;
 const MAX_REQUESTS_PER_WINDOW_HEAVY = 20;
 const requestLog = new Map();
 
-const FREE_REVISEUR_LIMIT = 3;  // 3 générations gratuites par jour
+const FREE_REVISEUR_LIMIT = 3;
 
 const ALLOWED_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie', 'svt', 'philosophie', 'histoire', 'geographie']);
-const ALLOWED_MODES = new Set(['fiche', 'flashcard']);
 
-// ✅ Nouvelles actions
 const ALLOWED_ACTIONS = new Set([
-  'loadCahier',       // 📖 Lecture gratuite
-  'generateInitial',  // ⚡ Première génération
-  'generateMore',     // ⚡ Nouvelles notions
-  'loadNotion',       // 👁️ Voir une notion
-  'deleteNotion',     // 🗑️ Supprimer une notion
-  'quiz',             // 🎯 Générer un quiz
-  'deleteCahier'      // 🗑️ Effacer le cahier
+  'loadCahier',
+  'generateInitial',
+  'generateMore',
+  'loadNotion',
+  'deleteNotion',
+  'quiz',
+  'deleteCahier'
 ]);
 
 const LIGHT_ACTIONS = new Set(['loadCahier', 'loadNotion', 'deleteNotion', 'deleteCahier']);
-const PREMIUM_ACTIONS = new Set([]); // pour l'instant, tout est gratuit
 
-// ✅ Nouvelles constantes de génération
-const INITIAL_NOTIONS_COUNT = 4;   // Première génération : 4 notions
-const MORE_NOTIONS_COUNT = 3;      // Générations suivantes : 3 notions
-const MAX_TOKENS_PER_CALL = 6000;  // ~5000 tokens effectifs
-const MAX_TOTAL_NOTIONS = 20;      // Limite maximale par chapitre
+const INITIAL_NOTIONS_COUNT = 4;
+const MORE_NOTIONS_COUNT = 3;
+const MAX_TOKENS_PER_CALL = 6000;
+const MAX_TOTAL_NOTIONS = 20;
 
 const KB_CACHE_TTL_MS = 10 * 60 * 1000;
 const CAHIER_COLLECTION = 'reviseurCahier';
@@ -148,6 +144,7 @@ function getAllNotions(chapter) {
 // UTILITAIRES
 // ════════════════════════════════════════════════════════════════
 function clientIp(request) {
+  if (!request || !request.headers) return 'unknown';
   return String(request.headers['x-forwarded-for'] || request.socket?.remoteAddress || 'unknown').split(',')[0].trim();
 }
 
@@ -165,7 +162,8 @@ function jsonError(response, status, error, code) {
 }
 
 async function verifyFirebaseToken(request) {
-  const authorization = request.headers.authorization || '';
+  if (!request) return null;
+  const authorization = request.headers?.authorization || '';
   const match = authorization.match(/^Bearer\s+(.+)$/i);
   if (!match) return null;
   try { return await getAdminServices().auth.verifyIdToken(match[1]); }
@@ -204,7 +202,6 @@ function toISO(v) {
   return null;
 }
 
-// ✅ Nettoyage LaTeX (identique à v6.0)
 const UNICODE_TO_LATEX = {
   'π': '\\pi ', '√': '\\sqrt{}', '×': '\\times ', '÷': '\\div ',
   '≤': '\\leq ', '≥': '\\geq ', '≠': '\\neq ', '∞': '\\infty ',
@@ -262,13 +259,9 @@ function deepClean(obj) {
 // ════════════════════════════════════════════════════════════════
 // FOURNISSEURS IA
 // ════════════════════════════════════════════════════════════════
-// 1. OpenRouter gpt-oss-120b (payant mais très bon — fallback si Groq sature)
-// 2. Groq gpt-oss-120b (rapide)
-// 3. Groq gpt-oss-20b (ultra-rapide, plus léger)
 function getProviders() {
   const providers = [];
 
-  // 🥇 OpenRouter (priorité pour la qualité)
   if (process.env.OPENROUTER_API_KEY) {
     providers.push({
       name: 'OpenRouter/gpt-oss-120b',
@@ -283,7 +276,6 @@ function getProviders() {
     });
   }
 
-  // 🥈🥉 Groq
   if (process.env.GROQ_API_KEY) {
     providers.push(
       {
@@ -390,7 +382,7 @@ async function generateWithCascade(prompt, validator, maxTokens, temperature, ta
 }
 
 // ════════════════════════════════════════════════════════════════
-// PROMPTS — Version allégée pour génération progressive
+// PROMPTS
 // ════════════════════════════════════════════════════════════════
 const LATEX_RULES = `
 RÈGLES LATEX :
@@ -403,7 +395,6 @@ MISSION : Tu prépares un élève de Terminale D au Niger au BAC.
 Contenu clair, précis, mémorisable.
 `;
 
-// ✅ Nouveau prompt : génération de N notions précises
 function buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate) {
   const notionsList = notionsToGenerate.map((n, i) =>
     `  ${i + 1}. [id: ${n.id}] ${n.titre}${n.description_courte ? ` — ${n.description_courte}` : ''}`
@@ -450,7 +441,6 @@ CONTRAINTES :
 - Réponds UNIQUEMENT avec le JSON`;
 }
 
-// ✅ Prompt pour le quiz
 function buildQuizPrompt(subjectLabel, chapterTitle, notions, count) {
   const notionsText = notions.map((n) => `- ${n.notionTitle || n.titre}`).join('\n');
 
@@ -546,7 +536,6 @@ async function saveCahierToDB(uid, subject, chapter, cahierData) {
 // ACTIONS
 // ════════════════════════════════════════════════════════════════
 
-// 📖 Charger le cahier (GRATUIT)
 async function actionLoadCahier(uid, body) {
   const { subject, chapter } = body;
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
@@ -570,7 +559,6 @@ async function actionLoadCahier(uid, body) {
   };
 }
 
-// 👁️ Voir une notion (GRATUIT)
 async function actionLoadNotion(uid, body) {
   const { subject, chapter, notionId } = body;
   if (!subject || !chapter || !notionId) throw { status: 400, message: 'Paramètres manquants.' };
@@ -584,7 +572,6 @@ async function actionLoadNotion(uid, body) {
   return { success: true, notion };
 }
 
-// ⚡ Première génération (4 notions)
 async function actionGenerateInitial(uid, body) {
   const { subject, chapter } = body;
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
@@ -600,13 +587,11 @@ async function actionGenerateInitial(uid, body) {
   const subjectLabel = knowledgeBase?.matiereLabel || subject;
   const chapterTitle = chapterData.titre || chapter;
 
-  // Charge le cahier existant
   let cahier = await loadCahierFromDB(uid, subject, chapter);
   if (!cahier) {
     cahier = { notions: [], generatedIds: [] };
   }
 
-  // Sélectionne les N premières notions non générées
   const remainingNotions = allNotions.filter((n) => !cahier.generatedIds.includes(n.id));
   if (remainingNotions.length === 0) {
     return {
@@ -620,12 +605,11 @@ async function actionGenerateInitial(uid, body) {
   }
 
   const notionsToGenerate = remainingNotions.slice(0, INITIAL_NOTIONS_COUNT);
-  console.log(`[REVISEUR v7.0] generateInitial | ${subject} > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
+  console.log(`[REVISEUR v7.0.1] generateInitial | ${subject} > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
 
   const prompt = buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate);
 
   let generatedData;
-  let source = 'ai';
   try {
     const result = await generateWithCascade(prompt, validateNotionsResponse, MAX_TOKENS_PER_CALL, 0.3, 'initial');
     generatedData = result.data;
@@ -636,7 +620,6 @@ async function actionGenerateInitial(uid, body) {
 
   generatedData = deepClean(generatedData);
 
-  // Sauvegarde
   const newNotions = generatedData.notions.map((n) => ({
     notionId: n.notionId,
     notionTitle: n.notionTitle,
@@ -649,6 +632,8 @@ async function actionGenerateInitial(uid, body) {
     generatedAt: new Date().toISOString()
   }));
 
+  cahier.notions = cahier.notions || [];
+  cahier.generatedIds = cahier.generatedIds || [];
   cahier.notions.push(...newNotions);
   cahier.generatedIds.push(...notionsToGenerate.map((n) => n.id));
 
@@ -659,12 +644,11 @@ async function actionGenerateInitial(uid, body) {
     notions: newNotions,
     generatedCount: cahier.notions.length,
     totalAvailable: allNotions.length,
-    source,
+    source: 'ai',
     message: `${newNotions.length} notions générées.`
   };
 }
 
-// ⚡ Nouvelles notions (3 par appel)
 async function actionGenerateMore(uid, body) {
   const { subject, chapter } = body;
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
@@ -695,10 +679,9 @@ async function actionGenerateMore(uid, body) {
     };
   }
 
-  // Sélectionne aléatoirement 3 notions restantes
   const shuffled = shuffle(remainingNotions);
   const notionsToGenerate = shuffled.slice(0, Math.min(MORE_NOTIONS_COUNT, shuffled.length));
-  console.log(`[REVISEUR v7.0] generateMore | ${subject} > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
+  console.log(`[REVISEUR v7.0.1] generateMore | ${subject} > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
 
   const prompt = buildNotionsPrompt(subjectLabel, chapterTitle, notionsToGenerate);
 
@@ -740,7 +723,6 @@ async function actionGenerateMore(uid, body) {
   };
 }
 
-// 🗑️ Supprimer une notion
 async function actionDeleteNotion(uid, body) {
   const { subject, chapter, notionId } = body;
   if (!subject || !chapter || !notionId) throw { status: 400, message: 'Paramètres manquants.' };
@@ -756,7 +738,6 @@ async function actionDeleteNotion(uid, body) {
   return { success: true };
 }
 
-// 🎯 Générer un quiz
 async function actionQuiz(uid, body) {
   const { subject, chapter } = body;
   const count = Math.min(15, Math.max(5, Number(body.count) || 10));
@@ -798,7 +779,6 @@ async function actionQuiz(uid, body) {
   };
 }
 
-// 🗑️ Effacer tout le cahier
 async function actionDeleteCahier(uid, body) {
   const { subject, chapter } = body;
   if (!subject || !chapter) throw { status: 400, message: 'Paramètres manquants.' };
@@ -817,6 +797,8 @@ async function actionDeleteCahier(uid, body) {
 // HANDLER
 // ════════════════════════════════════════════════════════════════
 module.exports = async function handler(request, response) {
+  if (!request || !response) return;
+
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST');
     return jsonError(response, 405, 'Méthode non autorisée.');
@@ -852,7 +834,7 @@ module.exports = async function handler(request, response) {
       default:               return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[REVISEUR v7.0] "${action}" échouée:`, error.message);
+    console.error(`[REVISEUR v7.0.1] "${action}" échouée:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
