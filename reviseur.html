@@ -1996,74 +1996,81 @@
 
           closeAllSelectors();
           render();
-          initChapterSelector();
+
+          // ✅ Réinitialise le sélecteur de chapitre (sans empiler les listeners)
+          resetChapterSelector();
           loadCahier();
         });
       });
     }
 
-   trigger.addEventListener('click', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-
-  const wasOpen = el.classList.contains('open');
-  closeAllSelectors();
-
-  if (!wasOpen) {
-    el.classList.add('open');
-    // ✅ Signale qu'on vient d'ouvrir → le prochain clic global sera ignoré
-    __selectorJustOpened = true;
-  }
-});
+    // ✅ Utiliser onclick (écrase au lieu d'empiler)
+    trigger.onclick = (e) => {
+      e.stopPropagation();
+      const wasOpen = el.classList.contains('open');
+      closeAllSelectors();
+      if (!wasOpen) el.classList.add('open');
+    };
 
     render();
   }
 
-  function initChapterSelector() {
+    function initChapterSelector() {
     const el = document.getElementById('chapterSelector');
     const trigger = el.querySelector('.selector-trigger');
     const valueEl = document.getElementById('chapterSelectorValue');
     const optionsEl = document.getElementById('chapterSelectorOptions');
 
-    const chapters = CHAPTERS[state.subject] || [];
-
-    function render() {
-      valueEl.textContent = state.chapter || 'Choisir un chapitre';
-
-      optionsEl.innerHTML = chapters.map((ch) => `
-        <div class="selector-option ${ch === state.chapter ? 'selected' : ''}" data-value="${escapeHtml(ch)}">
-          <span class="option-emoji">📖</span>
-          <span>${escapeHtml(ch)}</span>
-        </div>
-      `).join('');
-
-      optionsEl.querySelectorAll('.selector-option').forEach((opt) => {
-        opt.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const newChapter = opt.dataset.value;
-          if (newChapter === state.chapter) {
-            closeAllSelectors();
-            return;
-          }
-
-          state.chapter = newChapter;
-          saveSelection();
-
-          closeAllSelectors();
-          render();
-          loadCahier();
-        });
-      });
-    }
-
-    trigger.addEventListener('click', (e) => {
+    // ✅ Utiliser onclick (écrase au lieu d'empiler)
+    trigger.onclick = (e) => {
       e.stopPropagation();
       const wasOpen = el.classList.contains('open');
       closeAllSelectors();
       if (!wasOpen) el.classList.add('open');
-    });
+    };
 
-    render();
+    renderChapterOptions();
+  }
+
+  // ✅ Fonction séparée : met à jour seulement le contenu (pas les listeners globaux)
+  function renderChapterOptions() {
+    const el = document.getElementById('chapterSelector');
+    const valueEl = document.getElementById('chapterSelectorValue');
+    const optionsEl = document.getElementById('chapterSelectorOptions');
+
+    const chapters = CHAPTERS[state.subject] || [];
+
+    valueEl.textContent = state.chapter || 'Choisir un chapitre';
+
+    optionsEl.innerHTML = chapters.map((ch) => `
+      <div class="selector-option ${ch === state.chapter ? 'selected' : ''}" data-value="${escapeHtml(ch)}">
+        <span class="option-emoji">📖</span>
+        <span>${escapeHtml(ch)}</span>
+      </div>
+    `).join('');
+
+    optionsEl.querySelectorAll('.selector-option').forEach((opt) => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const newChapter = opt.dataset.value;
+        if (newChapter === state.chapter) {
+          closeAllSelectors();
+          return;
+        }
+
+        state.chapter = newChapter;
+        saveSelection();
+
+        closeAllSelectors();
+        renderChapterOptions();
+        loadCahier();
+      });
+    });
+  }
+
+  // ✅ Nouvelle fonction : réinitialise le sélecteur de chapitre après changement de matière
+  function resetChapterSelector() {
+    renderChapterOptions();
   }
 
   document.addEventListener('click', () => closeAllSelectors());
