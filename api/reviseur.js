@@ -1,7 +1,8 @@
 // ================================================================
-// API RÉVISEUR v5.2 — ARVEXA School
+// API RÉVISEUR v5.3 — ARVEXA School
 // Fan-out parallèle + base JSON + pool Firestore + Historique Premium
 // 6 profils : scientifique / svt / philosophie / histoire / francais / langue
+// Corrections appliquées : voir commentaires ✅
 // ================================================================
 
 const fs = require('fs');
@@ -221,6 +222,14 @@ function shuffle(array) {
   return arr;
 }
 
+// ✅ CORRECTION #4 (helper) — Fonction de validation d'une question de quiz
+function isValidQuizQuestion(q) {
+  return q &&
+    typeof q.question === 'string' && q.question.trim() &&
+    Array.isArray(q.options) && q.options.length === 4 &&
+    ['A', 'B', 'C', 'D'].includes(String(q.correctAnswer || '').toUpperCase());
+}
+
 // ════════════════════════════════════════════════════════════════
 // POST-TRAITEMENT LATEX
 // ════════════════════════════════════════════════════════════════
@@ -303,11 +312,12 @@ async function reserveFreeGeneration(uid) {
   });
 }
 
+// ✅ CORRECTION #5 — Protéger releaseFreeGeneration contre les erreurs Firebase Admin
 async function releaseFreeGeneration(uid, usageDate) {
   if (!usageDate) return;
-  const { db, FieldValue } = getAdminServices();
-  const usageRef = db.collection('users').doc(uid).collection('reviseurUsage').doc(usageDate);
   try {
+    const { db, FieldValue } = getAdminServices();
+    const usageRef = db.collection('users').doc(uid).collection('reviseurUsage').doc(usageDate);
     await db.runTransaction(async (transaction) => {
       const snap = await transaction.get(usageRef);
       const used = Math.max(0, Number(snap.data()?.count || 0) - 1);
@@ -504,13 +514,8 @@ async function buildQuizFromPool(subject, chapter, count) {
       if (Array.isArray(q.session?.quiz)) allQuestions.push(...q.session.quiz);
     });
 
-    // Validation côté serveur
-    const validQuestions = allQuestions.filter((q) =>
-      q &&
-      typeof q.question === 'string' && q.question.trim() &&
-      Array.isArray(q.options) && q.options.length === 4 &&
-      ['A', 'B', 'C', 'D'].includes(String(q.correctAnswer || '').toUpperCase())
-    );
+    // ✅ CORRECTION #4 (helper) — Utilise la fonction de validation
+    const validQuestions = allQuestions.filter(isValidQuizQuestion);
 
     if (validQuestions.length < count) return null;
 
@@ -1019,7 +1024,7 @@ module.exports = async function handler(request, response) {
   }[body.subject] || body.subject;
   const chapterTitle = chapterData?.titre || body.chapter;
 
-  console.log(`[REVISEUR v5.2] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
+  console.log(`[REVISEUR v5.3] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
 
   // Quota (uniquement pour generate)
   let reservation = null;
@@ -1094,7 +1099,8 @@ module.exports = async function handler(request, response) {
         (!isFlashcard && (!Array.isArray(session.sections) || session.sections.length === 0));
 
       if (sessionIsEmpty) {
-        if (reservation?.reserved && !reservation?.premium) {
+        // ✅ CORRECTION #7 — Simplification : "reserved" est déjà false pour premium
+        if (reservation?.reserved) {
           try { await releaseFreeGeneration(user.uid, reservation.usageDate); } catch (_) {}
         }
         return response.status(200).json({
@@ -1151,7 +1157,8 @@ module.exports = async function handler(request, response) {
     // ═══ ACTION : QUIZ ═══
     if (action === 'quiz') {
       const count = Math.min(20, Math.max(5, Number(body.count) || 5));
-      const level = Number(body.difficulty) || 2;
+      // ✅ CORRECTION #6 — Borner la difficulté entre 1 et 4
+      const level = Math.min(4, Math.max(1, Number(body.difficulty) || 2));
       const seed = hashString(Date.now() + '_' + user.uid + '_' + Math.random());
       const deadline = Date.now() + GLOBAL_TIME_BUDGET_MS;
 
@@ -1183,7 +1190,10 @@ module.exports = async function handler(request, response) {
 
       quizData = deepClean(quizData);
 
-      if (source === 'ai') {
+      // ✅ CORRECTION #4 — Filtrer les questions invalides AVANT sauvegarde
+      const validQuiz = (quizData.quiz || []).filter(isValidQuizQuestion);
+
+      if (source === 'ai' && validQuiz.length > 0) {
         try {
           const { db, FieldValue } = getAdminServices();
           await db.collection('users').doc(user.uid).collection('reviseurSessions').add({
@@ -1191,13 +1201,13 @@ module.exports = async function handler(request, response) {
             subjectLabel,
             chapter: chapterTitle,
             mode: 'quiz',
-            session: { chapterTitle, quiz: quizData.quiz },
+            session: { chapterTitle, quiz: validQuiz },
             createdAt: FieldValue.serverTimestamp()
           });
         } catch (e) {}
       }
 
-      return response.status(200).json({ success: true, quiz: quizData.quiz || [], source, seed });
+      return response.status(200).json({ success: true, quiz: validQuiz, source, seed });
     }
 
     // ═══ ACTION : EXERCISES ═══
@@ -1209,6 +1219,7 @@ module.exports = async function handler(request, response) {
 
   } catch (error) {
     console.error(`Action "${action}" échouée:`, error.message);
+    // ✅ CORRECTION #7 — Simplification
     if (reservation?.reserved && action === 'generate') {
       try { await releaseFreeGeneration(user.uid, reservation.usageDate); } catch (_) {}
     }
