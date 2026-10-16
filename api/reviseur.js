@@ -1,8 +1,8 @@
 // ================================================================
-// API RÉVISEUR v5.3 — ARVEXA School
+// API RÉVISEUR v5.4 — ARVEXA School
 // Fan-out parallèle + base JSON + pool Firestore + Historique Premium
 // 6 profils : scientifique / svt / philosophie / histoire / francais / langue
-// Corrections appliquées : voir commentaires ✅
+// Corrections : providers nettoyés + rate limit Groq géré
 // ================================================================
 
 const fs = require('fs');
@@ -30,8 +30,11 @@ const MAX_TOKENS = {
   EXERCISES: 8000
 };
 
+// ✅ RÉDUIT de 8 → 2 pour éviter le rate limit Groq (8000 TPM)
 const NOTION_BATCH_SIZE = 4;
-const MAX_BATCHES_PER_WAVE = 8;
+const MAX_BATCHES_PER_WAVE = 2;
+const WAVE_PAUSE_MS = 2000;  // ✅ Pause entre vagues pour rate limit
+const RATE_LIMIT_RETRY_MS = 15000;  // ✅ Attente après rate limit
 const GLOBAL_TIME_BUDGET_MS = 100000;
 const POOL_COLLECTION = 'reviseurPool';
 const KB_CACHE_TTL_MS = 10 * 60 * 1000;
@@ -93,12 +96,10 @@ function loadKnowledgeBase(subject) {
         const raw = fs.readFileSync(filePath, 'utf-8');
         const data = JSON.parse(raw);
 
-        // Validation structure
         if (!data || !Array.isArray(data.chapitres)) {
           throw new Error('structure_invalid');
         }
 
-        // Nettoyage des notions invalides
         data.chapitres.forEach((ch) => {
           if (Array.isArray(ch.notions)) {
             ch.notions = ch.notions.filter((n) => n && n.id && n.titre);
@@ -115,7 +116,6 @@ function loadKnowledgeBase(subject) {
   }
 
   console.warn(`[REVISEUR] Base absente : ${filename}`);
-  // Ne pas cacher null → permet un rechargement si la base est ajoutée
   return null;
 }
 
@@ -182,11 +182,6 @@ function isPremiumUser(data) {
   return false;
 }
 
-function cleanId(str) {
-  return String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
-}
-
 function hashString(str) {
   let hash = 5381;
   const s = String(str || '');
@@ -222,12 +217,24 @@ function shuffle(array) {
   return arr;
 }
 
-// ✅ CORRECTION #4 (helper) — Fonction de validation d'une question de quiz
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function isValidQuizQuestion(q) {
   return q &&
     typeof q.question === 'string' && q.question.trim() &&
     Array.isArray(q.options) && q.options.length === 4 &&
     ['A', 'B', 'C', 'D'].includes(String(q.correctAnswer || '').toUpperCase());
+}
+
+// ✅ Détecte si une erreur est un rate limit (retry possible)
+function isRateLimitError(error) {
+  const msg = String(error?.message || '').toLowerCase();
+  return msg.includes('rate limit') ||
+         msg.includes('rate_limit') ||
+         msg.includes('too many requests') ||
+         msg.includes('429');
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -312,7 +319,6 @@ async function reserveFreeGeneration(uid) {
   });
 }
 
-// ✅ CORRECTION #5 — Protéger releaseFreeGeneration contre les erreurs Firebase Admin
 async function releaseFreeGeneration(uid, usageDate) {
   if (!usageDate) return;
   try {
@@ -327,37 +333,53 @@ async function releaseFreeGeneration(uid, usageDate) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// FOURNISSEURS IA
+// FOURNISSEURS IA — ✅ NETTOYÉ
 // ════════════════════════════════════════════════════════════════
+// Seuls les modèles qui fonctionnent réellement :
+// - Groq/gpt-oss-120b (meilleur)
+// - Groq/gpt-oss-20b (fallback, plus rapide)
+//
+// Retirés car cassés :
+// - Groq/llama-3.3-70b-versatile (n'existe plus)
+// - Groq/llama-3.1-8b-instant (n'existe plus)
+// - OpenRouter/inkling:free (inaccessible via API)
+// - OpenRouter/dots3:free (modèle invalide)
+// - OpenRouter/inkling-small:free (inaccessible via API)
 function getProviders() {
   const providers = [];
+
   if (process.env.GROQ_API_KEY) {
     providers.push(
-      { name: 'Groq/gpt-oss-120b', key: process.env.GROQ_API_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions', model: 'openai/gpt-oss-120b', jsonMode: true, headers: {} },
-      { name: 'Groq/llama-3.3-70b', key: process.env.GROQ_API_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions', model: 'llama-3.3-70b-versatile', jsonMode: true, headers: {} },
-      { name: 'Groq/gpt-oss-20b', key: process.env.GROQ_API_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions', model: 'openai/gpt-oss-20b', jsonMode: true, headers: {} },
-      { name: 'Groq/llama-3.1-8b', key: process.env.GROQ_API_KEY, endpoint: 'https://api.groq.com/openai/v1/chat/completions', model: 'llama-3.1-8b-instant', jsonMode: true, headers: {} }
+      {
+        name: 'Groq/gpt-oss-120b',
+        key: process.env.GROQ_API_KEY,
+        endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+        model: 'openai/gpt-oss-120b',
+        jsonMode: true,
+        headers: {}
+      },
+      {
+        name: 'Groq/gpt-oss-20b',
+        key: process.env.GROQ_API_KEY,
+        endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+        model: 'openai/gpt-oss-20b',
+        jsonMode: true,
+        headers: {}
+      }
     );
   }
-  if (process.env.OPENROUTER_API_KEY) {
-    const orHeaders = {
-      'HTTP-Referer': process.env.APP_ORIGIN || '',
-      'X-Title': 'ARVEXA Reviseur'
-    };
-    providers.push(
-      { name: 'OpenRouter/inkling:free', key: process.env.OPENROUTER_API_KEY, endpoint: 'https://openrouter.ai/api/v1/chat/completions', model: 'thinkingmachines/inkling:free', jsonMode: true, headers: orHeaders },
-      { name: 'OpenRouter/dots3:free', key: process.env.OPENROUTER_API_KEY, endpoint: 'https://openrouter.ai/api/v1/chat/completions', model: 'dots-studio/dots3-note-preview:free', jsonMode: true, headers: orHeaders },
-      { name: 'OpenRouter/inkling-small:free', key: process.env.OPENROUTER_API_KEY, endpoint: 'https://openrouter.ai/api/v1/chat/completions', model: 'thinkingmachines/inkling-small:free', jsonMode: true, headers: orHeaders }
-    );
-  }
+
   return providers;
 }
 
 async function callProvider(provider, prompt, maxTokens, temperature) {
   if (!maxTokens) maxTokens = 4000;
   if (typeof temperature !== 'number') temperature = 0.15;
+
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25000);
+  // ✅ Timeout élargi à 30s pour laisser respirer Groq
+  const timeout = setTimeout(() => controller.abort(), 30000);
+
   try {
     console.log(`[AI] ${provider.name} | prompt: ${prompt.length} car | max_tokens: ${maxTokens}`);
 
@@ -382,7 +404,12 @@ async function callProvider(provider, prompt, maxTokens, temperature) {
     const data = await result.json().catch(() => null);
     if (!result.ok) {
       const msg = data?.error?.message || data?.message || `HTTP ${result.status}`;
-      throw new Error(`${provider.name}: ${msg}`);
+      const err = new Error(`${provider.name}: ${msg}`);
+      // ✅ Marquer si c'est un rate limit
+      if (result.status === 429 || /rate limit/i.test(msg)) {
+        err.isRateLimit = true;
+      }
+      throw err;
     }
 
     const content = data?.choices?.[0]?.message?.content;
@@ -405,11 +432,14 @@ async function callProvider(provider, prompt, maxTokens, temperature) {
   }
 }
 
+// ✅ Génère avec cascade + retry intelligent sur rate limit
 async function generateWithCascade(prompt, validator, maxTokens, temperature, taskName, deadline) {
   const providers = getProviders();
   if (!providers.length) throw new Error('provider_missing');
 
   const errors = [];
+  const rateLimitedProviders = [];
+
   for (const provider of providers) {
     if (deadline && Date.now() > deadline) {
       errors.push('time_budget_exceeded');
@@ -428,8 +458,32 @@ async function generateWithCascade(prompt, validator, maxTokens, temperature, ta
     } catch (error) {
       errors.push(`${provider.name}: ${error.message}`);
       console.warn(`[AI] ❌ ${taskName} → ${provider.name}: ${error.message}`);
+      if (error.isRateLimit) {
+        rateLimitedProviders.push(provider.name);
+      }
     }
   }
+
+  // ✅ Si TOUS les providers ont échoué par rate limit, retry une fois après attente
+  if (rateLimitedProviders.length === providers.length && deadline && Date.now() < deadline - RATE_LIMIT_RETRY_MS) {
+    console.log(`[AI] ${taskName} — tous rate-limited, attente ${RATE_LIMIT_RETRY_MS}ms puis retry...`);
+    await sleep(RATE_LIMIT_RETRY_MS);
+
+    for (const provider of providers) {
+      if (Date.now() > deadline) break;
+      try {
+        console.log(`[AI] ${taskName} → retry ${provider.name}...`);
+        const data = await callProvider(provider, prompt, maxTokens, temperature);
+        if (!validator || validator(data)) {
+          console.log(`[AI] ✅ ${taskName} → ${provider.name} (retry)`);
+          return { data, provider: provider.name };
+        }
+      } catch (error) {
+        console.warn(`[AI] ❌ ${taskName} → retry ${provider.name}: ${error.message}`);
+      }
+    }
+  }
+
   throw new Error('all_providers_failed: ' + errors.join(' | '));
 }
 
@@ -474,7 +528,6 @@ async function buildSessionFromPool(subject, chapter, mode) {
     const top = matching.slice(0, Math.max(1, Math.ceil(matching.length / 3)));
     const picked = top[Math.floor(Math.random() * top.length)];
 
-    // Validation de la session pool
     const sess = picked.session;
     const valid = mode === 'flashcard'
       ? (Array.isArray(sess?.flashcards) && sess.flashcards.length > 0)
@@ -514,7 +567,6 @@ async function buildQuizFromPool(subject, chapter, count) {
       if (Array.isArray(q.session?.quiz)) allQuestions.push(...q.session.quiz);
     });
 
-    // ✅ CORRECTION #4 (helper) — Utilise la fonction de validation
     const validQuestions = allQuestions.filter(isValidQuizQuestion);
 
     if (validQuestions.length < count) return null;
@@ -756,7 +808,7 @@ function validateQuiz(data) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// GÉNÉRATION PAR VAGUES SÉQUENTIELLES
+// GÉNÉRATION PAR VAGUES SÉQUENTIELLES — ✅ Vagues de 2 max
 // ════════════════════════════════════════════════════════════════
 async function generateFicheByWaves(subjectLabel, chapterTitle, notions, deadline) {
   const allBatches = chunk(notions, NOTION_BATCH_SIZE);
@@ -800,6 +852,12 @@ async function generateFicheByWaves(subjectLabel, chapterTitle, notions, deadlin
     });
 
     waveIndex++;
+
+    // ✅ Pause entre vagues pour laisser le rate limit se réinitialiser
+    if (waveIndex * MAX_BATCHES_PER_WAVE < allBatches.length && Date.now() < deadline - WAVE_PAUSE_MS) {
+      console.log(`[REVISEUR] Pause ${WAVE_PAUSE_MS}ms entre vagues (rate limit Groq)`);
+      await sleep(WAVE_PAUSE_MS);
+    }
   }
 
   if (missingBatches > 0) {
@@ -850,6 +908,11 @@ async function generateFlashcardsByWaves(subjectLabel, chapterTitle, notions, de
     });
 
     waveIndex++;
+
+    // ✅ Pause entre vagues
+    if (waveIndex * MAX_BATCHES_PER_WAVE < allBatches.length && Date.now() < deadline - WAVE_PAUSE_MS) {
+      await sleep(WAVE_PAUSE_MS);
+    }
   }
 
   return { chapterTitle, flashcards: allCards };
@@ -1006,7 +1069,6 @@ module.exports = async function handler(request, response) {
   if (!ALLOWED_SUBJECTS.has(body.subject)) return jsonError(response, 400, 'Matière invalide.');
   if (typeof body.chapter !== 'string' || body.chapter.length > 100) return jsonError(response, 400, 'Chapitre invalide.');
 
-  // ⚡ Valider le mode AVANT la réservation de quota
   if (action === 'generate') {
     if (!ALLOWED_MODES.has(body.mode)) {
       return jsonError(response, 400, 'Mode invalide.');
@@ -1024,9 +1086,8 @@ module.exports = async function handler(request, response) {
   }[body.subject] || body.subject;
   const chapterTitle = chapterData?.titre || body.chapter;
 
-  console.log(`[REVISEUR v5.3] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
+  console.log(`[REVISEUR v5.4] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
 
-  // Quota (uniquement pour generate)
   let reservation = null;
   if (action === 'generate') {
     try { reservation = await reserveFreeGeneration(user.uid); }
@@ -1065,7 +1126,6 @@ module.exports = async function handler(request, response) {
             : await generateFicheByWaves(subjectLabel, chapterTitle, fakeNotions, deadline);
         }
 
-        // 1 crédit : fiche + flashcards
         if (!isFlashcard && includeFlashcards && hasKnowledge) {
           try {
             const flashDeadline = Date.now() + Math.max(15000, deadline - Date.now());
@@ -1093,13 +1153,11 @@ module.exports = async function handler(request, response) {
         }
       }
 
-      // ⚡ Vérification session vide APRÈS le fallback pool
       const sessionIsEmpty = !session ||
         (isFlashcard && (!Array.isArray(session.flashcards) || session.flashcards.length === 0)) ||
         (!isFlashcard && (!Array.isArray(session.sections) || session.sections.length === 0));
 
       if (sessionIsEmpty) {
-        // ✅ CORRECTION #7 — Simplification : "reserved" est déjà false pour premium
         if (reservation?.reserved) {
           try { await releaseFreeGeneration(user.uid, reservation.usageDate); } catch (_) {}
         }
@@ -1115,7 +1173,6 @@ module.exports = async function handler(request, response) {
 
       session = deepClean(session);
 
-      // Sauvegarde en pool + historique
       if (source === 'ai') {
         await saveSessionToPool(body.subject, body.chapter, body.mode, session, user.uid);
 
@@ -1157,7 +1214,6 @@ module.exports = async function handler(request, response) {
     // ═══ ACTION : QUIZ ═══
     if (action === 'quiz') {
       const count = Math.min(20, Math.max(5, Number(body.count) || 5));
-      // ✅ CORRECTION #6 — Borner la difficulté entre 1 et 4
       const level = Math.min(4, Math.max(1, Number(body.difficulty) || 2));
       const seed = hashString(Date.now() + '_' + user.uid + '_' + Math.random());
       const deadline = Date.now() + GLOBAL_TIME_BUDGET_MS;
@@ -1190,7 +1246,6 @@ module.exports = async function handler(request, response) {
 
       quizData = deepClean(quizData);
 
-      // ✅ CORRECTION #4 — Filtrer les questions invalides AVANT sauvegarde
       const validQuiz = (quizData.quiz || []).filter(isValidQuizQuestion);
 
       if (source === 'ai' && validQuiz.length > 0) {
@@ -1219,7 +1274,6 @@ module.exports = async function handler(request, response) {
 
   } catch (error) {
     console.error(`Action "${action}" échouée:`, error.message);
-    // ✅ CORRECTION #7 — Simplification
     if (reservation?.reserved && action === 'generate') {
       try { await releaseFreeGeneration(user.uid, reservation.usageDate); } catch (_) {}
     }
