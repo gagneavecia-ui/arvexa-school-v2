@@ -1,8 +1,7 @@
 // ================================================================
-// API RÉVISEUR v5.5 — ARVEXA School
+// API RÉVISEUR v6.0 — ARVEXA School
 // Fan-out parallèle + base JSON + pool Firestore + Historique Premium
-// Providers : OpenRouter (principal) + Groq (fallback)
-// Corrections : retry intelligent + détection Request too large
+// Providers : Gemini (principal) + Groq (fallback)
 // ================================================================
 
 const fs = require('fs');
@@ -23,7 +22,6 @@ const ALLOWED_ACTIONS = new Set(['generate', 'quiz', 'exercises', 'listSessions'
 const LIGHT_ACTIONS = new Set(['listSessions', 'loadSession', 'deleteSession']);
 const PREMIUM_ACTIONS = new Set(['listSessions', 'loadSession']);
 
-// ✅ MAX_TOKENS adaptés : OpenRouter supporte de gros prompts, Groq a 8000 TPM
 const MAX_TOKENS = {
   FICHE: 8000,
   FLASHCARDS: 4000,
@@ -32,9 +30,9 @@ const MAX_TOKENS = {
 };
 
 const NOTION_BATCH_SIZE = 4;
-// ✅ Vagues de 2 (compatible Groq fallback)
+// ✅ Vagues de 2 (compatible Gemini et Groq)
 const MAX_BATCHES_PER_WAVE = 2;
-const WAVE_PAUSE_MS = 2000;
+const WAVE_PAUSE_MS = 1500;
 const MAX_RETRIES_PER_BATCH = 2;
 const GLOBAL_TIME_BUDGET_MS = 100000;
 const POOL_COLLECTION = 'reviseurPool';
@@ -226,28 +224,33 @@ function isValidQuizQuestion(q) {
     ['A', 'B', 'C', 'D'].includes(String(q.correctAnswer || '').toUpperCase());
 }
 
-// ✅ Parse le délai de retry depuis un message Groq : "Please try again in 43.3125s"
+// ✅ Parse le délai de retry depuis un message Groq
 function parseRetryDelayMs(errorMessage) {
   const match = String(errorMessage || '').match(/try again in ([\d.]+)\s*s/i);
   if (!match) return 0;
   const seconds = parseFloat(match[1]);
   if (!Number.isFinite(seconds) || seconds <= 0 || seconds > 120) return 0;
-  return Math.ceil(seconds * 1000) + 1000;  // +1s de marge
+  return Math.ceil(seconds * 1000) + 1000;
 }
 
-// ✅ Détecte si l'erreur est un rate limit temporaire (retry utile)
 function isRetryableRateLimit(errorMessage) {
   const msg = String(errorMessage || '').toLowerCase();
-  if (msg.includes('request too large')) return false;  // ❌ Définitif, retry inutile
+  if (msg.includes('request too large')) return false;
+  if (msg.includes('model is unavailable')) return false;
   return msg.includes('rate limit') ||
          msg.includes('rate_limit') ||
          msg.includes('too many requests') ||
-         msg.includes('429');
+         msg.includes('429') ||
+         msg.includes('quota');
 }
 
-// ✅ Détecte "Request too large" (erreur définitive, ne pas retry)
-function isRequestTooLarge(errorMessage) {
-  return String(errorMessage || '').toLowerCase().includes('request too large');
+function isDefinitiveError(errorMessage) {
+  const msg = String(errorMessage || '').toLowerCase();
+  return msg.includes('request too large') ||
+         msg.includes('model is unavailable') ||
+         msg.includes('does not exist') ||
+         msg.includes('is not a valid model') ||
+         msg.includes('is only available on agentic harnesses');
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -346,45 +349,43 @@ async function releaseFreeGeneration(uid, usageDate) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// FOURNISSEURS IA — v5.5
+// FOURNISSEURS IA — v6.0
 // ════════════════════════════════════════════════════════════════
 // Ordre :
-// 1. OpenRouter gpt-oss-120b:free (principal, 20 RPM, 1000/jour avec $10)
-// 2. Groq gpt-oss-120b (fallback 1, 8000 TPM, rapide)
-// 3. Groq gpt-oss-20b (fallback 2, plus léger)
+// 1. Gemini 2.0 Flash Exp (principal) — 15 req/min, 1M tokens/jour
+// 2. Groq gpt-oss-120b (fallback 1) — rapide
+// 3. Groq gpt-oss-20b (fallback 2) — léger
 // ════════════════════════════════════════════════════════════════
 function getProviders() {
   const providers = [];
 
-  // 🥇 PRINCIPAL : OpenRouter gpt-oss-120b:free
-  if (process.env.OPENROUTER_API_KEY) {
+  // 🥇 PRINCIPAL : Google Gemini
+  if (process.env.GEMINI_API_KEY) {
     providers.push({
-      name: 'OpenRouter/gpt-oss-120b:free',
-      key: process.env.OPENROUTER_API_KEY,
-      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-      model: 'openai/gpt-oss-120b:free',
-      jsonMode: true,
-      headers: {
-        'HTTP-Referer': process.env.APP_ORIGIN || 'https://arvexaschool.vercel.app',
-        'X-Title': 'ARVEXA Reviseur'
-      }
+      name: 'Gemini/2.0-flash',
+      type: 'gemini',
+      key: process.env.GEMINI_API_KEY,
+      endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent',
+      model: 'gemini-2.0-flash-exp',
+      jsonMode: true
     });
   }
 
-  // 🥈 FALLBACK 1 : Groq gpt-oss-120b
+  // 🥈🥉 FALLBACK : Groq
   if (process.env.GROQ_API_KEY) {
     providers.push(
       {
         name: 'Groq/gpt-oss-120b',
+        type: 'openai',
         key: process.env.GROQ_API_KEY,
         endpoint: 'https://api.groq.com/openai/v1/chat/completions',
         model: 'openai/gpt-oss-120b',
         jsonMode: true,
         headers: {}
       },
-      // 🥉 FALLBACK 2 : Groq gpt-oss-20b
       {
         name: 'Groq/gpt-oss-20b',
+        type: 'openai',
         key: process.env.GROQ_API_KEY,
         endpoint: 'https://api.groq.com/openai/v1/chat/completions',
         model: 'openai/gpt-oss-20b',
@@ -397,12 +398,76 @@ function getProviders() {
   return providers;
 }
 
-async function callProvider(provider, prompt, maxTokens, temperature) {
-  if (!maxTokens) maxTokens = 4000;
-  if (typeof temperature !== 'number') temperature = 0.15;
-
+// ✅ Appel Gemini (format spécifique)
+async function callGemini(provider, prompt, maxTokens, temperature) {
   const controller = new AbortController();
-  // ✅ Timeout 30s (OpenRouter est parfois plus lent que Groq)
+  const timeout = setTimeout(() => controller.abort(), 30000);
+
+  try {
+    console.log(`[AI] ${provider.name} | prompt: ${prompt.length} car | max_tokens: ${maxTokens}`);
+
+    const body = {
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }]
+        }
+      ],
+      generationConfig: {
+        temperature: temperature,
+        maxOutputTokens: maxTokens,
+        responseMimeType: 'application/json'
+      }
+    };
+
+    const url = `${provider.endpoint}?key=${provider.key}`;
+
+    const result = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+
+    const data = await result.json().catch(() => null);
+
+    if (!result.ok) {
+      const msg = data?.error?.message || `HTTP ${result.status}`;
+      const err = new Error(`${provider.name}: ${msg}`);
+      err.status = result.status;
+      if (result.status === 429 || /quota|rate limit/i.test(msg)) {
+        err.isRateLimit = true;
+        err.retryDelayMs = 5000;
+      }
+      if (/quota exceeded|limit/i.test(msg) && !/rate limit/i.test(msg)) {
+        err.isRateLimit = true;
+      }
+      throw err;
+    }
+
+    const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!content) throw new Error(`${provider.name}: réponse vide`);
+
+    console.log(`[AI] ${provider.name} — réponse: ${content.length} car`);
+
+    const cleaned = String(content).replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+    let parsed;
+    try { parsed = JSON.parse(cleaned); }
+    catch (e) {
+      console.warn(`[AI] ${provider.name} — JSON invalide. Début: ${cleaned.slice(0, 200)}`);
+      throw new Error(`${provider.name}: JSON invalide`);
+    }
+
+    return parsed;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// ✅ Appel OpenAI-compatible (Groq, etc.)
+async function callOpenAICompatible(provider, prompt, maxTokens, temperature) {
+  const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
@@ -431,12 +496,10 @@ async function callProvider(provider, prompt, maxTokens, temperature) {
       const msg = data?.error?.message || data?.message || `HTTP ${result.status}`;
       const err = new Error(`${provider.name}: ${msg}`);
       err.status = result.status;
-      // ✅ Marquer si c'est un rate limit temporaire (retry utile)
       if (result.status === 429 || /rate limit/i.test(msg)) {
         err.isRateLimit = true;
         err.retryDelayMs = parseRetryDelayMs(msg);
       }
-      // ✅ Marquer si c'est "Request too large" (définitif)
       if (/request too large/i.test(msg)) {
         err.isRequestTooLarge = true;
       }
@@ -463,7 +526,18 @@ async function callProvider(provider, prompt, maxTokens, temperature) {
   }
 }
 
-// ✅ Génération avec cascade + retry intelligent + délais dynamiques
+// ✅ Dispatcher : appelle le bon format selon le provider
+async function callProvider(provider, prompt, maxTokens, temperature) {
+  if (!maxTokens) maxTokens = 4000;
+  if (typeof temperature !== 'number') temperature = 0.15;
+
+  if (provider.type === 'gemini') {
+    return callGemini(provider, prompt, maxTokens, temperature);
+  }
+  return callOpenAICompatible(provider, prompt, maxTokens, temperature);
+}
+
+// ✅ Génération avec cascade intelligente
 async function generateWithCascade(prompt, validator, maxTokens, temperature, taskName, deadline) {
   const providers = getProviders();
   if (!providers.length) throw new Error('provider_missing');
@@ -490,20 +564,18 @@ async function generateWithCascade(prompt, validator, maxTokens, temperature, ta
       errors.push(`${provider.name}: ${error.message}`);
       console.warn(`[AI] ❌ ${taskName} → ${provider.name}: ${error.message}`);
 
-      // ✅ Si "Request too large" → inutile de retry ce provider, passer au suivant
-      if (error.isRequestTooLarge) {
-        console.warn(`[AI] ${taskName} → ${provider.name} : Request too large (définitif, pas de retry)`);
+      // ✅ Si erreur définitive → passer au suivant immédiatement
+      if (isDefinitiveError(error.message) || error.isRequestTooLarge) {
+        console.warn(`[AI] ${taskName} → ${provider.name} : erreur définitive`);
         continue;
       }
     }
   }
 
-  // Passe 2 : si on a le temps, retry avec le délai exact suggéré par Groq
+  // Passe 2 : retry avec délai dynamique
   for (let attempt = 0; attempt < MAX_RETRIES_PER_BATCH; attempt++) {
     if (deadline && Date.now() > deadline - 10000) break;
 
-    // Essayer chaque provider une fois de plus
-    let didSomething = false;
     for (const provider of providers) {
       if (deadline && Date.now() > deadline - 5000) break;
 
@@ -517,18 +589,15 @@ async function generateWithCascade(prompt, validator, maxTokens, temperature, ta
       } catch (error) {
         console.warn(`[AI] ❌ ${taskName} → retry ${provider.name}: ${error.message}`);
 
-        // ✅ Attendre le délai EXACT suggéré par Groq avant de retenter
         if (error.isRateLimit && error.retryDelayMs > 0) {
-          const waitMs = Math.min(error.retryDelayMs, 45000); // Max 45s
+          const waitMs = Math.min(error.retryDelayMs, 30000);
           if (deadline && Date.now() + waitMs > deadline) break;
 
-          console.log(`[AI] ${taskName} — attente ${waitMs}ms (délai Groq suggéré)`);
+          console.log(`[AI] ${taskName} — attente ${waitMs}ms`);
           await sleep(waitMs);
-          didSomething = true;
         }
       }
     }
-    if (!didSomething) break;
   }
 
   throw new Error('all_providers_failed: ' + errors.join(' | '));
@@ -636,7 +705,7 @@ async function buildUnavailableSession(chapterTitle, mode) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// PROMPTS ENRICHIS
+// PROMPTS (identiques à v5.5 — inchangés)
 // ════════════════════════════════════════════════════════════════
 const LATEX_RULES = `
 ═══════════════════════════════════════════════════════════════
@@ -855,7 +924,7 @@ function validateQuiz(data) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// GÉNÉRATION PAR VAGUES SÉQUENTIELLES
+// GÉNÉRATION PAR VAGUES
 // ════════════════════════════════════════════════════════════════
 async function generateFicheByWaves(subjectLabel, chapterTitle, notions, deadline) {
   const allBatches = chunk(notions, NOTION_BATCH_SIZE);
@@ -866,7 +935,7 @@ async function generateFicheByWaves(subjectLabel, chapterTitle, notions, deadlin
 
   while (waveIndex * MAX_BATCHES_PER_WAVE < allBatches.length) {
     if (Date.now() > deadline) {
-      console.warn(`[REVISEUR] Budget temps épuisé, ${allBatches.length - waveIndex * MAX_BATCHES_PER_WAVE} lots non traités`);
+      console.warn(`[REVISEUR] Budget temps épuisé`);
       missingBatches += allBatches.length - waveIndex * MAX_BATCHES_PER_WAVE;
       break;
     }
@@ -887,7 +956,7 @@ async function generateFicheByWaves(subjectLabel, chapterTitle, notions, deadlin
       })
     );
 
-    results.forEach((r, i) => {
+    results.forEach((r) => {
       if (r.status === 'fulfilled' && r.value?.data?.sections) {
         allSections.push(...r.value.data.sections);
         if (Object.keys(extra).length === 0 && r.value.data) {
@@ -926,10 +995,7 @@ async function generateFlashcardsByWaves(subjectLabel, chapterTitle, notions, de
   let waveIndex = 0;
 
   while (waveIndex * MAX_BATCHES_PER_WAVE < allBatches.length) {
-    if (Date.now() > deadline) {
-      console.warn(`[REVISEUR] Budget temps épuisé (flashcards)`);
-      break;
-    }
+    if (Date.now() > deadline) break;
 
     const waveBatches = allBatches.slice(
       waveIndex * MAX_BATCHES_PER_WAVE,
@@ -1062,7 +1128,6 @@ module.exports = async function handler(request, response) {
 
       return response.status(200).json({ success: true, sessions });
     } catch (e) {
-      console.error('[HISTORIQUE] listSessions error:', e.message);
       return jsonError(response, 500, 'Impossible de charger l\'historique.');
     }
   }
@@ -1126,7 +1191,7 @@ module.exports = async function handler(request, response) {
   }[body.subject] || body.subject;
   const chapterTitle = chapterData?.titre || body.chapter;
 
-  console.log(`[REVISEUR v5.5] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
+  console.log(`[REVISEUR v6.0] ${action} | ${body.subject} > ${body.chapter} | ${mandatoryNotions.length} notions`);
 
   let reservation = null;
   if (action === 'generate') {
