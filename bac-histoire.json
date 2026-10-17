@@ -1,1 +1,2784 @@
-_llf
+{
+  "matiere": "histoire",
+  "matiereLabel": "Histoire",
+  "niveau": "terminale_d",
+  "pays": "niger",
+  "exam": "bac",
+  "version": "2.0.0",
+  "derniereMaj": "2026-10-18",
+  "totalChapitres": 2,
+  "totalNotions": 28,
+  "structureVersion": "enrichie-v3-sans-formules",
+  "chapitres": [
+    {
+      "id": "causes_seconde_guerre_mondiale",
+      "numero": 1,
+      "titre": "Les causes de la Seconde Guerre mondiale",
+      "description": "Étude des causes lointaines et immédiates du conflit mondial de 1939-1945.",
+      "duree_estimee_min": 740,
+      "difficulte": 2,
+      "obligatoire": true,
+      "prerequis": [
+        "premiere_guerre_mondiale"
+      ],
+      "notions": [
+        {
+          "id": "traite_versailles",
+          "titre": "Le traité de Versailles (1919) et ses conséquences",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 25,
+          "description_courte": "Le traité de Versailles impose à l'Allemagne des conditions très dures qui alimentent le ressentiment.",
+          "description_longue": "Signé le 28 juin 1919, le traité de Versailles met fin à la Première Guerre mondiale. Il impose à l'Allemagne la perte de territoires, le désarmement, le paiement de lourdes réparations et la reconnaissance de sa responsabilité dans la guerre. Ces conditions humiliantes créent un fort sentiment de revanche en Allemagne et favorisent la montée des extrémismes.",
+          "points_cles": [
+            "Signé le 28 juin 1919 dans la galerie des Glaces.",
+            "L'Allemagne perd l'Alsace-Lorraine et ses colonies.",
+            "L'armée allemande est réduite à 100 000 hommes.",
+            "Réparations de guerre très élevées.",
+            "Clause de responsabilité de l'Allemagne.",
+            "Humiliation nationale et sentiment de revanche."
+          ],
+          "termes": [
+            {
+              "terme": "Traité de Versailles",
+              "definition": "Traité de paix signé en 1919 après la Première Guerre mondiale."
+            },
+            {
+              "terme": "Réparations",
+              "definition": "Sommes que l'Allemagne doit payer aux vainqueurs."
+            },
+            {
+              "terme": "Diktat",
+              "definition": "Terme utilisé par les Allemands pour désigner le traité imposé."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "28 juin 1919",
+              "evenement": "Signature du traité de Versailles"
+            },
+            {
+              "date": "1923",
+              "evenement": "Occupation de la Ruhr par la France"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Georges Clemenceau",
+              "role": "Président du Conseil français, partisan d'une paix dure"
+            },
+            {
+              "nom": "Woodrow Wilson",
+              "role": "Président américain, promoteur de la SDN"
+            },
+            {
+              "nom": "David Lloyd George",
+              "role": "Premier ministre britannique"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Versailles",
+              "info": "Lieu de signature du traité"
+            },
+            {
+              "nom": "Alsace-Lorraine",
+              "info": "Territoires rendus à la France"
+            }
+          ],
+          "methodes": [
+            "Analyser les clauses du traité",
+            "Expliquer les conséquences pour l'Allemagne",
+            "Relier le traité à la montée du nazisme"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Montrez que le traité de Versailles est une cause lointaine de la Seconde Guerre mondiale.",
+            "etapes": [
+              "Introduction : le traité de Versailles, une paix humiliante",
+              "Les clauses territoriales et militaires",
+              "Les clauses économiques et morales",
+              "Le ressentiment allemand et la montée du nazisme",
+              "Conclusion : le traité a préparé la revanche"
+            ],
+            "conclusion": "Le traité de Versailles, par son injustice ressentie, a créé les conditions psychologiques de la Seconde Guerre mondiale."
+          },
+          "erreurs_frequentes": [
+            "Confondre le traité de Versailles avec d'autres traités",
+            "Oublier la clause de responsabilité",
+            "Ne pas relier le traité à la montée du nazisme"
+          ],
+          "pieges_examen": [
+            "Bien distinguer les clauses territoriales, militaires et économiques",
+            "Ne pas oublier la date exacte : 28 juin 1919"
+          ],
+          "mnemo": "Versailles 1919 : territoires, armée, réparations, responsabilité.",
+          "liens": {
+            "avant": [],
+            "apres": [
+              "crise_1929"
+            ]
+          }
+        },
+        {
+          "id": "crise_1929",
+          "titre": "La crise économique de 1929",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 25,
+          "description_courte": "La crise de 1929 plonge le monde dans une dépression économique qui favorise les extrémismes.",
+          "description_longue": "La crise économique mondiale débute par le krach boursier de Wall Street le 24 octobre 1929. Elle se propage à l'Europe et au monde entier, entraînant faillites, chômage massif et misère. En Allemagne, la crise est particulièrement grave et favorise la montée du parti nazi. Les démocraties sont déstabilisées et les régimes autoritaires se renforcent.",
+          "points_cles": [
+            "Krach boursier de Wall Street le 24 octobre 1929.",
+            "Propagation mondiale de la crise.",
+            "Chômage massif et faillites.",
+            "Allemagne particulièrement touchée.",
+            "Montée du parti nazi.",
+            "Déstabilisation des démocraties."
+          ],
+          "termes": [
+            {
+              "terme": "Krach boursier",
+              "definition": "Effondrement brutal des cours de la Bourse."
+            },
+            {
+              "terme": "Dépression",
+              "definition": "Période de crise économique durable."
+            },
+            {
+              "terme": "Chômage",
+              "definition": "Situation des personnes sans emploi."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "24 octobre 1929",
+              "evenement": "Krach de Wall Street (Jeudi noir)"
+            },
+            {
+              "date": "1929-1939",
+              "evenement": "Grande Dépression"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Herbert Hoover",
+              "role": "Président américain au début de la crise"
+            },
+            {
+              "nom": "Franklin D. Roosevelt",
+              "role": "Président américain, lance le New Deal"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Wall Street",
+              "info": "Bourse de New York"
+            },
+            {
+              "nom": "Allemagne",
+              "info": "Pays durement touché par la crise"
+            }
+          ],
+          "methodes": [
+            "Expliquer le mécanisme de la crise",
+            "Relier la crise à la montée des extrémismes",
+            "Analyser les conséquences sociales"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Comment la crise de 1929 a-t-elle favorisé la Seconde Guerre mondiale ?",
+            "etapes": [
+              "Introduction : la crise de 1929, une crise mondiale",
+              "Les causes et le mécanisme de la crise",
+              "Les conséquences économiques et sociales",
+              "La montée des extrémismes en Europe",
+              "Conclusion : la crise a fragilisé la paix"
+            ],
+            "conclusion": "La crise de 1929 a créé un terreau favorable à la montée des régimes totalitaires et à la guerre."
+          },
+          "erreurs_frequentes": [
+            "Confondre la date du krach avec d'autres événements",
+            "Oublier l'impact spécifique sur l'Allemagne",
+            "Ne pas relier la crise à la montée du nazisme"
+          ],
+          "pieges_examen": [
+            "Bien retenir la date du 24 octobre 1929",
+            "Ne pas oublier que la crise est mondiale"
+          ],
+          "mnemo": "1929 : krach, chômage, extrémismes.",
+          "liens": {
+            "avant": [
+              "traite_versailles"
+            ],
+            "apres": [
+              "montee_fascisme_italie"
+            ]
+          }
+        },
+        {
+          "id": "montee_fascisme_italie",
+          "titre": "La montée du fascisme en Italie",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Mussolini instaure un régime fasciste en Italie à partir de 1922.",
+          "description_longue": "Après la Première Guerre mondiale, l'Italie connaît une crise économique et sociale. Benito Mussolini fonde les Faisceaux italiens de combat en 1919 et marche sur Rome en octobre 1922. Il instaure un régime fasciste autoritaire, nationaliste et expansionniste. L'Italie fasciste devient un allié de l'Allemagne nazie.",
+          "points_cles": [
+            "Fondation des Faisceaux italiens de combat en 1919.",
+            "Marche sur Rome en octobre 1922.",
+            "Mussolini au pouvoir.",
+            "Régime autoritaire et nationaliste.",
+            "Alliance avec l'Allemagne nazie."
+          ],
+          "termes": [
+            {
+              "terme": "Fascisme",
+              "definition": "Régime politique autoritaire, nationaliste et anti-démocratique."
+            },
+            {
+              "terme": "Marche sur Rome",
+              "definition": "Coup de force de Mussolini en 1922."
+            },
+            {
+              "terme": "Duce",
+              "definition": "Titre de Mussolini, signifiant 'chef'."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "1919",
+              "evenement": "Fondation des Faisceaux italiens de combat"
+            },
+            {
+              "date": "Octobre 1922",
+              "evenement": "Marche sur Rome"
+            },
+            {
+              "date": "1939",
+              "evenement": "Pacte d'acier avec l'Allemagne"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Benito Mussolini",
+              "role": "Fondateur du fascisme italien, Duce"
+            },
+            {
+              "nom": "Victor-Emmanuel III",
+              "role": "Roi d'Italie, nomme Mussolini président du Conseil"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Rome",
+              "info": "Capitale de l'Italie, lieu de la marche de 1922"
+            },
+            {
+              "nom": "Italie",
+              "info": "Pays où naît le premier régime fasciste"
+            }
+          ],
+          "methodes": [
+            "Décrire la montée du fascisme",
+            "Analyser les caractéristiques du régime",
+            "Relier le fascisme italien au nazisme allemand"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Décrivez la montée du fascisme en Italie.",
+            "etapes": [
+              "Introduction : l'Italie après la Première Guerre mondiale",
+              "La crise et le mécontentement",
+              "La création des Faisceaux et la marche sur Rome",
+              "L'instauration du régime fasciste",
+              "Conclusion : le fascisme, précurseur du nazisme"
+            ],
+            "conclusion": "Le fascisme italien est le premier régime totalitaire en Europe et inspire Hitler."
+          },
+          "erreurs_frequentes": [
+            "Confondre fascisme et nazisme",
+            "Oublier la date de la marche sur Rome",
+            "Ne pas mentionner l'alliance avec l'Allemagne"
+          ],
+          "pieges_examen": [
+            "Bien distinguer Mussolini et Hitler",
+            "Ne pas oublier la marche sur Rome de 1922"
+          ],
+          "mnemo": "Mussolini : 1922, marche sur Rome.",
+          "liens": {
+            "avant": [
+              "crise_1929"
+            ],
+            "apres": [
+              "montee_nazisme_allemagne"
+            ]
+          }
+        },
+        {
+          "id": "montee_nazisme_allemagne",
+          "titre": "La montée du nazisme en Allemagne",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 25,
+          "description_courte": "Le parti nazi d'Hitler gagne en influence dans l'Allemagne en crise des années 1930.",
+          "description_longue": "Le Parti national-socialiste des travailleurs allemands (NSDAP) est fondé en 1920. Adolf Hitler en prend la direction et développe une idéologie raciste, antisémite et expansionniste. La crise de 1929 amplifie son audience. Aux élections de 1932, le parti nazi devient le premier parti d'Allemagne. Hitler est nommé chancelier le 30 janvier 1933.",
+          "points_cles": [
+            "Fondation du NSDAP en 1920.",
+            "Idéologie raciste, antisémite et expansionniste.",
+            "La crise de 1929 amplifie l'audience nazie.",
+            "Le parti nazi devient le premier parti en 1932.",
+            "Hitler nommé chancelier le 30 janvier 1933."
+          ],
+          "termes": [
+            {
+              "terme": "Nazisme",
+              "definition": "Idéologie du parti nazi, raciste et totalitaire."
+            },
+            {
+              "terme": "NSDAP",
+              "definition": "Parti national-socialiste des travailleurs allemands."
+            },
+            {
+              "terme": "Antisémitisme",
+              "definition": "Hostilité envers les Juifs."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "1920",
+              "evenement": "Fondation du NSDAP"
+            },
+            {
+              "date": "1932",
+              "evenement": "Le NSDAP devient le premier parti d'Allemagne"
+            },
+            {
+              "date": "30 janvier 1933",
+              "evenement": "Hitler nommé chancelier"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Adolf Hitler",
+              "role": "Chef du parti nazi, futur chancelier"
+            },
+            {
+              "nom": "Paul von Hindenburg",
+              "role": "Président allemand, nomme Hitler chancelier"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Munich",
+              "info": "Ville où le nazisme se développe"
+            },
+            {
+              "nom": "Berlin",
+              "info": "Capitale de l'Allemagne"
+            }
+          ],
+          "methodes": [
+            "Décrire la montée du nazisme",
+            "Expliquer le rôle de la crise de 1929",
+            "Analyser l'idéologie nazie"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Expliquez la montée du nazisme en Allemagne.",
+            "etapes": [
+              "Introduction : l'Allemagne après 1919",
+              "Le traité de Versailles et le ressentiment",
+              "La crise de 1929 et le chômage",
+              "La propagande nazie et les élections",
+              "Conclusion : Hitler arrive au pouvoir légalement"
+            ],
+            "conclusion": "La montée du nazisme résulte de la crise économique, du ressentiment national et de la propagande."
+          },
+          "erreurs_frequentes": [
+            "Oublier la date de l'arrivée d'Hitler au pouvoir",
+            "Confondre nazisme et fascisme",
+            "Ne pas mentionner l'antisémitisme"
+          ],
+          "pieges_examen": [
+            "Bien retenir la date du 30 janvier 1933",
+            "Ne pas oublier que Hitler est arrivé légalement au pouvoir"
+          ],
+          "mnemo": "1933 : Hitler chancelier.",
+          "liens": {
+            "avant": [
+              "montee_fascisme_italie"
+            ],
+            "apres": [
+              "hitler_au_pouvoir"
+            ]
+          }
+        },
+        {
+          "id": "hitler_au_pouvoir",
+          "titre": "L'arrivée d'Hitler au pouvoir (1933)",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Hitler devient chancelier le 30 janvier 1933 et instaure une dictature.",
+          "description_longue": "Nommé chancelier par le président Hindenburg le 30 janvier 1933, Hitler transforme rapidement l'Allemagne en dictature. L'incendie du Reichstag en février 1933 lui permet d'éliminer l'opposition communiste. La loi des pleins pouvoirs de mars 1933 lui donne les pleins pouvoirs. Il instaure le IIIe Reich et prépare la guerre.",
+          "points_cles": [
+            "Hitler nommé chancelier le 30 janvier 1933.",
+            "Incendie du Reichstag en février 1933.",
+            "Loi des pleins pouvoirs en mars 1933.",
+            "Instauration du IIIe Reich.",
+            "Élimination de l'opposition.",
+            "Préparation de la guerre."
+          ],
+          "termes": [
+            {
+              "terme": "IIIe Reich",
+              "definition": "Régime nazi de 1933 à 1945."
+            },
+            {
+              "terme": "Pleins pouvoirs",
+              "definition": "Pouvoir absolu donné au gouvernement."
+            },
+            {
+              "terme": "Reichstag",
+              "definition": "Parlement allemand."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "30 janvier 1933",
+              "evenement": "Hitler nommé chancelier"
+            },
+            {
+              "date": "27 février 1933",
+              "evenement": "Incendie du Reichstag"
+            },
+            {
+              "date": "23 mars 1933",
+              "evenement": "Loi des pleins pouvoirs"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Adolf Hitler",
+              "role": "Chancelier puis Führer de l'Allemagne"
+            },
+            {
+              "nom": "Paul von Hindenburg",
+              "role": "Président qui nomme Hitler"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Berlin",
+              "info": "Capitale du IIIe Reich"
+            },
+            {
+              "nom": "Reichstag",
+              "info": "Parlement incendié en 1933"
+            }
+          ],
+          "methodes": [
+            "Décrire la prise du pouvoir d'Hitler",
+            "Analyser les étapes de la dictature",
+            "Expliquer la préparation de la guerre"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Comment Hitler instaure-t-il sa dictature en 1933 ?",
+            "etapes": [
+              "Introduction : janvier 1933, Hitler chancelier",
+              "L'incendie du Reichstag et la répression",
+              "La loi des pleins pouvoirs",
+              "L'instauration du IIIe Reich",
+              "Conclusion : une dictature totale"
+            ],
+            "conclusion": "En quelques mois, Hitler transforme la démocratie allemande en dictature totale."
+          },
+          "erreurs_frequentes": [
+            "Oublier l'incendie du Reichstag",
+            "Confondre les dates de 1933",
+            "Ne pas mentionner la loi des pleins pouvoirs"
+          ],
+          "pieges_examen": [
+            "Bien retenir les dates : 30 janvier, 27 février, 23 mars 1933",
+            "Ne pas oublier que le régime est légal au départ"
+          ],
+          "mnemo": "1933 : chancelier, Reichstag, pleins pouvoirs.",
+          "liens": {
+            "avant": [
+              "montee_nazisme_allemagne"
+            ],
+            "apres": [
+              "politique_expansionniste"
+            ]
+          }
+        },
+        {
+          "id": "politique_expansionniste",
+          "titre": "La politique expansionniste de l'Allemagne",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Hitler mène une politique d'expansion territoriale qui conduit à la guerre.",
+          "description_longue": "Hitler développe la théorie de l'espace vital (Lebensraum) pour justifier l'expansion de l'Allemagne vers l'Est. Il remilitarise la Rhénanie en 1936, annexe l'Autriche en mars 1938 (Anschluss) et les Sudètes en septembre 1938. En mars 1939, il envahit la Tchécoslovaquie. Ces violations des traités montrent la faiblesse des démocraties.",
+          "points_cles": [
+            "Théorie de l'espace vital (Lebensraum).",
+            "Remilitarisation de la Rhénanie en 1936.",
+            "Anschluss : annexion de l'Autriche en mars 1938.",
+            "Annexion des Sudètes en septembre 1938.",
+            "Invasion de la Tchécoslovaquie en mars 1939.",
+            "Violation des traités sans réaction des démocraties."
+          ],
+          "termes": [
+            {
+              "terme": "Espace vital",
+              "definition": "Théorie nazie justifiant l'expansion territoriale."
+            },
+            {
+              "terme": "Anschluss",
+              "definition": "Annexion de l'Autriche par l'Allemagne en 1938."
+            },
+            {
+              "terme": "Sudètes",
+              "definition": "Région tchécoslovaque annexée en 1938."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "1936",
+              "evenement": "Remilitarisation de la Rhénanie"
+            },
+            {
+              "date": "Mars 1938",
+              "evenement": "Anschluss (annexion de l'Autriche)"
+            },
+            {
+              "date": "Septembre 1938",
+              "evenement": "Conférence de Munich, annexion des Sudètes"
+            },
+            {
+              "date": "Mars 1939",
+              "evenement": "Invasion de la Tchécoslovaquie"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Adolf Hitler",
+              "role": "Chef de l'Allemagne expansionniste"
+            },
+            {
+              "nom": "Neville Chamberlain",
+              "role": "Premier ministre britannique, partisan de l'apaisement"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Rhénanie",
+              "info": "Zone démilitarisée remilitarisée en 1936"
+            },
+            {
+              "nom": "Autriche",
+              "info": "Annexée en 1938"
+            },
+            {
+              "nom": "Tchécoslovaquie",
+              "info": "Envahie en 1939"
+            }
+          ],
+          "methodes": [
+            "Décrire les étapes de l'expansion",
+            "Analyser la réaction des démocraties",
+            "Relier l'expansion à la guerre"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Décrivez la politique expansionniste d'Hitler de 1936 à 1939.",
+            "etapes": [
+              "Introduction : la théorie de l'espace vital",
+              "La remilitarisation de la Rhénanie (1936)",
+              "L'Anschluss et les Sudètes (1938)",
+              "L'invasion de la Tchécoslovaquie (1939)",
+              "Conclusion : une politique qui mène à la guerre"
+            ],
+            "conclusion": "La politique expansionniste d'Hitler, favorisée par la passivité des démocraties, conduit directement à la guerre."
+          },
+          "erreurs_frequentes": [
+            "Confondre les dates des annexions",
+            "Oublier la théorie de l'espace vital",
+            "Ne pas mentionner la passivité des démocraties"
+          ],
+          "pieges_examen": [
+            "Bien distinguer Anschluss (Autriche) et Sudètes (Tchécoslovaquie)",
+            "Ne pas oublier la remilitarisation de la Rhénanie en 1936"
+          ],
+          "mnemo": "1936 Rhénanie, 1938 Autriche, 1939 Tchécoslovaquie.",
+          "liens": {
+            "avant": [
+              "hitler_au_pouvoir"
+            ],
+            "apres": [
+              "echec_sdn"
+            ]
+          }
+        },
+        {
+          "id": "echec_sdn",
+          "titre": "L'échec de la Société des Nations (SDN)",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "La SDN est incapable d'empêcher la guerre.",
+          "description_longue": "Créée en 1920 par le traité de Versailles, la Société des Nations (SDN) a pour mission de garantir la paix. Mais elle est affaiblie par l'absence des États-Unis, le retrait de l'Allemagne et du Japon, et son manque de moyens militaires. Elle ne peut pas empêcher les agressions des régimes totalitaires.",
+          "points_cles": [
+            "Création de la SDN en 1920.",
+            "Absence des États-Unis.",
+            "Retrait de l'Allemagne et du Japon.",
+            "Absence de force militaire.",
+            "Incapacité à empêcher les agressions.",
+            "Échec de la sécurité collective."
+          ],
+          "termes": [
+            {
+              "terme": "SDN",
+              "definition": "Société des Nations, organisation internationale créée en 1920."
+            },
+            {
+              "terme": "Sécurité collective",
+              "definition": "Système de défense commune contre les agressions."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "1920",
+              "evenement": "Création de la SDN"
+            },
+            {
+              "date": "1933",
+              "evenement": "Retrait de l'Allemagne et du Japon"
+            },
+            {
+              "date": "1939",
+              "evenement": "Échec définitif de la SDN"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Woodrow Wilson",
+              "role": "Promoteur de la SDN"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Genève",
+              "info": "Siège de la SDN"
+            }
+          ],
+          "methodes": [
+            "Décrire le fonctionnement de la SDN",
+            "Expliquer ses faiblesses",
+            "Relier son échec à la guerre"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Pourquoi la SDN a-t-elle échoué ?",
+            "etapes": [
+              "Introduction : la SDN, espoir de paix",
+              "Les faiblesses structurelles",
+              "L'absence des grandes puissances",
+              "L'incapacité à sanctionner les agressions",
+              "Conclusion : l'échec de la sécurité collective"
+            ],
+            "conclusion": "La SDN, sans moyens et sans les grandes puissances, n'a pas pu empêcher la Seconde Guerre mondiale."
+          },
+          "erreurs_frequentes": [
+            "Confondre SDN et ONU",
+            "Oublier l'absence des États-Unis",
+            "Ne pas mentionner le manque de moyens militaires"
+          ],
+          "pieges_examen": [
+            "Bien distinguer SDN (1920) et ONU (1945)",
+            "Ne pas oublier que les États-Unis n'ont pas adhéré à la SDN"
+          ],
+          "mnemo": "SDN : sans les USA, sans armée, sans efficacité.",
+          "liens": {
+            "avant": [
+              "politique_expansionniste"
+            ],
+            "apres": [
+              "politique_apaisement"
+            ]
+          }
+        },
+        {
+          "id": "politique_apaisement",
+          "titre": "La politique d'apaisement (Munich 1938)",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Les démocraties cèdent aux exigences d'Hitler pour éviter la guerre.",
+          "description_longue": "La politique d'apaisement est menée par le Royaume-Uni et la France face aux ambitions d'Hitler. Lors de la conférence de Munich en septembre 1938, Chamberlain et Daladier acceptent l'annexion des Sudètes par l'Allemagne sans consulter la Tchécoslovaquie. Cette concession encourage Hitler à poursuivre son expansion et rend la guerre inévitable.",
+          "points_cles": [
+            "Politique menée par le Royaume-Uni et la France.",
+            "Conférence de Munich en septembre 1938.",
+            "Annexion des Sudètes acceptée.",
+            "Tchécoslovaquie non consultée.",
+            "Encouragement à l'expansion nazie.",
+            "Échec de l'apaisement."
+          ],
+          "termes": [
+            {
+              "terme": "Apaisement",
+              "definition": "Politique de concessions pour éviter la guerre."
+            },
+            {
+              "terme": "Conférence de Munich",
+              "definition": "Réunion de septembre 1938 entre grandes puissances."
+            },
+            {
+              "terme": "Sudètes",
+              "definition": "Région tchécoslovaque annexée par l'Allemagne."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "29-30 septembre 1938",
+              "evenement": "Conférence de Munich"
+            },
+            {
+              "date": "Mars 1939",
+              "evenement": "Invasion de la Tchécoslovaquie"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Neville Chamberlain",
+              "role": "Premier ministre britannique, artisan de l'apaisement"
+            },
+            {
+              "nom": "Édouard Daladier",
+              "role": "Président du Conseil français"
+            },
+            {
+              "nom": "Adolf Hitler",
+              "role": "Bénéficiaire de l'apaisement"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Munich",
+              "info": "Lieu de la conférence de 1938"
+            },
+            {
+              "nom": "Sudètes",
+              "info": "Région annexée après Munich"
+            }
+          ],
+          "methodes": [
+            "Décrire la politique d'apaisement",
+            "Analyser la conférence de Munich",
+            "Expliquer l'échec de l'apaisement"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : La politique d'apaisement était-elle une erreur ?",
+            "etapes": [
+              "Introduction : définition de l'apaisement",
+              "Les motivations des démocraties",
+              "La conférence de Munich et ses conséquences",
+              "L'échec de l'apaisement",
+              "Conclusion : une erreur qui a encouragé Hitler"
+            ],
+            "conclusion": "La politique d'apaisement, en cédant aux exigences d'Hitler, a rendu la guerre inévitable."
+          },
+          "erreurs_frequentes": [
+            "Confondre Chamberlain et Daladier",
+            "Oublier la date de la conférence de Munich",
+            "Ne pas mentionner l'absence de la Tchécoslovaquie"
+          ],
+          "pieges_examen": [
+            "Bien retenir la date : septembre 1938",
+            "Ne pas oublier que Munich est un échec"
+          ],
+          "mnemo": "Munich 1938 : apaisement, Sudètes, échec.",
+          "liens": {
+            "avant": [
+              "echec_sdn"
+            ],
+            "apres": []
+          }
+        },
+        {
+          "id": "expansion_japonaise_asie",
+          "titre": "L'expansionnisme japonais en Asie (1931-1937)",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Le Japon, en quête d'empire, agresse la Mandchourie puis la Chine, ouvrant un second foyer de la guerre mondiale.",
+          "description_longue": "Dès 1931, le Japon, en quête de matières premières et d'espaces de domination, envahit la Mandchourie chinoise à la suite de l'incident de Mukden du 18 septembre 1931. Il y installe un État fantoche, le Mandchoukouo, confié nominalement à l'ancien empereur Puyi. Condamné par la SDN, le Japon quitte l'organisation en 1933 sans subir de vraies sanctions. Le 7 juillet 1937, la guerre sino-japonaise éclate et mène au terrible massacre de Nankin, en décembre 1937. Tolérée par les démocraties, cette expansion fait de l'Asie un second foyer de la future guerre mondiale.",
+          "points_cles": [
+            "L'incident de Mukden, le 18 septembre 1931, sert de prétexte à l'invasion japonaise de la Mandchourie.",
+            "Le Mandchoukouo, État fantoche créé en 1932, est dirigé nominalement par l'empereur Puyi.",
+            "Condamné par la SDN, le Japon quitte l'organisation en 1933.",
+            "La guerre sino-japonaise débute le 7 juillet 1937.",
+            "Le massacre de Nankin, en décembre 1937, fait des centaines de milliers de victimes.",
+            "La faiblesse des sanctions occidentales encourage le Japon à poursuivre son expansion."
+          ],
+          "termes": [
+            {
+              "terme": "Mandchoukouo",
+              "definition": "État fantoche créé par le Japon en Mandchourie en 1932, dirigé nominalement par Puyi."
+            },
+            {
+              "terme": "Incident de Mukden",
+              "definition": "Attentat organisé par l'armée japonaise contre sa propre voie ferrée, prétexte à l'invasion de la Mandchourie."
+            },
+            {
+              "terme": "Armée du Guandong",
+              "definition": "Armée japonaise stationnée en Mandchourie, instigatrice de l'incident de Mukden."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "18 septembre 1931",
+              "evenement": "Incident de Mukden et invasion de la Mandchourie"
+            },
+            {
+              "date": "1932",
+              "evenement": "Création du Mandchoukouo"
+            },
+            {
+              "date": "1933",
+              "evenement": "Retrait du Japon de la SDN"
+            },
+            {
+              "date": "7 juillet 1937",
+              "evenement": "Début de la guerre sino-japonaise"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Hirohito",
+              "role": "Empereur du Japon sous lequel s'accomplit l'expansion en Asie"
+            },
+            {
+              "nom": "Puyi",
+              "role": "Dernier empereur de Chine, placé par le Japon à la tête du Mandchoukouo"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Mukden",
+              "info": "Ville de Mandchourie où éclate l'incident déclencheur de l'invasion japonaise"
+            },
+            {
+              "nom": "Nankin",
+              "info": "Capitale de la Chine nationaliste, livrée au pillage et au massacre en décembre 1937"
+            }
+          ],
+          "methodes": [
+            "Situer la Mandchourie, la Chine et le Japon sur une carte de l'Asie orientale",
+            "Expliquer les motivations économiques et impériales du Japon",
+            "Relier l'agression japonaise à l'échec des sanctions de la SDN"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : En quoi l'expansionnisme japonais en Asie constitue-t-il une cause de la Seconde Guerre mondiale ?",
+            "etapes": [
+              "Introduction : le Japon, puissance impériale en quête de matières premières après la crise de 1929",
+              "L'invasion de la Mandchourie en 1931 et la création du Mandchoukouo",
+              "Le retrait du Japon de la SDN en 1933 et la faiblesse des sanctions",
+              "La guerre sino-japonaise à partir de 1937 et le massacre de Nankin",
+              "Conclusion : l'Asie, second foyer de la guerre mondiale"
+            ],
+            "conclusion": "L'expansionnisme japonais, à peine inquiété par la SDN, ouvre en Asie un second foyer de conflit qui rejoint la guerre mondiale en 1941."
+          },
+          "erreurs_frequentes": [
+            "Confondre l'incident de Mukden (1931) et le début de la guerre sino-japonaise (1937)",
+            "Croire que la SDN a imposé des sanctions efficaces au Japon",
+            "Oublier que le Mandchoukouo est un État fantoche sous contrôle japonais"
+          ],
+          "pieges_examen": [
+            "Respecter la chronologie : invasion de la Mandchourie (1931), retrait de la SDN (1933), guerre de Chine (1937)",
+            "Ne pas confondre Nankin, ville chinoise massacrée en 1937, et Pearl Harbor, attaque de 1941"
+          ],
+          "mnemo": "Mukden 31, SDN quittée 33, Nankin 37 : le Japon file vers la guerre.",
+          "liens": {
+            "avant": [
+              "echec_sdn",
+              "politique_expansionniste"
+            ],
+            "apres": [
+              "axe_berlin_rome"
+            ]
+          }
+        },
+        {
+          "id": "guerre_espagne",
+          "titre": "La guerre d'Espagne (1936-1939)",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "La guerre d'Espagne oppose les nationalistes de Franco aux républicains et préfigure la Seconde Guerre mondiale.",
+          "description_longue": "Le 17 juillet 1936, une partie de l'armée espagnole se soulève contre la République, sous la conduite du général Franco. L'Allemagne, avec la Légion Condor, et l'Italie fasciste soutiennent les nationalistes, tandis que l'URSS et les brigades internationales aident les républicains. Le bombardement de Guernica par la Légion Condor, le 26 avril 1937, révèle la brutalité des armes modernes. Les démocraties, fidèles à la non-intervention, restent spectatrices. La victoire de Franco, le 1er avril 1939, achève une guerre vécue comme une répétition générale du futur conflit mondial.",
+          "points_cles": [
+            "Coup d'État militaire du 17 juillet 1936 contre la République espagnole.",
+            "Soutien allemand (Légion Condor) et italien aux nationalistes de Franco.",
+            "Aide soviétique et engagement des brigades internationales aux côtés des républicains.",
+            "Bombardement de Guernica par la Légion Condor, le 26 avril 1937.",
+            "Non-intervention des démocraties occidentales, France et Royaume-Uni en tête.",
+            "Victoire de Franco le 1er avril 1939 et installation d'une dictature."
+          ],
+          "termes": [
+            {
+              "terme": "Légion Condor",
+              "definition": "Corps aérien allemand envoyé au secours de Franco, responsable du bombardement de Guernica."
+            },
+            {
+              "terme": "Brigades internationales",
+              "definition": "Unités de volontaires antifascistes venus de nombreux pays défendre la République espagnole."
+            },
+            {
+              "terme": "Non-intervention",
+              "definition": "Politique des démocraties occidentales refusant d'aider la République espagnole."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "17 juillet 1936",
+              "evenement": "Coup d'État militaire et début de la guerre d'Espagne"
+            },
+            {
+              "date": "26 avril 1937",
+              "evenement": "Bombardement de Guernica par la Légion Condor"
+            },
+            {
+              "date": "1er avril 1939",
+              "evenement": "Victoire de Franco et fin de la guerre d'Espagne"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Francisco Franco",
+              "role": "Général nationaliste, chef du soulèvement puis dictateur de l'Espagne"
+            },
+            {
+              "nom": "Manuel Azaña",
+              "role": "Président de la République espagnole, symbole du camp républicain"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Guernica",
+              "info": "Ville basque détruite par un raid de la Légion Condor, le 26 avril 1937"
+            },
+            {
+              "nom": "Madrid",
+              "info": "Capitale républicaine, assiégée jusqu'à la chute de la République en 1939"
+            }
+          ],
+          "methodes": [
+            "Situer les deux camps et les interventions étrangères dans la guerre d'Espagne",
+            "Expliquer pourquoi la guerre d'Espagne est une répétition générale de la Seconde Guerre mondiale",
+            "Analyser la politique de non-intervention des démocraties"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : En quoi la guerre d'Espagne préfigure-t-elle la Seconde Guerre mondiale ?",
+            "etapes": [
+              "Introduction : une guerre civile espagnole devenue enjeu européen",
+              "L'affrontement des idéologies : fascismes, communisme, démocratie",
+              "Les interventions étrangères : Allemagne et Italie contre URSS et brigades internationales",
+              "L'essai des armes nouvelles et des méthodes de terreur, comme à Guernica",
+              "Conclusion : une répétition générale du conflit mondial"
+            ],
+            "conclusion": "Idéologies affrontées, interventions étrangères, armes nouvelles : la guerre d'Espagne annonce la Seconde Guerre mondiale."
+          },
+          "erreurs_frequentes": [
+            "Attribuer le bombardement de Guernica à l'aviation italienne au lieu de la Légion Condor allemande",
+            "Inverser les camps : Franco conduit les nationalistes, la République est soutenue par l'URSS",
+            "Oublier la politique de non-intervention des démocraties"
+          ],
+          "pieges_examen": [
+            "Dater précisément Guernica (26 avril 1937) et la victoire de Franco (1er avril 1939)",
+            "Ne pas confondre la guerre d'Espagne (1936-1939) avec la guerre civile russe (1918-1921)"
+          ],
+          "mnemo": "Guernica brûle en 37, Franco triomphe en 39 : l'Europe répète sa guerre.",
+          "liens": {
+            "avant": [
+              "montee_fascisme_italie",
+              "hitler_au_pouvoir"
+            ],
+            "apres": [
+              "axe_berlin_rome"
+            ]
+          }
+        },
+        {
+          "id": "ethiopie_italie",
+          "titre": "L'agression italienne en Éthiopie (1935-1936)",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "L'Italie mussolinienne conquiert l'Éthiopie malgré des sanctions inefficaces de la SDN.",
+          "description_longue": "Le 3 octobre 1935, l'Italie de Mussolini envahit l'Éthiopie, l'ancienne Abyssinie, dernier grand État africain indépendant, à partir de l'Érythrée et de la Somalie. La SDN condamne l'agression et vote des sanctions économiques, mais elles restent partielles : aucun embargo sur le pétrole et le canal de Suez reste ouvert aux troupes italiennes. Le 5 mai 1936, l'armée italienne entre dans Addis-Abeba et Mussolini proclame l'empire d'Afrique orientale italienne. Vainqueur malgré la SDN, l'Italie se rapproche ensuite de l'Allemagne nazie : l'événement illustre concrètement l'échec de la sécurité collective.",
+          "points_cles": [
+            "Invasion de l'Éthiopie par l'Italie le 3 octobre 1935.",
+            "Supériorité militaire italienne, allant jusqu'à l'emploi de gaz de combat.",
+            "Sanctions économiques partielles de la SDN, sans embargo sur le pétrole.",
+            "Canal de Suez laissé ouvert aux approvisionnements italiens.",
+            "Prise d'Addis-Abeba le 5 mai 1936 et proclamation de l'empire.",
+            "Rapprochement italo-allemand après la crise."
+          ],
+          "termes": [
+            {
+              "terme": "Abyssinie",
+              "definition": "Nom traditionnel de l'Éthiopie, dernier grand État africain indépendant avant 1935."
+            },
+            {
+              "terme": "Sanctions économiques",
+              "definition": "Mesures de pression décidées par la SDN contre un État agresseur, ici restées partielles."
+            },
+            {
+              "terme": "Afrique orientale italienne",
+              "definition": "Empire colonial proclamé en mai 1936 après la conquête de l'Éthiopie."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "3 octobre 1935",
+              "evenement": "Début de l'invasion italienne de l'Éthiopie"
+            },
+            {
+              "date": "5 mai 1936",
+              "evenement": "Entrée des troupes italiennes dans Addis-Abeba"
+            },
+            {
+              "date": "9 mai 1936",
+              "evenement": "Proclamation de l'empire d'Afrique orientale italienne"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Benito Mussolini",
+              "role": "Chef du gouvernement fasciste italien, décideur de la conquête de l'Éthiopie"
+            },
+            {
+              "nom": "Hailé Sélassié",
+              "role": "Empereur d'Éthiopie, défenseur de son pays et plaignant devant la SDN"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Addis-Abeba",
+              "info": "Capitale de l'Éthiopie, occupée par l'armée italienne le 5 mai 1936"
+            },
+            {
+              "nom": "Canal de Suez",
+              "info": "Passage stratégique laissé ouvert aux troupes et aux ravitaillements italiens"
+            }
+          ],
+          "methodes": [
+            "Situer l'Éthiopie et les possessions italiennes voisines sur une carte de l'Afrique orientale",
+            "Expliquer les limites des sanctions votées par la SDN",
+            "Relier la victoire italienne au rapprochement avec l'Allemagne"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Comment l'agression italienne en Éthiopie révèle-t-elle l'échec de la sécurité collective ?",
+            "etapes": [
+              "Introduction : la SDN mise à l'épreuve par les agressions des années 1930",
+              "L'invasion italienne d'octobre 1935 et le déroulement de la conquête",
+              "Des sanctions partielles : pas d'embargo sur le pétrole, canal de Suez ouvert",
+              "La victoire italienne en mai 1936 et le rapprochement avec l'Allemagne",
+              "Conclusion : un échec retentissant de la sécurité collective"
+            ],
+            "conclusion": "L'agression réussie contre l'Éthiopie prouve qu'une puissance peut défier la SDN sans dommages sérieux."
+          },
+          "erreurs_frequentes": [
+            "Croire que les sanctions de la SDN ont arrêté la conquête italienne",
+            "Oublier l'absence d'embargo sur le pétrole",
+            "Confondre l'Éthiopie agressée en 1935 avec la Libye, colonie italienne depuis 1912"
+          ],
+          "pieges_examen": [
+            "Dater l'invasion du 3 octobre 1935 et la prise d'Addis-Abeba du 5 mai 1936",
+            "Ici l'angle est l'événement concret de l'agression, à distinguer de l'étude institutionnelle de l'échec de la SDN"
+          ],
+          "mnemo": "Octobre 35 invasion, mai 36 empire : la SDN sanctionne sans serrer.",
+          "liens": {
+            "avant": [
+              "montee_fascisme_italie",
+              "echec_sdn"
+            ],
+            "apres": [
+              "axe_berlin_rome"
+            ]
+          }
+        },
+        {
+          "id": "axe_berlin_rome",
+          "titre": "Les systèmes d'alliances de l'Axe",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "L'Allemagne, l'Italie et le Japon s'allient au sein de l'Axe et isolent diplomatiquement les démocraties.",
+          "description_longue": "À partir de 1936, l'Allemagne nazie et l'Italie fasciste construisent un système d'alliances agressives. L'accord germano-italien du 25 octobre 1936 donne naissance à l'axe Rome-Berlin, autour duquel Mussolini invite les pays d'Europe à graviter. Le 25 novembre 1936, l'Allemagne et le Japon signent le pacte anti-Komintern contre l'Internationale communiste ; l'Italie le rejoint le 6 novembre 1937. Le 22 mai 1939, le pacte d'acier transforme l'axe en alliance militaire complète. Face à ce bloc des puissances révisionnistes, la France et le Royaume-Uni se trouvent diplomatiquement encerclées.",
+          "points_cles": [
+            "Accord germano-italien du 25 octobre 1936 : naissance de l'axe Rome-Berlin.",
+            "Pacte anti-Komintern signé par l'Allemagne et le Japon le 25 novembre 1936.",
+            "Adhésion de l'Italie au pacte anti-Komintern le 6 novembre 1937.",
+            "Pacte d'acier signé le 22 mai 1939 entre l'Allemagne et l'Italie.",
+            "Idéologie commune : anticommunisme, expansionnisme, contestation de l'ordre de Versailles.",
+            "Encerclement diplomatique des démocraties face à l'Axe."
+          ],
+          "termes": [
+            {
+              "terme": "Axe",
+              "definition": "Système d'alliances centré sur Rome et Berlin, puis étendu au Japon."
+            },
+            {
+              "terme": "Komintern",
+              "definition": "Internationale communiste dirigée depuis Moscou, cible du pacte anti-Komintern."
+            },
+            {
+              "terme": "Pacte d'acier",
+              "definition": "Alliance militaire germano-italienne signée le 22 mai 1939."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "25 octobre 1936",
+              "evenement": "Accord germano-italien : naissance de l'axe Rome-Berlin"
+            },
+            {
+              "date": "25 novembre 1936",
+              "evenement": "Pacte anti-Komintern entre l'Allemagne et le Japon"
+            },
+            {
+              "date": "6 novembre 1937",
+              "evenement": "Adhésion de l'Italie au pacte anti-Komintern"
+            },
+            {
+              "date": "22 mai 1939",
+              "evenement": "Signature du pacte d'acier entre l'Allemagne et l'Italie"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Adolf Hitler",
+              "role": "Chancelier du Reich, artisan principal du système d'alliances"
+            },
+            {
+              "nom": "Benito Mussolini",
+              "role": "Chef de l'Italie fasciste, créateur de la formule de l'axe Rome-Berlin"
+            },
+            {
+              "nom": "Joachim von Ribbentrop",
+              "role": "Diplomate allemand, négociateur du pacte anti-Komintern"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Berlin",
+              "info": "Capitale du Reich, pôle principal de l'Axe"
+            },
+            {
+              "nom": "Rome",
+              "info": "Capitale fasciste, second pôle de l'Axe après la victoire en Éthiopie"
+            }
+          ],
+          "methodes": [
+            "Dater et ordonner les étapes de la formation de l'Axe",
+            "Expliquer le rôle de l'anticommunisme dans le ralliement du Japon et de l'Italie",
+            "Analyser les conséquences diplomatiques pour la France et le Royaume-Uni"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Comment la formation de l'Axe encercle-t-elle diplomatiquement les démocraties ?",
+            "etapes": [
+              "Introduction : le rapprochement des puissances révisionnistes après les crises de 1935-1936",
+              "L'axe Rome-Berlin, fruit du rapprochement italo-allemand",
+              "Le pacte anti-Komintern et l'entrée du Japon dans le système",
+              "Le pacte d'acier, alliance militaire achevée en mai 1939",
+              "Conclusion : les démocraties, isolées face au bloc de l'Axe"
+            ],
+            "conclusion": "De l'axe Rome-Berlin au pacte d'acier, l'Axe réunit les puissances agressives et isole la France et le Royaume-Uni."
+          },
+          "erreurs_frequentes": [
+            "Confondre le pacte anti-Komintern (1936) et le pacte d'acier (1939)",
+            "Oublier le Japon dans le système d'alliances de l'Axe",
+            "Croire que l'Italie et l'Allemagne étaient déjà alliées dès 1933"
+          ],
+          "pieges_examen": [
+            "Retenir la chronologie : axe Rome-Berlin (octobre 1936), anti-Komintern (novembre 1936), pacte d'acier (mai 1939)",
+            "Ne pas confondre le pacte anti-Komintern de l'Axe avec le pacte germano-soviétique de 1939"
+          ],
+          "mnemo": "36 axe et Komintern, 39 l'acier : l'Axe se forge pas à pas.",
+          "liens": {
+            "avant": [
+              "ethiopie_italie",
+              "guerre_espagne",
+              "expansion_japonaise_asie"
+            ],
+            "apres": [
+              "pacte_germano_sovietique"
+            ]
+          }
+        },
+        {
+          "id": "urss_staline",
+          "titre": "L'URSS de Staline, un troisième régime totalitaire",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "L'URSS stalinienne, régime totalitaire, s'isole des démocraties et se rapproche d'Hitler en 1939.",
+          "description_longue": "Dans les années 1930, l'URSS de Staline devient un troisième régime totalitaire, aux côtés de l'Italie fasciste et de l'Allemagne nazie. L'économie est dirigée par des plans quinquennaux à partir de 1928, tandis que la collectivisation forcée des campagnes provoque de terribles famines. Les grands procès de Moscou et les purges de 1936 à 1938 déciment le parti et l'armée rouge, et la propagande impose le culte de la personnalité de Staline. Ce régime inspire la méfiance des démocraties : l'URSS, isolée diplomatiquement après l'échec des négociations de l'été 1939, se tourne alors vers l'Allemagne.",
+          "points_cles": [
+            "Économie dirigée par les plans quinquennaux à partir de 1928.",
+            "Collectivisation forcée des campagnes en kolkhozes et sovkhozes.",
+            "Grands procès de Moscou et purges de 1936 à 1938, y compris dans l'armée rouge.",
+            "Propagande et culte de la personnalité de Staline.",
+            "Un troisième régime totalitaire, avec l'Italie fasciste et l'Allemagne nazie.",
+            "Méfiance des démocraties et isolement de l'URSS, prélude au pacte de 1939."
+          ],
+          "termes": [
+            {
+              "terme": "Plan quinquennal",
+              "definition": "Plan de production fixé par l'État soviétique pour cinq ans."
+            },
+            {
+              "terme": "Collectivisation",
+              "definition": "Regroupement forcé des terres paysannes en kolkhozes et sovkhozes."
+            },
+            {
+              "terme": "Purges",
+              "definition": "Épurations violentes éliminant les opposants réels ou supposés du régime."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "1928",
+              "evenement": "Lancement du premier plan quinquennal"
+            },
+            {
+              "date": "1936-1938",
+              "evenement": "Grands procès de Moscou et grandes purges"
+            },
+            {
+              "date": "été 1939",
+              "evenement": "Échec des négociations entre l'URSS, la France et le Royaume-Uni"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Staline",
+              "role": "Secrétaire général du Parti communiste, maître absolu de l'URSS"
+            },
+            {
+              "nom": "Léon Trotskine",
+              "role": "Principal rival de Staline, chassé du pouvoir puis assassiné au Mexique en 1940"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Moscou",
+              "info": "Capitale soviétique, théâtre des grands procès de 1936 à 1938"
+            },
+            {
+              "nom": "Ukraine",
+              "info": "République soviétique durement éprouvée par la famine liée à la collectivisation"
+            }
+          ],
+          "methodes": [
+            "Décrire les caractéristiques totalitaires du régime stalinien",
+            "Expliquer les conséquences militaires des purges dans l'armée rouge",
+            "Relier l'isolement soviétique au pacte germano-soviétique"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : En quoi l'URSS de Staline est-elle un régime totalitaire et quelles sont les conséquences diplomatiques de ce régime ?",
+            "etapes": [
+              "Introduction : trois régimes totalitaires en Europe dans les années 1930",
+              "Le contrôle de l'économie : plans quinquennaux et collectivisation",
+              "La terreur : grands procès, purges, encadrement de la société par la propagande",
+              "La méfiance des démocraties envers l'URSS et son isolement diplomatique",
+              "Conclusion : un totalitarisme qui prépare le rapprochement avec Hitler"
+            ],
+            "conclusion": "Totalitaire et isolée, l'URSS stalinienne finit par signer le pacte germano-soviétique en août 1939."
+          },
+          "erreurs_frequentes": [
+            "Oublier que l'URSS est un régime totalitaire au même titre que l'Allemagne nazie",
+            "Confondre le plan quinquennal, outil économique, et la collectivisation, mesure agraire",
+            "Croire que les purges ont épargné l'armée rouge"
+          ],
+          "pieges_examen": [
+            "Distinguer le communisme soviétique des fascismes tout en soulignant le caractère totalitaire commun",
+            "Faire le lien entre purges, méfiance des démocraties et pacte germano-soviétique de 1939"
+          ],
+          "mnemo": "Plans, kolkhozes, procès : Staline contrôle tout et l'URSS s'isole.",
+          "liens": {
+            "avant": [
+              "montee_nazisme_allemagne",
+              "montee_fascisme_italie"
+            ],
+            "apres": [
+              "pacte_germano_sovietique"
+            ]
+          }
+        },
+        {
+          "id": "pacte_germano_sovietique",
+          "titre": "Le pacte germano-soviétique (23 août 1939)",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Le pacte de non-agression entre Hitler et Staline, avec son protocole secret, ouvre la voie à la guerre.",
+          "description_longue": "Le 23 août 1939, à Moscou, l'Allemagne nazie et l'URSS signent un pacte de non-agression qui stupéfie le monde, tant leurs idéologies sont opposées. Un protocole secret partage l'Europe orientale en zones d'influence : la Pologne est divisée, tandis que les pays baltes et la Bessarabie reviennent à l'URSS. Hitler, assuré de ne pas combattre sur deux fronts, obtient la voie libre pour envahir la Pologne. Staline, isolé après l'échec des négociations avec la France et le Royaume-Uni, gagne du temps. Ce pacte constitue la dernière cause immédiate de la Seconde Guerre mondiale.",
+          "points_cles": [
+            "Pacte de non-agression signé à Moscou le 23 août 1939 par Ribbentrop et Molotov.",
+            "Protocole secret partageant l'Europe orientale en zones d'influence.",
+            "Partage prévu de la Pologne, pays baltes et Bessarabie attribués à l'URSS.",
+            "Hitler sécurise son arrière et évite la guerre sur deux fronts.",
+            "Staline, isolé, gagne du temps après l'échec des négociations tripartites.",
+            "Voie libre vers l'invasion de la Pologne le 1er septembre 1939."
+          ],
+          "termes": [
+            {
+              "terme": "Pacte de non-agression",
+              "definition": "Engagement mutuel de deux États à ne pas se combattre."
+            },
+            {
+              "terme": "Protocole secret",
+              "definition": "Annexe cachée du pacte fixant le partage de l'Europe orientale."
+            },
+            {
+              "terme": "Zone d'influence",
+              "definition": "Territoire sur lequel une grande puissance se réserve un droit de contrôle politique."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "été 1939",
+              "evenement": "Échec des négociations militaires entre l'URSS, la France et le Royaume-Uni"
+            },
+            {
+              "date": "23 août 1939",
+              "evenement": "Signature du pacte germano-soviétique à Moscou"
+            },
+            {
+              "date": "1er septembre 1939",
+              "evenement": "Invasion de la Pologne par l'Allemagne, rendue possible par le pacte"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Joachim von Ribbentrop",
+              "role": "Ministre allemand des Affaires étrangères, signataire du pacte"
+            },
+            {
+              "nom": "Viatcheslav Molotov",
+              "role": "Ministre soviétique des Affaires étrangères, signataire du pacte"
+            },
+            {
+              "nom": "Staline",
+              "role": "Maître de l'URSS, décideur du rapprochement avec l'Allemagne"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Moscou",
+              "info": "Capitale où le pacte est signé dans la nuit du 23 août 1939"
+            },
+            {
+              "nom": "Varsovie",
+              "info": "Capitale de la Pologne, dont le partage est prévu par le protocole secret"
+            }
+          ],
+          "methodes": [
+            "Reconstituer la chronologie des négociations de l'été 1939",
+            "Expliquer les intérêts opposés mais convergents d'Hitler et de Staline",
+            "Relier le pacte au déclenchement de la guerre en septembre 1939"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : En quoi le pacte germano-soviétique du 23 août 1939 est-il la dernière cause immédiate de la Seconde Guerre mondiale ?",
+            "etapes": [
+              "Introduction : l'Europe de l'été 1939, entre menaces allemandes et négociations",
+              "Les raisons d'Hitler : garantir son arrière pour attaquer la Pologne",
+              "Les raisons de Staline : isolement, méfiance envers les démocraties, gain de temps",
+              "Le contenu du pacte : non-agression publique et protocole secret de partage",
+              "Conclusion : la voie libre vers l'invasion de la Pologne et la guerre mondiale"
+            ],
+            "conclusion": "En garantissant à Hitler un seul front, le pacte du 23 août 1939 rend possible l'attaque du 1er septembre et donc la guerre."
+          },
+          "erreurs_frequentes": [
+            "Oublier le protocole secret et réduire le pacte à une simple non-agression",
+            "Croire que le pacte traduit une convergence idéologique entre nazisme et communisme",
+            "Dater le pacte de septembre 1939 au lieu du 23 août 1939"
+          ],
+          "pieges_examen": [
+            "Citer les signataires exacts : Ribbentrop et Molotov, à Moscou, le 23 août 1939",
+            "Distinguer le pacte (23 août 1939) de l'invasion de la Pologne (1er septembre 1939)"
+          ],
+          "mnemo": "23 août 39, Moscou : Hitler et Staline se serrent la main, la Pologne paie.",
+          "liens": {
+            "avant": [
+              "urss_staline",
+              "axe_berlin_rome",
+              "politique_apaisement"
+            ],
+            "apres": []
+          }
+        }
+      ],
+      "exercices_types": [
+        "Question de cours",
+        "Analyse de document historique",
+        "Dissertation",
+        "Restitution organisée des connaissances"
+      ]
+    },
+    {
+      "id": "deroulement_seconde_guerre_mondiale",
+      "numero": 2,
+      "titre": "Le déroulement de la Seconde Guerre mondiale",
+      "description": "Étude des grandes phases et des événements majeurs du conflit de 1939 à 1945.",
+      "duree_estimee_min": 630,
+      "difficulte": 3,
+      "obligatoire": true,
+      "prerequis": [
+        "causes_seconde_guerre_mondiale"
+      ],
+      "notions": [
+        {
+          "id": "declenchement_1939",
+          "titre": "Le déclenchement (1er septembre 1939)",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "L'invasion de la Pologne par l'Allemagne déclenche la Seconde Guerre mondiale.",
+          "description_longue": "Le 1er septembre 1939, l'Allemagne envahit la Pologne sans déclaration de guerre. Cette agression pousse le Royaume-Uni et la France à déclarer la guerre à l'Allemagne le 3 septembre 1939. C'est le début de la Seconde Guerre mondiale. Le pacte germano-soviétique d'août 1939 avait assuré à Hitler la neutralité de l'URSS.",
+          "points_cles": [
+            "Invasion de la Pologne le 1er septembre 1939.",
+            "Déclaration de guerre franco-britannique le 3 septembre 1939.",
+            "Pacte germano-soviétique d'août 1939.",
+            "Début officiel de la Seconde Guerre mondiale.",
+            "La Pologne est envahie à l'ouest par l'Allemagne et à l'est par l'URSS."
+          ],
+          "termes": [
+            {
+              "terme": "Pacte germano-soviétique",
+              "definition": "Accord de non-agression entre l'Allemagne et l'URSS en 1939."
+            },
+            {
+              "terme": "Blitzkrieg",
+              "definition": "Guerre éclair, tactique militaire allemande."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "23 août 1939",
+              "evenement": "Pacte germano-soviétique"
+            },
+            {
+              "date": "1er septembre 1939",
+              "evenement": "Invasion de la Pologne"
+            },
+            {
+              "date": "3 septembre 1939",
+              "evenement": "Déclaration de guerre du Royaume-Uni et de la France"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Adolf Hitler",
+              "role": "Chef de l'Allemagne nazie"
+            },
+            {
+              "nom": "Neville Chamberlain",
+              "role": "Premier ministre britannique"
+            },
+            {
+              "nom": "Édouard Daladier",
+              "role": "Président du Conseil français"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Pologne",
+              "info": "Pays envahi le 1er septembre 1939"
+            },
+            {
+              "nom": "Dantzig",
+              "info": "Ville libre revendiquée par Hitler"
+            }
+          ],
+          "methodes": [
+            "Situer les événements dans le temps",
+            "Expliquer le mécanisme du déclenchement",
+            "Analyser les responsabilités"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Comment la Seconde Guerre mondiale a-t-elle éclaté ?",
+            "etapes": [
+              "Introduction : l'Europe en 1939",
+              "Le pacte germano-soviétique",
+              "L'invasion de la Pologne",
+              "Les déclarations de guerre",
+              "Conclusion : le début du conflit mondial"
+            ],
+            "conclusion": "L'invasion de la Pologne par l'Allemagne le 1er septembre 1939 marque le début de la Seconde Guerre mondiale."
+          },
+          "erreurs_frequentes": [
+            "Confondre la date de l'invasion de la Pologne avec celle de la déclaration de guerre",
+            "Oublier le pacte germano-soviétique",
+            "Ne pas mentionner l'invasion soviétique de la Pologne"
+          ],
+          "pieges_examen": [
+            "Bien distinguer le 1er septembre (invasion) et le 3 septembre (déclarations de guerre)",
+            "Ne pas oublier le rôle de l'URSS"
+          ],
+          "mnemo": "1er septembre 1939 : invasion de la Pologne.",
+          "liens": {
+            "avant": [],
+            "apres": [
+              "guerre_eclair"
+            ]
+          }
+        },
+        {
+          "id": "guerre_eclair",
+          "titre": "La guerre éclair (Blitzkrieg)",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Tactique militaire allemande basée sur la rapidité et la coordination.",
+          "description_longue": "La Blitzkrieg (guerre éclair) est une tactique militaire allemande qui combine l'utilisation de chars, d'avions et d'infanterie motorisée pour percer rapidement les lignes ennemies. Elle permet à l'Allemagne de remporter des victoires rapides en Pologne (1939), en France (1940) et dans les Balkans. Cette tactique surprend les Alliés.",
+          "points_cles": [
+            "Tactique de guerre rapide.",
+            "Combinaison de chars, avions et infanterie.",
+            "Victoires rapides en Pologne et en France.",
+            "Surprise des Alliés.",
+            "Efficacité initiale de l'armée allemande."
+          ],
+          "termes": [
+            {
+              "terme": "Blitzkrieg",
+              "definition": "Guerre éclair, tactique militaire allemande."
+            },
+            {
+              "terme": "Panzer",
+              "definition": "Char allemand."
+            },
+            {
+              "terme": "Luftwaffe",
+              "definition": "Armée de l'air allemande."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "Septembre 1939",
+              "evenement": "Blitzkrieg en Pologne"
+            },
+            {
+              "date": "Mai-Juin 1940",
+              "evenement": "Blitzkrieg en France"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Adolf Hitler",
+              "role": "Chef de l'armée allemande"
+            },
+            {
+              "nom": "Heinz Guderian",
+              "role": "Général allemand, théoricien de la Blitzkrieg"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Pologne",
+              "info": "Première application de la Blitzkrieg"
+            },
+            {
+              "nom": "France",
+              "info": "Envahie en 1940 par la Blitzkrieg"
+            }
+          ],
+          "methodes": [
+            "Décrire la tactique",
+            "Expliquer son efficacité",
+            "Analyser ses limites"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Qu'est-ce que la guerre éclair ?",
+            "etapes": [
+              "Introduction : définition de la Blitzkrieg",
+              "Les composantes de la tactique",
+              "Les succès de 1939-1940",
+              "Les limites de la tactique",
+              "Conclusion : une tactique efficace mais limitée"
+            ],
+            "conclusion": "La Blitzkrieg a permis à l'Allemagne des victoires rapides, mais a montré ses limites face à l'URSS."
+          },
+          "erreurs_frequentes": [
+            "Confondre Blitzkrieg et guerre de position",
+            "Oublier les composantes de la tactique",
+            "Ne pas mentionner les limites"
+          ],
+          "pieges_examen": [
+            "Bien définir la Blitzkrieg",
+            "Ne pas oublier qu'elle a été utilisée en Pologne et en France"
+          ],
+          "mnemo": "Blitzkrieg : chars, avions, rapidité.",
+          "liens": {
+            "avant": [
+              "declenchement_1939"
+            ],
+            "apres": [
+              "invasion_pologne"
+            ]
+          }
+        },
+        {
+          "id": "invasion_pologne",
+          "titre": "L'invasion de la Pologne",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "La Pologne est envahie par l'Allemagne et l'URSS en septembre 1939.",
+          "description_longue": "Le 1er septembre 1939, l'Allemagne envahit la Pologne en utilisant la tactique de la Blitzkrieg. Le 17 septembre, l'URSS envahit à son tour l'est de la Pologne, conformément au pacte germano-soviétique. La Pologne est rapidement écrasée et partagée entre les deux envahisseurs. Cet événement déclenche la Seconde Guerre mondiale.",
+          "points_cles": [
+            "Invasion allemande le 1er septembre 1939.",
+            "Invasion soviétique le 17 septembre 1939.",
+            "Partage de la Pologne.",
+            "Application de la Blitzkrieg.",
+            "Déclenchement de la Seconde Guerre mondiale."
+          ],
+          "termes": [
+            {
+              "terme": "Pacte germano-soviétique",
+              "definition": "Accord de partage de la Pologne."
+            },
+            {
+              "terme": "Blitzkrieg",
+              "definition": "Guerre éclair."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "1er septembre 1939",
+              "evenement": "Invasion allemande de la Pologne"
+            },
+            {
+              "date": "17 septembre 1939",
+              "evenement": "Invasion soviétique de la Pologne"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Adolf Hitler",
+              "role": "Chef de l'Allemagne nazie"
+            },
+            {
+              "nom": "Joseph Staline",
+              "role": "Chef de l'URSS"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Pologne",
+              "info": "Pays envahi et partagé"
+            },
+            {
+              "nom": "Varsovie",
+              "info": "Capitale de la Pologne"
+            }
+          ],
+          "methodes": [
+            "Décrire l'invasion",
+            "Expliquer le partage",
+            "Analyser les conséquences"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Décrivez l'invasion de la Pologne en 1939.",
+            "etapes": [
+              "Introduction : la Pologne, cible d'Hitler",
+              "L'invasion allemande du 1er septembre",
+              "L'invasion soviétique du 17 septembre",
+              "Le partage de la Pologne",
+              "Conclusion : le déclenchement de la guerre"
+            ],
+            "conclusion": "L'invasion de la Pologne par l'Allemagne et l'URSS marque le début de la Seconde Guerre mondiale."
+          },
+          "erreurs_frequentes": [
+            "Oublier l'invasion soviétique",
+            "Confondre les dates",
+            "Ne pas mentionner le partage"
+          ],
+          "pieges_examen": [
+            "Bien distinguer les deux invasions",
+            "Ne pas oublier le pacte germano-soviétique"
+          ],
+          "mnemo": "Pologne : 1er septembre Allemagne, 17 septembre URSS.",
+          "liens": {
+            "avant": [
+              "guerre_eclair"
+            ],
+            "apres": [
+              "drole_de_guerre"
+            ]
+          }
+        },
+        {
+          "id": "drole_de_guerre",
+          "titre": "La drôle de guerre",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "Période d'attente sur le front occidental entre septembre 1939 et mai 1940.",
+          "description_longue": "Après les déclarations de guerre de septembre 1939, les armées françaises et britanniques restent sur la défensive face à l'Allemagne. Cette période d'inactivité militaire sur le front occidental est appelée 'drôle de guerre'. Elle dure de septembre 1939 à mai 1940. Les Alliés attendent l'offensive allemande qui vient en mai 1940.",
+          "points_cles": [
+            "Période de septembre 1939 à mai 1940.",
+            "Inactivité militaire sur le front occidental.",
+            "Les Alliés restent sur la défensive.",
+            "Ligne Maginot.",
+            "Fin de la drôle de guerre avec l'offensive allemande de mai 1940."
+          ],
+          "termes": [
+            {
+              "terme": "Drôle de guerre",
+              "definition": "Période d'attente sur le front occidental."
+            },
+            {
+              "terme": "Ligne Maginot",
+              "definition": "Fortifications françaises à la frontière allemande."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "Septembre 1939",
+              "evenement": "Début de la drôle de guerre"
+            },
+            {
+              "date": "Mai 1940",
+              "evenement": "Fin de la drôle de guerre"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Édouard Daladier",
+              "role": "Président du Conseil français"
+            },
+            {
+              "nom": "Neville Chamberlain",
+              "role": "Premier ministre britannique"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Ligne Maginot",
+              "info": "Fortifications françaises"
+            },
+            {
+              "nom": "Front occidental",
+              "info": "Zone d'inactivité militaire"
+            }
+          ],
+          "methodes": [
+            "Décrire la période",
+            "Expliquer l'inactivité",
+            "Analyser les conséquences"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Qu'est-ce que la drôle de guerre ?",
+            "etapes": [
+              "Introduction : la période de septembre 1939 à mai 1940",
+              "L'inactivité militaire",
+              "Les raisons de cette attente",
+              "La fin de la drôle de guerre",
+              "Conclusion : une période d'illusion"
+            ],
+            "conclusion": "La drôle de guerre est une période d'attente qui a pris fin avec l'offensive allemande de mai 1940."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec la guerre de position",
+            "Oublier les dates",
+            "Ne pas mentionner la ligne Maginot"
+          ],
+          "pieges_examen": [
+            "Bien retenir la période : septembre 1939 à mai 1940",
+            "Ne pas oublier que c'est une période d'inactivité"
+          ],
+          "mnemo": "Drôle de guerre : 1939-1940, attente.",
+          "liens": {
+            "avant": [
+              "invasion_pologne"
+            ],
+            "apres": [
+              "defaite_france"
+            ]
+          }
+        },
+        {
+          "id": "defaite_france",
+          "titre": "La défaite de la France (1940)",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "La France est envahie et vaincue par l'Allemagne en mai-juin 1940.",
+          "description_longue": "Le 10 mai 1940, l'Allemagne lance une offensive éclair contre la France, contournant la ligne Maginot par les Ardennes. Les armées françaises et britanniques sont rapidement dépassées. Paris est occupé le 14 juin 1940. L'armistice est signé le 22 juin 1940. La France est divisée en zone occupée et zone libre.",
+          "points_cles": [
+            "Offensive allemande du 10 mai 1940.",
+            "Contournement de la ligne Maginot.",
+            "Exode massif des populations.",
+            "Paris occupé le 14 juin 1940.",
+            "Armistice signé le 22 juin 1940.",
+            "Division de la France en deux zones."
+          ],
+          "termes": [
+            {
+              "terme": "Armistice",
+              "definition": "Accord de cessation des combats."
+            },
+            {
+              "terme": "Exode",
+              "definition": "Déplacement massif des populations fuyant l'invasion."
+            },
+            {
+              "terme": "Zone libre",
+              "definition": "Partie de la France non occupée jusqu'en 1942."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "10 mai 1940",
+              "evenement": "Offensive allemande"
+            },
+            {
+              "date": "14 juin 1940",
+              "evenement": "Occupation de Paris"
+            },
+            {
+              "date": "22 juin 1940",
+              "evenement": "Armistice"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Philippe Pétain",
+              "role": "Maréchal, signe l'armistice"
+            },
+            {
+              "nom": "Paul Reynaud",
+              "role": "Président du Conseil français"
+            },
+            {
+              "nom": "Charles de Gaulle",
+              "role": "Général, refuse l'armistice"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Ardennes",
+              "info": "Région contournée par l'offensive allemande"
+            },
+            {
+              "nom": "Paris",
+              "info": "Capitale occupée le 14 juin 1940"
+            },
+            {
+              "nom": "Rethondes",
+              "info": "Lieu de signature de l'armistice"
+            }
+          ],
+          "methodes": [
+            "Décrire la défaite",
+            "Expliquer les causes",
+            "Analyser les conséquences"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Comment expliquer la défaite de la France en 1940 ?",
+            "etapes": [
+              "Introduction : la France face à l'offensive allemande",
+              "Les causes militaires",
+              "Les causes politiques",
+              "Les conséquences",
+              "Conclusion : une défaite rapide et humiliante"
+            ],
+            "conclusion": "La défaite de la France en 1940 résulte de l'impréparation militaire et du choc de la Blitzkrieg."
+          },
+          "erreurs_frequentes": [
+            "Confondre les dates",
+            "Oublier l'armistice",
+            "Ne pas mentionner la division de la France"
+          ],
+          "pieges_examen": [
+            "Bien retenir les dates : 10 mai, 14 juin, 22 juin 1940",
+            "Ne pas oublier la ligne Maginot"
+          ],
+          "mnemo": "1940 : offensive, Paris, armistice.",
+          "liens": {
+            "avant": [
+              "drole_de_guerre"
+            ],
+            "apres": [
+              "bataille_angleterre"
+            ]
+          }
+        },
+        {
+          "id": "bataille_angleterre",
+          "titre": "La bataille d'Angleterre",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Première défaite allemande de la guerre dans les airs.",
+          "description_longue": "Après la défaite de la France, l'Allemagne tente d'envahir le Royaume-Uni. La bataille d'Angleterre (juillet-octobre 1940) est une bataille aérienne entre la Luftwaffe allemande et la Royal Air Force britannique. Les Britanniques, aidés par le radar, remportent la victoire. C'est la première défaite d'Hitler.",
+          "points_cles": [
+            "Bataille aérienne de juillet à octobre 1940.",
+            "Opposition entre la Luftwaffe et la RAF.",
+            "Rôle du radar britannique.",
+            "Victoire britannique.",
+            "Première défaite d'Hitler."
+          ],
+          "termes": [
+            {
+              "terme": "RAF",
+              "definition": "Royal Air Force, armée de l'air britannique."
+            },
+            {
+              "terme": "Luftwaffe",
+              "definition": "Armée de l'air allemande."
+            },
+            {
+              "terme": "Radar",
+              "definition": "Système de détection."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "Juillet-Octobre 1940",
+              "evenement": "Bataille d'Angleterre"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Winston Churchill",
+              "role": "Premier ministre britannique"
+            },
+            {
+              "nom": "Hermann Göring",
+              "role": "Chef de la Luftwaffe"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Angleterre",
+              "info": "Théâtre de la bataille aérienne"
+            },
+            {
+              "nom": "Londres",
+              "info": "Capitale bombardée par les Allemands"
+            }
+          ],
+          "methodes": [
+            "Décrire la bataille",
+            "Expliquer la victoire britannique",
+            "Analyser les conséquences"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Pourquoi la bataille d'Angleterre est-elle un tournant ?",
+            "etapes": [
+              "Introduction : la bataille d'Angleterre",
+              "Le déroulement de la bataille",
+              "Les raisons de la victoire britannique",
+              "Les conséquences",
+              "Conclusion : première défaite d'Hitler"
+            ],
+            "conclusion": "La bataille d'Angleterre est la première défaite d'Hitler et un tournant psychologique de la guerre."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec le débarquement",
+            "Oublier le rôle du radar",
+            "Ne pas mentionner Churchill"
+          ],
+          "pieges_examen": [
+            "Bien retenir la période : juillet-octobre 1940",
+            "Ne pas oublier que c'est une bataille aérienne"
+          ],
+          "mnemo": "1940 : bataille d'Angleterre, RAF, radar.",
+          "liens": {
+            "avant": [
+              "defaite_france"
+            ],
+            "apres": [
+              "operation_barbarossa"
+            ]
+          }
+        },
+        {
+          "id": "operation_barbarossa",
+          "titre": "L'opération Barbarossa (1941)",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Invasion de l'URSS par l'Allemagne nazie en juin 1941.",
+          "description_longue": "Le 22 juin 1941, Hitler lance l'opération Barbarossa, l'invasion de l'URSS. Malgré des victoires initiales, l'armée allemande est stoppée devant Moscou en décembre 1941. L'URSS devient un acteur majeur de la guerre. L'opération Barbarossa marque l'ouverture du front de l'Est.",
+          "points_cles": [
+            "Invasion de l'URSS le 22 juin 1941.",
+            "Victoires initiales allemandes.",
+            "Échec devant Moscou en décembre 1941.",
+            "Ouverture du front de l'Est.",
+            "Entrée en guerre de l'URSS aux côtés des Alliés."
+          ],
+          "termes": [
+            {
+              "terme": "Opération Barbarossa",
+              "definition": "Nom de code de l'invasion de l'URSS."
+            },
+            {
+              "terme": "Front de l'Est",
+              "definition": "Théâtre des opérations en URSS."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "22 juin 1941",
+              "evenement": "Début de l'opération Barbarossa"
+            },
+            {
+              "date": "Décembre 1941",
+              "evenement": "Échec devant Moscou"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Adolf Hitler",
+              "role": "Chef de l'Allemagne nazie"
+            },
+            {
+              "nom": "Joseph Staline",
+              "role": "Chef de l'URSS"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "URSS",
+              "info": "Pays envahi"
+            },
+            {
+              "nom": "Moscou",
+              "info": "Capitale soviétique"
+            }
+          ],
+          "methodes": [
+            "Décrire l'invasion",
+            "Expliquer l'échec allemand",
+            "Analyser les conséquences"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Pourquoi l'opération Barbarossa est-elle un tournant de la guerre ?",
+            "etapes": [
+              "Introduction : l'invasion de l'URSS",
+              "Les succès initiaux allemands",
+              "L'échec devant Moscou",
+              "Les conséquences",
+              "Conclusion : un tournant de la guerre"
+            ],
+            "conclusion": "L'échec de l'opération Barbarossa marque le début du reflux allemand."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec le pacte germano-soviétique",
+            "Oublier l'échec devant Moscou",
+            "Ne pas mentionner le front de l'Est"
+          ],
+          "pieges_examen": [
+            "Bien retenir la date du 22 juin 1941",
+            "Ne pas oublier que l'URSS entre en guerre aux côtés des Alliés"
+          ],
+          "mnemo": "Barbarossa : 22 juin 1941, URSS.",
+          "liens": {
+            "avant": [
+              "bataille_angleterre"
+            ],
+            "apres": [
+              "pearl_harbor"
+            ]
+          }
+        },
+        {
+          "id": "pearl_harbor",
+          "titre": "Pearl Harbor et l'entrée en guerre des USA",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Attaque japonaise contre les États-Unis qui provoque leur entrée en guerre.",
+          "description_longue": "Le 7 décembre 1941, le Japon attaque par surprise la base navale américaine de Pearl Harbor. Les États-Unis déclarent la guerre au Japon le lendemain. L'Allemagne déclare la guerre aux États-Unis. La guerre devient véritablement mondiale. L'entrée en guerre des États-Unis change le rapport de forces.",
+          "points_cles": [
+            "Attaque japonaise le 7 décembre 1941.",
+            "Base navale de Pearl Harbor.",
+            "Entrée en guerre des États-Unis.",
+            "Guerre mondiale.",
+            "Changement du rapport de forces."
+          ],
+          "termes": [
+            {
+              "terme": "Pearl Harbor",
+              "definition": "Base navale américaine attaquée par le Japon."
+            },
+            {
+              "terme": "Guerre mondiale",
+              "definition": "Conflit impliquant de nombreux pays."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "7 décembre 1941",
+              "evenement": "Attaque de Pearl Harbor"
+            },
+            {
+              "date": "8 décembre 1941",
+              "evenement": "Déclaration de guerre des USA au Japon"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Franklin D. Roosevelt",
+              "role": "Président américain"
+            },
+            {
+              "nom": "Hirohito",
+              "role": "Empereur du Japon"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Pearl Harbor",
+              "info": "Base navale à Hawaï"
+            },
+            {
+              "nom": "États-Unis",
+              "info": "Pays qui entre en guerre"
+            }
+          ],
+          "methodes": [
+            "Décrire l'attaque",
+            "Expliquer l'entrée en guerre",
+            "Analyser les conséquences"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Comment Pearl Harbor a-t-il changé la guerre ?",
+            "etapes": [
+              "Introduction : l'attaque de Pearl Harbor",
+              "Le déroulement de l'attaque",
+              "L'entrée en guerre des États-Unis",
+              "Les conséquences",
+              "Conclusion : la guerre devient mondiale"
+            ],
+            "conclusion": "Pearl Harbor provoque l'entrée en guerre des États-Unis et donne au conflit une dimension véritablement mondiale."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec une attaque allemande",
+            "Oublier la date",
+            "Ne pas mentionner l'entrée en guerre des USA"
+          ],
+          "pieges_examen": [
+            "Bien retenir la date du 7 décembre 1941",
+            "Ne pas oublier que l'attaque est japonaise"
+          ],
+          "mnemo": "Pearl Harbor : 7 décembre 1941, USA.",
+          "liens": {
+            "avant": [
+              "operation_barbarossa"
+            ],
+            "apres": [
+              "stalingrad"
+            ]
+          }
+        },
+        {
+          "id": "stalingrad",
+          "titre": "Le tournant de Stalingrad",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Bataille de Stalingrad (1942-1943), tournant de la guerre.",
+          "description_longue": "La bataille de Stalingrad se déroule de juillet 1942 à février 1943. Elle oppose les armées allemandes et soviétiques pour le contrôle de la ville de Stalingrad. La capitulation allemande du 2 février 1943 marque le début du reflux allemand sur le front de l'Est. C'est un tournant majeur de la guerre.",
+          "points_cles": [
+            "Bataille de juillet 1942 à février 1943.",
+            "Opposition germano-soviétique.",
+            "Capitulation allemande le 2 février 1943.",
+            "Tournant de la guerre.",
+            "Début du reflux allemand."
+          ],
+          "termes": [
+            {
+              "terme": "Stalingrad",
+              "definition": "Ville symbole de la bataille."
+            },
+            {
+              "terme": "Tournant",
+              "definition": "Moment où la guerre change de cours."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "Juillet 1942",
+              "evenement": "Début de la bataille"
+            },
+            {
+              "date": "2 février 1943",
+              "evenement": "Capitulation allemande"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Adolf Hitler",
+              "role": "Chef de l'Allemagne nazie"
+            },
+            {
+              "nom": "Joseph Staline",
+              "role": "Chef de l'URSS"
+            },
+            {
+              "nom": "Friedrich Paulus",
+              "role": "Général allemand capturé"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Stalingrad",
+              "info": "Ville de la bataille (aujourd'hui Volgograd)"
+            },
+            {
+              "nom": "URSS",
+              "info": "Théâtre de la bataille"
+            }
+          ],
+          "methodes": [
+            "Décrire la bataille",
+            "Expliquer son importance",
+            "Analyser les conséquences"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Pourquoi Stalingrad est-elle un tournant de la guerre ?",
+            "etapes": [
+              "Introduction : la bataille de Stalingrad",
+              "Le déroulement de la bataille",
+              "La capitulation allemande",
+              "Les conséquences",
+              "Conclusion : un tournant décisif"
+            ],
+            "conclusion": "Stalingrad marque le début du reflux allemand et le tournant de la guerre à l'Est."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec une autre bataille",
+            "Oublier la date de la capitulation",
+            "Ne pas mentionner le tournant"
+          ],
+          "pieges_examen": [
+            "Bien retenir la date du 2 février 1943",
+            "Ne pas oublier que c'est un tournant"
+          ],
+          "mnemo": "Stalingrad : 1942-1943, tournant.",
+          "liens": {
+            "avant": [
+              "pearl_harbor"
+            ],
+            "apres": [
+              "debarquement_normandie"
+            ]
+          }
+        },
+        {
+          "id": "debarquement_normandie",
+          "titre": "Le débarquement de Normandie (1944)",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Débarquement allié en Normandie le 6 juin 1944.",
+          "description_longue": "Le 6 juin 1944, les Alliés débarquent sur les plages de Normandie. C'est la plus grande opération amphibie de l'histoire. Le débarquement ouvre un nouveau front à l'Ouest et accélère la libération de la France. Paris est libéré le 25 août 1944.",
+          "points_cles": [
+            "Débarquement le 6 juin 1944.",
+            "Plages de Normandie.",
+            "Plus grande opération amphibie.",
+            "Ouverture du front de l'Ouest.",
+            "Libération de Paris le 25 août 1944."
+          ],
+          "termes": [
+            {
+              "terme": "Débarquement",
+              "definition": "Opération militaire amphibie."
+            },
+            {
+              "terme": "Jour J",
+              "definition": "Nom donné au 6 juin 1944."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "6 juin 1944",
+              "evenement": "Débarquement de Normandie"
+            },
+            {
+              "date": "25 août 1944",
+              "evenement": "Libération de Paris"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Dwight Eisenhower",
+              "role": "Commandant suprême des forces alliées"
+            },
+            {
+              "nom": "Charles de Gaulle",
+              "role": "Chef de la France libre"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Normandie",
+              "info": "Région du débarquement"
+            },
+            {
+              "nom": "Paris",
+              "info": "Libéré le 25 août 1944"
+            }
+          ],
+          "methodes": [
+            "Décrire le débarquement",
+            "Expliquer son importance",
+            "Analyser les conséquences"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Décrivez le débarquement de Normandie et ses conséquences.",
+            "etapes": [
+              "Introduction : le débarquement du 6 juin 1944",
+              "La préparation et le déroulement",
+              "Les conséquences militaires",
+              "La libération de la France",
+              "Conclusion : un événement décisif"
+            ],
+            "conclusion": "Le débarquement de Normandie ouvre le front de l'Ouest et accélère la défaite de l'Allemagne."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec un autre débarquement",
+            "Oublier la date",
+            "Ne pas mentionner la libération de Paris"
+          ],
+          "pieges_examen": [
+            "Bien retenir la date du 6 juin 1944",
+            "Ne pas oublier que c'est une opération alliée"
+          ],
+          "mnemo": "6 juin 1944 : Jour J, Normandie.",
+          "liens": {
+            "avant": [
+              "stalingrad"
+            ],
+            "apres": [
+              "capitulation_allemagne"
+            ]
+          }
+        },
+        {
+          "id": "capitulation_allemagne",
+          "titre": "La capitulation de l'Allemagne (mai 1945)",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "L'Allemagne capitule le 8 mai 1945.",
+          "description_longue": "Après la bataille de Berlin et le suicide d'Hitler le 30 avril 1945, l'Allemagne capitule sans condition le 8 mai 1945. C'est la fin de la guerre en Europe. Les combats se poursuivent dans le Pacifique jusqu'en août 1945.",
+          "points_cles": [
+            "Bataille de Berlin en avril 1945.",
+            "Suicide d'Hitler le 30 avril 1945.",
+            "Capitulation allemande le 8 mai 1945.",
+            "Fin de la guerre en Europe.",
+            "Poursuite des combats dans le Pacifique."
+          ],
+          "termes": [
+            {
+              "terme": "Capitulation",
+              "definition": "Reddition sans condition."
+            },
+            {
+              "terme": "Bataille de Berlin",
+              "definition": "Dernière grande bataille en Europe."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "30 avril 1945",
+              "evenement": "Suicide d'Hitler"
+            },
+            {
+              "date": "8 mai 1945",
+              "evenement": "Capitulation allemande"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Adolf Hitler",
+              "role": "Chef de l'Allemagne nazie"
+            },
+            {
+              "nom": "Joseph Staline",
+              "role": "Chef de l'URSS"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Berlin",
+              "info": "Capitale allemande"
+            },
+            {
+              "nom": "Reims",
+              "info": "Lieu de signature de la capitulation"
+            }
+          ],
+          "methodes": [
+            "Décrire la capitulation",
+            "Expliquer le contexte",
+            "Analyser les conséquences"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Décrivez la capitulation de l'Allemagne en 1945.",
+            "etapes": [
+              "Introduction : la fin de la guerre en Europe",
+              "La bataille de Berlin",
+              "Le suicide d'Hitler",
+              "La capitulation du 8 mai",
+              "Conclusion : fin de la guerre en Europe"
+            ],
+            "conclusion": "La capitulation allemande du 8 mai 1945 met fin à la guerre en Europe."
+          },
+          "erreurs_frequentes": [
+            "Confondre avec la capitulation du Japon",
+            "Oublier la date",
+            "Ne pas mentionner le suicide d'Hitler"
+          ],
+          "pieges_examen": [
+            "Bien retenir la date du 8 mai 1945",
+            "Ne pas oublier que la guerre continue dans le Pacifique"
+          ],
+          "mnemo": "8 mai 1945 : capitulation allemande.",
+          "liens": {
+            "avant": [
+              "debarquement_normandie"
+            ],
+            "apres": [
+              "hiroshima_nagasaki"
+            ]
+          }
+        },
+        {
+          "id": "hiroshima_nagasaki",
+          "titre": "Hiroshima et Nagasaki (août 1945)",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "Bombardements atomiques qui mettent fin à la guerre dans le Pacifique.",
+          "description_longue": "Les 6 et 9 août 1945, les États-Unis lancent deux bombes atomiques sur Hiroshima et Nagasaki. Ces bombardements font des dizaines de milliers de morts. Le Japon capitule le 2 septembre 1945. C'est la fin de la Seconde Guerre mondiale et le début de l'ère nucléaire.",
+          "points_cles": [
+            "Bombe atomique sur Hiroshima le 6 août 1945.",
+            "Bombe atomique sur Nagasaki le 9 août 1945.",
+            "Capitulation du Japon le 2 septembre 1945.",
+            "Fin de la Seconde Guerre mondiale.",
+            "Début de l'ère nucléaire."
+          ],
+          "termes": [
+            {
+              "terme": "Bombe atomique",
+              "definition": "Arme nucléaire."
+            },
+            {
+              "terme": "Capitulation",
+              "definition": "Reddition sans condition."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "6 août 1945",
+              "evenement": "Bombe atomique sur Hiroshima"
+            },
+            {
+              "date": "9 août 1945",
+              "evenement": "Bombe atomique sur Nagasaki"
+            },
+            {
+              "date": "2 septembre 1945",
+              "evenement": "Capitulation du Japon"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Harry Truman",
+              "role": "Président américain"
+            },
+            {
+              "nom": "Hirohito",
+              "role": "Empereur du Japon"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Hiroshima",
+              "info": "Ville bombardée le 6 août 1945"
+            },
+            {
+              "nom": "Nagasaki",
+              "info": "Ville bombardée le 9 août 1945"
+            }
+          ],
+          "methodes": [
+            "Décrire les bombardements",
+            "Expliquer la décision américaine",
+            "Analyser les conséquences"
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Pourquoi les bombardements atomiques ont-ils mis fin à la guerre ?",
+            "etapes": [
+              "Introduction : la fin de la guerre dans le Pacifique",
+              "Les bombardements d'Hiroshima et Nagasaki",
+              "La capitulation du Japon",
+              "Les conséquences",
+              "Conclusion : début de l'ère nucléaire"
+            ],
+            "conclusion": "Les bombardements atomiques d'août 1945 mettent fin à la Seconde Guerre mondiale et ouvrent l'ère nucléaire."
+          },
+          "erreurs_frequentes": [
+            "Confondre les dates des deux bombardements",
+            "Oublier la capitulation du Japon",
+            "Ne pas mentionner les conséquences"
+          ],
+          "pieges_examen": [
+            "Bien retenir les dates : 6 et 9 août 1945",
+            "Ne pas oublier la capitulation du 2 septembre 1945"
+          ],
+          "mnemo": "Hiroshima 6 août, Nagasaki 9 août 1945.",
+          "liens": {
+            "avant": [
+              "capitulation_allemagne"
+            ],
+            "apres": []
+          }
+        },
+        {
+          "id": "bataille_midway",
+          "titre": "La guerre du Pacifique et le tournant de Midway (1942)",
+          "obligatoire": true,
+          "difficulte": 2,
+          "duree_etude_min": 20,
+          "description_courte": "La victoire américaine de Midway (juin 1942) fait basculer l'initiative de la guerre du Pacifique.",
+          "description_longue": "Après l'attaque de Pearl Harbor, le Japon étend sa domination sur les Philippines, l'Indochine, l'Indonésie et la Birmanie, atteignant le sommet de sa puissance au début de 1942. En mai 1942, la bataille de la mer de Corail, première bataille de porte-avions de l'histoire, arrête sa progression vers l'Australie. Du 4 au 7 juin 1942, la bataille de Midway se solde par le naufrage de quatre porte-avions japonais, grâce au décryptage des codes ennemis par la marine américaine. Privé de son aéronavale, le Japon passe sur la défensive. Les États-Unis ouvrent alors, à Guadalcanal le 7 août 1942, une longue contre-offensive par le « saut d'île en île ».",
+          "points_cles": [
+            "Expansion japonaise de 1941-1942 : Philippines, Indochine, Indonésie, Birmanie et Malaisie conquises.",
+            "Bataille de la mer de Corail (4-8 mai 1942) : première bataille entre porte-avions, arrêt de la marche japonaise vers Port-Moresby.",
+            "Bataille de Midway (4-7 juin 1942) : victoire de la marine américaine préparée par le décryptage des codes japonais.",
+            "Quatre porte-avions japonais coulés (Akagi, Kaga, Soryu, Hiryu) contre un seul américain (Yorktown).",
+            "Bascule de l'initiative : privé de sa flotte d'aviation navale, le Japon passe sur la défensive.",
+            "Contre-offensive américaine par le « saut d'île en île », ouverte à Guadalcanal le 7 août 1942."
+          ],
+          "termes": [
+            {
+              "terme": "Saut d'île en île",
+              "definition": "Stratégie américaine consistant à conquérir des îles clés du Pacifique en contournant les positions japonaises les plus fortifiées."
+            },
+            {
+              "terme": "Porte-avions",
+              "definition": "Navire de guerre capable de lancer et de récupérer des avions ; arme décisive des batailles navales du Pacifique."
+            },
+            {
+              "terme": "Décryptage",
+              "definition": "Lecture des messages secrets ennemis ; la marine américaine casse le code naval japonais avant la bataille de Midway."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "Janvier-mai 1942",
+              "evenement": "Apogée de l'expansion japonaise : Philippines, Indonésie, Birmanie et Malaisie conquises"
+            },
+            {
+              "date": "4-8 mai 1942",
+              "evenement": "Bataille de la mer de Corail"
+            },
+            {
+              "date": "4-7 juin 1942",
+              "evenement": "Bataille de Midway : quatre porte-avions japonais coulés"
+            },
+            {
+              "date": "7 août 1942",
+              "evenement": "Débarquement américain à Guadalcanal"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Chester Nimitz",
+              "role": "Commandant en chef de la flotte du Pacifique des États-Unis, vainqueur de Midway"
+            },
+            {
+              "nom": "Isoroku Yamamoto",
+              "role": "Amiral japonais, commandant de la flotte combinée, organisateur des attaques de Pearl Harbor et de Midway"
+            },
+            {
+              "nom": "Douglas MacArthur",
+              "role": "Commandant des forces alliées dans le Pacifique sud-ouest, mène la contre-offensive"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Atoll de Midway",
+              "info": "Base américaine du Pacifique Nord, théâtre de la bataille décisive de juin 1942"
+            },
+            {
+              "nom": "Mer de Corail",
+              "info": "Au nord-est de l'Australie, théâtre de la première bataille entre porte-avions (mai 1942)"
+            },
+            {
+              "nom": "Guadalcanal",
+              "info": "Île des Salomon, point de départ de la contre-offensive américaine (août 1942)"
+            }
+          ],
+          "methodes": [
+            "Situer les conquêtes japonaises et les batailles navales de 1941-1942 sur une carte du Pacifique.",
+            "Expliquer les causes de la victoire américaine à Midway.",
+            "Relier la bataille de Midway au basculement de l'initiative dans le Pacifique."
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Montrez que la bataille de Midway (juin 1942) constitue le tournant de la guerre du Pacifique.",
+            "etapes": [
+              "Introduction : situer la guerre du Pacifique depuis Pearl Harbor et annoncer la problématique.",
+              "L'apogée de l'expansion japonaise en 1942 : Philippines, Indonésie, Birmanie, Malaisie.",
+              "De la mer de Corail (mai 1942) à Midway (4-7 juin 1942) : la victoire américaine et le naufrage de quatre porte-avions japonais.",
+              "Les conséquences : la perte de l'initiative par le Japon et la contre-offensive du saut d'île en île depuis Guadalcanal.",
+              "Conclusion : Midway, tournant de la guerre du Pacifique."
+            ],
+            "conclusion": "Après la perte de ses quatre porte-avions à Midway, le Japon, contraint à la défensive, ne peut plus empêcher la reconquête américaine du Pacifique."
+          },
+          "erreurs_frequentes": [
+            "Réduire la guerre du Pacifique à la seule attaque de Pearl Harbor.",
+            "Confondre la bataille de la mer de Corail (mai 1942) et la bataille de Midway (juin 1942).",
+            "Oublier le rôle du décryptage des codes japonais dans la victoire américaine."
+          ],
+          "pieges_examen": [
+            "Distinguer l'entrée en guerre des États-Unis (7 décembre 1941) du tournant de Midway (juin 1942).",
+            "Citer les quatre porte-avions japonais coulés pour mesurer l'ampleur de la défaite nippone."
+          ],
+          "mnemo": "Midway, juin 1942 : quatre porte-avions au fond, l'initiative bascule.",
+          "liens": {
+            "avant": [
+              "pearl_harbor"
+            ],
+            "apres": [
+              "hiroshima_nagasaki"
+            ]
+          }
+        },
+        {
+          "id": "shoah_solution_finale",
+          "titre": "La Shoah, génocide des Juifs d'Europe (1941-1945)",
+          "obligatoire": true,
+          "difficulte": 3,
+          "duree_etude_min": 25,
+          "description_courte": "La Shoah est le génocide d'environ six millions de Juifs d'Europe par l'Allemagne nazie.",
+          "description_longue": "Dès 1933, le régime nazi persécute les Juifs d'Allemagne : exclusion de la fonction publique, lois de Nuremberg en 1935, pogroms de la Nuit de Cristal en 1938. Pendant la guerre, les Juifs de Pologne occupée sont enfermés dans des ghettos, comme celui de Varsovie, tandis que les Einsatzgruppen fusillent plus d'un million de Juifs à l'Est dès 1941. La conférence de Wannsee, réunie le 20 janvier 1942, organise la « solution finale » : l'extermination systématique dans des camps comme Auschwitz-Birkenau et Treblinka. Environ six millions de Juifs d'Europe sont assassinés, ce qui révèle la dimension raciale et idéologique de la guerre menée par l'Allemagne nazie.",
+          "points_cles": [
+            "Persécution des Juifs d'Allemagne dès 1933 : boycott, exclusion des emplois publics, lois de Nuremberg (1935), Nuit de Cristal (1938).",
+            "Enfermement des Juifs de Pologne occupée dans des ghettos à partir de 1940, dont celui de Varsovie.",
+            "Massacres par fusillade des Einsatzgruppen dès l'opération Barbarossa (juin 1941), comme à Babi Yar (septembre 1941).",
+            "Conférence de Wannsee (20 janvier 1942) : coordination de la « solution finale ».",
+            "Camps d'extermination comme Auschwitz-Birkenau et Treblinka : les déportés sont gazés dès leur arrivée.",
+            "Environ 6 millions de Juifs assassinés : la guerre nazie a une dimension raciale et idéologique."
+          ],
+          "termes": [
+            {
+              "terme": "Shoah",
+              "definition": "Mot hébreu signifiant « catastrophe » : désigne le génocide des Juifs d'Europe par l'Allemagne nazie (1941-1945)."
+            },
+            {
+              "terme": "Génocide",
+              "definition": "Extermination méthodique et planifiée d'un groupe humain en raison de son origine, de sa religion ou de sa nationalité."
+            },
+            {
+              "terme": "Solution finale",
+              "definition": "Nom donné par les nazis au projet d'extermination totale des Juifs d'Europe, coordonné lors de la conférence de Wannsee (20 janvier 1942)."
+            }
+          ],
+          "dates_cles": [
+            {
+              "date": "1933",
+              "evenement": "Début des persécutions antisémites en Allemagne (boycott des commerces juifs)"
+            },
+            {
+              "date": "1935",
+              "evenement": "Lois de Nuremberg : les Juifs sont exclus de la citoyenneté allemande"
+            },
+            {
+              "date": "1941",
+              "evenement": "Massacres de masse par les Einsatzgruppen à l'Est, comme à Babi Yar (septembre 1941)"
+            },
+            {
+              "date": "20 janvier 1942",
+              "evenement": "Conférence de Wannsee : organisation de la « solution finale »"
+            }
+          ],
+          "personnages": [
+            {
+              "nom": "Adolf Hitler",
+              "role": "Führer du Reich, initiateur de la politique raciale aboutissant au génocide"
+            },
+            {
+              "nom": "Heinrich Himmler",
+              "role": "Chef de la SS, responsable du système des camps et de l'extermination"
+            },
+            {
+              "nom": "Reinhard Heydrich",
+              "role": "Chef du RSHA, président de la conférence de Wannsee chargée d'organiser la « solution finale »"
+            }
+          ],
+          "lieux": [
+            {
+              "nom": "Auschwitz-Birkenau",
+              "info": "Camp d'extermination en Pologne occupée (gazage au Zyklon B), où périt environ un million de Juifs"
+            },
+            {
+              "nom": "Varsovie",
+              "info": "Plus grand ghetto de Pologne occupée, créé en 1940 ; insurrection du ghetto en 1943"
+            },
+            {
+              "nom": "Wannsee",
+              "info": "Banlieue de Berlin où se tient, le 20 janvier 1942, la conférence qui coordonne l'extermination des Juifs d'Europe"
+            }
+          ],
+          "methodes": [
+            "Décrire les étapes de la persécution des Juifs de 1933 à 1945.",
+            "Expliquer la dimension raciale et idéologique de la guerre menée par l'Allemagne nazie.",
+            "Distinguer ghettos, camps de concentration et camps d'extermination."
+          ],
+          "exemple_resolu": {
+            "enonce": "Sujet type BAC : Comment l'Allemagne nazie passe-t-elle de la persécution des Juifs à leur extermination (1933-1945) ?",
+            "etapes": [
+              "Introduction : rappeler l'antisémitisme doctrinal du nazisme et annoncer l'évolution vers le génocide.",
+              "La persécution légale en Allemagne (1933-1939) : boycott, lois de Nuremberg, Nuit de Cristal.",
+              "La guerre et la radicalisation : ghettos de Pologne et massacres des Einsatzgruppen (1939-1941).",
+              "La « solution finale » (1942-1945) : conférence de Wannsee et camps d'extermination.",
+              "Conclusion : du racisme d'État au génocide de six millions de Juifs."
+            ],
+            "conclusion": "La Shoah, qui aboutit au meurtre d'environ six millions de Juifs, révèle la dimension raciale et idéologique de la guerre nazie."
+          },
+          "erreurs_frequentes": [
+            "Confondre camps de concentration et camps d'extermination.",
+            "Dater la « solution finale » du début de la guerre alors qu'elle est coordonnée en janvier 1942.",
+            "Oublier les ghettos et les massacres des Einsatzgruppen dans le processus menant à la Shoah."
+          ],
+          "pieges_examen": [
+            "Dater précisément la conférence de Wannsee (20 janvier 1942) qui coordonne l'extermination.",
+            "Donner l'ordre de grandeur des victimes (environ 6 millions) sans oublier la dimension raciale du projet nazi."
+          ],
+          "mnemo": "1935 les lois, 1941 les balles, 1942 les gaz : la marche de la Shoah.",
+          "liens": {
+            "avant": [
+              "declenchement_1939",
+              "operation_barbarossa"
+            ],
+            "apres": [
+              "capitulation_allemagne"
+            ]
+          }
+        }
+      ],
+      "exercices_types": [
+        "Question de cours",
+        "Analyse de document historique",
+        "Dissertation",
+        "Restitution organisée des connaissances"
+      ]
+    }
+  ]
+}
