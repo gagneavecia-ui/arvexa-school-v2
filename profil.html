@@ -14,11 +14,13 @@
   <script src="register-sw.js" defer></script>
 
   <style>
-    /* ============================================================
+       /* ============================================================
        ROOT — Design system ARVEXA
        ============================================================ */
     :root {
       --primary: #1A3A2A;
+      --primary-dark: #0A1A12;
+      --primary-light: #2A5A3A;
       --accent: #B8860B;
       --accent-bright: #E0B84A;
       --accent-dim: rgba(184, 134, 11, 0.08);
@@ -33,7 +35,7 @@
       --text-light: #F5F0E8;
       --text-dim: #8A8A7A;
       --text-muted: #5A5A4A;
-      --card-border: rgba(184, 134, 11, 0.08);
+      --card-border: rgba(184, 134, 11, 0.06);
       --card-border-hover: rgba(184, 134, 11, 0.2);
       --transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
       --transition-fast: all 0.15s ease;
@@ -42,7 +44,7 @@
       --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
       --radius: 16px;
       --radius-lg: 20px;
-      --sidebar-width: 240px;
+      --sidebar-width: 280px;
       --header-height: 64px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -190,12 +192,8 @@
       height: 3px;
       background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--success), var(--accent));
       background-size: 300% 100%;
-      animation: shimmerBorder 5s linear infinite;
+      animation: borderShimmer 5s linear infinite;
       z-index: 3;
-    }
-    @keyframes shimmerBorder {
-      0% { background-position: 0% 0%; }
-      100% { background-position: 300% 0%; }
     }
 
     /* ---------- COVER ---------- */
@@ -718,7 +716,11 @@
       height: 3px;
       background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
       background-size: 200% 100%;
-      animation: shimmerBorder 3s linear infinite;
+      animation: borderShimmer 3s linear infinite;
+    }
+    @keyframes borderShimmer {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 200% 0%; }
     }
     .arvexa-confirm-modal::after {
       content: '';
@@ -895,12 +897,13 @@
       border-radius: 12px;
       background: rgba(20, 22, 20, 0.96);
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.06);
       color: var(--text-light);
       font-size: 13px;
       font-weight: 500;
       box-shadow: var(--shadow-lg);
-      animation: toastIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      animation: toastSlideIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
       pointer-events: auto;
     }
     .toast.success { border-color: rgba(45, 125, 90, 0.4); }
@@ -909,7 +912,7 @@
     .toast.success i { color: var(--success-light); }
     .toast.error i { color: var(--danger-light); }
 
-    @keyframes toastIn {
+    @keyframes toastSlideIn {
       from { opacity: 0; transform: translateY(-20px); }
       to { opacity: 1; transform: translateY(0); }
     }
@@ -930,13 +933,7 @@
       .container { padding: 12px 12px 20px; }
     }
 
-    @media (max-width: 480px) {
-      .header { padding: 8px 12px; padding-top: calc(8px + var(--safe-top)); min-height: 48px; }
-      .header .menu-toggle { width: 32px; height: 32px; font-size: 14px; }
-      .header .page-title { font-size: 13px; }
-      .header .header-actions button { width: 32px; height: 32px; font-size: 13px; }
-
-      .container { padding: 10px 10px 16px; }
+    @media (max-width: 640px) {
       .profile-cover { height: 70px; }
       .profile-avatar-section { margin-top: -36px; padding: 0 16px 12px; }
       .avatar-wrapper .avatar { width: 80px; height: 80px; font-size: 30px; }
@@ -971,21 +968,20 @@
       .arvexa-confirm-btn { padding: 11px 14px; font-size: 13px; }
     }
 
-    @media (max-width: 360px) {
-      .header { padding: 6px 8px; padding-top: calc(6px + var(--safe-top)); min-height: 42px; }
-      .header .menu-toggle { width: 28px; height: 28px; font-size: 12px; }
-      .header .page-title { font-size: 11px; }
-      .header .header-actions button { width: 28px; height: 28px; font-size: 11px; }
+    @media (max-width: 480px) {
+      .header .menu-toggle { width: 32px; height: 32px; font-size: 14px; }
+      .header .page-title { font-size: 13px; }
+      .header .header-actions button { width: 32px; height: 32px; font-size: 13px; }
 
-      .container { padding: 6px 6px 12px; }
+      .container { padding: 10px 10px 16px; }
       .profile-cover { height: 60px; }
       .profile-avatar-section { margin-top: -30px; padding: 0 12px 10px; }
       .avatar-wrapper .avatar { width: 70px; height: 70px; font-size: 26px; border-width: 3px; }
-      .avatar-wrapper .avatar-upload-btn { width: 24px; height: 24px; font-size: 10px; }
+      .avatar-wrapper .avatar-upload-btn { width: 26px; height: 26px; font-size: 10px; bottom: 4px; right: 4px; }
 
-      .profile-name { font-size: 16px; }
-      .profile-email { font-size: 11px; }
-      .profile-badge { font-size: 9px; padding: 3px 10px; }
+      .profile-name { font-size: 17px; margin-top: 10px; }
+      .profile-email { font-size: 11.5px; }
+      .profile-badge { font-size: 9.5px; padding: 3px 10px; }
 
       .profile-stats { gap: 6px; padding: 0 12px 12px; }
       .stat-item { padding: 8px 4px; border-radius: 8px; }
@@ -1011,6 +1007,45 @@
       .arvexa-confirm-message { font-size: 13px; margin-bottom: 20px; }
     }
 
+    @media (max-width: 360px) {
+      .header .menu-toggle { width: 30px; height: 30px; font-size: 13px; }
+      .header .page-title { font-size: 12px; }
+      .header .header-actions button { width: 30px; height: 30px; font-size: 12px; }
+
+      .container { padding: 8px 8px 14px; }
+      .profile-cover { height: 56px; }
+      .profile-avatar-section { margin-top: -28px; padding: 0 10px 8px; }
+      .avatar-wrapper .avatar { width: 66px; height: 66px; font-size: 24px; border-width: 3px; }
+      .avatar-wrapper .avatar-upload-btn { width: 22px; height: 22px; font-size: 9px; bottom: 3px; right: 3px; }
+
+      .profile-name { font-size: 16px; margin-top: 8px; }
+      .profile-email { font-size: 11px; }
+      .profile-badge { font-size: 9px; padding: 3px 10px; }
+
+      .profile-stats { gap: 5px; padding: 0 10px 10px; }
+      .stat-item { padding: 8px 3px; }
+      .stat-item .stat-number { font-size: 15px; }
+      .stat-item .stat-label { font-size: 7.5px; }
+
+      .badges-section { padding: 0 10px 10px; }
+      .badges-grid { gap: 4px; }
+      .badge-item { padding: 7px 2px; min-height: 50px; }
+      .badge-item i { font-size: 13px; }
+      .badge-item span { font-size: 7.5px; }
+
+      .profile-info { padding: 0 10px 10px; }
+      .info-row { padding: 7px 9px; }
+      .info-row .value { font-size: 11.5px; }
+      .info-row .label { font-size: 9.5px; }
+
+      .profile-actions { padding: 0 10px 12px; }
+      .btn-profile { padding: 10px 12px; font-size: 11.5px; }
+
+      .arvexa-confirm-modal { padding: 20px 16px 16px; }
+      .arvexa-confirm-title { font-size: 16px; }
+      .arvexa-confirm-message { font-size: 12.5px; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
@@ -1018,7 +1053,10 @@
       }
     }
 
-    a:focus-visible, button:focus-visible {
+    a:focus-visible,
+    button:focus-visible,
+    textarea:focus-visible,
+    input:focus-visible {
       outline: 2px solid var(--accent);
       outline-offset: 2px;
       border-radius: 6px;
