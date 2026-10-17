@@ -20,7 +20,11 @@
   <script src="register-sw.js" defer></script>
 
   <style>
-    :root {
+       :root {
+      /* Palette complète — alignée sur index.html */
+      --primary: #1A3A2A;
+      --primary-dark: #0A1A12;
+      --primary-light: #2A5A3A;
       --accent: #B8860B;
       --accent-bright: #E0B84A;
       --accent-dim: rgba(184, 134, 11, 0.08);
@@ -30,6 +34,8 @@
       --danger-light: #E07A5F;
       --warning: #D4A017;
       --info: #4AAFE0;
+
+      /* Fonds */
       --bg-dark: #0A0A0A;
       --bg-surface: #141414;
       --bg-card: rgba(20, 20, 20, 0.7);
@@ -37,18 +43,33 @@
       --text-dim: #8A8A7A;
       --text-muted: #5A5A4A;
       --text-body: #cfd0cc;
-      --border-soft: rgba(255, 255, 255, 0.05);
-      --border-strong: rgba(255, 255, 255, 0.08);
+
+      /* Bordures dorées — identité ARVEXA */
+      --card-border: rgba(184, 134, 11, 0.06);
+      --card-border-hover: rgba(184, 134, 11, 0.2);
+      --border-soft: rgba(184, 134, 11, 0.06);
+      --border-strong: rgba(184, 134, 11, 0.15);
       --border-gold: rgba(184, 134, 11, 0.15);
+
+      /* Transitions, rayons, ombres */
       --transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
       --transition-fast: all 0.15s ease;
       --radius-sm: 10px;
       --radius: 16px;
       --radius-lg: 20px;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
       --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+      /* Polices */
       --font-body: 'Inter', system-ui, sans-serif;
       --font-serif: 'Playfair Display', Georgia, serif;
+
+      /* Layout */
+      --header-height: 64px;
+      --sidebar-width: 280px;
+
+      /* Safe areas */
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -97,6 +118,7 @@
       -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border-soft);
       gap: 12px;
+      min-height: var(--header-height);
     }
     .brand {
       color: var(--text-light);
@@ -669,7 +691,6 @@
       font-style: italic;
     }
 
-    /* ✅ NOUVEAU : listes simples (points clés, termes, etc.) */
     .simple-list {
       list-style: none;
       padding: 0;
@@ -795,7 +816,6 @@
     }
     .block.astuce .block-label { color: var(--info); }
 
-    /* ✅ Mécanismes (SVT) */
     .mechanism {
       padding: 14px 16px;
       border-radius: 10px;
@@ -1071,13 +1091,19 @@
       border-color: rgba(224, 184, 74, 0.3);
       background: rgba(255, 255, 255, 0.06);
     }
+    .btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
     .btn.primary {
       background: linear-gradient(135deg, var(--accent-bright), var(--accent));
       color: #0A0A0A;
       box-shadow: 0 4px 16px rgba(184, 134, 11, 0.25);
     }
     .btn.primary:hover:not(:disabled) {
-      box-shadow: 0 8px 28px rgba(184, 134, 11, 0.4);
+      box-shadow: 0 6px 22px rgba(184, 134, 11, 0.4);
+    }
+    .btn.primary:active:not(:disabled) {
+      transform: scale(0.97);
     }
     .btn.secondary {
       background: transparent;
@@ -1165,7 +1191,7 @@
       font-weight: 500;
       box-shadow: var(--shadow-lg);
       pointer-events: auto;
-      animation: toastIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      animation: toastSlideIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .toast.success { border-color: rgba(58, 182, 126, 0.5); }
     .toast.success i { color: #7ce0aa; }
@@ -1173,7 +1199,7 @@
     .toast.error i { color: #ff9a84; }
     .toast.info { border-color: rgba(74, 175, 224, 0.5); }
     .toast.info i { color: var(--info); }
-    @keyframes toastIn {
+    @keyframes toastSlideIn {
       from { opacity: 0; transform: translateY(-20px); }
       to { opacity: 1; transform: translateY(0); }
     }
@@ -1204,7 +1230,40 @@
       .selector-icon { width: 28px; height: 28px; font-size: 13px; }
     }
 
-    @media (max-width: 380px) {
+    @media (max-width: 480px) {
+      .shell { width: min(100% - 16px, 900px); padding: 12px 0 26px; }
+      .panel { padding: 16px; }
+      .hero-chapter { padding: 18px 16px; }
+      .hero-title { font-size: 21px; }
+      .action-card { padding: 14px 16px; gap: 10px; }
+      .action-card-icon { width: 42px; height: 42px; font-size: 18px; border-radius: 12px; }
+      .action-card-title { font-size: 14px; }
+      .action-card-desc { font-size: 12px; }
+      .notion-row { padding: 12px 14px; gap: 10px; }
+      .notion-row-num { width: 30px; height: 30px; font-size: 13px; border-radius: 8px; }
+      .notion-row-title { font-size: 13.5px; }
+      .block { padding: 14px 16px; }
+      .block-text { font-size: 14px; }
+      .quiz-question { padding: 16px; }
+      .quiz-q-text { font-size: 14px; }
+      .quiz-option { padding: 10px 12px; font-size: 13.5px; }
+      .result-metrics { gap: 6px; }
+      .metric { padding: 12px 8px; }
+      .metric strong { font-size: 16px; }
+      .metric small { font-size: 9px; }
+      .btn { padding: 12px 20px; font-size: 13.5px; }
+      .top-btn { padding: 7px 11px; font-size: 11px; }
+      .brand { font-size: 18px; }
+      .connection { font-size: 11px; }
+      .selector-trigger { padding: 11px 13px; font-size: 13px; }
+      .selector-icon { width: 26px; height: 26px; font-size: 12px; }
+      .notion-detail-title { font-size: 20px; }
+      .arvexa-popup { padding: 26px 22px 20px; }
+      .arvexa-popup-title { font-size: 19px; }
+      .arvexa-popup-message { font-size: 13px; }
+    }
+
+    @media (max-width: 360px) {
       .hero-title { font-size: 20px; }
       .notion-row-tags { display: none; }
     }
@@ -1215,6 +1274,19 @@
         transition-duration: 0.01ms !important;
       }
     }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(184, 134, 11, 0.25); border-radius: 10px; }
 
     .arvexa-popup-overlay {
       position: fixed;
