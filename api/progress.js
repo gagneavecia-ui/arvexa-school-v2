@@ -1,34 +1,32 @@
 // ================================================================
-// API PROGRESS v8.5 — ARVEXA School
+// API PROGRESS v8.6 — ARVEXA School
 // Cahier intelligent + Fan-out IA + Tracking temps d'étude
-// Corrections : quotas protégés + rate limit adaptatif + logs
+// ✅ Rate limit par UID (pas par IP) — pas de faux positifs
+// ✅ Limites généreuses : createSection = 10/min
 // ================================================================
 
 module.exports.config = { maxDuration: 120 };
 
 const WINDOW_MS = 60 * 1000;
 
-// ✅ Rate limit adaptatif par action
+// ✅ CORRECTION : Limites plus généreuses, adaptées à un usage normal
 const RATE_LIMITS = {
-  getDashboard: 20,
-  listChapters: 30,
-  createChapter: 10,
-  getChapter: 30,
-  createSection: 5,       // IA lourd = 5/min max
-  getSection: 30,
-  updateNotes: 30,
-  deleteSection: 10,
-  deleteChapter: 10,
-  getFullLesson: 15,
-  trackStudyTime: 60      // léger, fréquent
+  getDashboard: 60,
+  listChapters: 60,
+  createChapter: 30,
+  getChapter: 60,
+  createSection: 10,       // 10/min = largement suffisant
+  getSection: 60,
+  updateNotes: 60,
+  deleteSection: 30,
+  deleteChapter: 30,
+  getFullLesson: 30,
+  trackStudyTime: 120
 };
 
-const DEFAULT_RATE_LIMIT = 30;
+const DEFAULT_RATE_LIMIT = 60;
 const requestLog = new Map();
 
-// ────────────────────────────────────────────────────────────────
-// CONFIG
-// ────────────────────────────────────────────────────────────────
 var ALLOWED_SUBJECTS = new Set([
   'mathematiques', 'physique', 'chimie', 'svt',
   'philosophie', 'histoire', 'geographie'
@@ -391,13 +389,16 @@ function clientIp(request) {
     .split(',')[0].trim();
 }
 
-// ✅ Rate limit adaptatif par action
-function rateLimited(ip, action) {
+// ✅ CORRECTION : Rate limit par UID (pas par IP)
+function rateLimitedByUid(uid, action) {
+  if (!uid) return false;
+  
   const limit = RATE_LIMITS[action] || DEFAULT_RATE_LIMIT;
   const now = Date.now();
-  const recent = (requestLog.get(ip) || []).filter((t) => now - t < WINDOW_MS);
+  const key = `uid:${uid}:${action}`;
+  const recent = (requestLog.get(key) || []).filter((t) => now - t < WINDOW_MS);
   recent.push(now);
-  requestLog.set(ip, recent);
+  requestLog.set(key, recent);
   return recent.length > limit;
 }
 
@@ -735,11 +736,36 @@ function mergeAnalysis(results, profile) {
         merged.structure = data;
         break;
       case 'questions':
-        merged.questions = data.questions || [];
+        merged.questions = Array.isArray(data.questions) ? data.questions : [];
         break;
       case 'qcm':
-        merged.qcm = data.qcm || [];
+        merged.qcm = Array.isArray(data.qcm) ? data.qcm : [];
         break;
+    }
+  }
+
+  // ✅ CORRECTION : Forcer les tableaux où il faut
+  if (merged.explanation) {
+    if (!Array.isArray(merged.explanation.parts)) {
+      merged.explanation.parts = [];
+    }
+  }
+
+  if (merged.structure) {
+    const arrayFields = [
+      'formulas', 'examples', 'traps', 'mechanisms', 'definitions',
+      'classifications', 'theses', 'vocabulary', 'plans', 'timeline',
+      'causesConsequences', 'keyFigures', 'literaryDevices', 'texts',
+      'grammar', 'phrases'
+    ];
+    arrayFields.forEach((field) => {
+      if (merged.structure[field] && !Array.isArray(merged.structure[field])) {
+        merged.structure[field] = [];
+      }
+    });
+
+    if (merged.structure.method && !Array.isArray(merged.structure.method.steps)) {
+      merged.structure.method.steps = [];
     }
   }
 
@@ -1629,7 +1655,6 @@ async function reserveSectionQuota(uid) {
   });
 }
 
-// ✅ CORRECTION : releaseSectionQuota protégé contre les erreurs Firebase Admin
 async function releaseSectionQuota(uid) {
   try {
     const { db, FieldValue } = getAdminServices();
@@ -1684,7 +1709,6 @@ async function computeStudyTime(uid) {
     snap = await db.collection('users').doc(uid).collection('dailyActivity')
       .orderBy('date', 'desc').limit(365).get();
   } catch (e) {
-    // ✅ CORRECTION : log visible au lieu de silencieux
     console.error('[PROGRESS] computeStudyTime failed:', e.message);
     return {
       totalMinutes: 0,
@@ -1831,7 +1855,6 @@ async function computeStreak(uid) {
     snap = await db.collection('users').doc(uid).collection('dailyActivity')
       .orderBy('date', 'desc').limit(90).get();
   } catch (e) {
-    // ✅ CORRECTION : log visible
     console.error('[PROGRESS] computeStreak failed:', e.message);
     return { current: 0, best: 0 };
   }
@@ -2241,11 +2264,7 @@ module.exports = async function handler(request, response) {
   const body = request.body && typeof request.body === 'object' ? request.body : {};
   const action = body.action || '';
 
-  // ✅ Rate limit adaptatif selon l'action
-  if (rateLimited(clientIp(request), action)) {
-    return jsonError(response, 429, 'Trop de demandes. Réessaie dans une minute.');
-  }
-
+  // ✅ AUTH d'abord
   let user;
   try { user = await verifyFirebaseToken(request); }
   catch (e) {
@@ -2255,9 +2274,14 @@ module.exports = async function handler(request, response) {
 
   if (!user) return jsonError(response, 401, 'Connexion requise.', 'AUTH_REQUIRED');
 
+  // ✅ Rate limit APRÈS l'auth (par UID)
+  if (rateLimitedByUid(user.uid, action)) {
+    return jsonError(response, 429, 'Trop de requêtes. Patiente quelques secondes et réessaie.', 'RATE_LIMITED');
+  }
+
   const uid = user.uid;
 
-  console.log(`[PROGRESS v8.5] ${action} | uid=${uid.slice(0, 8)}`);
+  console.log(`[PROGRESS v8.6] ${action} | uid=${uid.slice(0, 8)}`);
 
   try {
     switch (action) {
@@ -2276,7 +2300,7 @@ module.exports = async function handler(request, response) {
         return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[PROGRESS v8.5] "${action}" failed:`, error.message);
+    console.error(`[PROGRESS v8.6] "${action}" failed:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
