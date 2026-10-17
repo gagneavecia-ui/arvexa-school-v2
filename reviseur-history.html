@@ -1,0 +1,1645 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0A0A0A">
+  <title>ARVEXA — Historique Réviseur</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="katex/katex.min.css">
+  <script defer src="katex/katex.min.js"></script>
+  <script defer src="katex/contrib/auto-render.min.js"></script>
+  <script src="katex-utils.js" defer></script>
+  <script src="register-sw.js" defer></script>
+
+  <style>
+    :root {
+      --accent: #B8860B;
+      --accent-bright: #E0B84A;
+      --accent-dim: rgba(184, 134, 11, 0.08);
+      --success: #2D7D5A;
+      --success-light: #3AB67E;
+      --danger: #B85C3A;
+      --danger-light: #E07A5F;
+      --warning: #D4A017;
+      --info: #4AAFE0;
+      --bg-dark: #0A0A0A;
+      --bg-surface: #141414;
+      --bg-card: rgba(20, 20, 20, 0.7);
+      --text-light: #F5F0E8;
+      --text-dim: #8A8A7A;
+      --text-muted: #5A5A4A;
+      --text-body: #cfd0cc;
+      --border-soft: rgba(255, 255, 255, 0.05);
+      --border-strong: rgba(255, 255, 255, 0.08);
+      --border-gold: rgba(184, 134, 11, 0.15);
+      --transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      --transition-fast: all 0.15s ease;
+      --radius-sm: 10px;
+      --radius: 16px;
+      --radius-lg: 20px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+      --font-body: 'Inter', system-ui, sans-serif;
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html {
+      background: var(--bg-dark);
+      color-scheme: dark;
+      min-width: 320px;
+      width: 100%;
+      min-height: 100%;
+      background:
+        radial-gradient(ellipse 40% 30% at 30% 15%, rgba(26, 58, 42, 0.16) 0%, transparent 70%),
+        radial-gradient(ellipse 35% 25% at 75% 85%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
+        linear-gradient(180deg, #0A0A0A 0%, #060606 100%);
+      background-attachment: fixed;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: transparent;
+      color: var(--text-light);
+      font: 15px/1.6 var(--font-body);
+      padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bottom);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { cursor: pointer; font-family: inherit; }
+    button:disabled { cursor: not-allowed; opacity: 0.55; }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      padding-top: calc(12px + var(--safe-top));
+      background: rgba(10, 10, 10, 0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-soft);
+      gap: 12px;
+    }
+    .brand {
+      color: var(--text-light);
+      text-decoration: none;
+      font: 700 20px 'Playfair Display', serif;
+      letter-spacing: 0.04em;
+    }
+    .brand span { color: var(--accent-bright); font-style: italic; }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .top-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-dim);
+      font-weight: 600;
+      font-size: 12.5px;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+    .top-btn:hover {
+      border-color: rgba(184, 134, 11, 0.3);
+      background: rgba(184, 134, 11, 0.06);
+      color: var(--accent-bright);
+    }
+    .top-btn i { font-size: 11px; }
+
+    .shell {
+      width: min(100% - 28px, 900px);
+      margin: 0 auto;
+      padding: 20px 0 40px;
+    }
+
+    .page-hero {
+      padding: 24px 22px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(184, 134, 11, 0.08), rgba(26, 58, 42, 0.06));
+      border: 1px solid rgba(184, 134, 11, 0.2);
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
+    }
+    .page-hero .eyebrow {
+      color: var(--accent-bright);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .page-hero h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(22px, 4.5vw, 30px);
+      font-weight: 700;
+      color: var(--text-light);
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .page-hero p {
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 500px;
+    }
+
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .summary-card {
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(224, 184, 74, 0.06), rgba(26, 58, 42, 0.04));
+      border: 1px solid rgba(224, 184, 74, 0.15);
+      text-align: center;
+    }
+    .summary-card small {
+      display: block;
+      color: var(--text-muted);
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .summary-card strong {
+      display: block;
+      color: var(--accent-bright);
+      font-size: 22px;
+      font-family: var(--font-serif);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .summary-card strong.neutral { color: var(--text-light); }
+    .summary-card strong.success { color: var(--success-light); }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .custom-select {
+      position: relative;
+      width: 100%;
+      user-select: none;
+    }
+    .custom-select-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      min-height: 46px;
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+      color: var(--text-light);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      text-align: left;
+      font-family: var(--font-body);
+    }
+    .custom-select-trigger:hover {
+      border-color: rgba(224, 184, 74, 0.3);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .custom-select.open .custom-select-trigger {
+      border-color: var(--accent-bright);
+      box-shadow: 0 0 0 3px rgba(224, 184, 74, 0.1);
+      background: rgba(184, 134, 11, 0.02);
+    }
+    .custom-select-value {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .custom-select-arrow {
+      color: var(--text-muted);
+      font-size: 12px;
+      flex-shrink: 0;
+      transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .custom-select.open .custom-select-arrow {
+      transform: rotate(180deg);
+      color: var(--accent-bright);
+    }
+    .custom-select-options {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0; right: 0;
+      z-index: 50;
+      max-height: 280px;
+      overflow-y: auto;
+      background: linear-gradient(145deg, #171717, #101010);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      padding: 6px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px) scale(0.98);
+      transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+      transform-origin: top center;
+    }
+    .custom-select.open .custom-select-options {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+    .custom-select-options::-webkit-scrollbar { width: 4px; }
+    .custom-select-options::-webkit-scrollbar-thumb {
+      background: rgba(224, 184, 74, 0.2);
+      border-radius: 10px;
+    }
+    .custom-select-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border-radius: 8px;
+      color: var(--text-body);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      position: relative;
+    }
+    .custom-select-option:hover {
+      background: rgba(224, 184, 74, 0.08);
+      color: var(--text-light);
+    }
+    .custom-select-option.selected {
+      background: rgba(224, 184, 74, 0.12);
+      color: var(--accent-bright);
+      font-weight: 700;
+    }
+    .custom-select-option.selected::after {
+      content: '✓';
+      margin-left: auto;
+      color: var(--accent-bright);
+      font-size: 12px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .custom-select-option .option-prefix {
+      color: var(--accent-bright);
+      font-size: 13px;
+      flex-shrink: 0;
+      width: 18px;
+      text-align: center;
+    }
+
+    .cahiers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .cahier-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      padding: 18px 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: left;
+      color: inherit;
+      font-family: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+    .cahier-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--accent-bright), var(--accent));
+      opacity: 0.7;
+    }
+    .cahier-item:hover {
+      border-color: rgba(224, 184, 74, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    .cahier-item:active { transform: translateY(0); }
+
+    .cahier-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      background: rgba(224, 184, 74, 0.08);
+      border: 1px solid rgba(224, 184, 74, 0.15);
+    }
+
+    .cahier-body { flex: 1; min-width: 0; }
+    .cahier-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 4px;
+      line-height: 1.35;
+      overflow-wrap: break-word;
+    }
+    .cahier-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .cahier-meta .dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+    .cahier-meta .subject-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 8px;
+      background: rgba(224, 184, 74, 0.08);
+      color: var(--accent-bright);
+      font-weight: 600;
+    }
+
+    .cahier-count {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .cahier-count .count-value {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--accent-bright);
+      white-space: nowrap;
+    }
+    .cahier-count .count-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .cahier-arrow {
+      color: var(--text-muted);
+      font-size: 14px;
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+    .cahier-item:hover .cahier-arrow {
+      color: var(--accent-bright);
+      transform: translateX(4px);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+    }
+    .empty-state .empty-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 24px;
+      background: rgba(184, 134, 11, 0.06);
+      border: 1px solid rgba(184, 134, 11, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: var(--text-muted);
+      margin: 0 auto 20px;
+    }
+    .empty-state h3 {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      color: var(--text-light);
+      margin-bottom: 8px;
+    }
+    .empty-state p {
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 360px;
+      margin: 0 auto 20px;
+    }
+    .empty-state .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+      color: #0A0A0A;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .empty-state .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(184, 134, 11, 0.3);
+    }
+
+    .premium-lock-screen {
+      text-align: center;
+      padding: 48px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .premium-lock-icon {
+      width: 100px;
+      height: 100px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(184, 134, 11, 0.18), rgba(26, 58, 42, 0.1));
+      border: 2px solid rgba(224, 184, 74, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      animation: crownPulse 2.5s ease-in-out infinite;
+      margin-bottom: 8px;
+    }
+    @keyframes crownPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(224, 184, 74, 0.3); transform: scale(1); }
+      50% { box-shadow: 0 0 30px 10px rgba(224, 184, 74, 0.15); transform: scale(1.03); }
+    }
+    .premium-lock-screen h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(24px, 5vw, 32px);
+      font-weight: 700;
+      color: var(--text-light);
+      line-height: 1.2;
+      max-width: 500px;
+    }
+    .premium-lock-screen h1 em {
+      color: var(--accent-bright);
+      font-style: italic;
+    }
+    .premium-lock-screen p {
+      color: var(--text-dim);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 460px;
+    }
+    .premium-lock-screen p strong {
+      color: var(--accent-bright);
+      font-weight: 700;
+    }
+    .premium-features-list {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 400px;
+      text-align: left;
+    }
+    .premium-features-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-soft);
+      font-size: 14px;
+      color: var(--text-body);
+    }
+    .premium-features-list li i {
+      color: var(--accent-bright);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .premium-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 32px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+      color: #0A0A0A;
+      font-weight: 700;
+      font-size: 15px;
+      text-decoration: none;
+      transition: var(--transition);
+      box-shadow: 0 8px 24px rgba(184, 134, 11, 0.25);
+      margin-top: 12px;
+    }
+    .premium-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(184, 134, 11, 0.4);
+    }
+    .premium-cta i { font-size: 14px; }
+
+    .skeleton {
+      background: linear-gradient(90deg,
+        rgba(255,255,255,0.03) 25%,
+        rgba(255,255,255,0.06) 50%,
+        rgba(255,255,255,0.03) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite;
+      border-radius: 8px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .skeleton-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-soft);
+      background: var(--bg-card);
+      margin-bottom: 12px;
+    }
+    .skeleton-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+    .skeleton-body { flex: 1; }
+    .skeleton-line {
+      height: 12px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+    .skeleton-line.w60 { width: 60%; }
+    .skeleton-line.w40 { width: 40%; }
+    .skeleton-count {
+      width: 40px;
+      height: 24px;
+      border-radius: 8px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .modal-overlay.show {
+      display: grid;
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .confirm-modal {
+      width: 100%;
+      max-width: 400px;
+      padding: 26px 24px 22px;
+      text-align: center;
+      background: linear-gradient(145deg, #161616, #0f0f0f);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    @keyframes modalPop {
+      from { transform: scale(0.94) translateY(20px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .confirm-modal::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
+    }
+    .confirm-modal .confirm-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(215, 101, 74, 0.1);
+      border: 2px solid rgba(215, 101, 74, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      color: var(--danger-light);
+      margin: 0 auto 16px;
+    }
+    .confirm-modal h3 {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: var(--text-light);
+    }
+    .confirm-modal p {
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .confirm-modal p strong { color: var(--text-light); }
+    .confirm-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .confirm-actions button {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 30px;
+      border: 1px solid var(--border-soft);
+      background: transparent;
+      color: var(--text-light);
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      transition: var(--transition);
+    }
+    .confirm-actions button:hover {
+      border-color: rgba(224, 184, 74, 0.3);
+      background: rgba(224, 184, 74, 0.06);
+    }
+    .confirm-actions button.danger {
+      background: linear-gradient(135deg, #D97A3A, #B85C3A);
+      color: #fff;
+      border: none;
+    }
+    .confirm-actions button.danger:hover {
+      box-shadow: 0 6px 20px rgba(184, 92, 58, 0.3);
+    }
+
+    .toast-container {
+      position: fixed;
+      top: calc(var(--safe-top) + 16px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      width: calc(100% - 32px);
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: rgba(20, 22, 20, 0.96);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-soft);
+      color: var(--text-light);
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+      animation: toastIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .toast.success { border-color: rgba(58, 182, 126, 0.5); }
+    .toast.success i { color: var(--success-light); }
+    .toast.error { border-color: rgba(215, 101, 74, 0.5); }
+    .toast.error i { color: var(--danger-light); }
+    .toast i { font-size: 15px; flex-shrink: 0; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .katex { font-size: 1.05em; color: inherit; }
+    .katex-display { margin: 10px 0; overflow-x: auto; padding: 4px 0; }
+
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 20px, 900px); padding-top: 12px; }
+      .page-hero { padding: 20px 18px; }
+      .top-btn { padding: 8px 14px; font-size: 12px; }
+      .cahier-item { padding: 14px 16px; gap: 12px; }
+      .cahier-icon { width: 42px; height: 42px; font-size: 18px; }
+      .cahier-title { font-size: 14px; }
+      .cahier-count .count-value { font-size: 18px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       POP-UP PREMIUM UNIVERSEL — identique à exam.html et reviseur.html
+       ═══════════════════════════════════════════════════════════════ */
+    .arvexa-popup-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(16px) saturate(120%);
+      -webkit-backdrop-filter: blur(16px) saturate(120%);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.30s cubic-bezier(0.4, 0, 0.2, 1),
+                  visibility 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+    .arvexa-popup-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .arvexa-popup {
+      position: relative;
+      width: 100%;
+      max-width: 360px;
+      margin: auto;
+      padding: 30px 26px 22px;
+      border: 1px solid rgba(224, 184, 74, 0.20);
+      border-radius: 22px;
+      background:
+        radial-gradient(ellipse 120% 70% at 50% -10%, rgba(224, 184, 74, 0.10) 0%, transparent 65%),
+        radial-gradient(ellipse 100% 50% at 50% 110%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
+        linear-gradient(165deg, #171717 0%, #0b0b0b 100%);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.02),
+        0 0 60px rgba(224, 184, 74, 0.08),
+        0 24px 60px rgba(0, 0, 0, 0.70);
+      transform: scale(0.94) translateY(20px);
+      transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+      overflow: hidden;
+    }
+    .arvexa-popup-overlay.show .arvexa-popup {
+      transform: scale(1) translateY(0);
+    }
+    .arvexa-popup::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20%;
+      right: 20%;
+      height: 2px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(224, 184, 74, 0.4) 20%,
+        #E0B84A 50%,
+        rgba(224, 184, 74, 0.4) 80%,
+        transparent 100%);
+    }
+    .arvexa-popup-close {
+      position: absolute;
+      top: 13px;
+      right: 13px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+    .arvexa-popup-close:hover {
+      background: rgba(224, 184, 74, 0.12);
+      color: var(--accent-bright);
+      transform: rotate(90deg);
+    }
+    .arvexa-popup-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
+      border: 1px solid rgba(224, 184, 74, 0.28);
+      color: var(--accent-bright);
+      font-size: 26px;
+      margin: 0 auto 16px;
+      animation: crownPulse 3s ease-in-out infinite;
+    }
+    .arvexa-popup-title {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-light);
+      line-height: 1.25;
+      margin: 0 0 10px;
+    }
+    .arvexa-popup-title em { color: var(--accent-bright); font-style: italic; }
+    .arvexa-popup-message {
+      font-size: 13.5px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin: 0 auto 20px;
+      max-width: 280px;
+    }
+    .arvexa-popup-message strong { color: var(--accent-bright); font-weight: 700; }
+    .arvexa-popup-actions {
+      display: flex;
+    }
+    .arvexa-popup-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 13px 18px;
+      min-height: 48px;
+      border-radius: 100px;
+      border: none;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .arvexa-popup-btn.primary {
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+      color: #0A0A0A;
+      box-shadow: 0 4px 16px rgba(224, 184, 74, 0.28);
+    }
+    .arvexa-popup-btn.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <a class="brand" href="index.html">ARVEX<span>A School</span></a>
+    <div class="header-actions">
+      <a href="reviseur.html" class="top-btn">
+        <i class="fas fa-wand-magic-sparkles"></i>
+        Nouveau cahier
+      </a>
+    </div>
+  </header>
+
+  <main class="shell">
+
+    <div class="page-hero">
+      <div class="eyebrow">Historique</div>
+      <h1>Mes cahiers de révision</h1>
+      <p>Retrouve tous tes cahiers générés par matière et par chapitre. Clique pour reprendre où tu t'es arrêté.</p>
+    </div>
+
+    <!-- Résumé -->
+    <div class="summary-bar" id="summaryBar" style="display:none;">
+      <div class="summary-card">
+        <small>Cahiers</small>
+        <strong class="neutral" id="summaryCount">0</strong>
+      </div>
+      <div class="summary-card">
+        <small>Notions totales</small>
+        <strong class="success" id="summaryNotions">0</strong>
+      </div>
+      <div class="summary-card">
+        <small>Matières</small>
+        <strong class="success" id="summarySubjects">0</strong>
+      </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters" id="filtersBar" style="display:none;">
+      <div class="custom-select" id="filterSubjectSelect">
+        <button type="button" class="custom-select-trigger">
+          <span class="custom-select-value"></span>
+          <i class="fas fa-chevron-down custom-select-arrow"></i>
+        </button>
+        <div class="custom-select-options" role="listbox">
+          <div class="custom-select-option" data-value="" role="option">
+            <span class="option-prefix">📚</span> Toutes les matières
+          </div>
+          <div class="custom-select-option" data-value="mathematiques" role="option">
+            <span class="option-prefix">📐</span> Mathématiques
+          </div>
+          <div class="custom-select-option" data-value="physique" role="option">
+            <span class="option-prefix">⚡</span> Physique
+          </div>
+          <div class="custom-select-option" data-value="chimie" role="option">
+            <span class="option-prefix">🧪</span> Chimie
+          </div>
+          <div class="custom-select-option" data-value="svt" role="option">
+            <span class="option-prefix">🧬</span> SVT
+          </div>
+          <div class="custom-select-option" data-value="philosophie" role="option">
+            <span class="option-prefix">🧠</span> Philosophie
+          </div>
+          <div class="custom-select-option" data-value="histoire" role="option">
+            <span class="option-prefix">🌍</span> Histoire
+          </div>
+          <div class="custom-select-option" data-value="geographie" role="option">
+            <span class="option-prefix">🗺️</span> Géographie
+          </div>
+        </div>
+      </div>
+
+      <div class="custom-select" id="filterPeriodSelect">
+        <button type="button" class="custom-select-trigger">
+          <span class="custom-select-value"></span>
+          <i class="fas fa-chevron-down custom-select-arrow"></i>
+        </button>
+        <div class="custom-select-options" role="listbox">
+          <div class="custom-select-option" data-value="" role="option">
+            <span class="option-prefix">📅</span> Toute la période
+          </div>
+          <div class="custom-select-option" data-value="7" role="option">
+            <span class="option-prefix">📅</span> 7 derniers jours
+          </div>
+          <div class="custom-select-option" data-value="30" role="option">
+            <span class="option-prefix">📅</span> 30 derniers jours
+          </div>
+          <div class="custom-select-option" data-value="90" role="option">
+            <span class="option-prefix">📅</span> 90 derniers jours
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des cahiers -->
+    <div id="cahiersContainer">
+      <div class="skeleton-item">
+        <div class="skeleton skeleton-icon"></div>
+        <div class="skeleton-body">
+          <div class="skeleton skeleton-line w60"></div>
+          <div class="skeleton skeleton-line w40"></div>
+        </div>
+        <div class="skeleton skeleton-count"></div>
+      </div>
+      <div class="skeleton-item">
+        <div class="skeleton skeleton-icon"></div>
+        <div class="skeleton-body">
+          <div class="skeleton skeleton-line w60"></div>
+          <div class="skeleton skeleton-line w40"></div>
+        </div>
+        <div class="skeleton skeleton-count"></div>
+      </div>
+      <div class="skeleton-item">
+        <div class="skeleton skeleton-icon"></div>
+        <div class="skeleton-body">
+          <div class="skeleton skeleton-line w60"></div>
+          <div class="skeleton skeleton-line w40"></div>
+        </div>
+        <div class="skeleton skeleton-count"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODALE CONFIRMATION SUPPRESSION -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="confirm-modal">
+      <div class="confirm-icon">🗑️</div>
+      <h3>Supprimer ce cahier ?</h3>
+      <p>Ce cahier et toutes ses notions seront <strong>définitivement supprimés</strong>. Tu pourras en régénérer un nouveau plus tard, mais avec de nouveaux crédits.</p>
+      <div class="confirm-actions">
+        <button type="button" id="cancelDeleteBtn">Annuler</button>
+        <button type="button" class="danger" id="confirmDeleteBtn">Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POP-UP PREMIUM UNIVERSEL -->
+  <div class="arvexa-popup-overlay" id="premiumOverlay">
+    <div class="arvexa-popup" role="dialog" aria-modal="true">
+
+      <button class="arvexa-popup-close" id="premiumClose" aria-label="Fermer">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <i class="fas fa-crown arvexa-popup-icon"></i>
+
+      <h2 class="arvexa-popup-title">
+        Historique <em>Premium</em>
+      </h2>
+
+      <p class="arvexa-popup-message">
+        L'historique de tes cahiers est réservé aux membres <strong>Premium</strong>.
+        Passe à Premium pour retrouver tous tes cahiers à vie.
+      </p>
+
+      <div class="arvexa-popup-actions">
+        <a href="abonnement.html" class="arvexa-popup-btn primary">
+          <i class="fas fa-crown"></i>
+          Découvrir Premium
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div class="toast-container" id="toastContainer"></div>
+  
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+  // ═══════════════════════════════════════════════════════════════
+  // REVISEUR-HISTORY v1.0 — Historique des cahiers
+  // ═══════════════════════════════════════════════════════════════
+
+  import { initializeApp } from 'firebase/app';
+  import { getAuth, onAuthStateChanged, getIdToken } from 'firebase/auth';
+  import { getFirestore, doc, getDoc } from 'firebase/firestore';
+
+  const firebaseConfig = {
+    apiKey: 'AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE',
+    authDomain: 'arvexa-fbf10.firebaseapp.com',
+    projectId: 'arvexa-fbf10',
+    storageBucket: 'arvexa-fbf10.firebasestorage.app',
+    messagingSenderId: '920108330053',
+    appId: '1:920108330053:web:f532d71cbc2c824bc7472c'
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const state = {
+    user: null,
+    isPremium: false,
+    cahiers: [],
+    filteredCahiers: [],
+    deleteCallback: null,
+    filterSubject: '',
+    filterPeriod: ''
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  // ═══════════════════════════════════════════════════════════════
+  // UTILITAIRES
+  // ═══════════════════════════════════════════════════════════════
+  function escapeHtml(value) {
+    return String(value === null || value === undefined ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + (type || 'success');
+    const icon = type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle';
+    toast.innerHTML = '<i class="fas ' + icon + '"></i><span>' + escapeHtml(message) + '</span>';
+    $('toastContainer').appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      const diffMs = Date.now() - d.getTime();
+      const diffMin = Math.floor(diffMs / 60000);
+      if (diffMin < 1) return 'à l\'instant';
+      if (diffMin < 60) return 'il y a ' + diffMin + ' min';
+      const diffH = Math.floor(diffMin / 60);
+      if (diffH < 24) return 'il y a ' + diffH + 'h';
+      const diffD = Math.floor(diffH / 24);
+      if (diffD === 1) return 'hier';
+      if (diffD < 7) return 'il y a ' + diffD + ' jours';
+      return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch (e) { return ''; }
+  }
+
+  const SUBJECT_EMOJIS = {
+    mathematiques: '📐',
+    physique: '⚡',
+    chimie: '🧪',
+    svt: '🧬',
+    philosophie: '🧠',
+    histoire: '🌍',
+    geographie: '🗺️'
+  };
+
+  function isPremiumUser(data) {
+    if (!data) return false;
+    const status = data.subscriptionStatus || 'none';
+    if (status === 'pending') return false;
+
+    const active = data.premium === true ||
+                   data.isUnlocked === true ||
+                   data.hasDeposited === true;
+
+    let end = null;
+    if (data.subscriptionEndDate) {
+      if (typeof data.subscriptionEndDate.toDate === 'function') {
+        end = data.subscriptionEndDate.toDate();
+      } else if (data.subscriptionEndDate.seconds) {
+        end = new Date(data.subscriptionEndDate.seconds * 1000);
+      }
+    }
+
+    if (active && end) return end.getTime() > Date.now();
+    if (status === 'expired') return false;
+    if (active && !end) return true;
+    return false;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // CUSTOM SELECT
+  // ═══════════════════════════════════════════════════════════════
+  function CustomSelect(element, onChange) {
+    this.element = element;
+    this.trigger = element.querySelector('.custom-select-trigger');
+    this.valueEl = element.querySelector('.custom-select-value');
+    this.optionsContainer = element.querySelector('.custom-select-options');
+    this.options = [];
+    this.value = null;
+    this.isOpen = false;
+    this.onChange = onChange || null;
+    this.init();
+  }
+
+  CustomSelect.prototype.init = function () {
+    const self = this;
+    this.trigger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      self.toggle();
+    });
+    document.addEventListener('click', function (e) {
+      if (!self.element.contains(e.target)) self.close();
+    });
+    this.refreshOptions();
+  };
+
+  CustomSelect.prototype.refreshOptions = function () {
+    const self = this;
+    this.options = Array.prototype.slice.call(this.optionsContainer.querySelectorAll('.custom-select-option'));
+    this.options.forEach(function (opt) {
+      opt.addEventListener('click', function (e) {
+        e.stopPropagation();
+        self.select(opt.dataset.value);
+      });
+    });
+    if (this.value === null && this.options.length > 0) {
+      this.select(this.options[0].dataset.value, true);
+    }
+  };
+
+  CustomSelect.prototype.select = function (value, silent) {
+    this.value = value;
+    let selected = null;
+    for (let i = 0; i < this.options.length; i++) {
+      if (this.options[i].dataset.value === String(value)) {
+        selected = this.options[i];
+        break;
+      }
+    }
+    if (!selected) return;
+
+    const prefix = selected.querySelector('.option-prefix');
+    const prefixHTML = prefix ? prefix.outerHTML : '';
+    const label = selected.textContent.replace(prefix ? prefix.textContent : '', '').trim();
+    this.valueEl.innerHTML = prefixHTML + ' <span>' + escapeHtml(label) + '</span>';
+
+    this.options.forEach(function (o) {
+      o.classList.toggle('selected', o.dataset.value === String(value));
+    });
+    this.close();
+
+    if (!silent && typeof this.onChange === 'function') {
+      this.onChange(this.value);
+    }
+  };
+
+  CustomSelect.prototype.toggle = function () {
+    this.isOpen ? this.close() : this.open();
+  };
+
+  CustomSelect.prototype.open = function () {
+    const self = this;
+    document.querySelectorAll('.custom-select.open').forEach(function (el) {
+      if (el !== self.element) el.classList.remove('open');
+    });
+    this.element.classList.add('open');
+    this.isOpen = true;
+  };
+
+  CustomSelect.prototype.close = function () {
+    this.element.classList.remove('open');
+    this.isOpen = false;
+  };
+
+  let filterSubjectSelect = null;
+  let filterPeriodSelect = null;
+
+  // ═══════════════════════════════════════════════════════════════
+  // API CALLS
+  // ═══════════════════════════════════════════════════════════════
+  async function callApi(payload) {
+    const token = await getIdToken(state.user);
+    const res = await fetch('/api/reviseur', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(function () { return null; });
+
+    if (!res.ok || !data || !data.success) {
+      throw new Error((data && data.error) || ('Erreur ' + res.status));
+    }
+    return data;
+  }
+
+  async function loadCahiers() {
+    try {
+      const data = await callApi({ action: 'listCahiers', limit: 100 });
+      state.cahiers = data.cahiers || [];
+      applyFilters();
+      renderSummary();
+    } catch (error) {
+      console.error('Load cahiers error:', error);
+      $('cahiersContainer').innerHTML =
+        '<div class="empty-state">' +
+        '<div class="empty-icon"><i class="fas fa-exclamation-triangle"></i></div>' +
+        '<h3>Erreur de chargement</h3>' +
+        '<p>' + escapeHtml(error.message || 'Impossible de charger l\'historique.') + '</p>' +
+        '</div>';
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // FILTRES
+  // ═══════════════════════════════════════════════════════════════
+  function applyFilters() {
+    const subject = state.filterSubject;
+    const period = state.filterPeriod;
+    let filtered = state.cahiers.slice();
+
+    if (subject) {
+      filtered = filtered.filter(function (c) { return c.subject === subject; });
+    }
+
+    if (period) {
+      const cutoff = Date.now() - (Number(period) * 24 * 60 * 60 * 1000);
+      filtered = filtered.filter(function (c) {
+        if (!c.updatedAt) return false;
+        return new Date(c.updatedAt).getTime() >= cutoff;
+      });
+    }
+
+    state.filteredCahiers = filtered;
+    renderCahiers();
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // RENDU
+  // ═══════════════════════════════════════════════════════════════
+  function renderSummary() {
+    if (state.cahiers.length === 0) {
+      $('summaryBar').style.display = 'none';
+      $('filtersBar').style.display = 'none';
+      return;
+    }
+    $('summaryBar').style.display = 'grid';
+    $('filtersBar').style.display = 'grid';
+
+    const total = state.cahiers.length;
+    const notions = state.cahiers.reduce(function (sum, c) { return sum + (c.notionsCount || 0); }, 0);
+    const subjects = new Set(state.cahiers.map(function (c) { return c.subject; })).size;
+
+    $('summaryCount').textContent = total;
+    $('summaryNotions').textContent = notions;
+    $('summarySubjects').textContent = subjects;
+  }
+
+  function renderCahiers() {
+    const container = $('cahiersContainer');
+
+    if (state.filteredCahiers.length === 0) {
+      if (state.cahiers.length === 0) {
+        container.innerHTML =
+          '<div class="empty-state">' +
+          '<div class="empty-icon"><i class="fas fa-book"></i></div>' +
+          '<h3>Aucun cahier pour le moment</h3>' +
+          '<p>Commence à réviser un chapitre pour créer ton premier cahier.</p>' +
+          '<a href="reviseur.html" class="btn-action"><i class="fas fa-wand-magic-sparkles"></i> Commencer à réviser</a>' +
+          '</div>';
+      } else {
+        container.innerHTML =
+          '<div class="empty-state">' +
+          '<div class="empty-icon"><i class="fas fa-filter"></i></div>' +
+          '<h3>Aucun résultat</h3>' +
+          '<p>Aucun cahier ne correspond à ces filtres.</p>' +
+          '</div>';
+      }
+      return;
+    }
+
+    let html = '<div class="cahiers-list">';
+    state.filteredCahiers.forEach(function (c) {
+      const emoji = SUBJECT_EMOJIS[c.subject] || '📖';
+      const notionsLabel = (c.notionsCount || 0) + ' notion' + ((c.notionsCount || 0) > 1 ? 's' : '');
+
+      html +=
+        '<button class="cahier-item" data-cahier-id="' + escapeHtml(c.id) + '" data-subject="' + escapeHtml(c.subject) + '" data-chapter="' + escapeHtml(c.chapter) + '">' +
+        '<div class="cahier-icon">' + emoji + '</div>' +
+        '<div class="cahier-body">' +
+        '<div class="cahier-title">' + escapeHtml(c.chapter || 'Chapitre') + '</div>' +
+        '<div class="cahier-meta">' +
+        '<span class="subject-badge"><i class="fas fa-book"></i> ' + escapeHtml(c.subjectLabel || 'Matière') + '</span>' +
+        '<span class="dot"></span>' +
+        '<span>' + escapeHtml(formatDate(c.updatedAt)) + '</span>' +
+        '</div>' +
+        '</div>' +
+        '<div class="cahier-count">' +
+        '<div class="count-value">' + (c.notionsCount || 0) + '</div>' +
+        '<div class="count-label">notions</div>' +
+        '</div>' +
+        '<div class="cahier-arrow"><i class="fas fa-chevron-right"></i></div>' +
+        '</button>';
+    });
+    html += '</div>';
+    container.innerHTML = html;
+
+    container.querySelectorAll('.cahier-item').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        // ✅ Redirige vers reviseur.html avec la matière et le chapitre
+        const subject = btn.dataset.subject;
+        const chapter = btn.dataset.chapter;
+
+        if (subject && chapter) {
+          const params = new URLSearchParams();
+          params.set('subject', subject);
+          params.set('chapter', chapter);
+          window.location.href = 'reviseur.html?' + params.toString();
+        }
+      });
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ÉCRAN PREMIUM
+  // ═══════════════════════════════════════════════════════════════
+  function renderPremiumLockScreen() {
+    const container = $('cahiersContainer');
+    document.getElementById('summaryBar').style.display = 'none';
+    document.getElementById('filtersBar').style.display = 'none';
+
+    // ✅ Afficher le pop-up Premium
+    $('premiumOverlay').classList.add('show');
+
+    // ✅ Et afficher un écran vide en arrière-plan
+    container.innerHTML =
+      '<div class="premium-lock-screen">' +
+      '<div class="premium-lock-icon">👑</div>' +
+      '<h1>Historique <em>Premium</em></h1>' +
+      '<p>Retrouve tous tes cahiers de révision en illimité avec Premium.</p>' +
+      '<ul class="premium-features-list">' +
+      '<li><i class="fas fa-book"></i> Historique illimité de tes cahiers</li>' +
+      '<li><i class="fas fa-rotate"></i> Reprends une révision à tout moment</li>' +
+      '<li><i class="fas fa-chart-line"></i> Suis ta progression par matière</li>' +
+      '<li><i class="fas fa-infinity"></i> Générations IA illimitées</li>' +
+      '</ul>' +
+      '<a href="abonnement.html" class="premium-cta">' +
+      '<i class="fas fa-crown"></i> Découvrir Premium' +
+      '</a>' +
+      '</div>';
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SUPPRESSION
+  // ═══════════════════════════════════════════════════════════════
+  function openDeleteConfirm(cahierId) {
+    $('confirmModal').classList.add('show');
+    state.deleteCallback = async function () {
+      try {
+        // Récupère la matière et le chapitre depuis le cahier
+        const cahier = state.cahiers.find(function (c) { return c.id === cahierId; });
+        if (!cahier) throw new Error('Cahier introuvable.');
+
+        await callApi({
+          action: 'deleteCahier',
+          subject: cahier.subject,
+          chapter: cahier.chapter
+        });
+
+        state.cahiers = state.cahiers.filter(function (c) { return c.id !== cahierId; });
+        applyFilters();
+        renderSummary();
+        showToast('Cahier supprimé', 'success');
+      } catch (error) {
+        console.error('Delete error:', error);
+        showToast(error.message || 'Impossible de supprimer', 'error');
+      }
+    };
+  }
+
+  $('cancelDeleteBtn').addEventListener('click', function () {
+    $('confirmModal').classList.remove('show');
+    state.deleteCallback = null;
+  });
+
+  $('confirmDeleteBtn').addEventListener('click', async function () {
+    const cb = state.deleteCallback;
+    $('confirmModal').classList.remove('show');
+    state.deleteCallback = null;
+    if (typeof cb === 'function') await cb();
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // ÉVÉNEMENTS
+  // ═══════════════════════════════════════════════════════════════
+
+  $('confirmModal').addEventListener('click', function (e) {
+    if (e.target === $('confirmModal')) {
+      $('confirmModal').classList.remove('show');
+      state.deleteCallback = null;
+    }
+  });
+
+  $('premiumClose').addEventListener('click', function () {
+    $('premiumOverlay').classList.remove('show');
+  });
+
+  $('premiumOverlay').addEventListener('click', function (e) {
+    if (e.target === $('premiumOverlay')) {
+      $('premiumOverlay').classList.remove('show');
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if ($('confirmModal').classList.contains('show')) {
+        $('confirmModal').classList.remove('show');
+        state.deleteCallback = null;
+      }
+      if ($('premiumOverlay').classList.contains('show')) {
+        $('premiumOverlay').classList.remove('show');
+      }
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // INIT FILTRES
+  // ═══════════════════════════════════════════════════════════════
+  function initFilters() {
+    if (filterSubjectSelect) return;
+
+    filterSubjectSelect = new CustomSelect($('filterSubjectSelect'), function (value) {
+      state.filterSubject = value || '';
+      applyFilters();
+    });
+
+    filterPeriodSelect = new CustomSelect($('filterPeriodSelect'), function (value) {
+      state.filterPeriod = value || '';
+      applyFilters();
+    });
+
+    filterSubjectSelect.select('', true);
+    filterPeriodSelect.select('', true);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // AUTH
+  // ═══════════════════════════════════════════════════════════════
+  onAuthStateChanged(auth, async function (user) {
+    if (!user) {
+      window.location.replace('auth-choice.html');
+      return;
+    }
+    state.user = user;
+
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (!snap.exists()) {
+        window.location.replace('register.html');
+        return;
+      }
+
+      const userData = snap.data();
+
+      // ✅ Vérification Premium AVANT tout chargement
+      if (!isPremiumUser(userData)) {
+        renderPremiumLockScreen();
+        return;
+      }
+
+      state.isPremium = true;
+
+      // ✅ Initialise les filtres seulement si Premium
+      initFilters();
+
+      // ✅ Charge les cahiers
+      loadCahiers();
+
+    } catch (error) {
+      console.error('[HISTORIQUE] Erreur vérification Premium:', error);
+      $('cahiersContainer').innerHTML =
+        '<div class="empty-state">' +
+        '<div class="empty-icon"><i class="fas fa-exclamation-triangle"></i></div>' +
+        '<h3>Erreur de chargement</h3>' +
+        '<p>Impossible de vérifier ton statut. Réessaie plus tard.</p>' +
+        '</div>';
+    }
+  });
+
+  console.log('📚 ARVEXA — Historique Réviseur v1.0');
+  </script>
+</body>
+</html>
