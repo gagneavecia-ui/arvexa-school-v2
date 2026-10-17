@@ -50,6 +50,15 @@ const CAHIER_COLLECTION = 'reviseurCahier';
 const KNOWLEDGE_MEMORY_CACHE = new Map();
 let adminServices = null;
 
+const SUBJECT_LABELS = {
+  mathematiques: 'Mathématiques',
+  physique: 'Physique',
+  chimie: 'Chimie',
+  svt: 'SVT',
+  philosophie: 'Philosophie',
+  histoire: 'Histoire',
+  geographie: 'Géographie'
+};
 // ────────────────────────────────────────────────────────────────
 // ✅ CLASSIFICATION DES MATIÈRES
 // ────────────────────────────────────────────────────────────────
