@@ -1400,1767 +1400,1783 @@ main {
 
   </div>
 </div>
+  <script type="importmap">
+  { "imports": {
+    "firebase/app": "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"
+  } }
+  </script>
 
-<script type="importmap">
-{ "imports": {
-  "firebase/app": "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js",
-  "firebase/auth": "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js",
-  "firebase/firestore": "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"
-} }
-</script>
+  <script type="module">
+  import { initializeApp } from "firebase/app";
+  import { getAuth, onAuthStateChanged, getIdToken } from "firebase/auth";
+  import { getFirestore, doc, getDoc } from "firebase/firestore";
 
-<script type="module">
-import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged, getIdToken } from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+  // ═══════════════════════════════════════════════════════════════
+  // CONFIG
+  // ═══════════════════════════════════════════════════════════════
+  const firebaseConfig = {
+    apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
+    authDomain: "arvexa-fbf10.firebaseapp.com",
+    projectId: "arvexa-fbf10",
+    storageBucket: "arvexa-fbf10.firebasestorage.app",
+    messagingSenderId: "920108330053",
+    appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
+  };
 
-// ═══════════════════════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════════════════════
-const firebaseConfig = {
-  apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
-  authDomain: "arvexa-fbf10.firebaseapp.com",
-  projectId: "arvexa-fbf10",
-  storageBucket: "arvexa-fbf10.firebasestorage.app",
-  messagingSenderId: "920108330053",
-  appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
-};
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const MIN_CONTENT_LENGTH = 40;
-const MAX_CONTENT_LENGTH = 15000;
+  const MIN_CONTENT_LENGTH = 40;
+  const MAX_CONTENT_LENGTH = 15000;
 
   var SUBJECTS = {
-  mathematiques: { label: 'Mathématiques', emoji: '📐', profile: 'scientific' },
-  physique:      { label: 'Physique',      emoji: '⚡', profile: 'scientific' },
-  chimie:        { label: 'Chimie',        emoji: '🧪', profile: 'scientific' },
-  svt:           { label: 'SVT',           emoji: '🧬', profile: 'svt' },
-  philosophie:   { label: 'Philosophie',   emoji: '🧠', profile: 'philosophy' },
-  histoire:      { label: 'Histoire',      emoji: '🌍', profile: 'history' },
-  geographie:    { label: 'Géographie',    emoji: '🗺️', profile: 'history' },
-  anglais:       { label: 'Anglais',       emoji: '🇬🇧', profile: 'language' }
-};
-const ALL_SUBJECT_KEYS = Object.keys(SUBJECTS);
-
-var EXAM_SUBJECT_MAP = {
-  mathematiques: 'mathematiques',
-  physique: 'physique',
-  chimie: 'chimie',
-  svt: 'svt',
-  philosophie: 'philosophie',
-  histoire: 'histoire',
-  geographie: 'geographie'
-};
-
-const SYMBOL_GROUPS = [
-  { name: 'Opérations', symbols: ['+','−','×','÷','±','=','≠','≈','·','%','<','>','≤','≥','∝','∞'] },
-  { name: 'Puissances', symbols: ['²','³','⁴','⁵','ⁿ','⁰','¹','√','∛','^','_','½','⅓','¼','¾','⅔'] },
-  { name: 'Grecques',   symbols: ['π','θ','α','β','γ','δ','λ','μ','σ','ρ','φ','ψ','Δ','Ω','ħ','ε'] },
-  { name: 'Analyse',    symbols: ['∫','∑','∏','∂','→','←','↔','⇒','⇔','∇','Δ','∞','lim','d/dx','≈','∝'] },
-  { name: 'Ensembles',  symbols: ['∈','∉','⊂','⊃','∪','∩','∅','ℝ','ℕ','ℤ','ℚ','ℂ','∀','∃','∄','≡'] },
-  { name: 'Physique',   symbols: ['⇌','Å','°C','K','mol','pH','⌬','⚛','⚡','Ω','λ','ν','ΔE','Δt','Δx','F'] }
-];
-
-const state = {
-  user: null,
-  userData: null,
-  isPremium: false,
-  view: 'notebooks',
-  params: {},
-  cache: { dashboard: null, chapters: {}, chapter: {} }
-};
-
-const $ = (id) => document.getElementById(id);
-
-// ═══════════════════════════════════════════════════════════════
-// ✅ CORRECTION #1 : escapeHtml optimisé (regex au lieu de DOM)
-// ═══════════════════════════════════════════════════════════════
-function escapeHtml(text) {
-  return String(text === null || text === undefined ? '' : text)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function safeText(text) {
-  let s = String(text || '');
-  s = s.replace(/&amp;(lt|gt|quot|amp|#39);/g, '&$1;');
-
-  const parts = s.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$)/g);
-  return parts.map((part, i) => {
-    if (i % 2 === 1) return part;
-    return part.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }).join('');
-}
-
-function showToast(message, type = 'info', duration = 3000) {
-  const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span>${escapeHtml(message)}</span>`;
-  $('toastContainer').appendChild(toast);
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    setTimeout(() => toast.remove(), 250);
-  }, duration);
-}
-
-function showLoadingState(el, text = 'Chargement...') {
-  el.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><p>${escapeHtml(text)}</p></div>`;
-}
-
-function showGeneratingState(el, profile) {
-  const profileLabels = {
-    scientific: 'Analyse scientifique',
-    svt: 'Analyse SVT',
-    philosophy: 'Analyse philosophique',
-    history: 'Analyse historique',
-    french: 'Analyse littéraire',
-    language: 'Analyse linguistique'
+    mathematiques: { label: 'Mathématiques', emoji: '📐', profile: 'scientific' },
+    physique:      { label: 'Physique',      emoji: '⚡', profile: 'scientific' },
+    chimie:        { label: 'Chimie',        emoji: '🧪', profile: 'scientific' },
+    svt:           { label: 'SVT',           emoji: '🧬', profile: 'svt' },
+    philosophie:   { label: 'Philosophie',   emoji: '🧠', profile: 'philosophy' },
+    histoire:      { label: 'Histoire',      emoji: '🌍', profile: 'history' },
+    geographie:    { label: 'Géographie',    emoji: '🗺️', profile: 'history' },
+    anglais:       { label: 'Anglais',       emoji: '🇬🇧', profile: 'language' }
   };
-  const label = profileLabels[profile] || 'Analyse en cours';
+  const ALL_SUBJECT_KEYS = Object.keys(SUBJECTS);
 
-  el.innerHTML = `
-    <div class="generating-state">
-      <div class="generating-spinner"></div>
-      <h3>${escapeHtml(label)}...</h3>
-      <div class="generating-steps">
-        <div class="generating-step active" data-step="1">
-          <span class="generating-step-icon">🔍</span>
-          <span>Extraction des concepts</span>
-        </div>
-        <div class="generating-step" data-step="2">
-          <span class="generating-step-icon">📖</span>
-          <span>Explication pédagogique</span>
-        </div>
-        <div class="generating-step" data-step="3">
-          <span class="generating-step-icon">🧩</span>
-          <span>Structuration</span>
-        </div>
-        <div class="generating-step" data-step="4">
-          <span class="generating-step-icon">❓</span>
-          <span>Banque de questions</span>
-        </div>
-        <div class="generating-step" data-step="5">
-          <span class="generating-step-icon">🎯</span>
-          <span>QCM</span>
-        </div>
-      </div>
-      <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">
-        Cela peut prendre 30 à 60 secondes.
-      </p>
-    </div>
-  `;
-
-  let currentStep = 1;
-  const interval = setInterval(() => {
-    const steps = el.querySelectorAll('.generating-step');
-    if (!steps.length || currentStep >= steps.length) {
-      clearInterval(interval);
-      return;
-    }
-    steps[currentStep - 1].classList.remove('active');
-    steps[currentStep - 1].classList.add('done');
-    if (currentStep < steps.length) steps[currentStep].classList.add('active');
-    currentStep++;
-  }, 6000);
-
-  return () => clearInterval(interval);
-}
-
-function showEmptyState(el, icon, title, message) {
-  el.innerHTML = `
-    <div class="empty-state">
-      <div class="icon"><i class="fas ${icon}"></i></div>
-      <h3>${escapeHtml(title)}</h3>
-      <p>${escapeHtml(message)}</p>
-    </div>
-  `;
-}
-
-function getGreeting() {
-  const h = new Date().getHours();
-  if (h >= 5 && h < 12) return 'Bonjour';
-  if (h >= 12 && h < 18) return 'Bon après-midi';
-  return 'Bonsoir';
-}
-
-function getFirstName() {
-  return state.userData?.firstName || state.userData?.displayName?.split(' ')[0] || 'Élève';
-}
-
-async function callApi(action, params = {}) {
-  if (!state.user) throw new Error('Non authentifié.');
-  const token = await getIdToken(state.user);
-  const response = await fetch('/api/progress', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({ action, ...params })
-  });
-  const data = await response.json().catch(() => null);
-
-  if (response.status === 401 && data?.code === 'AUTH_REQUIRED') {
-    // ✅ CORRECTION #4 : auth-choice.html au lieu de login.html
-    window.location.replace('auth-choice.html');
-    throw new Error('Session expirée');
-  }
-
-  if (!response.ok || !data?.success) {
-    const err = new Error(data?.error || `Erreur ${response.status}`);
-    err.code = data?.code;
-    err.status = response.status;
-    throw err;
-  }
-  return data;
-}
-
-function routeFromHash() {
-  const hash = window.location.hash.replace(/^#\/?/, '');
-  if (!hash) return { view: 'notebooks', params: {} };
-  const parts = hash.split('/').filter(Boolean);
-  switch (parts[0]) {
-    case 'notebooks': return { view: 'notebooks', params: {} };
-    case 'notebook': return { view: 'notebook', params: { subject: parts[1] } };
-    case 'chapter': return { view: 'chapter', params: { subject: parts[1], chapterId: parts[2] } };
-    case 'section': return { view: 'section', params: { subject: parts[1], chapterId: parts[2], sectionId: parts[3] } };
-    case 'lesson': return { view: 'lesson', params: { subject: parts[1], chapterId: parts[2] } };
-    default: return { view: 'notebooks', params: {} };
-  }
-}
-
-function hashFromRoute(view, params) {
-  const p = params || {};
-  switch (view) {
-    case 'notebooks': return '#/notebooks';
-    case 'notebook': return p.subject ? `#/notebook/${p.subject}` : '#/notebooks';
-    case 'chapter': return (p.subject && p.chapterId)
-      ? `#/chapter/${p.subject}/${p.chapterId}` : '#/notebooks';
-    case 'section': return (p.subject && p.chapterId && p.sectionId)
-      ? `#/section/${p.subject}/${p.chapterId}/${p.sectionId}` : '#/notebooks';
-    case 'lesson': return (p.subject && p.chapterId)
-      ? `#/lesson/${p.subject}/${p.chapterId}` : '#/notebooks';
-    default: return '#/notebooks';
-  }
-}
-
-function navigate(view, params = {}, replace = false) {
-  const hash = hashFromRoute(view, params);
-  if (replace) window.history.replaceState(null, '', hash);
-  else window.history.pushState(null, '', hash);
-  applyRoute({ view, params });
-}
-
-function applyRoute(route) {
-  state.view = route.view;
-  state.params = route.params || {};
-
-  document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
-  const target = $(`view-${route.view}`);
-  if (target) target.classList.add('active');
-
-  updateHeader();
-  updateBackButton();
-
-  switch (route.view) {
-    case 'notebooks': renderNotebooksView(); break;
-    case 'notebook': renderNotebookView(route.params); break;
-    case 'chapter': renderChapterView(route.params); break;
-    case 'section': renderSectionView(route.params); break;
-    case 'lesson': renderLessonView(route.params); break;
-  }
-  window.scrollTo({ top: 0 });
-}
-
-function updateHeader() {
-  const map = {
-    notebooks: { emoji: '📓', text: 'Mon cahier' },
-    notebook: { emoji: SUBJECTS[state.params.subject]?.emoji || '📖', text: SUBJECTS[state.params.subject]?.label || 'Cahier' },
-    chapter: { emoji: '📖', text: 'Chapitre' },
-    section: { emoji: '📝', text: 'Section' },
-    lesson: { emoji: '📄', text: 'Leçon' }
+  var EXAM_SUBJECT_MAP = {
+    mathematiques: 'mathematiques',
+    physique: 'physique',
+    chimie: 'chimie',
+    svt: 'svt',
+    philosophie: 'philosophie',
+    histoire: 'histoire',
+    geographie: 'geographie'
   };
-  const info = map[state.view] || map.notebooks;
-  $('pageTitle').innerHTML = `<span class="emoji">${info.emoji}</span><span id="pageTitleText">${escapeHtml(info.text)}</span>`;
-}
 
-function updateBackButton() {
-  $('backBtn').classList.toggle('hidden', state.view === 'notebooks');
-}
+  const SYMBOL_GROUPS = [
+    { name: 'Opérations', symbols: ['+','−','×','÷','±','=','≠','≈','·','%','<','>','≤','≥','∝','∞'] },
+    { name: 'Puissances', symbols: ['²','³','⁴','⁵','ⁿ','⁰','¹','√','∛','^','_','½','⅓','¼','¾','⅔'] },
+    { name: 'Grecques',   symbols: ['π','θ','α','β','γ','δ','λ','μ','σ','ρ','φ','ψ','Δ','Ω','ħ','ε'] },
+    { name: 'Analyse',    symbols: ['∫','∑','∏','∂','→','←','↔','⇒','⇔','∇','Δ','∞','lim','d/dx','≈','∝'] },
+    { name: 'Ensembles',  symbols: ['∈','∉','⊂','⊃','∪','∩','∅','ℝ','ℕ','ℤ','ℚ','ℂ','∀','∃','∄','≡'] },
+    { name: 'Physique',   symbols: ['⇌','Å','°C','K','mol','pH','⌬','⚛','⚡','Ω','λ','ν','ΔE','Δt','Δx','F'] }
+  ];
 
-window.addEventListener('hashchange', () => applyRoute(routeFromHash()));
+  const state = {
+    user: null,
+    userData: null,
+    isPremium: false,
+    view: 'notebooks',
+    params: {},
+    cache: { dashboard: null, chapters: {}, chapter: {} }
+  };
 
-// ═══════════════════════════════════════════════════════════════
-// VUE 1 — MES CAHIERS
-// ═══════════════════════════════════════════════════════════════
-async function renderNotebooksView() {
-  const el = $('view-notebooks');
-  showLoadingState(el, 'Chargement...');
+  const $ = (id) => document.getElementById(id);
 
-  try {
-    const data = await callApi('getDashboard');
-    state.cache.dashboard = data;
+  // ═══════════════════════════════════════════════════════════════
+  // ✅ HELPER : Safe array
+  // ═══════════════════════════════════════════════════════════════
+  function safeArray(v) {
+    return Array.isArray(v) ? v : [];
+  }
 
-    const totalSections = data.summary.totalSections || 0;
-    const streak = data.streak || { current: 0 };
-    const studyTime = data.studyTime || {
-      formatted: { total: '0 min', week: '0 min', today: '0 min' },
-      totalMinutes: 0,
-      todayMinutes: 0,
-      weekMinutes: 0
+  function escapeHtml(text) {
+    return String(text === null || text === undefined ? '' : text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function safeText(text) {
+    let s = String(text || '');
+    s = s.replace(/&amp;(lt|gt|quot|amp|#39);/g, '&$1;');
+
+    const parts = s.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$)/g);
+    return parts.map((part, i) => {
+      if (i % 2 === 1) return part;
+      return part.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }).join('');
+  }
+
+  function showToast(message, type = 'info', duration = 3000) {
+    const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span>${escapeHtml(message)}</span>`;
+    $('toastContainer').appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 250);
+    }, duration);
+  }
+
+  function showLoadingState(el, text = 'Chargement...') {
+    el.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><p>${escapeHtml(text)}</p></div>`;
+  }
+
+  function showGeneratingState(el, profile) {
+    const profileLabels = {
+      scientific: 'Analyse scientifique',
+      svt: 'Analyse SVT',
+      philosophy: 'Analyse philosophique',
+      history: 'Analyse historique',
+      french: 'Analyse littéraire',
+      language: 'Analyse linguistique'
     };
-
-    const subjectCards = ALL_SUBJECT_KEYS.map((key) => {
-      const info = SUBJECTS[key];
-      const active = (data.subjects || []).find((s) => s.key === key);
-      const sectionsCount = active ? active.sectionsCount : 0;
-      const last = active ? active.last : '';
-
-      return `
-        <button class="subject-card" data-subject="${key}">
-          <div class="subject-emoji">${info.emoji}</div>
-          <div class="subject-name">${escapeHtml(info.label)}</div>
-          <div class="subject-meta">
-            ${sectionsCount > 0
-              ? `${sectionsCount} section${sectionsCount > 1 ? 's' : ''}${last ? ' · ' + last : ''}`
-              : 'Vide'}
-          </div>
-        </button>
-      `;
-    }).join('');
-
-    const activityHtml = (data.recentActivity || []).length > 0
-      ? `
-        <div class="section-title"><i class="fas fa-clock"></i> Récent</div>
-        <div class="list">
-          ${data.recentActivity.map((a) => `
-            <button class="list-item" data-subject="${a.subject}" data-chapter="${escapeHtml(a.chapterId)}">
-              <div class="list-item-icon"><i class="fas fa-book"></i></div>
-              <div class="list-item-body">
-                <div class="list-item-title">${escapeHtml(a.chapterTitle)}</div>
-                <div class="list-item-meta">
-                  <span>${escapeHtml(a.subjectLabel)}</span>
-                  <span class="dot"></span>
-                  <span>${escapeHtml(a.time)}</span>
-                </div>
-              </div>
-              <div class="list-item-arrow"><i class="fas fa-chevron-right"></i></div>
-            </button>
-          `).join('')}
-        </div>
-      `
-      : '';
+    const label = profileLabels[profile] || 'Analyse en cours';
 
     el.innerHTML = `
-      <div class="greeting">
-        <h1>${getGreeting()}, <em>${escapeHtml(getFirstName())}</em></h1>
-        <p>${totalSections > 0 ? 'Continue là où tu t\'es arrêté.' : 'Commence ton premier cahier.'}</p>
-      </div>
-
-      <div class="streak-card">
-        <div class="streak-icon">⏱️</div>
-        <div class="streak-content">
-          <div class="streak-value">${studyTime.formatted.total} d'étude</div>
-          <div class="streak-label">
-            ${studyTime.formatted.week} cette semaine
-            ${studyTime.todayMinutes > 0 ? `· ${studyTime.formatted.today} aujourd'hui` : ''}
-            · ${totalSections} section${totalSections > 1 ? 's' : ''}
+      <div class="generating-state">
+        <div class="generating-spinner"></div>
+        <h3>${escapeHtml(label)}...</h3>
+        <div class="generating-steps">
+          <div class="generating-step active" data-step="1">
+            <span class="generating-step-icon">🔍</span>
+            <span>Extraction des concepts</span>
+          </div>
+          <div class="generating-step" data-step="2">
+            <span class="generating-step-icon">📖</span>
+            <span>Explication pédagogique</span>
+          </div>
+          <div class="generating-step" data-step="3">
+            <span class="generating-step-icon">🧩</span>
+            <span>Structuration</span>
+          </div>
+          <div class="generating-step" data-step="4">
+            <span class="generating-step-icon">❓</span>
+            <span>Banque de questions</span>
+          </div>
+          <div class="generating-step" data-step="5">
+            <span class="generating-step-icon">🎯</span>
+            <span>QCM</span>
           </div>
         </div>
-      </div>
-
-      <div class="section-title"><i class="fas fa-book"></i> Mes matières <span class="count">${ALL_SUBJECT_KEYS.length}</span></div>
-      <div class="subjects-grid">${subjectCards}</div>
-
-      ${activityHtml}
-    `;
-
-    el.querySelectorAll('[data-subject]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const subject = btn.dataset.subject;
-        const chapter = btn.dataset.chapter;
-        if (chapter) navigate('chapter', { subject, chapterId: chapter });
-        else navigate('notebook', { subject });
-      });
-    });
-
-  } catch (err) {
-    showEmptyState(el, 'fa-exclamation-triangle', 'Impossible de charger', err.message || 'Erreur réseau.');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// VUE 2 — CHAPITRES
-// ═══════════════════════════════════════════════════════════════
-async function renderNotebookView(params) {
-  const el = $('view-notebook');
-  const subject = params.subject;
-  const info = SUBJECTS[subject];
-  if (!info) { navigate('notebooks'); return; }
-
-  showLoadingState(el, 'Chargement...');
-
-  try {
-    const data = await callApi('listChapters', { subject });
-    const chapters = data.chapters || [];
-    const totalSections = chapters.reduce((s, c) => s + (c.sectionsCount || 0), 0);
-
-    const listHtml = chapters.length === 0
-      ? `<div class="empty-state" style="padding:30px 20px;">
-           <div class="icon"><i class="fas fa-book"></i></div>
-           <h3>Aucun chapitre</h3>
-           <p>Crée ton premier chapitre.</p>
-         </div>`
-      : chapters.map((c) => `
-          <div class="list-item" data-chapter="${escapeHtml(c.id)}">
-            <div class="list-item-icon"><i class="fas fa-book"></i></div>
-            <div class="list-item-body" data-nav="chapter">
-              <div class="list-item-title">${escapeHtml(c.title)}</div>
-              <div class="list-item-meta">
-                <span>${c.sectionsCount} section${c.sectionsCount > 1 ? 's' : ''}</span>
-                <span class="dot"></span>
-                <span>${escapeHtml(c.last)}</span>
-              </div>
-            </div>
-            <button class="list-item-delete" data-delete-chapter="${escapeHtml(c.id)}" title="Supprimer">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-            <div class="list-item-arrow" data-nav="chapter"><i class="fas fa-chevron-right"></i></div>
-          </div>
-        `).join('');
-
-    el.innerHTML = `
-      <div class="page-hero">
-        <h1>${info.emoji} ${escapeHtml(info.label)}</h1>
-        <div class="hero-sub">${totalSections} section${totalSections > 1 ? 's' : ''} · ${chapters.length} chapitre${chapters.length > 1 ? 's' : ''}</div>
-      </div>
-
-      <div class="section-title"><i class="fas fa-book-open"></i> Chapitres <span class="count">${chapters.length}</span></div>
-
-      <div class="list">
-        ${listHtml}
-        <button class="list-item new" id="newChapterBtn">
-          <i class="fas fa-plus"></i>
-          <span>Nouveau chapitre</span>
-        </button>
+        <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">
+          Cela peut prendre 30 à 60 secondes.
+        </p>
       </div>
     `;
 
-    el.querySelectorAll('[data-chapter]').forEach((item) => {
-      const chapterId = item.dataset.chapter;
-      item.querySelectorAll('[data-nav="chapter"]').forEach((target) => {
-        target.addEventListener('click', (e) => {
-          e.stopPropagation();
-          navigate('chapter', { subject, chapterId });
-        });
-      });
-    });
-
-    el.querySelectorAll('[data-delete-chapter]').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const chapterId = btn.dataset.deleteChapter;
-        const chapterTitle = chapters.find((c) => c.id === chapterId)?.title || 'ce chapitre';
-        confirmDelete({
-          title: 'Supprimer le chapitre ?',
-          message: `"<strong>${escapeHtml(chapterTitle)}</strong>" et toutes ses sections seront définitivement supprimés.`,
-          onConfirm: async () => {
-            await callApi('deleteChapter', { subject, chapterId });
-            showToast('Chapitre supprimé', 'success');
-            delete state.cache.chapters[subject];
-            delete state.cache.chapter[`${subject}/${chapterId}`];
-            applyRoute({ view: 'notebook', params: { subject } });
-          }
-        });
-      });
-    });
-
-    $('newChapterBtn')?.addEventListener('click', () => openNewChapterModal(subject));
-
-  } catch (err) {
-    showEmptyState(el, 'fa-exclamation-triangle', 'Erreur', err.message || 'Erreur réseau.');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// VUE 3 — SECTIONS
-// ═══════════════════════════════════════════════════════════════
-async function renderChapterView(params) {
-  const el = $('view-chapter');
-  const { subject, chapterId } = params;
-  const info = SUBJECTS[subject];
-  if (!info || !chapterId) { navigate('notebooks'); return; }
-
-  showLoadingState(el, 'Chargement...');
-
-  try {
-    const data = await callApi('getChapter', { subject, chapterId });
-    state.cache.chapter[`${subject}/${chapterId}`] = data;
-    const ch = data.chapter;
-    const sections = data.sections || [];
-
-    const listHtml = sections.length === 0
-      ? `<div class="empty-state" style="padding:30px 20px;">
-           <div class="icon"><i class="fas fa-file-lines"></i></div>
-           <h3>Aucune section</h3>
-           <p>Ajoute la première partie que tu as étudiée.</p>
-         </div>`
-      : sections.map((s, idx) => `
-          <div class="list-item" data-section="${escapeHtml(s.id)}">
-            <div class="list-item-icon"><i class="fas fa-check"></i></div>
-            <div class="list-item-body" data-nav="section">
-              <div class="list-item-title">${idx + 1}. ${escapeHtml(s.title)}</div>
-              <div class="list-item-meta">
-                ${s.questionsCount > 0 ? `<span>${s.questionsCount} Q/R</span><span class="dot"></span>` : ''}
-                ${s.qcmCount > 0 ? `<span>${s.qcmCount} QCM</span><span class="dot"></span>` : ''}
-                <span>${escapeHtml(s.time)}</span>
-              </div>
-            </div>
-            <button class="list-item-delete" data-delete-section="${escapeHtml(s.id)}" title="Supprimer">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-            <div class="list-item-arrow" data-nav="section"><i class="fas fa-chevron-right"></i></div>
-          </div>
-        `).join('');
-
-    el.innerHTML = `
-      <div class="page-hero">
-        <div class="hero-sub" style="margin-bottom:6px;">${info.emoji} ${escapeHtml(info.label)}</div>
-        <h1>${escapeHtml(ch.title)}</h1>
-        <div class="hero-sub">${sections.length} section${sections.length > 1 ? 's' : ''}</div>
-      </div>
-
-      ${sections.length > 0 ? `
-        <button class="cta-card" id="viewLessonBtn">
-          <i class="fas fa-book-reader"></i>
-          <span>Voir la leçon complète</span>
-        </button>
-      ` : ''}
-
-      <div class="section-title"><i class="fas fa-list"></i> Sections <span class="count">${sections.length}</span></div>
-
-      <div class="list">
-        ${listHtml}
-        <button class="list-item new" id="addSectionBtn">
-          <i class="fas fa-plus"></i>
-          <span>Ajouter une section</span>
-        </button>
-      </div>
-    `;
-
-    el.querySelectorAll('[data-section]').forEach((item) => {
-      const sectionId = item.dataset.section;
-      item.querySelectorAll('[data-nav="section"]').forEach((target) => {
-        target.addEventListener('click', (e) => {
-          e.stopPropagation();
-          navigate('section', { subject, chapterId, sectionId });
-        });
-      });
-    });
-
-    el.querySelectorAll('[data-delete-section]').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const sectionId = btn.dataset.deleteSection;
-        const sectionTitle = sections.find((s) => s.id === sectionId)?.title || 'cette section';
-        confirmDelete({
-          title: 'Supprimer la section ?',
-          message: `"<strong>${escapeHtml(sectionTitle)}</strong>" sera définitivement supprimée.`,
-          onConfirm: async () => {
-            await callApi('deleteSection', { subject, chapterId, sectionId });
-            showToast('Section supprimée', 'success');
-            delete state.cache.chapter[`${subject}/${chapterId}`];
-            applyRoute({ view: 'chapter', params: { subject, chapterId } });
-          }
-        });
-      });
-    });
-
-    $('viewLessonBtn')?.addEventListener('click', () => navigate('lesson', { subject, chapterId }));
-    $('addSectionBtn')?.addEventListener('click', () => openAddSectionModal(subject, chapterId));
-
-  } catch (err) {
-    if (err.status === 404) showEmptyState(el, 'fa-book', 'Chapitre introuvable', 'Ce chapitre n\'existe plus.');
-    else showEmptyState(el, 'fa-exclamation-triangle', 'Erreur', err.message || 'Erreur réseau.');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// VUE 4 — SECTION DÉTAILLÉE
-// ═══════════════════════════════════════════════════════════════
-async function renderSectionView(params) {
-  const el = $('view-section');
-  const { subject, chapterId, sectionId } = params;
-  const info = SUBJECTS[subject];
-  if (!info || !chapterId || !sectionId) { navigate('notebooks'); return; }
-
-  showLoadingState(el, 'Chargement...');
-
-  try {
-    const data = await callApi('getSection', { subject, chapterId, sectionId });
-    const s = data.section;
-    const a = s.analysis || {};
-    const profile = s.profile || 'scientific';
-    const chapterTitle = state.cache.chapter[`${subject}/${chapterId}`]?.chapter?.title || '';
-
-    el.innerHTML = `
-      <div class="section-hero">
-        <div class="breadcrumb">
-          <span>${info.emoji} ${escapeHtml(info.label)}</span>
-          ${chapterTitle ? `<span class="sep">›</span><span>${escapeHtml(chapterTitle)}</span>` : ''}
-        </div>
-        <h1>${escapeHtml(s.title)}</h1>
-        <div class="sub">${escapeHtml(s.time || '')}</div>
-      </div>
-
-      <div class="content-section">
-        <div class="content-section-title"><i class="fas fa-paste"></i>Ton cours</div>
-        <div class="raw-input" id="rawInput">${safeText(s.rawInput)}</div>
-        <button class="expand-btn" id="expandRawBtn">
-          <i class="fas fa-chevron-down"></i>
-          <span>Voir tout</span>
-        </button>
-      </div>
-
-      <div id="analysisContainer"></div>
-
-      <div class="content-section">
-        <div class="content-section-title"><i class="fas fa-pen"></i>Mes notes</div>
-        <textarea class="notes-area" id="notesArea" placeholder="Ajoute tes notes personnelles...">${escapeHtml(s.userNotes || '')}</textarea>
-        <div class="notes-status" id="notesStatus"></div>
-      </div>
-
-      <div class="content-section">
-        <div class="content-section-title"><i class="fas fa-graduation-cap"></i>Teste-toi sur cette partie</div>
-        <button class="cta-exam" id="goToExamBtn" data-subject="${escapeHtml(subject)}" data-chapter="${escapeHtml(chapterTitle)}">
-          <i class="fas fa-file-circle-check"></i>
-          <div class="cta-exam-body">
-            <div class="cta-exam-title">Passer en mode examen</div>
-            <div class="cta-exam-sub">Teste-toi dans les conditions du BAC</div>
-          </div>
-          <i class="fas fa-chevron-right cta-exam-arrow"></i>
-        </button>
-      </div>
-    `;
-
-    const container = $('analysisContainer');
-    container.innerHTML = renderAnalysis(a, profile);
-
-    $('expandRawBtn')?.addEventListener('click', () => {
-      const raw = $('rawInput');
-      raw.classList.toggle('expanded');
-      const span = $('expandRawBtn').querySelector('span');
-      span.textContent = raw.classList.contains('expanded') ? 'Réduire' : 'Voir tout';
-    });
-
-    el.querySelectorAll('.qa-item').forEach((item) => {
-      item.querySelector('.qa-question').addEventListener('click', () => {
-        item.classList.toggle('open');
-      });
-    });
-
-    el.querySelectorAll('.qcm-item').forEach((qcm) => {
-      const correct = qcm.dataset.correct;
-      const options = qcm.querySelectorAll('.qcm-option');
-      const explanation = qcm.querySelector('.qcm-explanation');
-
-      options.forEach((opt) => {
-        opt.addEventListener('click', () => {
-          if (qcm.dataset.answered === '1') return;
-          qcm.dataset.answered = '1';
-          const letter = opt.dataset.letter;
-          options.forEach((o) => {
-            if (o.dataset.letter === correct) o.classList.add('correct');
-            else if (o.dataset.letter === letter) o.classList.add('wrong');
-          });
-          if (explanation) explanation.classList.add('show');
-        });
-      });
-    });
-
-    let notesTimer = null;
-    $('notesArea')?.addEventListener('input', () => {
-      const status = $('notesStatus');
-      status.textContent = 'Enregistrement...';
-      clearTimeout(notesTimer);
-      notesTimer = setTimeout(async () => {
-        try {
-          await callApi('updateNotes', { subject, chapterId, sectionId, userNotes: $('notesArea').value });
-          delete state.cache.chapter[`${subject}/${chapterId}`];
-          status.textContent = 'Enregistré';
-          status.className = 'notes-status saved';
-          setTimeout(() => { status.textContent = ''; status.className = 'notes-status'; }, 2000);
-        } catch (e) {
-          status.textContent = 'Erreur';
-          status.className = 'notes-status';
-        }
-      }, 1400);
-    });
-
-    $('goToExamBtn')?.addEventListener('click', function () {
-      var subj = $('goToExamBtn').dataset.subject;
-      var chap = $('goToExamBtn').dataset.chapter;
-      var examSubject = EXAM_SUBJECT_MAP[subj] || '';
-      if (!examSubject) {
-        showToast('Cette matière n\'est pas encore disponible en mode examen.', 'info', 3000);
+    let currentStep = 1;
+    const interval = setInterval(() => {
+      const steps = el.querySelectorAll('.generating-step');
+      if (!steps.length || currentStep >= steps.length) {
+        clearInterval(interval);
         return;
       }
-      var params = new URLSearchParams();
-      params.set('subject', examSubject);
-      if (chap) params.set('chapter', chap);
-      if (chapterId) params.set('chapterId', chapterId);
-      params.set('useNotebook', 'true');
-      window.location.href = 'exam.html?' + params.toString();
-    });
+      steps[currentStep - 1].classList.remove('active');
+      steps[currentStep - 1].classList.add('done');
+      if (currentStep < steps.length) steps[currentStep].classList.add('active');
+      currentStep++;
+    }, 6000);
 
-  } catch (err) {
-    if (err.status === 404) showEmptyState(el, 'fa-file', 'Section introuvable', 'Cette section n\'existe plus.');
-    else showEmptyState(el, 'fa-exclamation-triangle', 'Erreur', err.message || 'Erreur réseau.');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// RENDU ANALYSE
-// ═══════════════════════════════════════════════════════════════
-function renderAnalysis(a, profile) {
-  let html = '';
-
-  const expl = a.explanation || {};
-  if (expl.understanding) {
-    html += `<div class="content-section">
-      <div class="content-section-title"><i class="fas fa-graduation-cap"></i>L'explication du prof</div>
-      <div class="block">
-        <div class="block-head"><i class="fas fa-lightbulb"></i>Ce que tu dois comprendre</div>
-        <div class="block-body">${safeText(expl.understanding)}</div>
-      </div>
-      ${(expl.parts || []).map((p) => renderPart(p, profile)).join('')}
-    </div>`;
+    return () => clearInterval(interval);
   }
 
-  if (a.structure) {
-    html += renderStructure(a.structure, profile);
-  }
-
-  if (Array.isArray(a.questions) && a.questions.length > 0) {
-    html += `<div class="content-section">
-      <div class="content-section-title"><i class="fas fa-circle-question"></i>Banque de questions <span class="count">${a.questions.length}</span></div>
-      <div class="qa-list">
-        ${a.questions.map((q, i) => renderQuestion(q, i)).join('')}
-      </div>
-    </div>`;
-  }
-
-  if (Array.isArray(a.qcm) && a.qcm.length > 0) {
-    html += `<div class="content-section">
-      <div class="content-section-title"><i class="fas fa-list-check"></i>QCM <span class="count">${a.qcm.length}</span></div>
-      <div>${a.qcm.map((q, i) => renderQcm(q, i)).join('')}</div>
-    </div>`;
-  }
-
-  if (!html && a.fallback) {
-    html = `<div class="block">
-      <div class="block-head"><i class="fas fa-info-circle"></i>Information</div>
-      <div class="block-body">L'analyse automatique est indisponible. Réessaie en ajoutant une nouvelle section ou en réessayant plus tard.</div>
-    </div>`;
-  }
-
-  return html;
-}
-
-function renderPart(p, profile) {
-  const partTitle = p.partTitle || p.title || 'Partie';
-  const mainIdea = p.mainIdea || p.idea || '';
-  const explanation = p.simpleExplanation || p.explanation || '';
-  const terms = p.keyTerms || p.terms || [];
-  const toRemember = p.toRemember || p.memorize || '';
-
-  let extra = '';
-
-  if (profile === 'svt' && p.mechanism) {
-    const steps = p.mechanism.steps || [];
-    if (steps.length > 0) {
-      extra += `<div class="part-terms" style="margin-top:10px;">
-        <div class="part-terms-title">⚙️ ${safeText(p.mechanism.description || 'Mécanisme')}</div>
-        <ol class="method-list">${steps.map((s) => `<li>${safeText(s)}</li>`).join('')}</ol>
-      </div>`;
-    }
-  }
-
-  if (profile === 'philosophy') {
-    if (Array.isArray(p.arguments) && p.arguments.length > 0) {
-      extra += `<div class="part-terms" style="margin-top:10px;">
-        <div class="part-terms-title">⚖️ Arguments</div>
-        <ul class="simple-list">${p.arguments.map((arg, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(arg)}</span></li>`).join('')}</ul>
-      </div>`;
-    }
-    if (Array.isArray(p.everydayExamples) && p.everydayExamples.length > 0) {
-      extra += `<div class="part-terms" style="margin-top:10px;">
-        <div class="part-terms-title">💡 Exemples du quotidien</div>
-        <ul class="simple-list">${p.everydayExamples.map((ex, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(ex)}</span></li>`).join('')}</ul>
-      </div>`;
-    }
-  }
-
-  if (profile === 'language') {
-    if (Array.isArray(p.examples) && p.examples.length > 0) {
-      extra += `<div class="part-terms" style="margin-top:10px;">
-        <div class="part-terms-title">🌐 Exemples</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          ${p.examples.map((ex) => `
-            <div>
-              <div style="font-size:14px;color:var(--text-light);font-weight:600;">${safeText(ex.english)}</div>
-              <div style="font-size:13px;color:var(--text-dim);font-style:italic;">→ ${safeText(ex.french)}</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>`;
-    }
-    if (Array.isArray(p.commonMistakes) && p.commonMistakes.length > 0) {
-      extra += `<div class="part-terms" style="margin-top:10px;">
-        <div class="part-terms-title">⚠️ Pièges pour francophones</div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          ${p.commonMistakes.map((m) => `
-            <div style="font-size:13px;color:var(--text-body);line-height:1.55;">
-              <span style="color:#ff9a84;">❌ ${safeText(m.mistake)}</span><br>
-              <span style="color:#7ce0aa;">✅ ${safeText(m.correction)}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>`;
-    }
-  }
-
-  if (Array.isArray(p.relations) && p.relations.length > 0) {
-    extra += `<div class="part-terms" style="margin-top:10px;">
-      <div class="part-terms-title">🔗 Relations</div>
-      <ul class="simple-list">${p.relations.map((r, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(r)}</span></li>`).join('')}</ul>
-    </div>`;
-  }
-
-  if (profile === 'scientific' && p.example && typeof p.example === 'string') {
-    extra += `<div class="part-terms" style="margin-top:10px;">
-      <div class="part-terms-title">📝 Exemple</div>
-      <div style="font-size:13.5px;color:var(--text-body);line-height:1.6;">${safeText(p.example)}</div>
-    </div>`;
-  }
-
-  let termsHtml = '';
-  if (Array.isArray(terms) && terms.length > 0) {
-    termsHtml = `<div class="part-terms">
-      <div class="part-terms-title">📚 Termes importants</div>
-      <div class="part-terms-list">
-        ${terms.map((t) => {
-          if (profile === 'language' && t.english) {
-            return `<div class="part-term"><strong>${safeText(t.english)}</strong> — ${safeText(t.french || t.meaning || '')}${t.example ? ` <span style="color:var(--text-muted);">(${safeText(t.example)})</span>` : ''}</div>`;
-          }
-          const term = t.term || t.name || '';
-          const meaning = t.meaning || t.definition || '';
-          return `<div class="part-term"><strong>${safeText(term)}</strong> — ${safeText(meaning)}</div>`;
-        }).join('')}
-      </div>
-    </div>`;
-  }
-
-  let rememberHtml = '';
-  if (toRemember && typeof toRemember === 'string' && toRemember.trim()) {
-    rememberHtml = `<div class="part-remember"><strong>À retenir</strong>${safeText(toRemember)}</div>`;
-  }
-
-  return `
-    <div class="part">
-      <div class="part-title">${safeText(partTitle)}</div>
-      ${mainIdea ? `<div class="part-idea">${safeText(mainIdea)}</div>` : ''}
-      ${explanation ? `<div class="part-explanation">${safeText(explanation)}</div>` : ''}
-      ${termsHtml}
-      ${extra}
-      ${rememberHtml}
-    </div>
-  `;
-}
-
-function renderStructure(structure, profile) {
-  let html = '';
-
-  if (profile === 'scientific') {
-    if (Array.isArray(structure.formulas) && structure.formulas.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-square-root-variable"></i>Formules clés</div>
-        <div class="block">
-          ${structure.formulas.map((f) => {
-            let latex = String(f.latex || '');
-            if (latex && !latex.includes('$')) latex = `$$${latex}$$`;
-            return `
-              <div class="formula-block">
-                <div>${safeText(latex)}</div>
-                ${f.description ? `<div class="formula-description">${safeText(f.description)}</div>` : ''}
-                ${f.condition ? `<div class="formula-condition">${safeText(f.condition)}</div>` : ''}
-                ${Array.isArray(f.variables) && f.variables.length > 0 ? `
-                  <div class="formula-variables">
-                    ${f.variables.map((v) => `<div class="formula-variable"><strong>${safeText(v.symbol)}</strong> : ${safeText(v.meaning)}${v.unit ? ` (${safeText(v.unit)})` : ''}</div>`).join('')}
-                  </div>
-                ` : ''}
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>`;
-    }
-
-    if (structure.method && Array.isArray(structure.method.steps) && structure.method.steps.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-list-ol"></i>${escapeHtml(structure.method.title || 'Méthode')}</div>
-        <div class="block">
-          <ol class="method-list">${structure.method.steps.map((s) => `<li>${safeText(s)}</li>`).join('')}</ol>
-        </div>
-      </div>`;
-    }
-
-    if (Array.isArray(structure.examples) && structure.examples.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-check-circle"></i>Exemples corrigés <span class="count">${structure.examples.length}</span></div>
-        ${structure.examples.map((ex) => `
-          <div class="block">
-            <div class="example-enonce">${safeText(ex.enonce)}</div>
-            ${Array.isArray(ex.steps) ? `<ol class="example-steps">${ex.steps.map((s) => `<li>${safeText(s)}</li>`).join('')}</ol>` : ''}
-            ${ex.result ? `<div class="example-result">${safeText(ex.result)}</div>` : ''}
-          </div>
-        `).join('')}
-      </div>`;
-    }
-
-    if (Array.isArray(structure.traps) && structure.traps.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-triangle-exclamation"></i>Pièges à éviter</div>
-        ${structure.traps.map((t) => `
-          <div class="block">
-            <div class="trap-text">${safeText(t.trap)}</div>
-            <div class="trap-solution">${safeText(t.solution)}</div>
-          </div>
-        `).join('')}
-      </div>`;
-    }
-  }
-
-  if (profile === 'svt') {
-    if (Array.isArray(structure.mechanisms) && structure.mechanisms.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-cogs"></i>Mécanismes <span class="count">${structure.mechanisms.length}</span></div>
-        ${structure.mechanisms.map((m) => `
-          <div class="block">
-            <div class="block-head"><i class="fas fa-arrow-right"></i>${escapeHtml(m.name || 'Mécanisme')}</div>
-            ${Array.isArray(m.steps) && m.steps.length > 0 ? `<ol class="method-list">${m.steps.map((s) => `<li>${safeText(s)}</li>`).join('')}</ol>` : ''}
-            ${Array.isArray(m.relations) && m.relations.length > 0 ? `<div style="margin-top:10px;"><div class="part-terms-title">🔗 Relations</div><ul class="simple-list">${m.relations.map((r, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(r)}</span></li>`).join('')}</ul></div>` : ''}
-            ${Array.isArray(m.consequences) && m.consequences.length > 0 ? `<div style="margin-top:10px;"><div class="part-terms-title">➡️ Conséquences</div><ul class="simple-list">${m.consequences.map((c, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(c)}</span></li>`).join('')}</ul></div>` : ''}
-          </div>
-        `).join('')}
-      </div>`;
-    }
-
-    if (Array.isArray(structure.definitions) && structure.definitions.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-book"></i>Définitions</div>
-        <div class="block">
-          <ul class="simple-list">
-            ${structure.definitions.map((d, i) => `<li><span class="num">${i + 1}.</span><span><strong>${safeText(d.term)}</strong> — ${safeText(d.definition)}</span></li>`).join('')}
-          </ul>
-        </div>
-      </div>`;
-    }
-
-    if (Array.isArray(structure.classifications) && structure.classifications.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-sitemap"></i>Classifications</div>
-        ${structure.classifications.map((c) => `
-          <div class="block">
-            <div class="block-head"><i class="fas fa-tag"></i>${escapeHtml(c.category || 'Catégorie')}</div>
-            <ul class="simple-list">${(c.items || []).map((item, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(item)}</span></li>`).join('')}</ul>
-          </div>
-        `).join('')}
-      </div>`;
-    }
-  }
-
-  if (profile === 'philosophy') {
-    if (Array.isArray(structure.theses) && structure.theses.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-scale-balanced"></i>Thèses & Arguments</div>
-        ${structure.theses.map((t) => `
-          <div class="block">
-            <div class="block-head"><i class="fas fa-quote-left"></i>${safeText(t.thesis)}</div>
-            ${Array.isArray(t.arguments) && t.arguments.length > 0 ? `<ul class="simple-list">${t.arguments.map((arg, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(arg)}</span></li>`).join('')}</ul>` : ''}
-          </div>
-        `).join('')}
-      </div>`;
-    }
-
-    if (Array.isArray(structure.vocabulary) && structure.vocabulary.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-spell-check"></i>Vocabulaire</div>
-        <div class="block">
-          <ul class="simple-list">
-            ${structure.vocabulary.map((v, i) => `<li><span class="num">${i + 1}.</span><span><strong>${safeText(v.term)}</strong> — ${safeText(v.meaning)}</span></li>`).join('')}
-          </ul>
-        </div>
-      </div>`;
-    }
-
-    if (Array.isArray(structure.plans) && structure.plans.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-list-ol"></i>Plans possibles</div>
-        ${structure.plans.map((p) => `
-          <div class="block">
-            <div class="block-head"><i class="fas fa-project-diagram"></i>${escapeHtml(p.title || 'Plan')}</div>
-            <ol class="method-list">${(p.parties || []).map((x) => `<li>${safeText(x)}</li>`).join('')}</ol>
-          </div>
-        `).join('')}
-      </div>`;
-    }
-  }
-
-  if (profile === 'history') {
-    if (Array.isArray(structure.timeline) && structure.timeline.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-calendar"></i>Repères chronologiques</div>
-        <div class="block">
-          <ul class="simple-list">
-            ${structure.timeline.map((t, i) => `<li><span class="num">${i + 1}.</span><span><strong>${safeText(t.date)}</strong> — ${safeText(t.event)}</span></li>`).join('')}
-          </ul>
-        </div>
-      </div>`;
-    }
-
-    if (Array.isArray(structure.causesConsequences) && structure.causesConsequences.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-arrow-right-arrow-left"></i>Causes & Conséquences</div>
-        ${structure.causesConsequences.map((cc) => `
-          <div class="block">
-            <div class="block-head"><i class="fas fa-diagram-project"></i>Relation</div>
-            <div style="font-size:14px;line-height:1.7;">
-              <div style="color:#ff9a84;"><strong>Cause :</strong> ${safeText(cc.cause)}</div>
-              <div style="color:#7ce0aa;margin-top:6px;"><strong>Conséquence :</strong> ${safeText(cc.consequence)}</div>
-            </div>
-          </div>
-        `).join('')}
-      </div>`;
-    }
-
-    if (Array.isArray(structure.keyFigures) && structure.keyFigures.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-user-tie"></i>Personnages clés</div>
-        <div class="block">
-          <ul class="simple-list">
-            ${structure.keyFigures.map((f, i) => `<li><span class="num">${i + 1}.</span><span><strong>${safeText(f.name)}</strong> — ${safeText(f.role)}</span></li>`).join('')}
-          </ul>
-        </div>
-      </div>`;
-    }
-
-    if (Array.isArray(structure.vocabulary) && structure.vocabulary.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-spell-check"></i>Vocabulaire</div>
-        <div class="block">
-          <ul class="simple-list">
-            ${structure.vocabulary.map((v, i) => `<li><span class="num">${i + 1}.</span><span><strong>${safeText(v.term)}</strong> — ${safeText(v.meaning)}</span></li>`).join('')}
-          </ul>
-        </div>
-      </div>`;
-    }
-  }
-
-  if (profile === 'french') {
-    if (Array.isArray(structure.literaryDevices) && structure.literaryDevices.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-feather"></i>Procédés littéraires</div>
-        ${structure.literaryDevices.map((d) => `
-          <div class="block">
-            <div class="block-head"><i class="fas fa-quote-right"></i>${escapeHtml(d.name)}</div>
-            <div class="block-body">${safeText(d.definition)}</div>
-            ${d.example ? `<div class="example-enonce" style="margin-top:8px;">${safeText(d.example)}</div>` : ''}
-          </div>
-        `).join('')}
-      </div>`;
-    }
-
-    if (Array.isArray(structure.vocabulary) && structure.vocabulary.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-spell-check"></i>Vocabulaire</div>
-        <div class="block">
-          <ul class="simple-list">
-            ${structure.vocabulary.map((v, i) => `<li><span class="num">${i + 1}.</span><span><strong>${safeText(v.term)}</strong> — ${safeText(v.meaning)}</span></li>`).join('')}
-          </ul>
-        </div>
-      </div>`;
-    }
-
-    if (Array.isArray(structure.texts) && structure.texts.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-book"></i>Textes</div>
-        ${structure.texts.map((t) => `
-          <div class="block">
-            <div class="block-head"><i class="fas fa-bookmark"></i>${escapeHtml(t.title)}${t.author ? ' — ' + escapeHtml(t.author) : ''}</div>
-            ${t.analysis ? `<div class="block-body">${safeText(t.analysis)}</div>` : ''}
-          </div>
-        `).join('')}
-      </div>`;
-    }
-  }
-
-  if (profile === 'language') {
-    if (Array.isArray(structure.vocabulary) && structure.vocabulary.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-language"></i>Vocabulaire anglais <span class="count">${structure.vocabulary.length}</span></div>
-        <div class="block">
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            ${structure.vocabulary.map((v) => `
-              <div style="display:flex;flex-direction:column;gap:2px;">
-                <div style="font-size:14.5px;font-weight:600;color:var(--text-light);">
-                  ${safeText(v.english)}
-                  ${v.phonetic ? `<span style="font-size:12px;color:var(--text-muted);font-weight:400;margin-left:6px;">${safeText(v.phonetic)}</span>` : ''}
-                </div>
-                <div style="font-size:13.5px;color:var(--accent-bright);">→ ${safeText(v.french)}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      </div>`;
-    }
-
-    if (Array.isArray(structure.grammar) && structure.grammar.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-book-open"></i>Grammaire</div>
-        ${structure.grammar.map((g) => `
-          <div class="block">
-            <div class="block-head"><i class="fas fa-check"></i>${escapeHtml(g.rule || 'Règle')}</div>
-            <div class="block-body">${safeText(g.explanation_fr || g.explanation || '')}</div>
-            ${Array.isArray(g.examples) && g.examples.length > 0 ? `
-              <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
-                ${g.examples.map((ex) => `
-                  <div>
-                    <div style="font-size:14px;color:var(--text-light);">${safeText(ex.english)}</div>
-                    <div style="font-size:13px;color:var(--text-dim);font-style:italic;">→ ${safeText(ex.french)}</div>
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-          </div>
-        `).join('')}
-      </div>`;
-    }
-
-    if (Array.isArray(structure.phrases) && structure.phrases.length > 0) {
-      html += `<div class="content-section">
-        <div class="content-section-title"><i class="fas fa-comments"></i>Phrases types</div>
-        <div class="block">
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            ${structure.phrases.map((p) => `
-              <div>
-                <div style="font-size:14px;color:var(--text-light);">${safeText(p.english)}</div>
-                <div style="font-size:13px;color:var(--text-dim);font-style:italic;">→ ${safeText(p.french)}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      </div>`;
-    }
-  }
-
-  return html;
-}
-
-function renderQuestion(q, idx) {
-  const level = Number(q.level) || 1;
-  const importance = Number(q.importance) || 1;
-  const iconClass = importance >= 3 ? 'very-important' : importance === 2 ? 'important' : '';
-
-  return `
-    <div class="qa-item" data-qa="${idx}">
-      <div class="qa-question">
-        <div class="qa-q-icon ${iconClass}">Q${idx + 1}</div>
-        <div class="qa-q-text">${safeText(q.question)}</div>
-        <span class="qa-level l${level}">Niv ${level}</span>
-        <div class="qa-toggle"><i class="fas fa-chevron-down"></i></div>
-      </div>
-      <div class="qa-answer">
-        <div class="qa-answer-inner">
-          <div class="qa-answer-label"><i class="fas fa-check"></i>Réponse</div>
-          <div class="qa-answer-text">${safeText(q.answer)}</div>
-          ${Array.isArray(q.mustHave) && q.mustHave.length > 0 ? `
-            <div class="qa-musthave">
-              <div class="qa-musthave-title">Éléments indispensables</div>
-              <ul class="qa-musthave-list">
-                ${q.mustHave.map((m) => `<li>${safeText(m)}</li>`).join('')}
-              </ul>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderQcm(q, idx) {
-  return `
-    <div class="qcm-item" data-correct="${escapeHtml(q.correct || 'A')}">
-      <div class="qcm-question">${idx + 1}. ${safeText(q.question)}</div>
-      <div class="qcm-options">
-        ${(q.options || []).map((opt) => `
-          <button class="qcm-option" data-letter="${escapeHtml(opt.id)}">
-            <span class="qcm-option-letter">${escapeHtml(opt.id)}</span>
-            <span>${safeText(opt.text)}</span>
-          </button>
-        `).join('')}
-      </div>
-      ${q.explanation ? `<div class="qcm-explanation"><strong>💡</strong> ${safeText(q.explanation)}</div>` : ''}
-    </div>
-  `;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// VUE 5 — LEÇON COMPLÈTE
-// ═══════════════════════════════════════════════════════════════
-async function renderLessonView(params) {
-  const el = $('view-lesson');
-  const { subject, chapterId } = params;
-  const info = SUBJECTS[subject];
-  if (!info || !chapterId) { navigate('notebooks'); return; }
-
-  showLoadingState(el, 'Assemblage...');
-
-  try {
-    const data = await callApi('getFullLesson', { subject, chapterId });
-    const sections = data.sections || [];
-
-    if (sections.length === 0) {
-      showEmptyState(el, 'fa-book', 'Leçon vide', 'Aucune section à afficher.');
-      return;
-    }
-
-    const sectionsHtml = sections.map((s, i) => {
-      const a = s.analysis || {};
-      let content = '';
-
-      if (a.explanation?.understanding) {
-        content += `<div class="block">
-          <div class="block-head"><i class="fas fa-lightbulb"></i>À comprendre</div>
-          <div class="block-body">${safeText(a.explanation.understanding)}</div>
-        </div>`;
-      }
-
-      if (a.explanation?.parts) {
-        content += a.explanation.parts.map((p) => renderPart(p, s.profile || 'scientific')).join('');
-      }
-
-      if (a.structure) {
-        content += renderStructure(a.structure, s.profile || 'scientific');
-      }
-
-      if (s.userNotes && s.userNotes.trim()) {
-        content += `<div class="block">
-          <div class="block-head"><i class="fas fa-pen"></i>Mes notes</div>
-          <div class="block-body" style="white-space:pre-wrap;">${safeText(s.userNotes)}</div>
-        </div>`;
-      }
-
-      return `
-        <div style="margin-bottom:32px;">
-          <div style="font-size:11px;font-weight:700;color:var(--accent-bright);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Section ${i + 1}</div>
-          <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text-light);margin-bottom:14px;">${escapeHtml(s.title)}</div>
-          ${content}
-        </div>
-      `;
-    }).join('');
-
-    const chapterTitle = data.chapter.title || '';
-
+  function showEmptyState(el, icon, title, message) {
     el.innerHTML = `
-      <div class="page-hero" style="text-align:center;">
-        <div style="font-size:32px;margin-bottom:8px;">${info.emoji}</div>
-        <div style="font-size:11px;font-weight:700;color:var(--accent-bright);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:6px;">${escapeHtml(info.label)}</div>
-        <h1 style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--text-light);margin-bottom:6px;">${escapeHtml(chapterTitle)}</h1>
-        <div style="font-size:13px;color:var(--text-dim);">${sections.length} section${sections.length > 1 ? 's' : ''}</div>
+      <div class="empty-state">
+        <div class="icon"><i class="fas ${icon}"></i></div>
+        <h3>${escapeHtml(title)}</h3>
+        <p>${escapeHtml(message)}</p>
       </div>
-
-      <div class="content-section" style="margin-bottom:32px;">
-        <button class="cta-exam" id="goToExamLessonBtn" data-subject="${escapeHtml(subject)}" data-chapter="${escapeHtml(chapterTitle)}">
-          <i class="fas fa-file-circle-check"></i>
-          <div class="cta-exam-body">
-            <div class="cta-exam-title">Passer en mode examen</div>
-            <div class="cta-exam-sub">Teste tout le chapitre dans les conditions du BAC</div>
-          </div>
-          <i class="fas fa-chevron-right cta-exam-arrow"></i>
-        </button>
-      </div>
-
-      ${sectionsHtml}
     `;
-
-    $('goToExamLessonBtn')?.addEventListener('click', function () {
-      var subj = $('goToExamLessonBtn').dataset.subject;
-      var chap = $('goToExamLessonBtn').dataset.chapter;
-      var examSubject = EXAM_SUBJECT_MAP[subj] || '';
-      if (!examSubject) {
-        showToast('Cette matière n\'est pas encore disponible en mode examen.', 'info', 3000);
-        return;
-      }
-      var params = new URLSearchParams();
-      params.set('subject', examSubject);
-      if (chap) params.set('chapter', chap);
-      if (chapterId) params.set('chapterId', chapterId);
-      params.set('useNotebook', 'true');
-      window.location.href = 'exam.html?' + params.toString();
-    });
-
-  } catch (err) {
-    showEmptyState(el, 'fa-exclamation-triangle', 'Erreur', err.message || 'Erreur réseau.');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// MODALES
-// ═══════════════════════════════════════════════════════════════
-function closeModal() {
-  $('modalBackdrop').classList.remove('show');
-  $('modalBackdrop').classList.remove('center');
-  $('modalBackdrop').innerHTML = '';
-  document.body.style.overflow = '';
-}
-
-function openModal(html, { center = false } = {}) {
-  $('modalBackdrop').innerHTML = html;
-  $('modalBackdrop').classList.add('show');
-  if (center) $('modalBackdrop').classList.add('center');
-  document.body.style.overflow = 'hidden';
-
-  $('modalBackdrop').querySelector('.modal-close')?.addEventListener('click', closeModal);
-  $('modalBackdrop').addEventListener('click', (e) => {
-    if (e.target === $('modalBackdrop')) closeModal();
-  });
-}
-
-function confirmDelete({ title, message, onConfirm }) {
-  openModal(`
-    <div class="modal-confirm">
-      <div class="confirm-icon"><i class="fas fa-trash-alt"></i></div>
-      <h3>${escapeHtml(title)}</h3>
-      <p>${message}</p>
-      <div class="modal-confirm-buttons">
-        <button class="btn-cancel" id="confirmCancelBtn">Annuler</button>
-        <button class="btn-danger" id="confirmDeleteBtn">Supprimer</button>
-      </div>
-    </div>
-  `, { center: true });
-
-  $('confirmCancelBtn').addEventListener('click', closeModal);
-
-  $('confirmDeleteBtn').addEventListener('click', async () => {
-    const btn = $('confirmDeleteBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    try {
-      await onConfirm();
-      closeModal();
-    } catch (e) {
-      showToast('Erreur : ' + e.message, 'error');
-      btn.disabled = false;
-      btn.textContent = 'Supprimer';
-    }
-  });
-}
-
-function showPremiumModal() {
-  const overlay = $('premiumOverlay');
-  if (overlay) overlay.classList.add('show');
-}
-
-function hidePremiumModal() {
-  const overlay = $('premiumOverlay');
-  if (overlay) overlay.classList.remove('show');
-}
-
-$('premiumClose')?.addEventListener('click', hidePremiumModal);
-$('premiumOverlay')?.addEventListener('click', (e) => {
-  if (e.target === $('premiumOverlay')) hidePremiumModal();
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && $('premiumOverlay')?.classList.contains('show')) {
-    hidePremiumModal();
-  }
-});
-
-// ═══════════════════════════════════════════════════════════════
-// MODALE NOUVEAU CHAPITRE
-// ═══════════════════════════════════════════════════════════════
-function openNewChapterModal(subject) {
-  const info = SUBJECTS[subject];
-
-  openModal(`
-    <div class="modal">
-      <button class="modal-close"><i class="fas fa-times"></i></button>
-      <div class="modal-head">
-        <h2>Nouveau chapitre</h2>
-        <p>${info.emoji} ${escapeHtml(info.label)}</p>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label">Titre du chapitre</label>
-        <input type="text" class="form-input" id="newChapterTitle" placeholder="Ex : Nombres complexes" maxlength="100">
-      </div>
-
-      <button class="btn-full primary" id="createChapterBtn" disabled>
-        <span class="btn-icon"><i class="fas fa-plus"></i></span>
-        <span class="btn-text">Créer</span>
-        <span class="spinner"></span>
-      </button>
-    </div>
-  `);
-
-  const input = $('newChapterTitle');
-  const btn = $('createChapterBtn');
-
-  input.addEventListener('input', () => { btn.disabled = input.value.trim().length < 2; });
-
-  btn.addEventListener('click', async () => {
-    const title = input.value.trim();
-    if (title.length < 2) return;
-    btn.disabled = true;
-    btn.classList.add('loading');
-    try {
-      await callApi('createChapter', { subject, title });
-      showToast('Chapitre créé', 'success');
-      delete state.cache.chapters[subject];
-      closeModal();
-      applyRoute({ view: 'notebook', params: { subject } });
-    } catch (e) {
-      showToast('Erreur : ' + e.message, 'error');
-      btn.disabled = false;
-      btn.classList.remove('loading');
-    }
-  });
-
-  setTimeout(() => input.focus(), 200);
-}
-
-// ═══════════════════════════════════════════════════════════════
-// ✅ CORRECTION #3 : MODALE AJOUT SECTION — garde anti-double
-// ═══════════════════════════════════════════════════════════════
-let __isAddSectionModalOpen = false;
-
-function openAddSectionModal(subject, chapterId) {
-  // ✅ Empêcher l'ouverture en double
-  if (__isAddSectionModalOpen) return;
-  __isAddSectionModalOpen = true;
-
-  const info = SUBJECTS[subject];
-
-  const tabsHtml = SYMBOL_GROUPS.map((g, i) =>
-    `<button type="button" class="symbols-tab ${i === 0 ? 'active' : ''}" data-tab="${i}">${escapeHtml(g.name)}</button>`
-  ).join('');
-
-  const gridsHtml = SYMBOL_GROUPS.map((g, i) =>
-    `<div class="symbols-grid" data-grid="${i}" style="${i === 0 ? '' : 'display:none;'}">
-      ${g.symbols.map((sym) =>
-        `<button type="button" class="symbol-btn" data-symbol="${escapeHtml(sym)}">${sym}</button>`
-      ).join('')}
-    </div>`
-  ).join('');
-
-  openModal(`
-    <div class="modal">
-      <button class="modal-close"><i class="fas fa-times"></i></button>
-      <div class="modal-head">
-        <h2>Ajouter une section</h2>
-        <p>${info.emoji} ${escapeHtml(info.label)} — Colle la partie étudiée</p>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label">Contenu</label>
-
-        <button type="button" class="symbols-toggle" id="symbolsToggle">
-          <span class="fx">ƒx</span>
-          <span>Symboles</span>
-          <i class="fas fa-chevron-down chev"></i>
-        </button>
-
-        <div class="symbols-panel" id="symbolsPanel">
-          <div class="symbols-panel-inner">
-            <div class="symbols-tabs">${tabsHtml}</div>
-            ${gridsHtml}
-          </div>
-        </div>
-
-        <textarea class="form-textarea" id="sectionBody" placeholder="Colle ici la partie du cours que tu viens d'étudier." maxlength="${MAX_CONTENT_LENGTH}"></textarea>
-        <div class="char-counter" id="sectionCounter">0 / ${MAX_CONTENT_LENGTH}</div>
-      </div>
-
-      <button class="btn-full primary" id="sectionSubmitBtn" disabled>
-        <span class="btn-icon"><i class="fas fa-wand-magic-sparkles"></i></span>
-        <span class="btn-text">Analyser avec l'IA</span>
-        <span class="spinner"></span>
-      </button>
-    </div>
-  `);
-
-  const body = $('sectionBody');
-  const counter = $('sectionCounter');
-  const submitBtn = $('sectionSubmitBtn');
-  const toggle = $('symbolsToggle');
-  const panel = $('symbolsPanel');
-
-  // ✅ Libérer la garde à la fermeture
-  const releaseGarde = () => { __isAddSectionModalOpen = false; };
-  $('modalBackdrop')?.addEventListener('click', (e) => {
-    if (e.target === $('modalBackdrop')) releaseGarde();
-  });
-  $('modalBackdrop')?.querySelector('.modal-close')?.addEventListener('click', releaseGarde);
-
-  function updateReady() {
-    const len = body.value.trim().length;
-    submitBtn.disabled = len < MIN_CONTENT_LENGTH;
-    counter.textContent = `${body.value.length} / ${MAX_CONTENT_LENGTH}`;
   }
 
-  body.addEventListener('input', updateReady);
+  function getGreeting() {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12) return 'Bonjour';
+    if (h >= 12 && h < 18) return 'Bon après-midi';
+    return 'Bonsoir';
+  }
 
-  toggle.addEventListener('click', () => {
-    panel.classList.toggle('open');
-    toggle.classList.toggle('active');
-  });
+  function getFirstName() {
+    return state.userData?.firstName || state.userData?.displayName?.split(' ')[0] || 'Élève';
+  }
 
-  document.querySelectorAll('.symbols-tab').forEach((tab) => {
-    tab.addEventListener('click', (e) => {
-      e.preventDefault();
-      const idx = tab.dataset.tab;
-      document.querySelectorAll('.symbols-tab').forEach((t) => t.classList.toggle('active', t === tab));
-      document.querySelectorAll('.symbols-grid').forEach((g) => {
-        g.style.display = g.dataset.grid === idx ? 'grid' : 'none';
-      });
-    });
-  });
-
-  document.querySelectorAll('.symbol-btn').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const symbol = btn.dataset.symbol;
-      const start = body.selectionStart || 0;
-      const end = body.selectionEnd || 0;
-      const value = body.value;
-      body.value = value.slice(0, start) + symbol + value.slice(end);
-      const newPos = start + symbol.length;
-      body.setSelectionRange(newPos, newPos);
-      body.focus();
-      updateReady();
-    });
-  });
-
-  submitBtn.addEventListener('click', async () => {
-    const rawInput = body.value.trim();
-    if (rawInput.length < MIN_CONTENT_LENGTH) {
-      showToast(`Contenu trop court (min ${MIN_CONTENT_LENGTH} caractères)`, 'error');
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.classList.add('loading');
-
-    const container = $('view-section');
-    const infoLocal = SUBJECTS[subject];
-    document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
-    container.classList.add('active');
-    const cleanupProgress = showGeneratingState(container, infoLocal?.profile || 'scientific');
-
-    try {
-      closeModal();
-      __isAddSectionModalOpen = false;
-      const result = await callApi('createSection', { subject, chapterId, rawInput });
-      cleanupProgress();
-      showToast('Section analysée', 'success');
-      delete state.cache.chapter[`${subject}/${chapterId}`];
-      applyRoute({ view: 'section', params: { subject, chapterId, sectionId: result.sectionId } });
-    } catch (e) {
-      cleanupProgress();
-      if (e.code === 'FREE_SECTION_LIMIT') {
-        showPremiumModal();
-        applyRoute({ view: 'chapter', params: { subject, chapterId } });
-      } else {
-        showToast('Erreur : ' + e.message, 'error', 5000);
-        applyRoute({ view: 'chapter', params: { subject, chapterId } });
-      }
-    }
-  });
-
-  setTimeout(() => body.focus(), 200);
-}
-
-// ═══════════════════════════════════════════════════════════════
-// ÉVÉNEMENTS
-// ═══════════════════════════════════════════════════════════════
-$('backBtn').addEventListener('click', () => window.history.back());
-
-$('refreshBtn').addEventListener('click', () => {
-  state.cache = { dashboard: null, chapters: {}, chapter: {} };
-  applyRoute({ view: state.view, params: state.params });
-  showToast('Actualisé', 'success', 1200);
-});
-
-function updatePremiumBadge() {
-  const badge = $('premiumBadge');
-  if (state.isPremium) badge.classList.add('show');
-  else badge.classList.remove('show');
-}
-
-// ═══════════════════════════════════════════════════════════════
-// ✅ CORRECTION #2 : TRACKING TEMPS D'ÉTUDE protégé contre les 401
-// ═══════════════════════════════════════════════════════════════
-let studyLastSync = Date.now();
-const STUDY_SYNC_INTERVAL_MS = 2 * 60 * 1000;
-
-async function syncStudyTime(reason = 'heartbeat') {
-  if (!state.user) return;
-
-  const now = Date.now();
-  const elapsed = now - studyLastSync;
-  const minutes = Math.floor(elapsed / 60000);
-
-  if (minutes < 1) return;
-
-  const minutesToSend = Math.min(120, minutes);
-  studyLastSync = now;
-
-  try {
-    // ✅ Récupérer un token FRAIS avant l'appel
-    const token = await getIdToken(state.user, true);
-
+  async function callApi(action, params = {}) {
+    if (!state.user) throw new Error('Non authentifié.');
+    const token = await getIdToken(state.user);
     const response = await fetch('/api/progress', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ action: 'trackStudyTime', minutes: minutesToSend })
+      body: JSON.stringify({ action, ...params })
+    });
+    const data = await response.json().catch(() => null);
+
+    if (response.status === 401 && data?.code === 'AUTH_REQUIRED') {
+      window.location.replace('auth-choice.html');
+      throw new Error('Session expirée');
+    }
+
+    if (!response.ok || !data?.success) {
+      const err = new Error(data?.error || `Erreur ${response.status}`);
+      err.code = data?.code;
+      err.status = response.status;
+      throw err;
+    }
+    return data;
+  }
+
+  function routeFromHash() {
+    const hash = window.location.hash.replace(/^#\/?/, '');
+    if (!hash) return { view: 'notebooks', params: {} };
+    const parts = hash.split('/').filter(Boolean);
+    switch (parts[0]) {
+      case 'notebooks': return { view: 'notebooks', params: {} };
+      case 'notebook': return { view: 'notebook', params: { subject: parts[1] } };
+      case 'chapter': return { view: 'chapter', params: { subject: parts[1], chapterId: parts[2] } };
+      case 'section': return { view: 'section', params: { subject: parts[1], chapterId: parts[2], sectionId: parts[3] } };
+      case 'lesson': return { view: 'lesson', params: { subject: parts[1], chapterId: parts[2] } };
+      default: return { view: 'notebooks', params: {} };
+    }
+  }
+
+  function hashFromRoute(view, params) {
+    const p = params || {};
+    switch (view) {
+      case 'notebooks': return '#/notebooks';
+      case 'notebook': return p.subject ? `#/notebook/${p.subject}` : '#/notebooks';
+      case 'chapter': return (p.subject && p.chapterId)
+        ? `#/chapter/${p.subject}/${p.chapterId}` : '#/notebooks';
+      case 'section': return (p.subject && p.chapterId && p.sectionId)
+        ? `#/section/${p.subject}/${p.chapterId}/${p.sectionId}` : '#/notebooks';
+      case 'lesson': return (p.subject && p.chapterId)
+        ? `#/lesson/${p.subject}/${p.chapterId}` : '#/notebooks';
+      default: return '#/notebooks';
+    }
+  }
+
+  function navigate(view, params = {}, replace = false) {
+    const hash = hashFromRoute(view, params);
+    if (replace) window.history.replaceState(null, '', hash);
+    else window.history.pushState(null, '', hash);
+    applyRoute({ view, params });
+  }
+
+  function applyRoute(route) {
+    state.view = route.view;
+    state.params = route.params || {};
+
+    document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
+    const target = $(`view-${route.view}`);
+    if (target) target.classList.add('active');
+
+    updateHeader();
+    updateBackButton();
+
+    switch (route.view) {
+      case 'notebooks': renderNotebooksView(); break;
+      case 'notebook': renderNotebookView(route.params); break;
+      case 'chapter': renderChapterView(route.params); break;
+      case 'section': renderSectionView(route.params); break;
+      case 'lesson': renderLessonView(route.params); break;
+    }
+    window.scrollTo({ top: 0 });
+  }
+
+  function updateHeader() {
+    const map = {
+      notebooks: { emoji: '📓', text: 'Mon cahier' },
+      notebook: { emoji: SUBJECTS[state.params.subject]?.emoji || '📖', text: SUBJECTS[state.params.subject]?.label || 'Cahier' },
+      chapter: { emoji: '📖', text: 'Chapitre' },
+      section: { emoji: '📝', text: 'Section' },
+      lesson: { emoji: '📄', text: 'Leçon' }
+    };
+    const info = map[state.view] || map.notebooks;
+    $('pageTitle').innerHTML = `<span class="emoji">${info.emoji}</span><span id="pageTitleText">${escapeHtml(info.text)}</span>`;
+  }
+
+  function updateBackButton() {
+    $('backBtn').classList.toggle('hidden', state.view === 'notebooks');
+  }
+
+  window.addEventListener('hashchange', () => applyRoute(routeFromHash()));
+
+  // ═══════════════════════════════════════════════════════════════
+  // VUE 1 — MES CAHIERS
+  // ═══════════════════════════════════════════════════════════════
+  async function renderNotebooksView() {
+    const el = $('view-notebooks');
+    showLoadingState(el, 'Chargement...');
+
+    try {
+      const data = await callApi('getDashboard');
+      state.cache.dashboard = data;
+
+      const safeSubjectsList = safeArray(data.subjects);
+      const safeActivityList = safeArray(data.recentActivity);
+
+      const totalSections = data.summary?.totalSections || 0;
+      const streak = data.streak || { current: 0 };
+      const studyTime = data.studyTime || {
+        formatted: { total: '0 min', week: '0 min', today: '0 min' },
+        totalMinutes: 0,
+        todayMinutes: 0,
+        weekMinutes: 0
+      };
+
+      const subjectCards = ALL_SUBJECT_KEYS.map((key) => {
+        const info = SUBJECTS[key];
+        const active = safeSubjectsList.find((s) => s.key === key);
+        const sectionsCount = active ? active.sectionsCount : 0;
+        const last = active ? active.last : '';
+
+        return `
+          <button class="subject-card" data-subject="${key}">
+            <div class="subject-emoji">${info.emoji}</div>
+            <div class="subject-name">${escapeHtml(info.label)}</div>
+            <div class="subject-meta">
+              ${sectionsCount > 0
+                ? `${sectionsCount} section${sectionsCount > 1 ? 's' : ''}${last ? ' · ' + last : ''}`
+                : 'Vide'}
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      const activityHtml = safeActivityList.length > 0
+        ? `
+          <div class="section-title"><i class="fas fa-clock"></i> Récent</div>
+          <div class="list">
+            ${safeActivityList.map((a) => `
+              <button class="list-item" data-subject="${a.subject}" data-chapter="${escapeHtml(a.chapterId)}">
+                <div class="list-item-icon"><i class="fas fa-book"></i></div>
+                <div class="list-item-body">
+                  <div class="list-item-title">${escapeHtml(a.chapterTitle)}</div>
+                  <div class="list-item-meta">
+                    <span>${escapeHtml(a.subjectLabel)}</span>
+                    <span class="dot"></span>
+                    <span>${escapeHtml(a.time)}</span>
+                  </div>
+                </div>
+                <div class="list-item-arrow"><i class="fas fa-chevron-right"></i></div>
+              </button>
+            `).join('')}
+          </div>
+        `
+        : '';
+
+      el.innerHTML = `
+        <div class="greeting">
+          <h1>${getGreeting()}, <em>${escapeHtml(getFirstName())}</em></h1>
+          <p>${totalSections > 0 ? 'Continue là où tu t\'es arrêté.' : 'Commence ton premier cahier.'}</p>
+        </div>
+
+        <div class="streak-card">
+          <div class="streak-icon">⏱️</div>
+          <div class="streak-content">
+            <div class="streak-value">${studyTime.formatted.total} d'étude</div>
+            <div class="streak-label">
+              ${studyTime.formatted.week} cette semaine
+              ${studyTime.todayMinutes > 0 ? `· ${studyTime.formatted.today} aujourd'hui` : ''}
+              · ${totalSections} section${totalSections > 1 ? 's' : ''}
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title"><i class="fas fa-book"></i> Mes matières <span class="count">${ALL_SUBJECT_KEYS.length}</span></div>
+        <div class="subjects-grid">${subjectCards}</div>
+
+        ${activityHtml}
+      `;
+
+      el.querySelectorAll('[data-subject]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const subject = btn.dataset.subject;
+          const chapter = btn.dataset.chapter;
+          if (chapter) navigate('chapter', { subject, chapterId: chapter });
+          else navigate('notebook', { subject });
+        });
+      });
+
+    } catch (err) {
+      showEmptyState(el, 'fa-exclamation-triangle', 'Impossible de charger', err.message || 'Erreur réseau.');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // VUE 2 — CHAPITRES
+  // ═══════════════════════════════════════════════════════════════
+  async function renderNotebookView(params) {
+    const el = $('view-notebook');
+    const subject = params.subject;
+    const info = SUBJECTS[subject];
+    if (!info) { navigate('notebooks'); return; }
+
+    showLoadingState(el, 'Chargement...');
+
+    try {
+      const data = await callApi('listChapters', { subject });
+      const chapters = safeArray(data.chapters);
+      const totalSections = chapters.reduce((s, c) => s + (c.sectionsCount || 0), 0);
+
+      const listHtml = chapters.length === 0
+        ? `<div class="empty-state" style="padding:30px 20px;">
+             <div class="icon"><i class="fas fa-book"></i></div>
+             <h3>Aucun chapitre</h3>
+             <p>Crée ton premier chapitre.</p>
+           </div>`
+        : chapters.map((c) => `
+            <div class="list-item" data-chapter="${escapeHtml(c.id)}">
+              <div class="list-item-icon"><i class="fas fa-book"></i></div>
+              <div class="list-item-body" data-nav="chapter">
+                <div class="list-item-title">${escapeHtml(c.title)}</div>
+                <div class="list-item-meta">
+                  <span>${c.sectionsCount} section${c.sectionsCount > 1 ? 's' : ''}</span>
+                  <span class="dot"></span>
+                  <span>${escapeHtml(c.last)}</span>
+                </div>
+              </div>
+              <button class="list-item-delete" data-delete-chapter="${escapeHtml(c.id)}" title="Supprimer">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+              <div class="list-item-arrow" data-nav="chapter"><i class="fas fa-chevron-right"></i></div>
+            </div>
+          `).join('');
+
+      el.innerHTML = `
+        <div class="page-hero">
+          <h1>${info.emoji} ${escapeHtml(info.label)}</h1>
+          <div class="hero-sub">${totalSections} section${totalSections > 1 ? 's' : ''} · ${chapters.length} chapitre${chapters.length > 1 ? 's' : ''}</div>
+        </div>
+
+        <div class="section-title"><i class="fas fa-book-open"></i> Chapitres <span class="count">${chapters.length}</span></div>
+
+        <div class="list">
+          ${listHtml}
+          <button class="list-item new" id="newChapterBtn">
+            <i class="fas fa-plus"></i>
+            <span>Nouveau chapitre</span>
+          </button>
+        </div>
+      `;
+
+      el.querySelectorAll('[data-chapter]').forEach((item) => {
+        const chapterId = item.dataset.chapter;
+        item.querySelectorAll('[data-nav="chapter"]').forEach((target) => {
+          target.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navigate('chapter', { subject, chapterId });
+          });
+        });
+      });
+
+      el.querySelectorAll('[data-delete-chapter]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const chapterId = btn.dataset.deleteChapter;
+          const chapterTitle = chapters.find((c) => c.id === chapterId)?.title || 'ce chapitre';
+          confirmDelete({
+            title: 'Supprimer le chapitre ?',
+            message: `"<strong>${escapeHtml(chapterTitle)}</strong>" et toutes ses sections seront définitivement supprimés.`,
+            onConfirm: async () => {
+              await callApi('deleteChapter', { subject, chapterId });
+              showToast('Chapitre supprimé', 'success');
+              delete state.cache.chapters[subject];
+              delete state.cache.chapter[`${subject}/${chapterId}`];
+              applyRoute({ view: 'notebook', params: { subject } });
+            }
+          });
+        });
+      });
+
+      $('newChapterBtn')?.addEventListener('click', () => openNewChapterModal(subject));
+
+    } catch (err) {
+      showEmptyState(el, 'fa-exclamation-triangle', 'Erreur', err.message || 'Erreur réseau.');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // VUE 3 — SECTIONS
+  // ═══════════════════════════════════════════════════════════════
+  async function renderChapterView(params) {
+    const el = $('view-chapter');
+    const { subject, chapterId } = params;
+    const info = SUBJECTS[subject];
+    if (!info || !chapterId) { navigate('notebooks'); return; }
+
+    showLoadingState(el, 'Chargement...');
+
+    try {
+      const data = await callApi('getChapter', { subject, chapterId });
+      state.cache.chapter[`${subject}/${chapterId}`] = data;
+      const ch = data.chapter;
+      const sections = safeArray(data.sections);
+
+      const listHtml = sections.length === 0
+        ? `<div class="empty-state" style="padding:30px 20px;">
+             <div class="icon"><i class="fas fa-file-lines"></i></div>
+             <h3>Aucune section</h3>
+             <p>Ajoute la première partie que tu as étudiée.</p>
+           </div>`
+        : sections.map((s, idx) => `
+            <div class="list-item" data-section="${escapeHtml(s.id)}">
+              <div class="list-item-icon"><i class="fas fa-check"></i></div>
+              <div class="list-item-body" data-nav="section">
+                <div class="list-item-title">${idx + 1}. ${escapeHtml(s.title)}</div>
+                <div class="list-item-meta">
+                  ${s.questionsCount > 0 ? `<span>${s.questionsCount} Q/R</span><span class="dot"></span>` : ''}
+                  ${s.qcmCount > 0 ? `<span>${s.qcmCount} QCM</span><span class="dot"></span>` : ''}
+                  <span>${escapeHtml(s.time)}</span>
+                </div>
+              </div>
+              <button class="list-item-delete" data-delete-section="${escapeHtml(s.id)}" title="Supprimer">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+              <div class="list-item-arrow" data-nav="section"><i class="fas fa-chevron-right"></i></div>
+            </div>
+          `).join('');
+
+      el.innerHTML = `
+        <div class="page-hero">
+          <div class="hero-sub" style="margin-bottom:6px;">${info.emoji} ${escapeHtml(info.label)}</div>
+          <h1>${escapeHtml(ch.title)}</h1>
+          <div class="hero-sub">${sections.length} section${sections.length > 1 ? 's' : ''}</div>
+        </div>
+
+        ${sections.length > 0 ? `
+          <button class="cta-card" id="viewLessonBtn">
+            <i class="fas fa-book-reader"></i>
+            <span>Voir la leçon complète</span>
+          </button>
+        ` : ''}
+
+        <div class="section-title"><i class="fas fa-list"></i> Sections <span class="count">${sections.length}</span></div>
+
+        <div class="list">
+          ${listHtml}
+          <button class="list-item new" id="addSectionBtn">
+            <i class="fas fa-plus"></i>
+            <span>Ajouter une section</span>
+          </button>
+        </div>
+      `;
+
+      el.querySelectorAll('[data-section]').forEach((item) => {
+        const sectionId = item.dataset.section;
+        item.querySelectorAll('[data-nav="section"]').forEach((target) => {
+          target.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navigate('section', { subject, chapterId, sectionId });
+          });
+        });
+      });
+
+      el.querySelectorAll('[data-delete-section]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const sectionId = btn.dataset.deleteSection;
+          const sectionTitle = sections.find((s) => s.id === sectionId)?.title || 'cette section';
+          confirmDelete({
+            title: 'Supprimer la section ?',
+            message: `"<strong>${escapeHtml(sectionTitle)}</strong>" sera définitivement supprimée.`,
+            onConfirm: async () => {
+              await callApi('deleteSection', { subject, chapterId, sectionId });
+              showToast('Section supprimée', 'success');
+              delete state.cache.chapter[`${subject}/${chapterId}`];
+              applyRoute({ view: 'chapter', params: { subject, chapterId } });
+            }
+          });
+        });
+      });
+
+      $('viewLessonBtn')?.addEventListener('click', () => navigate('lesson', { subject, chapterId }));
+      $('addSectionBtn')?.addEventListener('click', () => openAddSectionModal(subject, chapterId));
+
+    } catch (err) {
+      if (err.status === 404) showEmptyState(el, 'fa-book', 'Chapitre introuvable', 'Ce chapitre n\'existe plus.');
+      else showEmptyState(el, 'fa-exclamation-triangle', 'Erreur', err.message || 'Erreur réseau.');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // VUE 4 — SECTION DÉTAILLÉE
+  // ═══════════════════════════════════════════════════════════════
+  async function renderSectionView(params) {
+    const el = $('view-section');
+    const { subject, chapterId, sectionId } = params;
+    const info = SUBJECTS[subject];
+    if (!info || !chapterId || !sectionId) { navigate('notebooks'); return; }
+
+    showLoadingState(el, 'Chargement...');
+
+    try {
+      const data = await callApi('getSection', { subject, chapterId, sectionId });
+      const s = data.section;
+      const a = s.analysis || {};
+      const profile = s.profile || 'scientific';
+      const chapterTitle = state.cache.chapter[`${subject}/${chapterId}`]?.chapter?.title || '';
+
+      el.innerHTML = `
+        <div class="section-hero">
+          <div class="breadcrumb">
+            <span>${info.emoji} ${escapeHtml(info.label)}</span>
+            ${chapterTitle ? `<span class="sep">›</span><span>${escapeHtml(chapterTitle)}</span>` : ''}
+          </div>
+          <h1>${escapeHtml(s.title)}</h1>
+          <div class="sub">${escapeHtml(s.time || '')}</div>
+        </div>
+
+        <div class="content-section">
+          <div class="content-section-title"><i class="fas fa-paste"></i>Ton cours</div>
+          <div class="raw-input" id="rawInput">${safeText(s.rawInput)}</div>
+          <button class="expand-btn" id="expandRawBtn">
+            <i class="fas fa-chevron-down"></i>
+            <span>Voir tout</span>
+          </button>
+        </div>
+
+        <div id="analysisContainer"></div>
+
+        <div class="content-section">
+          <div class="content-section-title"><i class="fas fa-pen"></i>Mes notes</div>
+          <textarea class="notes-area" id="notesArea" placeholder="Ajoute tes notes personnelles...">${escapeHtml(s.userNotes || '')}</textarea>
+          <div class="notes-status" id="notesStatus"></div>
+        </div>
+
+        <div class="content-section">
+          <div class="content-section-title"><i class="fas fa-graduation-cap"></i>Teste-toi sur cette partie</div>
+          <button class="cta-exam" id="goToExamBtn" data-subject="${escapeHtml(subject)}" data-chapter="${escapeHtml(chapterTitle)}">
+            <i class="fas fa-file-circle-check"></i>
+            <div class="cta-exam-body">
+              <div class="cta-exam-title">Passer en mode examen</div>
+              <div class="cta-exam-sub">Teste-toi dans les conditions du BAC</div>
+            </div>
+            <i class="fas fa-chevron-right cta-exam-arrow"></i>
+          </button>
+        </div>
+      `;
+
+      const container = $('analysisContainer');
+      container.innerHTML = renderAnalysis(a, profile);
+
+      $('expandRawBtn')?.addEventListener('click', () => {
+        const raw = $('rawInput');
+        raw.classList.toggle('expanded');
+        const span = $('expandRawBtn').querySelector('span');
+        span.textContent = raw.classList.contains('expanded') ? 'Réduire' : 'Voir tout';
+      });
+
+      el.querySelectorAll('.qa-item').forEach((item) => {
+        item.querySelector('.qa-question').addEventListener('click', () => {
+          item.classList.toggle('open');
+        });
+      });
+
+      el.querySelectorAll('.qcm-item').forEach((qcm) => {
+        const correct = qcm.dataset.correct;
+        const options = qcm.querySelectorAll('.qcm-option');
+        const explanation = qcm.querySelector('.qcm-explanation');
+
+        options.forEach((opt) => {
+          opt.addEventListener('click', () => {
+            if (qcm.dataset.answered === '1') return;
+            qcm.dataset.answered = '1';
+            const letter = opt.dataset.letter;
+            options.forEach((o) => {
+              if (o.dataset.letter === correct) o.classList.add('correct');
+              else if (o.dataset.letter === letter) o.classList.add('wrong');
+            });
+            if (explanation) explanation.classList.add('show');
+          });
+        });
+      });
+
+      let notesTimer = null;
+      $('notesArea')?.addEventListener('input', () => {
+        const status = $('notesStatus');
+        status.textContent = 'Enregistrement...';
+        clearTimeout(notesTimer);
+        notesTimer = setTimeout(async () => {
+          try {
+            await callApi('updateNotes', { subject, chapterId, sectionId, userNotes: $('notesArea').value });
+            delete state.cache.chapter[`${subject}/${chapterId}`];
+            status.textContent = 'Enregistré';
+            status.className = 'notes-status saved';
+            setTimeout(() => { status.textContent = ''; status.className = 'notes-status'; }, 2000);
+          } catch (e) {
+            status.textContent = 'Erreur';
+            status.className = 'notes-status';
+          }
+        }, 1400);
+      });
+
+      $('goToExamBtn')?.addEventListener('click', function () {
+        var subj = $('goToExamBtn').dataset.subject;
+        var chap = $('goToExamBtn').dataset.chapter;
+        var examSubject = EXAM_SUBJECT_MAP[subj] || '';
+        if (!examSubject) {
+          showToast('Cette matière n\'est pas encore disponible en mode examen.', 'info', 3000);
+          return;
+        }
+        var params = new URLSearchParams();
+        params.set('subject', examSubject);
+        if (chap) params.set('chapter', chap);
+        if (chapterId) params.set('chapterId', chapterId);
+        params.set('useNotebook', 'true');
+        window.location.href = 'exam.html?' + params.toString();
+      });
+
+    } catch (err) {
+      if (err.status === 404) showEmptyState(el, 'fa-file', 'Section introuvable', 'Cette section n\'existe plus.');
+      else showEmptyState(el, 'fa-exclamation-triangle', 'Erreur', err.message || 'Erreur réseau.');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // RENDU ANALYSE
+  // ═══════════════════════════════════════════════════════════════
+  function renderAnalysis(a, profile) {
+    let html = '';
+
+    const expl = a.explanation || {};
+    if (expl.understanding) {
+      html += `<div class="content-section">
+        <div class="content-section-title"><i class="fas fa-graduation-cap"></i>L'explication du prof</div>
+        <div class="block">
+          <div class="block-head"><i class="fas fa-lightbulb"></i>Ce que tu dois comprendre</div>
+          <div class="block-body">${safeText(expl.understanding)}</div>
+        </div>
+        ${safeArray(expl.parts).map((p) => renderPart(p, profile)).join('')}
+      </div>`;
+    }
+
+    if (a.structure) {
+      html += renderStructure(a.structure, profile);
+    }
+
+    const questions = safeArray(a.questions);
+    if (questions.length > 0) {
+      html += `<div class="content-section">
+        <div class="content-section-title"><i class="fas fa-circle-question"></i>Banque de questions <span class="count">${questions.length}</span></div>
+        <div class="qa-list">
+          ${questions.map((q, i) => renderQuestion(q, i)).join('')}
+        </div>
+      </div>`;
+    }
+
+    const qcm = safeArray(a.qcm);
+    if (qcm.length > 0) {
+      html += `<div class="content-section">
+        <div class="content-section-title"><i class="fas fa-list-check"></i>QCM <span class="count">${qcm.length}</span></div>
+        <div>${qcm.map((q, i) => renderQcm(q, i)).join('')}</div>
+      </div>`;
+    }
+
+    if (!html && a.fallback) {
+      html = `<div class="block">
+        <div class="block-head"><i class="fas fa-info-circle"></i>Information</div>
+        <div class="block-body">L'analyse automatique est indisponible. Réessaie en ajoutant une nouvelle section ou en réessayant plus tard.</div>
+      </div>`;
+    }
+
+    return html;
+  }
+
+  function renderPart(p, profile) {
+    const partTitle = p.partTitle || p.title || 'Partie';
+    const mainIdea = p.mainIdea || p.idea || '';
+    const explanation = p.simpleExplanation || p.explanation || '';
+    const terms = p.keyTerms || p.terms || [];
+    const toRemember = p.toRemember || p.memorize || '';
+
+    let extra = '';
+
+    if (profile === 'svt' && p.mechanism) {
+      const steps = safeArray(p.mechanism.steps);
+      if (steps.length > 0) {
+        extra += `<div class="part-terms" style="margin-top:10px;">
+          <div class="part-terms-title">⚙️ ${safeText(p.mechanism.description || 'Mécanisme')}</div>
+          <ol class="method-list">${steps.map((s) => `<li>${safeText(s)}</li>`).join('')}</ol>
+        </div>`;
+      }
+    }
+
+    if (profile === 'philosophy') {
+      const args = safeArray(p.arguments);
+      if (args.length > 0) {
+        extra += `<div class="part-terms" style="margin-top:10px;">
+          <div class="part-terms-title">⚖️ Arguments</div>
+          <ul class="simple-list">${args.map((arg, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(arg)}</span></li>`).join('')}</ul>
+        </div>`;
+      }
+      const examples = safeArray(p.everydayExamples);
+      if (examples.length > 0) {
+        extra += `<div class="part-terms" style="margin-top:10px;">
+          <div class="part-terms-title">💡 Exemples du quotidien</div>
+          <ul class="simple-list">${examples.map((ex, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(ex)}</span></li>`).join('')}</ul>
+        </div>`;
+      }
+    }
+
+    if (profile === 'language') {
+      const examples = safeArray(p.examples);
+      if (examples.length > 0) {
+        extra += `<div class="part-terms" style="margin-top:10px;">
+          <div class="part-terms-title">🌐 Exemples</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${examples.map((ex) => `
+              <div>
+                <div style="font-size:14px;color:var(--text-light);font-weight:600;">${safeText(ex.english)}</div>
+                <div style="font-size:13px;color:var(--text-dim);font-style:italic;">→ ${safeText(ex.french)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+      }
+      const mistakes = safeArray(p.commonMistakes);
+      if (mistakes.length > 0) {
+        extra += `<div class="part-terms" style="margin-top:10px;">
+          <div class="part-terms-title">⚠️ Pièges pour francophones</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${mistakes.map((m) => `
+              <div style="font-size:13px;color:var(--text-body);line-height:1.55;">
+                <span style="color:#ff9a84;">❌ ${safeText(m.mistake)}</span><br>
+                <span style="color:#7ce0aa;">✅ ${safeText(m.correction)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+      }
+    }
+
+    const relations = safeArray(p.relations);
+    if (relations.length > 0) {
+      extra += `<div class="part-terms" style="margin-top:10px;">
+        <div class="part-terms-title">🔗 Relations</div>
+        <ul class="simple-list">${relations.map((r, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(r)}</span></li>`).join('')}</ul>
+      </div>`;
+    }
+
+    if (profile === 'scientific' && p.example && typeof p.example === 'string') {
+      extra += `<div class="part-terms" style="margin-top:10px;">
+        <div class="part-terms-title">📝 Exemple</div>
+        <div style="font-size:13.5px;color:var(--text-body);line-height:1.6;">${safeText(p.example)}</div>
+      </div>`;
+    }
+
+    let termsHtml = '';
+    const safeTerms = safeArray(terms);
+    if (safeTerms.length > 0) {
+      termsHtml = `<div class="part-terms">
+        <div class="part-terms-title">📚 Termes importants</div>
+        <div class="part-terms-list">
+          ${safeTerms.map((t) => {
+            if (profile === 'language' && t.english) {
+              return `<div class="part-term"><strong>${safeText(t.english)}</strong> — ${safeText(t.french || t.meaning || '')}${t.example ? ` <span style="color:var(--text-muted);">(${safeText(t.example)})</span>` : ''}</div>`;
+            }
+            const term = t.term || t.name || '';
+            const meaning = t.meaning || t.definition || '';
+            return `<div class="part-term"><strong>${safeText(term)}</strong> — ${safeText(meaning)}</div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }
+
+    let rememberHtml = '';
+    if (toRemember && typeof toRemember === 'string' && toRemember.trim()) {
+      rememberHtml = `<div class="part-remember"><strong>À retenir</strong>${safeText(toRemember)}</div>`;
+    }
+
+    return `
+      <div class="part">
+        <div class="part-title">${safeText(partTitle)}</div>
+        ${mainIdea ? `<div class="part-idea">${safeText(mainIdea)}</div>` : ''}
+        ${explanation ? `<div class="part-explanation">${safeText(explanation)}</div>` : ''}
+        ${termsHtml}
+        ${extra}
+        ${rememberHtml}
+      </div>
+    `;
+  }
+
+  function renderStructure(structure, profile) {
+    let html = '';
+
+    if (profile === 'scientific') {
+      const formulas = safeArray(structure.formulas);
+      if (formulas.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-square-root-variable"></i>Formules clés</div>
+          <div class="block">
+            ${formulas.map((f) => {
+              let latex = String(f.latex || '');
+              if (latex && !latex.includes('$')) latex = `$$${latex}$$`;
+              return `
+                <div class="formula-block">
+                  <div>${safeText(latex)}</div>
+                  ${f.description ? `<div class="formula-description">${safeText(f.description)}</div>` : ''}
+                  ${f.condition ? `<div class="formula-condition">${safeText(f.condition)}</div>` : ''}
+                  ${safeArray(f.variables).length > 0 ? `
+                    <div class="formula-variables">
+                      ${safeArray(f.variables).map((v) => `<div class="formula-variable"><strong>${safeText(v.symbol)}</strong> : ${safeText(v.meaning)}${v.unit ? ` (${safeText(v.unit)})` : ''}</div>`).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>`;
+      }
+
+      if (structure.method && safeArray(structure.method.steps).length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-list-ol"></i>${escapeHtml(structure.method.title || 'Méthode')}</div>
+          <div class="block">
+            <ol class="method-list">${safeArray(structure.method.steps).map((s) => `<li>${safeText(s)}</li>`).join('')}</ol>
+          </div>
+        </div>`;
+      }
+
+      const examples = safeArray(structure.examples);
+      if (examples.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-check-circle"></i>Exemples corrigés <span class="count">${examples.length}</span></div>
+          ${examples.map((ex) => `
+            <div class="block">
+              <div class="example-enonce">${safeText(ex.enonce)}</div>
+              ${safeArray(ex.steps).length > 0 ? `<ol class="example-steps">${safeArray(ex.steps).map((s) => `<li>${safeText(s)}</li>`).join('')}</ol>` : ''}
+              ${ex.result ? `<div class="example-result">${safeText(ex.result)}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>`;
+      }
+
+      const traps = safeArray(structure.traps);
+      if (traps.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-triangle-exclamation"></i>Pièges à éviter</div>
+          ${traps.map((t) => `
+            <div class="block">
+              <div class="trap-text">${safeText(t.trap)}</div>
+              <div class="trap-solution">${safeText(t.solution)}</div>
+            </div>
+          `).join('')}
+        </div>`;
+      }
+    }
+
+    if (profile === 'svt') {
+      const mechanisms = safeArray(structure.mechanisms);
+      if (mechanisms.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-cogs"></i>Mécanismes <span class="count">${mechanisms.length}</span></div>
+          ${mechanisms.map((m) => `
+            <div class="block">
+              <div class="block-head"><i class="fas fa-arrow-right"></i>${escapeHtml(m.name || 'Mécanisme')}</div>
+              ${safeArray(m.steps).length > 0 ? `<ol class="method-list">${safeArray(m.steps).map((s) => `<li>${safeText(s)}</li>`).join('')}</ol>` : ''}
+              ${safeArray(m.relations).length > 0 ? `<div style="margin-top:10px;"><div class="part-terms-title">🔗 Relations</div><ul class="simple-list">${safeArray(m.relations).map((r, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(r)}</span></li>`).join('')}</ul></div>` : ''}
+              ${safeArray(m.consequences).length > 0 ? `<div style="margin-top:10px;"><div class="part-terms-title">➡️ Conséquences</div><ul class="simple-list">${safeArray(m.consequences).map((c, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(c)}</span></li>`).join('')}</ul></div>` : ''}
+            </div>
+          `).join('')}
+        </div>`;
+      }
+
+      const definitions = safeArray(structure.definitions);
+      if (definitions.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-book"></i>Définitions</div>
+          <div class="block">
+            <ul class="simple-list">
+              ${definitions.map((d, i) => `<li><span class="num">${i + 1}.</span><span><strong>${safeText(d.term)}</strong> — ${safeText(d.definition)}</span></li>`).join('')}
+            </ul>
+          </div>
+        </div>`;
+      }
+
+      const classifications = safeArray(structure.classifications);
+      if (classifications.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-sitemap"></i>Classifications</div>
+          ${classifications.map((c) => `
+            <div class="block">
+              <div class="block-head"><i class="fas fa-tag"></i>${escapeHtml(c.category || 'Catégorie')}</div>
+              <ul class="simple-list">${safeArray(c.items).map((item, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(item)}</span></li>`).join('')}</ul>
+            </div>
+          `).join('')}
+        </div>`;
+      }
+    }
+
+    if (profile === 'philosophy') {
+      const theses = safeArray(structure.theses);
+      if (theses.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-scale-balanced"></i>Thèses & Arguments</div>
+          ${theses.map((t) => `
+            <div class="block">
+              <div class="block-head"><i class="fas fa-quote-left"></i>${safeText(t.thesis)}</div>
+              ${safeArray(t.arguments).length > 0 ? `<ul class="simple-list">${safeArray(t.arguments).map((arg, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(arg)}</span></li>`).join('')}</ul>` : ''}
+            </div>
+          `).join('')}
+        </div>`;
+      }
+
+      const vocabulary = safeArray(structure.vocabulary);
+      if (vocabulary.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-spell-check"></i>Vocabulaire</div>
+          <div class="block">
+            <ul class="simple-list">
+              ${vocabulary.map((v, i) => `<li><span class="num">${i + 1}.</span><span><strong>${safeText(v.term)}</strong> — ${safeText(v.meaning)}</span></li>`).join('')}
+            </ul>
+          </div>
+        </div>`;
+      }
+
+      const plans = safeArray(structure.plans);
+      if (plans.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-list-ol"></i>Plans possibles</div>
+          ${plans.map((p) => `
+            <div class="block">
+              <div class="block-head"><i class="fas fa-project-diagram"></i>${escapeHtml(p.title || 'Plan')}</div>
+              <ol class="method-list">${safeArray(p.parties).map((x) => `<li>${safeText(x)}</li>`).join('')}</ol>
+            </div>
+          `).join('')}
+        </div>`;
+      }
+    }
+
+    if (profile === 'history') {
+      const timeline = safeArray(structure.timeline);
+      if (timeline.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-calendar"></i>Repères chronologiques</div>
+          <div class="block">
+            <ul class="simple-list">
+              ${timeline.map((t, i) => `<li><span class="num">${i + 1}.</span><span><strong>${safeText(t.date)}</strong> — ${safeText(t.event)}</span></li>`).join('')}
+            </ul>
+          </div>
+        </div>`;
+      }
+
+      const causesConsequences = safeArray(structure.causesConsequences);
+      if (causesConsequences.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-arrow-right-arrow-left"></i>Causes & Conséquences</div>
+          ${causesConsequences.map((cc) => `
+            <div class="block">
+              <div class="block-head"><i class="fas fa-diagram-project"></i>Relation</div>
+              <div style="font-size:14px;line-height:1.7;">
+                <div style="color:#ff9a84;"><strong>Cause :</strong> ${safeText(cc.cause)}</div>
+                <div style="color:#7ce0aa;margin-top:6px;"><strong>Conséquence :</strong> ${safeText(cc.consequence)}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>`;
+      }
+
+      const keyFigures = safeArray(structure.keyFigures);
+      if (keyFigures.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-user-tie"></i>Personnages clés</div>
+          <div class="block">
+            <ul class="simple-list">
+              ${keyFigures.map((f, i) => `<li><span class="num">${i + 1}.</span><span><strong>${safeText(f.name)}</strong> — ${safeText(f.role)}</span></li>`).join('')}
+            </ul>
+          </div>
+        </div>`;
+      }
+
+      const vocabulary = safeArray(structure.vocabulary);
+      if (vocabulary.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-spell-check"></i>Vocabulaire</div>
+          <div class="block">
+            <ul class="simple-list">
+              ${vocabulary.map((v, i) => `<li><span class="num">${i + 1}.</span><span><strong>${safeText(v.term)}</strong> — ${safeText(v.meaning)}</span></li>`).join('')}
+            </ul>
+          </div>
+        </div>`;
+      }
+    }
+
+    if (profile === 'french') {
+      const literaryDevices = safeArray(structure.literaryDevices);
+      if (literaryDevices.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-feather"></i>Procédés littéraires</div>
+          ${literaryDevices.map((d) => `
+            <div class="block">
+              <div class="block-head"><i class="fas fa-quote-right"></i>${escapeHtml(d.name)}</div>
+              <div class="block-body">${safeText(d.definition)}</div>
+              ${d.example ? `<div class="example-enonce" style="margin-top:8px;">${safeText(d.example)}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>`;
+      }
+
+      const vocabulary = safeArray(structure.vocabulary);
+      if (vocabulary.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-spell-check"></i>Vocabulaire</div>
+          <div class="block">
+            <ul class="simple-list">
+              ${vocabulary.map((v, i) => `<li><span class="num">${i + 1}.</span><span><strong>${safeText(v.term)}</strong> — ${safeText(v.meaning)}</span></li>`).join('')}
+            </ul>
+          </div>
+        </div>`;
+      }
+
+      const texts = safeArray(structure.texts);
+      if (texts.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-book"></i>Textes</div>
+          ${texts.map((t) => `
+            <div class="block">
+              <div class="block-head"><i class="fas fa-bookmark"></i>${escapeHtml(t.title)}${t.author ? ' — ' + escapeHtml(t.author) : ''}</div>
+              ${t.analysis ? `<div class="block-body">${safeText(t.analysis)}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>`;
+      }
+    }
+
+    if (profile === 'language') {
+      const vocabulary = safeArray(structure.vocabulary);
+      if (vocabulary.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-language"></i>Vocabulaire anglais <span class="count">${vocabulary.length}</span></div>
+          <div class="block">
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              ${vocabulary.map((v) => `
+                <div style="display:flex;flex-direction:column;gap:2px;">
+                  <div style="font-size:14.5px;font-weight:600;color:var(--text-light);">
+                    ${safeText(v.english)}
+                    ${v.phonetic ? `<span style="font-size:12px;color:var(--text-muted);font-weight:400;margin-left:6px;">${safeText(v.phonetic)}</span>` : ''}
+                  </div>
+                  <div style="font-size:13.5px;color:var(--accent-bright);">→ ${safeText(v.french)}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>`;
+      }
+
+      const grammar = safeArray(structure.grammar);
+      if (grammar.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-book-open"></i>Grammaire</div>
+          ${grammar.map((g) => `
+            <div class="block">
+              <div class="block-head"><i class="fas fa-check"></i>${escapeHtml(g.rule || 'Règle')}</div>
+              <div class="block-body">${safeText(g.explanation_fr || g.explanation || '')}</div>
+              ${safeArray(g.examples).length > 0 ? `
+                <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
+                  ${safeArray(g.examples).map((ex) => `
+                    <div>
+                      <div style="font-size:14px;color:var(--text-light);">${safeText(ex.english)}</div>
+                      <div style="font-size:13px;color:var(--text-dim);font-style:italic;">→ ${safeText(ex.french)}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>`;
+      }
+
+      const phrases = safeArray(structure.phrases);
+      if (phrases.length > 0) {
+        html += `<div class="content-section">
+          <div class="content-section-title"><i class="fas fa-comments"></i>Phrases types</div>
+          <div class="block">
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              ${phrases.map((p) => `
+                <div>
+                  <div style="font-size:14px;color:var(--text-light);">${safeText(p.english)}</div>
+                  <div style="font-size:13px;color:var(--text-dim);font-style:italic;">→ ${safeText(p.french)}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>`;
+      }
+    }
+
+    return html;
+  }
+
+  function renderQuestion(q, idx) {
+    const level = Number(q.level) || 1;
+    const importance = Number(q.importance) || 1;
+    const iconClass = importance >= 3 ? 'very-important' : importance === 2 ? 'important' : '';
+
+    return `
+      <div class="qa-item" data-qa="${idx}">
+        <div class="qa-question">
+          <div class="qa-q-icon ${iconClass}">Q${idx + 1}</div>
+          <div class="qa-q-text">${safeText(q.question)}</div>
+          <span class="qa-level l${level}">Niv ${level}</span>
+          <div class="qa-toggle"><i class="fas fa-chevron-down"></i></div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-answer-inner">
+            <div class="qa-answer-label"><i class="fas fa-check"></i>Réponse</div>
+            <div class="qa-answer-text">${safeText(q.answer)}</div>
+            ${safeArray(q.mustHave).length > 0 ? `
+              <div class="qa-musthave">
+                <div class="qa-musthave-title">Éléments indispensables</div>
+                <ul class="qa-musthave-list">
+                  ${safeArray(q.mustHave).map((m) => `<li>${safeText(m)}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderQcm(q, idx) {
+    return `
+      <div class="qcm-item" data-correct="${escapeHtml(q.correct || 'A')}">
+        <div class="qcm-question">${idx + 1}. ${safeText(q.question)}</div>
+        <div class="qcm-options">
+          ${safeArray(q.options).map((opt) => `
+            <button class="qcm-option" data-letter="${escapeHtml(opt.id)}">
+              <span class="qcm-option-letter">${escapeHtml(opt.id)}</span>
+              <span>${safeText(opt.text)}</span>
+            </button>
+          `).join('')}
+        </div>
+        ${q.explanation ? `<div class="qcm-explanation"><strong>💡</strong> ${safeText(q.explanation)}</div>` : ''}
+      </div>
+    `;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // VUE 5 — LEÇON COMPLÈTE
+  // ═══════════════════════════════════════════════════════════════
+  async function renderLessonView(params) {
+    const el = $('view-lesson');
+    const { subject, chapterId } = params;
+    const info = SUBJECTS[subject];
+    if (!info || !chapterId) { navigate('notebooks'); return; }
+
+    showLoadingState(el, 'Assemblage...');
+
+    try {
+      const data = await callApi('getFullLesson', { subject, chapterId });
+      const sections = safeArray(data.sections);
+
+      if (sections.length === 0) {
+        showEmptyState(el, 'fa-book', 'Leçon vide', 'Aucune section à afficher.');
+        return;
+      }
+
+      const sectionsHtml = sections.map((s, i) => {
+        const a = s.analysis || {};
+        let content = '';
+
+        if (a.explanation?.understanding) {
+          content += `<div class="block">
+            <div class="block-head"><i class="fas fa-lightbulb"></i>À comprendre</div>
+            <div class="block-body">${safeText(a.explanation.understanding)}</div>
+          </div>`;
+        }
+
+        if (a.explanation?.parts) {
+          content += safeArray(a.explanation.parts).map((p) => renderPart(p, s.profile || 'scientific')).join('');
+        }
+
+        if (a.structure) {
+          content += renderStructure(a.structure, s.profile || 'scientific');
+        }
+
+        if (s.userNotes && s.userNotes.trim()) {
+          content += `<div class="block">
+            <div class="block-head"><i class="fas fa-pen"></i>Mes notes</div>
+            <div class="block-body" style="white-space:pre-wrap;">${safeText(s.userNotes)}</div>
+          </div>`;
+        }
+
+        return `
+          <div style="margin-bottom:32px;">
+            <div style="font-size:11px;font-weight:700;color:var(--accent-bright);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Section ${i + 1}</div>
+            <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text-light);margin-bottom:14px;">${escapeHtml(s.title)}</div>
+            ${content}
+          </div>
+        `;
+      }).join('');
+
+      const chapterTitle = data.chapter.title || '';
+
+      el.innerHTML = `
+        <div class="page-hero" style="text-align:center;">
+          <div style="font-size:32px;margin-bottom:8px;">${info.emoji}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--accent-bright);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:6px;">${escapeHtml(info.label)}</div>
+          <h1 style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--text-light);margin-bottom:6px;">${escapeHtml(chapterTitle)}</h1>
+          <div style="font-size:13px;color:var(--text-dim);">${sections.length} section${sections.length > 1 ? 's' : ''}</div>
+        </div>
+
+        <div class="content-section" style="margin-bottom:32px;">
+          <button class="cta-exam" id="goToExamLessonBtn" data-subject="${escapeHtml(subject)}" data-chapter="${escapeHtml(chapterTitle)}">
+            <i class="fas fa-file-circle-check"></i>
+            <div class="cta-exam-body">
+              <div class="cta-exam-title">Passer en mode examen</div>
+              <div class="cta-exam-sub">Teste tout le chapitre dans les conditions du BAC</div>
+            </div>
+            <i class="fas fa-chevron-right cta-exam-arrow"></i>
+          </button>
+        </div>
+
+        ${sectionsHtml}
+      `;
+
+      $('goToExamLessonBtn')?.addEventListener('click', function () {
+        var subj = $('goToExamLessonBtn').dataset.subject;
+        var chap = $('goToExamLessonBtn').dataset.chapter;
+        var examSubject = EXAM_SUBJECT_MAP[subj] || '';
+        if (!examSubject) {
+          showToast('Cette matière n\'est pas encore disponible en mode examen.', 'info', 3000);
+          return;
+        }
+        var params = new URLSearchParams();
+        params.set('subject', examSubject);
+        if (chap) params.set('chapter', chap);
+        if (chapterId) params.set('chapterId', chapterId);
+        params.set('useNotebook', 'true');
+        window.location.href = 'exam.html?' + params.toString();
+      });
+
+    } catch (err) {
+      showEmptyState(el, 'fa-exclamation-triangle', 'Erreur', err.message || 'Erreur réseau.');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MODALES
+  // ═══════════════════════════════════════════════════════════════
+  function closeModal() {
+    $('modalBackdrop').classList.remove('show');
+    $('modalBackdrop').classList.remove('center');
+    $('modalBackdrop').innerHTML = '';
+    document.body.style.overflow = '';
+  }
+
+  function openModal(html, { center = false } = {}) {
+    $('modalBackdrop').innerHTML = html;
+    $('modalBackdrop').classList.add('show');
+    if (center) $('modalBackdrop').classList.add('center');
+    document.body.style.overflow = 'hidden';
+
+    $('modalBackdrop').querySelector('.modal-close')?.addEventListener('click', closeModal);
+    $('modalBackdrop').addEventListener('click', (e) => {
+      if (e.target === $('modalBackdrop')) closeModal();
+    });
+  }
+
+  function confirmDelete({ title, message, onConfirm }) {
+    openModal(`
+      <div class="modal-confirm">
+        <div class="confirm-icon"><i class="fas fa-trash-alt"></i></div>
+        <h3>${escapeHtml(title)}</h3>
+        <p>${message}</p>
+        <div class="modal-confirm-buttons">
+          <button class="btn-cancel" id="confirmCancelBtn">Annuler</button>
+          <button class="btn-danger" id="confirmDeleteBtn">Supprimer</button>
+        </div>
+      </div>
+    `, { center: true });
+
+    $('confirmCancelBtn').addEventListener('click', closeModal);
+
+    $('confirmDeleteBtn').addEventListener('click', async () => {
+      const btn = $('confirmDeleteBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      try {
+        await onConfirm();
+        closeModal();
+      } catch (e) {
+        showToast('Erreur : ' + e.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Supprimer';
+      }
+    });
+  }
+
+  function showPremiumModal() {
+    const overlay = $('premiumOverlay');
+    if (overlay) overlay.classList.add('show');
+  }
+
+  function hidePremiumModal() {
+    const overlay = $('premiumOverlay');
+    if (overlay) overlay.classList.remove('show');
+  }
+
+  $('premiumClose')?.addEventListener('click', hidePremiumModal);
+  $('premiumOverlay')?.addEventListener('click', (e) => {
+    if (e.target === $('premiumOverlay')) hidePremiumModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('premiumOverlay')?.classList.contains('show')) {
+      hidePremiumModal();
+    }
+  });
+
+  function openNewChapterModal(subject) {
+    const info = SUBJECTS[subject];
+
+    openModal(`
+      <div class="modal">
+        <button class="modal-close"><i class="fas fa-times"></i></button>
+        <div class="modal-head">
+          <h2>Nouveau chapitre</h2>
+          <p>${info.emoji} ${escapeHtml(info.label)}</p>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Titre du chapitre</label>
+          <input type="text" class="form-input" id="newChapterTitle" placeholder="Ex : Nombres complexes" maxlength="100">
+        </div>
+
+        <button class="btn-full primary" id="createChapterBtn" disabled>
+          <span class="btn-icon"><i class="fas fa-plus"></i></span>
+          <span class="btn-text">Créer</span>
+          <span class="spinner"></span>
+        </button>
+      </div>
+    `);
+
+    const input = $('newChapterTitle');
+    const btn = $('createChapterBtn');
+
+    input.addEventListener('input', () => { btn.disabled = input.value.trim().length < 2; });
+
+    btn.addEventListener('click', async () => {
+      const title = input.value.trim();
+      if (title.length < 2) return;
+      btn.disabled = true;
+      btn.classList.add('loading');
+      try {
+        await callApi('createChapter', { subject, title });
+        showToast('Chapitre créé', 'success');
+        delete state.cache.chapters[subject];
+        closeModal();
+        applyRoute({ view: 'notebook', params: { subject } });
+      } catch (e) {
+        showToast('Erreur : ' + e.message, 'error');
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      }
     });
 
-    // ✅ Si 401 : la session est réellement expirée, on arrête le tracking
-    if (response.status === 401) {
-      console.warn('[STUDY] Session expirée, arrêt du tracking');
-      return;
+    setTimeout(() => input.focus(), 200);
+  }
+
+  let __isAddSectionModalOpen = false;
+
+  function openAddSectionModal(subject, chapterId) {
+    if (__isAddSectionModalOpen) return;
+    __isAddSectionModalOpen = true;
+
+    const info = SUBJECTS[subject];
+
+    const tabsHtml = SYMBOL_GROUPS.map((g, i) =>
+      `<button type="button" class="symbols-tab ${i === 0 ? 'active' : ''}" data-tab="${i}">${escapeHtml(g.name)}</button>`
+    ).join('');
+
+    const gridsHtml = SYMBOL_GROUPS.map((g, i) =>
+      `<div class="symbols-grid" data-grid="${i}" style="${i === 0 ? '' : 'display:none;'}">
+        ${g.symbols.map((sym) =>
+          `<button type="button" class="symbol-btn" data-symbol="${escapeHtml(sym)}">${sym}</button>`
+        ).join('')}
+      </div>`
+    ).join('');
+
+    openModal(`
+      <div class="modal">
+        <button class="modal-close"><i class="fas fa-times"></i></button>
+        <div class="modal-head">
+          <h2>Ajouter une section</h2>
+          <p>${info.emoji} ${escapeHtml(info.label)} — Colle la partie étudiée</p>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Contenu</label>
+
+          <button type="button" class="symbols-toggle" id="symbolsToggle">
+            <span class="fx">ƒx</span>
+            <span>Symboles</span>
+            <i class="fas fa-chevron-down chev"></i>
+          </button>
+
+          <div class="symbols-panel" id="symbolsPanel">
+            <div class="symbols-panel-inner">
+              <div class="symbols-tabs">${tabsHtml}</div>
+              ${gridsHtml}
+            </div>
+          </div>
+
+          <textarea class="form-textarea" id="sectionBody" placeholder="Colle ici la partie du cours que tu viens d'étudier." maxlength="${MAX_CONTENT_LENGTH}"></textarea>
+          <div class="char-counter" id="sectionCounter">0 / ${MAX_CONTENT_LENGTH}</div>
+        </div>
+
+        <button class="btn-full primary" id="sectionSubmitBtn" disabled>
+          <span class="btn-icon"><i class="fas fa-wand-magic-sparkles"></i></span>
+          <span class="btn-text">Analyser avec l'IA</span>
+          <span class="spinner"></span>
+        </button>
+      </div>
+    `);
+
+    const body = $('sectionBody');
+    const counter = $('sectionCounter');
+    const submitBtn = $('sectionSubmitBtn');
+    const toggle = $('symbolsToggle');
+    const panel = $('symbolsPanel');
+
+    const releaseGarde = () => { __isAddSectionModalOpen = false; };
+    $('modalBackdrop')?.addEventListener('click', (e) => {
+      if (e.target === $('modalBackdrop')) releaseGarde();
+    });
+    $('modalBackdrop')?.querySelector('.modal-close')?.addEventListener('click', releaseGarde);
+
+    function updateReady() {
+      const len = body.value.trim().length;
+      submitBtn.disabled = len < MIN_CONTENT_LENGTH;
+      counter.textContent = `${body.value.length} / ${MAX_CONTENT_LENGTH}`;
     }
 
-    if (!response.ok) {
-      console.warn('[STUDY] Erreur serveur:', response.status);
-      return;
-    }
+    body.addEventListener('input', updateReady);
 
-    console.log(`[STUDY] +${minutesToSend} min (${reason})`);
-  } catch (e) {
-    // ✅ Ne pas reculer le compteur (le temps sera reporté au prochain sync)
-    console.warn('[STUDY] sync failed:', e.message);
-  }
-}
+    toggle.addEventListener('click', () => {
+      panel.classList.toggle('open');
+      toggle.classList.toggle('active');
+    });
 
-setInterval(() => {
-  if (document.visibilityState === 'visible') {
-    syncStudyTime('heartbeat');
-  }
-}, STUDY_SYNC_INTERVAL_MS);
+    document.querySelectorAll('.symbols-tab').forEach((tab) => {
+      tab.addEventListener('click', (e) => {
+        e.preventDefault();
+        const idx = tab.dataset.tab;
+        document.querySelectorAll('.symbols-tab').forEach((t) => t.classList.toggle('active', t === tab));
+        document.querySelectorAll('.symbols-grid').forEach((g) => {
+          g.style.display = g.dataset.grid === idx ? 'grid' : 'none';
+        });
+      });
+    });
 
-// ✅ CORRECTION #5 : beforeunload avec token FRAIS
-window.addEventListener('beforeunload', () => {
-  const elapsed = Date.now() - studyLastSync;
-  const minutes = Math.floor(elapsed / 60000);
-  if (minutes >= 1 && state.user) {
-    // Utiliser le token actuel (getIdToken est async mais ne peut pas être attendu ici)
-    // On utilise sessionStorage comme fallback rapide
-    try {
-      const cachedToken = sessionStorage.getItem('arvexa_id_token');
-      if (cachedToken) {
-        fetch('/api/progress', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${cachedToken}`
-          },
-          body: JSON.stringify({ action: 'trackStudyTime', minutes: Math.min(120, minutes) }),
-          keepalive: true
-        }).catch(() => {});
+    document.querySelectorAll('.symbol-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const symbol = btn.dataset.symbol;
+        const start = body.selectionStart || 0;
+        const end = body.selectionEnd || 0;
+        const value = body.value;
+        body.value = value.slice(0, start) + symbol + value.slice(end);
+        const newPos = start + symbol.length;
+        body.setSelectionRange(newPos, newPos);
+        body.focus();
+        updateReady();
+      });
+    });
+
+    submitBtn.addEventListener('click', async () => {
+      const rawInput = body.value.trim();
+      if (rawInput.length < MIN_CONTENT_LENGTH) {
+        showToast(`Contenu trop court (min ${MIN_CONTENT_LENGTH} caractères)`, 'error');
+        return;
       }
-    } catch (e) {}
+
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+
+      const container = $('view-section');
+      const infoLocal = SUBJECTS[subject];
+      document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
+      container.classList.add('active');
+      const cleanupProgress = showGeneratingState(container, infoLocal?.profile || 'scientific');
+
+      try {
+        closeModal();
+        __isAddSectionModalOpen = false;
+        const result = await callApi('createSection', { subject, chapterId, rawInput });
+        cleanupProgress();
+        showToast('Section analysée', 'success');
+        delete state.cache.chapter[`${subject}/${chapterId}`];
+        applyRoute({ view: 'section', params: { subject, chapterId, sectionId: result.sectionId } });
+      } catch (e) {
+        cleanupProgress();
+        if (e.code === 'FREE_SECTION_LIMIT') {
+          showPremiumModal();
+          applyRoute({ view: 'chapter', params: { subject, chapterId } });
+        } else {
+          showToast('Erreur : ' + e.message, 'error', 5000);
+          applyRoute({ view: 'chapter', params: { subject, chapterId } });
+        }
+      }
+    });
+
+    setTimeout(() => body.focus(), 200);
   }
-});
 
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    syncStudyTime('hidden');
-  } else if (document.visibilityState === 'visible') {
-    studyLastSync = Date.now();
+  // ═══════════════════════════════════════════════════════════════
+  // ÉVÉNEMENTS
+  // ═══════════════════════════════════════════════════════════════
+  $('backBtn').addEventListener('click', () => window.history.back());
+
+  $('refreshBtn').addEventListener('click', () => {
+    state.cache = { dashboard: null, chapters: {}, chapter: {} };
+    applyRoute({ view: state.view, params: state.params });
+    showToast('Actualisé', 'success', 1200);
+  });
+
+  function updatePremiumBadge() {
+    const badge = $('premiumBadge');
+    if (state.isPremium) badge.classList.add('show');
+    else badge.classList.remove('show');
   }
-});
 
-// ✅ Cache token mis à jour toutes les 30 min
-async function cacheToken() {
-  if (!state.user) return;
-  try {
-    const token = await getIdToken(state.user, true);
-    sessionStorage.setItem('arvexa_id_token', token);
-  } catch (_) {}
-}
+  // ═══════════════════════════════════════════════════════════════
+  // TRACKING TEMPS D'ÉTUDE
+  // ═══════════════════════════════════════════════════════════════
+  let studyLastSync = Date.now();
+  const STUDY_SYNC_INTERVAL_MS = 2 * 60 * 1000;
 
-setInterval(cacheToken, 30 * 60 * 1000);
+  async function syncStudyTime(reason = 'heartbeat') {
+    if (!state.user) return;
 
-// ═══════════════════════════════════════════════════════════════
-// AUTH
-// ═══════════════════════════════════════════════════════════════
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    // ✅ CORRECTION #4 : auth-choice.html
-    window.location.replace('auth-choice.html');
-    return;
-  }
-  state.user = user;
+    const now = Date.now();
+    const elapsed = now - studyLastSync;
+    const minutes = Math.floor(elapsed / 60000);
 
-  try {
-    const snap = await getDoc(doc(db, 'users', user.uid));
-    if (snap.exists()) {
-      state.userData = snap.data();
-      state.isPremium = isPremiumUser(state.userData);
+    if (minutes < 1) return;
+
+    const minutesToSend = Math.min(120, minutes);
+    studyLastSync = now;
+
+    try {
+      const token = await getIdToken(state.user, true);
+
+      const response = await fetch('/api/progress', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ action: 'trackStudyTime', minutes: minutesToSend })
+      });
+
+      if (response.status === 401) {
+        console.warn('[STUDY] Session expirée, arrêt du tracking');
+        return;
+      }
+
+      if (!response.ok) {
+        console.warn('[STUDY] Erreur serveur:', response.status);
+        return;
+      }
+
+      console.log(`[STUDY] +${minutesToSend} min (${reason})`);
+    } catch (e) {
+      console.warn('[STUDY] sync failed:', e.message);
     }
-  } catch (_) {}
-
-  updatePremiumBadge();
-  applyRoute(routeFromHash());
-
-  if (!window.location.hash) {
-    window.history.replaceState(null, '', '#/notebooks');
   }
 
-  cacheToken();
-});
+  setInterval(() => {
+    if (document.visibilityState === 'visible') {
+      syncStudyTime('heartbeat');
+    }
+  }, STUDY_SYNC_INTERVAL_MS);
 
-function isUserPremium(data) {
-  if (!data) return false;
-  const status = data.subscriptionStatus || 'none';
-  if (status === 'pending') return false;
+  window.addEventListener('beforeunload', () => {
+    const elapsed = Date.now() - studyLastSync;
+    const minutes = Math.floor(elapsed / 60000);
+    if (minutes >= 1 && state.user) {
+      try {
+        const cachedToken = sessionStorage.getItem('arvexa_id_token');
+        if (cachedToken) {
+          fetch('/api/progress', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${cachedToken}`
+            },
+            body: JSON.stringify({ action: 'trackStudyTime', minutes: Math.min(120, minutes) }),
+            keepalive: true
+          }).catch(() => {});
+        }
+      } catch (e) {}
+    }
+  });
 
-  const hasPremium = data.premium === true ||
-                     data.isUnlocked === true ||
-                     data.hasDeposited === true;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      syncStudyTime('hidden');
+    } else if (document.visibilityState === 'visible') {
+      studyLastSync = Date.now();
+    }
+  });
 
-  const end = data.subscriptionEndDate?.toDate?.() ||
-    (data.subscriptionEndDate?.seconds ? new Date(data.subscriptionEndDate.seconds * 1000) : null);
+  async function cacheToken() {
+    if (!state.user) return;
+    try {
+      const token = await getIdToken(state.user, true);
+      sessionStorage.setItem('arvexa_id_token', token);
+    } catch (_) {}
+  }
 
-  if (hasPremium && end) return end.getTime() > Date.now();
-  if (status === 'expired') return false;
-  if (hasPremium && !end) return true;
-  return false;
-}
+  setInterval(cacheToken, 30 * 60 * 1000);
 
-console.log('📓 ARVEXA — Mon cahier v9.1 — Corrections appliquées');
-</script>
+  // ═══════════════════════════════════════════════════════════════
+  // AUTH
+  // ═══════════════════════════════════════════════════════════════
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.replace('auth-choice.html');
+      return;
+    }
+    state.user = user;
+
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        state.userData = snap.data();
+        state.isPremium = isPremiumUser(state.userData);
+      }
+    } catch (_) {}
+
+    updatePremiumBadge();
+    applyRoute(routeFromHash());
+
+    if (!window.location.hash) {
+      window.history.replaceState(null, '', '#/notebooks');
+    }
+
+    cacheToken();
+  });
+
+  function isPremiumUser(data) {
+    if (!data) return false;
+    const status = data.subscriptionStatus || 'none';
+    if (status === 'pending') return false;
+
+    const hasPremium = data.premium === true ||
+                       data.isUnlocked === true ||
+                       data.hasDeposited === true;
+
+    const end = data.subscriptionEndDate?.toDate?.() ||
+      (data.subscriptionEndDate?.seconds ? new Date(data.subscriptionEndDate.seconds * 1000) : null);
+
+    if (hasPremium && end) return end.getTime() > Date.now();
+    if (status === 'expired') return false;
+    if (hasPremium && !end) return true;
+    return false;
+  }
+
+  console.log('📓 ARVEXA — Mon cahier v9.2 — Corrections appliquées');
+  </script>
 </body>
 </html>
