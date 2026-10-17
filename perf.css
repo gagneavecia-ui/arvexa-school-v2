@@ -670,3 +670,57 @@ html {
 html[data-theme="light"] {
   color-scheme: light;
 }
+
+/* ═════════════════════════════════════════════════════════════
+   BRUTE FORCE ANTI-BORDURE — ne peut pas être battu
+   ═════════════════════════════════════════════════════════════ */
+
+*,
+*::before,
+*::after,
+*:focus,
+*:focus-visible,
+*:focus-within,
+*:hover,
+*:active,
+*:target,
+button,
+button:focus,
+button:focus-visible,
+button:focus-within,
+button:hover,
+button:active,
+a,
+a:focus,
+a:focus-visible,
+a:hover,
+a:active,
+[role="button"],
+[role="button"]:focus,
+[tabindex],
+[tabindex]:focus,
+input:focus,
+textarea:focus,
+select:focus,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+  outline-offset: 0 !important;
+  -webkit-focus-ring-color: transparent !important;
+  -moz-outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-tap-highlight: transparent !important;
+  -webkit-touch-callout: none !important;
+}
+
+/* Cas spécial : les inputs gardent leur bordure dorée de focus */
+input:focus,
+textarea:focus,
+select:focus {
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1) !important;
+}
