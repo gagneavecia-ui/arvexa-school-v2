@@ -1846,7 +1846,16 @@
   }
 
    // ✅ Vues qui NE doivent PAS être empilées dans l'historique
-  const NON_HISTORY_VIEWS = new Set(['viewLoading']);
+  const NON_HISTORY_VIEWS = new Set([
+    'viewLoading',
+    'viewQuizResults'
+  ]);
+
+  // ✅ Vues "racines" : on ne peut y aller que depuis l'accueil
+  const ROOT_VIEWS = new Set([
+    'viewNotions',
+    'viewQuiz'
+  ]);
 
   function navigateTo(viewId, stateData = {}) {
     const currentView = document.querySelector('.view.active')?.id;
@@ -1856,18 +1865,34 @@
       return;
     }
 
-    // ✅ Si c'est une vue de chargement, on REMPLACE l'entrée actuelle
-    // au lieu d'en empiler une nouvelle
+    // ✅ Règle simple :
+    // - On REVIENT à l'accueil → popstate (déjà géré)
+    // - On va sur une sous-vue depuis l'accueil → pushState
+    // - On va sur une sous-vue depuis une autre sous-vue → replaceState
+    // - Les vues de chargement/résultats → TOUJOURS replaceState
     try {
-      if (NON_HISTORY_VIEWS.has(viewId)) {
+      const isReturningHome = (viewId === 'viewHome');
+      const isFromHome = (currentView === 'viewHome');
+      const isNonHistory = NON_HISTORY_VIEWS.has(viewId);
+
+      if (isNonHistory || (!isFromHome && !isReturningHome)) {
+        // ✅ Remplace l'entrée actuelle
         window.history.replaceState(
           { view: viewId, ...stateData },
           '',
           window.location.pathname + window.location.search
         );
-      } else {
+      } else if (isFromHome && !isReturningHome) {
+        // ✅ Empile (depuis l'accueil vers une sous-vue)
         window.history.pushState(
           { view: viewId, ...stateData },
+          '',
+          window.location.pathname + window.location.search
+        );
+      } else {
+        // ✅ Retour à l'accueil → remplace
+        window.history.replaceState(
+          { view: 'viewHome', ...stateData },
           '',
           window.location.pathname + window.location.search
         );
@@ -1879,37 +1904,21 @@
     showView(viewId);
   }
 
-     function goBack() {
-    // ✅ Récupère la vue actuelle
+      function goBack() {
     const currentView = document.querySelector('.view.active')?.id;
 
-    // ✅ Hiérarchie :
-    // viewNotionDetail → viewNotions → viewHome → sortie de la page
-    // viewQuiz/viewQuizResults → viewHome
-    // viewNotions → viewHome
-    // viewHome → sortie de la page
+    // ✅ Règle simple :
+    // - Sur l'accueil → on sort de la page
+    // - Sur n'importe quelle autre vue → on revient à l'accueil
+    // (peu importe la vue : notions, quiz, détail, résultats, etc.)
 
     if (currentView === 'viewHome') {
-      // ✅ On est sur l'accueil → on sort de la page
+      // ✅ Sortie de la page
       window.history.back();
       return;
     }
 
-    if (currentView === 'viewNotionDetail') {
-      // ✅ Détail notion → retour à la liste
-      renderNotionsList();
-      try {
-        window.history.replaceState(
-          { view: 'viewNotions' },
-          '',
-          window.location.pathname + window.location.search
-        );
-      } catch (e) {}
-      showView('viewNotions');
-      return;
-    }
-
-    // ✅ Pour toutes les autres vues → retour à l'accueil
+    // ✅ On retourne à l'accueil en REMPLAÇANT l'historique
     try {
       window.history.replaceState(
         { view: 'viewHome' },
@@ -1917,39 +1926,68 @@
         window.location.pathname + window.location.search
       );
     } catch (e) {}
-    showView('viewHome');
+
+    // Rendre l'accueil dans son état normal
     updateHomeUI();
+    showView('viewHome');
   }
-    
-   window.addEventListener('popstate', (event) => {
+
+      window.addEventListener('popstate', (event) => {
     const targetView = event.state?.view;
 
-    // ✅ Si la vue n'est pas connue ou pas définie → on va sur l'accueil
-    if (!targetView || !document.getElementById(targetView)) {
-      // On empile "home" pour éviter de sortir de la page
-      try {
-        window.history.pushState(
-          { view: 'viewHome' },
-          '',
-          window.location.pathname + window.location.search
-        );
-      } catch (e) {}
-
-      showView('viewHome');
-      updateHomeUI();
+    // ✅ Cas 1 : pas de vue cible (sortie de la page) → on laisse faire
+    if (!targetView) {
       return;
     }
 
-    // ✅ Vue connue : on l'affiche
-    showView(targetView);
+    // ✅ Cas 2 : vue cible = accueil → on l'affiche
+    if (targetView === 'viewHome') {
+      updateHomeUI();
+      showView('viewHome');
+      return;
+    }
 
+    // ✅ Cas 3 : vue cible = sous-vue valide → on l'affiche (sans regénération)
     if (targetView === 'viewNotions') {
       renderNotionsList();
-    } else if (targetView === 'viewHome') {
-      updateHomeUI();
+      showView('viewNotions');
+      return;
     }
-  });
 
+    if (targetView === 'viewNotionDetail') {
+      // Si on a une notion en cours, on l'affiche
+      if (state.currentNotion) {
+        const idx = state.currentNotionIndex;
+        const notion = state.notions[idx];
+        if (notion) {
+          state.currentNotion = notion;
+          $('notionDetailEyebrow').textContent = 'Notion ' + (idx + 1);
+          $('notionDetailTitle').textContent = notion.notionTitle || 'Notion';
+          $('notionDetailMeta').textContent = state.chapter + ' · ' + (SUBJECTS[state.subject] || state.subject);
+          $('notionDetailContent').innerHTML = renderNotionContent(notion);
+          showView('viewNotionDetail');
+          return;
+        }
+      }
+      // Fallback : retour à la liste
+      renderNotionsList();
+      showView('viewNotions');
+      return;
+    }
+
+    // ✅ Cas 4 : vue inconnue (chargement, résultats) → retour accueil
+    try {
+      window.history.replaceState(
+        { view: 'viewHome' },
+        '',
+        window.location.pathname + window.location.search
+      );
+    } catch (e) {}
+
+    updateHomeUI();
+    showView('viewHome');
+  });
+  
   // ═══════════════════════════════════════════════════════════════
   // SÉLECTEURS
   // ═══════════════════════════════════════════════════════════════
