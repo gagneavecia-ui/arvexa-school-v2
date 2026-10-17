@@ -21,7 +21,10 @@
   <script src="register-sw.js" defer></script>
 
   <style>
-    :root {
+       :root {
+      --primary: #1A3A2A;
+      --primary-dark: #0A1A12;
+      --primary-light: #2A5A3A;
       --accent: #B8860B;
       --accent-bright: #E0B84A;
       --accent-dim: rgba(184, 134, 11, 0.08);
@@ -38,18 +41,23 @@
       --text-dim: #8A8A7A;
       --text-muted: #5A5A4A;
       --text-body: #cfd0cc;
-      --border-soft: rgba(255, 255, 255, 0.05);
-      --border-strong: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(184, 134, 11, 0.06);
+      --card-border-hover: rgba(184, 134, 11, 0.2);
+      --border-soft: rgba(184, 134, 11, 0.06);
+      --border-strong: rgba(184, 134, 11, 0.15);
       --border-gold: rgba(184, 134, 11, 0.15);
       --transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
       --transition-fast: all 0.15s ease;
       --radius-sm: 10px;
       --radius: 16px;
       --radius-lg: 20px;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
       --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
       --font-body: 'Inter', system-ui, sans-serif;
       --font-serif: 'Playfair Display', Georgia, serif;
+      --header-height: 64px;
+      --sidebar-width: 280px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -285,15 +293,21 @@
       border-color: rgba(224, 184, 74, 0.3);
       background: rgba(255, 255, 255, 0.06);
     }
+    .btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
     .btn.primary {
       background: linear-gradient(135deg, var(--accent-bright), var(--accent));
       color: #0A0A0A;
       border-color: transparent;
-      box-shadow: 0 4px 16px rgba(184, 134, 11, 0.2);
+      box-shadow: 0 4px 16px rgba(184, 134, 11, 0.25);
     }
     .btn.primary:hover:not(:disabled) {
-      box-shadow: 0 8px 28px rgba(184, 134, 11, 0.35);
+      box-shadow: 0 6px 22px rgba(184, 134, 11, 0.4);
       border-color: transparent;
+    }
+    .btn.primary:active:not(:disabled) {
+      transform: scale(0.97);
     }
     .btn.secondary {
       background: transparent;
@@ -1144,7 +1158,7 @@
       gap: 10px;
       margin-bottom: 14px;
     }
-    @media (max-width: 620px) {
+    @media (max-width: 640px) {
       .qd-answers { grid-template-columns: 1fr; }
     }
 
@@ -1313,9 +1327,9 @@
       display: none;
       place-items: center;
       padding: 18px;
-      background: rgba(0, 0, 0, 0.78);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
     .modal-backdrop.show { display: grid; animation: fadeIn 0.25s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -1323,12 +1337,14 @@
     .modal {
       max-width: 440px;
       width: 100%;
-      background: linear-gradient(145deg, #161616, #0f0f0f);
-      border: 1px solid var(--border-strong);
-      border-radius: var(--radius);
+      background: linear-gradient(145deg, #141414 0%, #0A0A0A 100%);
+      border: 1px solid rgba(184, 134, 11, 0.25);
+      border-radius: 20px;
       padding: 24px 22px;
       position: relative;
+      overflow: hidden;
       animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(184, 134, 11, 0.08);
     }
     @keyframes modalPop {
       from { transform: scale(0.9); opacity: 0; }
@@ -1338,9 +1354,15 @@
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 2px;
-      border-radius: var(--radius) var(--radius) 0 0;
+      height: 3px;
+      border-radius: 20px 20px 0 0;
       background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
+      background-size: 200% 100%;
+      animation: borderShimmer 3s linear infinite;
+    }
+    @keyframes borderShimmer {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 200% 0%; }
     }
     .modal h3 {
       font-family: var(--font-serif);
@@ -1393,7 +1415,25 @@
       padding: 6px 0;
     }
 
-    @media (max-width: 620px) {
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 768px) {
+      .shell { width: min(100% - 24px, 980px); padding: 14px 0 40px; }
+      .panel { padding: 20px; }
+      .form-grid, .subject-grid { gap: 14px; }
+      .exercise-detail-title h3 { font-size: 18px; }
+      .question-detail { padding: 16px 18px; }
+    }
+
+    @media (max-width: 640px) {
       .shell { width: min(100% - 20px, 980px); padding-top: 12px; }
       .panel { padding: 17px; }
       .form-grid, .subject-grid { grid-template-columns: 1fr; }
@@ -1415,12 +1455,40 @@
       .top-btn { padding: 8px 14px; font-size: 12px; }
     }
 
-    @media (max-width: 380px) {
+    @media (max-width: 480px) {
+      .shell { width: min(100% - 16px, 980px); padding: 12px 0 32px; }
+      .panel { padding: 16px; }
+      h1 { font-size: 24px; }
+      h2 { font-size: 20px; }
+      .lead { font-size: 13.5px; }
+      .form-grid { gap: 12px; }
+      .subject-grid { gap: 10px; }
+      .subject-card { padding: 16px 14px; }
+      .subject-card h3 { font-size: 16px; }
+      .exercise-head h3 { font-size: 16px; }
+      .question-detail { padding: 14px 14px; }
+      .qd-answers { grid-template-columns: 1fr; }
+      .timer { font-size: 17px; padding: 3px 10px; }
+      .loading-step { padding: 10px 12px; }
+      .top-btn { padding: 8px 12px; font-size: 11.5px; }
+      .connection { font-size: 11px; }
+      .brand { font-size: 18px; }
+    }
+
+    @media (max-width: 360px) {
+      .shell { width: min(100% - 14px, 980px); padding: 10px 0 28px; }
       .panel { padding: 14px; }
-      .btn { font-size: 13px; padding: 10px 14px; }
-      h1 { font-size: 26px; }
-      h2 { font-size: 21px; }
-      .metric strong { font-size: 24px; }
+      h1 { font-size: 22px; }
+      h2 { font-size: 19px; }
+      .eyebrow { font-size: 10px; }
+      .btn { font-size: 13px; padding: 12px 18px; min-height: 46px; }
+      .timer { font-size: 15px; padding: 2px 8px; }
+      .loading-step { padding: 9px 10px; }
+      .step-label { font-size: 12px; }
+      .step-desc { font-size: 10.5px; }
+      .metric strong { font-size: 22px; }
+      .grade-banner .grade-title { font-size: 18px; }
+      .grade-banner .grade-emoji { font-size: 36px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1459,7 +1527,7 @@
       margin: auto;
       padding: 30px 26px 22px;
       border: 1px solid rgba(224, 184, 74, 0.20);
-      border-radius: 22px;
+      border-radius: 20px;
       background:
         radial-gradient(ellipse 120% 70% at 50% -10%, rgba(224, 184, 74, 0.10) 0%, transparent 65%),
         radial-gradient(ellipse 100% 50% at 50% 110%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
@@ -1637,7 +1705,7 @@
       font-size: 11px;
       line-height: 1;
     }
-    @media (min-width: 600px) {
+    @media (min-width: 640px) {
       .arvexa-popup-benefits { display: grid; }
     }
     .arvexa-popup-actions {
@@ -1656,7 +1724,7 @@
       gap: 7px;
       padding: 13px 18px;
       min-height: 48px;
-      border-radius: 100px;
+      border-radius: 30px;
       border: none;
       font-family: inherit;
       font-size: 13.5px;
@@ -1697,17 +1765,17 @@
     }
     .arvexa-popup-btn.primary:active { transform: translateY(0) scale(0.97); }
     .arvexa-popup-btn.primary i { font-size: 12px; }
-    @media (max-width: 599px) {
+    @media (max-width: 640px) {
       .arvexa-popup-overlay { padding: 16px; }
-      .arvexa-popup { max-width: 100%; padding: 28px 22px 20px; border-radius: 20px; }
+      .arvexa-popup { max-width: 100%; padding: 28px 22px 20px; border-radius: 18px; }
       .arvexa-popup-icon { width: 56px; height: 56px; font-size: 24px; margin-bottom: 14px; }
       .arvexa-popup-title { font-size: 21px; }
       .arvexa-popup-message { font-size: 13.5px; margin-bottom: 18px; }
       .arvexa-popup-btn { min-height: 46px; font-size: 13.5px; }
     }
-    @media (max-width: 380px) {
+    @media (max-width: 360px) {
       .arvexa-popup-overlay { padding: 12px; }
-      .arvexa-popup { padding: 24px 18px 16px; border-radius: 18px; }
+      .arvexa-popup { padding: 24px 18px 16px; border-radius: 16px; }
       .arvexa-popup::before { left: 24%; right: 24%; }
       .arvexa-popup-icon { width: 50px; height: 50px; font-size: 21px; margin-bottom: 12px; }
       .arvexa-popup-title { font-size: 19px; }
