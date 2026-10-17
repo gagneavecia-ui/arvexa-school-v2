@@ -1,16 +1,15 @@
 /* ============================================================
-   ARVEXA — PERF.CSS v1.0
+   ARVEXA — PERF.CSS v2.0 FINAL
    Optimisations de fluidité · Zéro impact visuel
+   Fusion de la couche 1 + couche 2
    Charger APRÈS tous les autres CSS
    ============================================================ */
 
-/* ─────────────────────────────────────────────────────────────
-   FIX 1 — backdrop-filter : désactivé pendant le scroll
-   C'est le tueur n°1 sur mobile. On garde un fond opaque
-   équivalent visuellement (98% d'opacité = même rendu à l'œil).
-   ───────────────────────────────────────────────────────────── */
+/* ═════════════════════════════════════════════════════════════
+   FIX 1 — backdrop-filter : désactivé sur tout ce qui reste
+   visible pendant le scroll (tueur n°1 sur mobile)
+   ═════════════════════════════════════════════════════════════ */
 
-/* Headers sticky → fond quasi-opaque, sans flou GPU */
 .header,
 .topbar,
 .app-header,
@@ -20,12 +19,7 @@
 .exam-top,
 .site-header,
 header.header,
-.display {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* Overlays/panneaux qui restent visibles pendant le scroll */
+.display,
 .card,
 .panel,
 .sub-card,
@@ -43,8 +37,7 @@ header.header,
   -webkit-backdrop-filter: none !important;
 }
 
-/* On garde le flou UNIQUEMENT sur les modales plein écran
-   (elles ne scrollent pas derrière → coût négligeable) */
+/* Modales plein écran : on garde le flou (ne scrollent pas derrière) */
 .modal-overlay,
 .sidebar-overlay,
 .detail-overlay,
@@ -56,11 +49,29 @@ header.header,
   -webkit-backdrop-filter: blur(12px) !important;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   FIX 2 — Glow animés : gel des animations continues
-   Les blur(80-90px) qui tournent en boucle coûtent ~15-25% GPU.
-   On garde l'effet visuel statique (même apparence au repos).
-   ───────────────────────────────────────────────────────────── */
+/* Sur mobile : aucun flou nulle part, fond opaque équivalent */
+@media (max-width: 768px) {
+  *,
+  *::before,
+  *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .modal-overlay,
+  .sidebar-overlay,
+  .detail-overlay,
+  .msg-menu-overlay,
+  .image-modal,
+  .lightbox,
+  .arvexa-popup-overlay {
+    background: rgba(0, 0, 0, 0.92) !important;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FIX 2 — Glow animés : gel des animations infinies
+   ═════════════════════════════════════════════════════════════ */
 
 .glow,
 .glow-1,
@@ -71,7 +82,6 @@ header.header,
   animation: none !important;
 }
 
-/* Sur mobile, on allège encore plus (blur réduit, pas supprimé) */
 @media (max-width: 768px) {
   .glow,
   .bg-glow {
@@ -80,10 +90,9 @@ header.header,
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   FIX 3 — transition: all → uniquement les propriétés utiles
-   Évite au navigateur de surveiller padding, margin, font-size…
-   ───────────────────────────────────────────────────────────── */
+/* ═════════════════════════════════════════════════════════════
+   FIX 3 — transition : cibler les propriétés utiles
+   ═════════════════════════════════════════════════════════════ */
 
 *,
 *::before,
@@ -91,7 +100,7 @@ header.header,
   transition-property: transform, opacity, background-color, border-color, color, box-shadow !important;
 }
 
-/* Exception : champs de saisie et éléments critiques gardent leur transition complète */
+/* Exceptions : éléments critiques gardent leur transition complète */
 input,
 textarea,
 select,
@@ -108,9 +117,9 @@ select,
   transition-property: all !important;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   FIX 4 — will-change : uniquement au moment de l'animation
-   ───────────────────────────────────────────────────────────── */
+/* ═════════════════════════════════════════════════════════════
+   FIX 4 — will-change : plus d'usage permanent
+   ═════════════════════════════════════════════════════════════ */
 
 .reveal {
   will-change: auto !important;
@@ -119,11 +128,9 @@ select,
   will-change: auto !important;
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ═════════════════════════════════════════════════════════════
    FIX 5 — content-visibility sur les longues listes
-   Le navigateur saute le rendu de ce qui est hors écran.
-   Grosse victoire sur chapitre.html, matiere.html, formulaires.html.
-   ───────────────────────────────────────────────────────────── */
+   ═════════════════════════════════════════════════════════════ */
 
 .part-card,
 .chapter-card,
@@ -142,32 +149,60 @@ select,
   contain-intrinsic-size: auto 120px;
 }
 
-/* Sur les pages avec beaucoup de cartes, un peu plus précis */
-.subject-grid .screen-card {
-  contain-intrinsic-size: auto 260px;
+.subject-grid .screen-card,
+.gallery-panel,
+.gallery-grid,
+.hero-phones,
+.demo-phone-wrap {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   FIX 6 — Animations infinies décoratives : moins coûteuses
-   On garde l'effet mais on réduit la fréquence.
-   ───────────────────────────────────────────────────────────── */
+/* ═════════════════════════════════════════════════════════════
+   FIX 6 — Animations décoratives infinies : gel
+   ═════════════════════════════════════════════════════════════ */
 
-@keyframes glowMove {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(30px, -20px) scale(1.1); }
-}
-
-/* On garde les animations de pulse mais avec un coût moindre */
+.cover-glow,
+.premium-crown-wrap,
+.hero-icon,
+.hero-icon::before,
+.avis-icon-wrap,
+.arvexa-popup-icon,
+.pending-icon-wrap,
+.fcm-icon,
+.tts-btn.speaking i,
+.hourglass-wrap::before,
+.hourglass-svg,
+.badge-item.unlocked::before,
+.avis-link i,
+.notif-dot.show,
 .status-dot,
-.notif-dot,
-.online-dot {
+.online-dot,
+.premium-badge,
+.countdown-status.critical,
+.premium-countdown.critical,
+.arvexa-confirm-icon-box,
+.arvexa-confirm-icon-box.danger,
+.iconFloat,
+.error-icon::before,
+.offline-icon::before {
   animation: none !important;
-  opacity: 1 !important;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   FIX 7 — Images : forcer lazy + décodage async
-   ───────────────────────────────────────────────────────────── */
+/* On garde uniquement les shimmer de texte (coût quasi nul) */
+.sidebar .logo span,
+.footer-logo span,
+.brand-name em,
+.brand span,
+.footer-brand-name em,
+.arvexa-popup-title em,
+.premium-screen-content h1 span {
+  animation: shimmerText 5s linear infinite;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FIX 7 — Images : lazy + async decoding
+   ═════════════════════════════════════════════════════════════ */
 
 img:not([loading]) {
   loading: lazy;
@@ -177,9 +212,14 @@ img {
   decoding: async;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   FIX 8 — Scroll-behavior : natif sur mobile (plus fluide)
-   ───────────────────────────────────────────────────────────── */
+img:not([width]):not([height]) {
+  min-height: 200px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FIX 8 — Scroll-behavior natif sur mobile (plus fluide)
+   ═════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
   html {
@@ -187,9 +227,9 @@ img {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   FIX 9 — Box-shadow : désactiver les ombres coûteuses sur hover mobile
-   ───────────────────────────────────────────────────────────── */
+/* ═════════════════════════════════════════════════════════════
+   FIX 9 — Box-shadow : désactiver les ombres au hover mobile
+   ═════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
   .screen-card:hover,
@@ -203,9 +243,9 @@ img {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ═════════════════════════════════════════════════════════════
    FIX 10 — Containment global (isolation des repaints)
-   ───────────────────────────────────────────────────────────── */
+   ═════════════════════════════════════════════════════════════ */
 
 .card,
 .panel,
@@ -213,22 +253,19 @@ img {
 .exam-item,
 .chapter-card,
 .part-card,
-.f-card {
+.f-card,
+.chapter-list,
+.parts-list,
+.notif-list,
+.exams-list,
+.history-list,
+.faq-list {
   contain: layout style paint;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   FIX 11 — Smooth scroll des ancres (fallback safe)
-   ───────────────────────────────────────────────────────────── */
-
-:target {
-  scroll-margin-top: 80px;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   FIX 12 — Anti-jank sur les sticky headers
-   → isole le header du reste pour éviter les repaints croisés
-   ───────────────────────────────────────────────────────────── */
+/* ═════════════════════════════════════════════════════════════
+   FIX 11 — Sticky headers : isolation anti-repaint
+   ═════════════════════════════════════════════════════════════ */
 
 .header,
 .topbar,
@@ -238,9 +275,151 @@ img {
   isolation: isolate;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   RESPECT DES PRÉFÉRENCES UTILISATEUR
-   ───────────────────────────────────────────────────────────── */
+/* ═════════════════════════════════════════════════════════════
+   FIX 12 — Hover mobile = aucun effet (inutile et coûteux)
+   ═════════════════════════════════════════════════════════════ */
+
+@media (hover: none) and (pointer: coarse) {
+  .card:hover,
+  .panel:hover,
+  .notif-card:hover,
+  .chapter-card:hover,
+  .part-card:hover,
+  .f-card:hover,
+  .screen-card:hover,
+  .feature-card:hover,
+  .blog-card:hover,
+  .testi-card:hover,
+  .price-card:hover,
+  .tool-card:hover,
+  .subject-chip:hover,
+  .el:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: inherit !important;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FIX 13 — Optimisation GPU : transform 3D ciblé
+   ═════════════════════════════════════════════════════════════ */
+
+.sidebar,
+.modal,
+.detail-panel,
+.arvexa-popup,
+.avis-modal,
+.chat-container {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FIX 14 — Font Awesome : rendu accéléré
+   ═════════════════════════════════════════════════════════════ */
+
+.fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeSpeed;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FIX 15 — Inputs : contenir les repaints
+   ═════════════════════════════════════════════════════════════ */
+
+input,
+textarea,
+select {
+  contain: strict;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  contain: layout style;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FIX 16 — Avatars / images rondes : containment
+   ═════════════════════════════════════════════════════════════ */
+
+.user-avatar,
+.testi-avatar,
+.team-avatar,
+.message-avatar,
+.avatar,
+.identity-avatar,
+.profile-avatar {
+  contain: layout style paint;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FIX 17 — Scrollbar : cachée sur mobile (gain rendering)
+   ═════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FIX 18 — Filters décoratifs : suppression mobile
+   ═════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .hero-icon::before,
+  .error-icon::before,
+  .offline-icon::before,
+  .sub-card::before,
+  .btn-subscribe-main::after,
+  .plan-card::before,
+  .phone-mock::before,
+  .demo-phone-wrap::before,
+  .error-number,
+  .pending-screen-content p strong,
+  .crown-icon {
+    filter: none !important;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FIX 19 — Boutons principaux : box-shadow allégée
+   ═════════════════════════════════════════════════════════════ */
+
+.btn-subscribe-main,
+.btn-submit,
+.btn-start,
+.btn-primary,
+.btn-accept,
+.cta-card,
+.premium-cta {
+  box-shadow: none !important;
+}
+
+.btn-subscribe-main:hover,
+.btn-submit:hover:not(:disabled),
+.btn-start:hover:not(:disabled),
+.btn-primary:hover,
+.cta-card:hover,
+.premium-cta:hover {
+  box-shadow: 0 4px 16px rgba(184, 134, 11, 0.2) !important;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   FIX 20 — Ancres : marge de scroll safe
+   ═════════════════════════════════════════════════════════════ */
+
+:target {
+  scroll-margin-top: 80px;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ACCESSIBILITÉ — respect des préférences utilisateur
+   ═════════════════════════════════════════════════════════════ */
 
 @media (prefers-reduced-motion: reduce) {
   *,
