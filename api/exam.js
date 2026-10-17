@@ -1129,13 +1129,31 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
   else if (percentage >= 60) grade = 'Assez bien';
   else if (percentage >= 50) grade = 'Passable';
 
-  finalExercises.forEach((ex) => {
+  // ✅ CORRECTION : Distribution exacte des points avec ajustement final
+  // On distribue 20 points sur les exercices, avec le dernier qui absorbe l'arrondi
+  let totalDistributed = 0;
+  finalExercises.forEach((ex, idx) => {
     if (maxPossibleScore > 0) {
-      ex.score = round2((ex.score / ex.maxScore) * (ex.maxScore / maxPossibleScore * TOTAL_POINTS));
-      ex.maxScore = round2(ex.maxScore / maxPossibleScore * TOTAL_POINTS);
+      const ratio = ex.maxScore / maxPossibleScore;
+      let exMax;
+      
+      // Le dernier exercice reçoit le reste pour que la somme = 20 exactement
+      if (idx === finalExercises.length - 1) {
+        exMax = round2(TOTAL_POINTS - totalDistributed);
+      } else {
+        exMax = round2(ratio * TOTAL_POINTS);
+        totalDistributed += exMax;
+      }
+      
+      const exScore = ex.maxScore > 0 
+        ? round2((ex.score / ex.maxScore) * exMax)
+        : 0;
+      
+      ex.score = Math.min(exScore, exMax); // ✅ Ne jamais dépasser le max
+      ex.maxScore = exMax;
     }
   });
-
+  
   const revisionTopics = deterministicResults.revisionTopics || [];
   if (!revisionTopics.length) {
     finalExercises.forEach((ex) => {
