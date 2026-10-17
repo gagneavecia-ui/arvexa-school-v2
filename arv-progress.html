@@ -1180,10 +1180,8 @@ main {
 ::-webkit-scrollbar-thumb { background: rgba(184, 134, 11, 0.25); border-radius: 10px; }
 
 /* ═══════════════════════════════════════════════════════════════
-   ARVEXA — POP-UP PREMIUM UNIVERSEL
-   Version 10 — Réduite · Bouton unique
+   POP-UP PREMIUM UNIVERSEL
    ═══════════════════════════════════════════════════════════════ */
-
 .arvexa-popup-overlay {
   position: fixed;
   inset: 0;
@@ -1221,13 +1219,11 @@ main {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.02),
     0 0 60px rgba(224, 184, 74, 0.08),
-    0 24px 60px rgba(0, 0, 0, 0.70),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 24px 60px rgba(0, 0, 0, 0.70);
   transform: scale(0.94) translateY(20px);
   transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
   text-align: center;
   overflow: hidden;
-  isolation: isolate;
 }
 .arvexa-popup-overlay.show .arvexa-popup {
   transform: scale(1) translateY(0);
@@ -1239,29 +1235,12 @@ main {
   left: 20%;
   right: 20%;
   height: 2px;
-  border-radius: 0 0 4px 4px;
   background: linear-gradient(90deg,
     transparent 0%,
     rgba(224, 184, 74, 0.4) 20%,
     #E0B84A 50%,
     rgba(224, 184, 74, 0.4) 80%,
     transparent 100%);
-  opacity: 0.9;
-  z-index: 2;
-}
-.arvexa-popup::after {
-  content: '';
-  position: absolute;
-  top: -50px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 160px;
-  height: 100px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(224, 184, 74, 0.18) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-  filter: blur(6px);
 }
 .arvexa-popup-close {
   position: absolute;
@@ -1272,23 +1251,18 @@ main {
   border-radius: 50%;
   border: none;
   background: rgba(255, 255, 255, 0.03);
-  color: #6A6A5A;
+  color: var(--text-muted);
   font-size: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-  z-index: 4;
-  -webkit-tap-highlight-color: transparent;
+  transition: var(--transition);
 }
 .arvexa-popup-close:hover {
   background: rgba(224, 184, 74, 0.12);
-  color: #E0B84A;
-  transform: rotate(90deg) scale(1.05);
-}
-.arvexa-popup-close:active {
-  transform: rotate(90deg) scale(0.95);
+  color: var(--accent-bright);
+  transform: rotate(90deg);
 }
 .arvexa-popup-icon {
   display: inline-flex;
@@ -1297,32 +1271,16 @@ main {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
+  background: radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
   border: 1px solid rgba(224, 184, 74, 0.28);
-  color: #E0B84A;
+  color: var(--accent-bright);
   font-size: 26px;
   margin: 0 auto 16px;
-  position: relative;
-  z-index: 1;
-  animation: arvexaCrownPulse 3s ease-in-out infinite;
-  box-shadow:
-    0 0 20px rgba(224, 184, 74, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  animation: crownPulse 3s ease-in-out infinite;
 }
-@keyframes arvexaCrownPulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow:
-      0 0 20px rgba(224, 184, 74, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-  50% {
-    transform: scale(1.04);
-    box-shadow:
-      0 0 34px rgba(224, 184, 74, 0.32),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
+@keyframes crownPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(224, 184, 74, 0.15); }
+  50% { transform: scale(1.04); box-shadow: 0 0 34px rgba(224, 184, 74, 0.32); }
 }
 .arvexa-popup-title {
   font-family: 'Playfair Display', Georgia, serif;
@@ -1331,9 +1289,6 @@ main {
   color: #F5F0E8;
   line-height: 1.25;
   margin: 0 0 10px;
-  letter-spacing: -0.015em;
-  position: relative;
-  z-index: 1;
 }
 .arvexa-popup-title em {
   color: #E0B84A;
@@ -1346,64 +1301,16 @@ main {
   line-height: 1.6;
   margin: 0 auto 20px;
   max-width: 280px;
-  position: relative;
-  z-index: 1;
 }
 .arvexa-popup-message strong {
   color: #E0B84A;
   font-weight: 700;
 }
-.arvexa-popup-benefits {
-  display: none;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 22px;
-  padding: 14px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-benefits span {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-  font-size: 11px;
-  color: #8A8A7A;
-  line-height: 1.35;
-  text-align: center;
-  font-weight: 500;
-}
-.arvexa-popup-benefits span::before {
-  content: '✓';
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(224, 184, 74, 0.10);
-  border: 1px solid rgba(224, 184, 74, 0.22);
-  color: #E0B84A;
-  font-weight: 800;
-  font-size: 11px;
-  line-height: 1;
-}
-@media (min-width: 600px) {
-  .arvexa-popup-benefits { display: grid; }
-}
 .arvexa-popup-actions {
   display: flex;
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-actions .arvexa-popup-btn {
-  flex: 1;
-  width: 100%;
 }
 .arvexa-popup-btn {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1417,75 +1324,20 @@ main {
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  position: relative;
-  -webkit-tap-highlight-color: transparent;
+  transition: var(--transition);
 }
 .arvexa-popup-btn.primary {
   background: linear-gradient(135deg, #E0B84A 0%, #B8860B 100%);
   color: #0A0A0A;
   box-shadow: 0 4px 16px rgba(224, 184, 74, 0.28);
 }
-.arvexa-popup-btn.primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -120%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.30) 50%,
-    transparent 100%);
-  transform: skewX(-20deg);
-  transition: left 0.7s cubic-bezier(0.25, 1, 0.5, 1);
-  pointer-events: none;
-}
-.arvexa-popup-btn.primary:hover::before { left: 130%; }
 .arvexa-popup-btn.primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
 }
-.arvexa-popup-btn.primary:active { transform: translateY(0) scale(0.97); }
-.arvexa-popup-btn.primary i { font-size: 12px; }
-@media (max-width: 599px) {
-  .arvexa-popup-overlay { padding: 16px; }
-  .arvexa-popup { max-width: 100%; padding: 28px 22px 20px; border-radius: 20px; }
-  .arvexa-popup-icon { width: 56px; height: 56px; font-size: 24px; margin-bottom: 14px; }
-  .arvexa-popup-title { font-size: 21px; }
-  .arvexa-popup-message { font-size: 13.5px; margin-bottom: 18px; }
-  .arvexa-popup-btn { min-height: 46px; font-size: 13.5px; }
-}
-@media (max-width: 380px) {
-  .arvexa-popup-overlay { padding: 12px; }
-  .arvexa-popup { padding: 24px 18px 16px; border-radius: 18px; }
-  .arvexa-popup::before { left: 24%; right: 24%; }
-  .arvexa-popup-icon { width: 50px; height: 50px; font-size: 21px; margin-bottom: 12px; }
-  .arvexa-popup-title { font-size: 19px; }
-  .arvexa-popup-message { font-size: 13px; margin-bottom: 16px; }
-  .arvexa-popup-btn { min-height: 44px; font-size: 13px; padding: 12px 14px; }
-  .arvexa-popup-close { width: 28px; height: 28px; top: 10px; right: 10px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .arvexa-popup,
-  .arvexa-popup-overlay,
-  .arvexa-popup-icon,
-  .arvexa-popup-btn {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-.arvexa-popup-btn:focus-visible,
-.arvexa-popup-close:focus-visible {
-  outline: 2px solid #E0B84A;
-  outline-offset: 3px;
-}
 </style>
 </head>
+
 <body>
 
 <header class="header">
@@ -1520,9 +1372,7 @@ main {
 <div class="modal-backdrop" id="modalBackdrop"></div>
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     POP-UP PREMIUM UNIVERSEL — Cahier
-     ═══════════════════════════════════════════════════════════ -->
+<!-- POP-UP PREMIUM UNIVERSEL — Cahier -->
 <div class="arvexa-popup-overlay" id="premiumOverlay">
   <div class="arvexa-popup" role="dialog" aria-modal="true" aria-labelledby="premiumPopupTitle">
 
@@ -1540,12 +1390,6 @@ main {
       Tu as utilisé tes <strong>5 sections gratuites</strong> ce mois-ci.
       Passe à Premium pour analyser tes cours sans limite.
     </p>
-
-    <div class="arvexa-popup-benefits">
-      <span>Sections illimitées</span>
-      <span>Analyses IA complètes</span>
-      <span>Accès illimité</span>
-    </div>
 
     <div class="arvexa-popup-actions">
       <a href="abonnement.html" class="arvexa-popup-btn primary">
@@ -1632,12 +1476,15 @@ const state = {
 const $ = (id) => document.getElementById(id);
 
 // ═══════════════════════════════════════════════════════════════
-// SAFE TEXT — épargne le LaTeX ($...$ et $$...$$)
+// ✅ CORRECTION #1 : escapeHtml optimisé (regex au lieu de DOM)
 // ═══════════════════════════════════════════════════════════════
 function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = String(text || '');
-  return div.innerHTML;
+  return String(text === null || text === undefined ? '' : text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function safeText(text) {
@@ -1650,14 +1497,6 @@ function safeText(text) {
     return part.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }).join('');
 }
-
-// ═══════════════════════════════════════════════════════════════
-// RENDU KaTeX — délégué à katex-utils.js (MutationObserver global)
-// ═══════════════════════════════════════════════════════════════
-// Le rendu est déclenché automatiquement par katex-utils.js à chaque
-// ajout de contenu contenant du LaTeX dans le DOM.
-// Aucun appel manuel nécessaire : c'est plus fiable et ça évite les
-// doubles rendus qui causaient des formules instables.
 
 function showToast(message, type = 'info', duration = 3000) {
   const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
@@ -1769,7 +1608,8 @@ async function callApi(action, params = {}) {
   const data = await response.json().catch(() => null);
 
   if (response.status === 401 && data?.code === 'AUTH_REQUIRED') {
-    window.location.replace('login.html');
+    // ✅ CORRECTION #4 : auth-choice.html au lieu de login.html
+    window.location.replace('auth-choice.html');
     throw new Error('Session expirée');
   }
 
@@ -1869,7 +1709,6 @@ async function renderNotebooksView() {
     state.cache.dashboard = data;
 
     const totalSections = data.summary.totalSections || 0;
-    const totalChapters = data.summary.totalChapters || 0;
     const streak = data.streak || { current: 0 };
     const studyTime = data.studyTime || {
       formatted: { total: '0 min', week: '0 min', today: '0 min' },
@@ -2213,7 +2052,6 @@ async function renderSectionView(params) {
 
     const container = $('analysisContainer');
     container.innerHTML = renderAnalysis(a, profile);
-    // Rendu KaTeX automatique (katex-utils.js MutationObserver)
 
     $('expandRawBtn')?.addEventListener('click', () => {
       const raw = $('rawInput');
@@ -2222,14 +2060,12 @@ async function renderSectionView(params) {
       span.textContent = raw.classList.contains('expanded') ? 'Réduire' : 'Voir tout';
     });
 
-    // Handler Q/R — le rendu KaTeX est automatique
     el.querySelectorAll('.qa-item').forEach((item) => {
       item.querySelector('.qa-question').addEventListener('click', () => {
         item.classList.toggle('open');
       });
     });
 
-    // Handler QCM — l'explication est déjà rendue automatiquement
     el.querySelectorAll('.qcm-item').forEach((qcm) => {
       const correct = qcm.dataset.correct;
       const options = qcm.querySelectorAll('.qcm-option');
@@ -2865,8 +2701,6 @@ async function renderLessonView(params) {
       ${sectionsHtml}
     `;
 
-    // Rendu KaTeX automatique (katex-utils.js MutationObserver)
-
     $('goToExamLessonBtn')?.addEventListener('click', function () {
       var subj = $('goToExamLessonBtn').dataset.subject;
       var chap = $('goToExamLessonBtn').dataset.chapter;
@@ -2940,9 +2774,6 @@ function confirmDelete({ title, message, onConfirm }) {
   });
 }
 
-// ═══════════════════════════════════════════════════════════════
-// POP-UP PREMIUM UNIVERSEL
-// ═══════════════════════════════════════════════════════════════
 function showPremiumModal() {
   const overlay = $('premiumOverlay');
   if (overlay) overlay.classList.add('show');
@@ -3017,9 +2848,15 @@ function openNewChapterModal(subject) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// MODALE AJOUT SECTION
+// ✅ CORRECTION #3 : MODALE AJOUT SECTION — garde anti-double
 // ═══════════════════════════════════════════════════════════════
+let __isAddSectionModalOpen = false;
+
 function openAddSectionModal(subject, chapterId) {
+  // ✅ Empêcher l'ouverture en double
+  if (__isAddSectionModalOpen) return;
+  __isAddSectionModalOpen = true;
+
   const info = SUBJECTS[subject];
 
   const tabsHtml = SYMBOL_GROUPS.map((g, i) =>
@@ -3075,6 +2912,13 @@ function openAddSectionModal(subject, chapterId) {
   const submitBtn = $('sectionSubmitBtn');
   const toggle = $('symbolsToggle');
   const panel = $('symbolsPanel');
+
+  // ✅ Libérer la garde à la fermeture
+  const releaseGarde = () => { __isAddSectionModalOpen = false; };
+  $('modalBackdrop')?.addEventListener('click', (e) => {
+    if (e.target === $('modalBackdrop')) releaseGarde();
+  });
+  $('modalBackdrop')?.querySelector('.modal-close')?.addEventListener('click', releaseGarde);
 
   function updateReady() {
     const len = body.value.trim().length;
@@ -3133,6 +2977,7 @@ function openAddSectionModal(subject, chapterId) {
 
     try {
       closeModal();
+      __isAddSectionModalOpen = false;
       const result = await callApi('createSection', { subject, chapterId, rawInput });
       cleanupProgress();
       showToast('Section analysée', 'success');
@@ -3164,6 +3009,139 @@ $('refreshBtn').addEventListener('click', () => {
   showToast('Actualisé', 'success', 1200);
 });
 
+function updatePremiumBadge() {
+  const badge = $('premiumBadge');
+  if (state.isPremium) badge.classList.add('show');
+  else badge.classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ✅ CORRECTION #2 : TRACKING TEMPS D'ÉTUDE protégé contre les 401
+// ═══════════════════════════════════════════════════════════════
+let studyLastSync = Date.now();
+const STUDY_SYNC_INTERVAL_MS = 2 * 60 * 1000;
+
+async function syncStudyTime(reason = 'heartbeat') {
+  if (!state.user) return;
+
+  const now = Date.now();
+  const elapsed = now - studyLastSync;
+  const minutes = Math.floor(elapsed / 60000);
+
+  if (minutes < 1) return;
+
+  const minutesToSend = Math.min(120, minutes);
+  studyLastSync = now;
+
+  try {
+    // ✅ Récupérer un token FRAIS avant l'appel
+    const token = await getIdToken(state.user, true);
+
+    const response = await fetch('/api/progress', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ action: 'trackStudyTime', minutes: minutesToSend })
+    });
+
+    // ✅ Si 401 : la session est réellement expirée, on arrête le tracking
+    if (response.status === 401) {
+      console.warn('[STUDY] Session expirée, arrêt du tracking');
+      return;
+    }
+
+    if (!response.ok) {
+      console.warn('[STUDY] Erreur serveur:', response.status);
+      return;
+    }
+
+    console.log(`[STUDY] +${minutesToSend} min (${reason})`);
+  } catch (e) {
+    // ✅ Ne pas reculer le compteur (le temps sera reporté au prochain sync)
+    console.warn('[STUDY] sync failed:', e.message);
+  }
+}
+
+setInterval(() => {
+  if (document.visibilityState === 'visible') {
+    syncStudyTime('heartbeat');
+  }
+}, STUDY_SYNC_INTERVAL_MS);
+
+// ✅ CORRECTION #5 : beforeunload avec token FRAIS
+window.addEventListener('beforeunload', () => {
+  const elapsed = Date.now() - studyLastSync;
+  const minutes = Math.floor(elapsed / 60000);
+  if (minutes >= 1 && state.user) {
+    // Utiliser le token actuel (getIdToken est async mais ne peut pas être attendu ici)
+    // On utilise sessionStorage comme fallback rapide
+    try {
+      const cachedToken = sessionStorage.getItem('arvexa_id_token');
+      if (cachedToken) {
+        fetch('/api/progress', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${cachedToken}`
+          },
+          body: JSON.stringify({ action: 'trackStudyTime', minutes: Math.min(120, minutes) }),
+          keepalive: true
+        }).catch(() => {});
+      }
+    } catch (e) {}
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    syncStudyTime('hidden');
+  } else if (document.visibilityState === 'visible') {
+    studyLastSync = Date.now();
+  }
+});
+
+// ✅ Cache token mis à jour toutes les 30 min
+async function cacheToken() {
+  if (!state.user) return;
+  try {
+    const token = await getIdToken(state.user, true);
+    sessionStorage.setItem('arvexa_id_token', token);
+  } catch (_) {}
+}
+
+setInterval(cacheToken, 30 * 60 * 1000);
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    // ✅ CORRECTION #4 : auth-choice.html
+    window.location.replace('auth-choice.html');
+    return;
+  }
+  state.user = user;
+
+  try {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (snap.exists()) {
+      state.userData = snap.data();
+      state.isPremium = isPremiumUser(state.userData);
+    }
+  } catch (_) {}
+
+  updatePremiumBadge();
+  applyRoute(routeFromHash());
+
+  if (!window.location.hash) {
+    window.history.replaceState(null, '', '#/notebooks');
+  }
+
+  cacheToken();
+});
+
 function isUserPremium(data) {
   if (!data) return false;
   const status = data.subscriptionStatus || 'none';
@@ -3182,111 +3160,7 @@ function isUserPremium(data) {
   return false;
 }
 
-function updatePremiumBadge() {
-  const badge = $('premiumBadge');
-  if (state.isPremium) badge.classList.add('show');
-  else badge.classList.remove('show');
-}
-
-// ═══════════════════════════════════════════════════════════════
-// TRACKING TEMPS D'ÉTUDE
-// ═══════════════════════════════════════════════════════════════
-let studyLastSync = Date.now();
-const STUDY_SYNC_INTERVAL_MS = 2 * 60 * 1000;
-
-async function syncStudyTime(reason = 'heartbeat') {
-  if (!state.user) return;
-
-  const now = Date.now();
-  const elapsed = now - studyLastSync;
-  const minutes = Math.floor(elapsed / 60000);
-
-  if (minutes < 1) return;
-
-  const minutesToSend = Math.min(120, minutes);
-  studyLastSync = now;
-
-  try {
-    await callApi('trackStudyTime', { minutes: minutesToSend });
-    console.log(`[STUDY] +${minutesToSend} min (${reason})`);
-  } catch (e) {
-    studyLastSync = now - (minutesToSend * 60000);
-    console.warn('[STUDY] sync failed:', e.message);
-  }
-}
-
-setInterval(() => {
-  if (document.visibilityState === 'visible') {
-    syncStudyTime('heartbeat');
-  }
-}, STUDY_SYNC_INTERVAL_MS);
-
-window.addEventListener('beforeunload', () => {
-  const elapsed = Date.now() - studyLastSync;
-  const minutes = Math.floor(elapsed / 60000);
-  if (minutes >= 1 && state.user) {
-    const cachedToken = sessionStorage.getItem('arvexa_id_token');
-    if (cachedToken) {
-      fetch('/api/progress', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${cachedToken}`
-        },
-        body: JSON.stringify({ action: 'trackStudyTime', minutes: Math.min(120, minutes) }),
-        keepalive: true
-      }).catch(() => {});
-    }
-  }
-});
-
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    syncStudyTime('hidden');
-  } else if (document.visibilityState === 'visible') {
-    studyLastSync = Date.now();
-  }
-});
-
-async function cacheToken() {
-  if (!state.user) return;
-  try {
-    const token = await getIdToken(state.user);
-    sessionStorage.setItem('arvexa_id_token', token);
-  } catch (_) {}
-}
-
-setInterval(cacheToken, 30 * 60 * 1000);
-
-// ═══════════════════════════════════════════════════════════════
-// AUTH
-// ═══════════════════════════════════════════════════════════════
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.replace('login.html');
-    return;
-  }
-  state.user = user;
-
-  try {
-    const snap = await getDoc(doc(db, 'users', user.uid));
-    if (snap.exists()) {
-      state.userData = snap.data();
-      state.isPremium = isUserPremium(state.userData);
-    }
-  } catch (_) {}
-
-  updatePremiumBadge();
-  applyRoute(routeFromHash());
-
-  if (!window.location.hash) {
-    window.history.replaceState(null, '', '#/notebooks');
-  }
-
-  cacheToken();
-});
-
-console.log('ARVEXA — Mon cahier v9.0 — KaTeX délégué + pop-up universel');
+console.log('📓 ARVEXA — Mon cahier v9.1 — Corrections appliquées');
 </script>
 </body>
 </html>
