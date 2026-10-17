@@ -32,10 +32,11 @@ const ALLOWED_ACTIONS = new Set([
   'loadNotion',
   'deleteNotion',
   'quiz',
-  'deleteCahier'
+  'deleteCahier',
+  'listCahiers'
 ]);
 
-const LIGHT_ACTIONS = new Set(['loadCahier', 'loadNotion', 'deleteNotion', 'deleteCahier']);
+const LIGHT_ACTIONS = new Set(['loadCahier', 'loadNotion', 'deleteNotion', 'deleteCahier', 'listCahiers']);
 const PREMIUM_ACTIONS = new Set([]);
 
 const INITIAL_NOTIONS_COUNT = 4;
@@ -1067,6 +1068,44 @@ async function actionQuiz(uid, body) {
   };
 }
 
+async function actionListCahiers(uid, body) {
+  try {
+    const { db } = getAdminServices();
+    const limit = Math.min(100, Number(body.limit) || 50);
+
+    const snap = await db.collection('users').doc(uid)
+      .collection(CAHIER_COLLECTION)
+      .orderBy('updatedAt', 'desc')
+      .limit(limit)
+      .get();
+
+    const cahiers = snap.docs.map((d) => {
+      const data = d.data();
+      const notions = Array.isArray(data.notions) ? data.notions : [];
+      const generatedIds = Array.isArray(data.generatedIds) ? data.generatedIds : [];
+
+      return {
+        id: d.id,
+        subject: data.subject || '',
+        subjectLabel: SUBJECT_LABELS[data.subject] || data.subject || 'Matière',
+        chapter: data.chapter || 'Chapitre',
+        notionsCount: notions.length,
+        generatedCount: generatedIds.length,
+        updatedAt: toISO(data.updatedAt || data.createdAt),
+        createdAt: toISO(data.createdAt)
+      };
+    });
+
+    return {
+      success: true,
+      cahiers
+    };
+  } catch (error) {
+    console.error('[REVISEUR] listCahiers échouée:', error.message);
+    throw { status: 500, message: 'Impossible de charger l\'historique.' };
+  }
+}
+
 async function actionDeleteCahier(uid, body) {
   const { subject, chapter } = body;
   if (!subject || !chapter) throw { status: 400, message: 'Paramètres manquants.' };
@@ -1117,6 +1156,7 @@ module.exports = async function handler(request, response) {
       case 'deleteNotion':    return response.status(200).json(await actionDeleteNotion(user.uid, body));
       case 'deleteCahier':    return response.status(200).json(await actionDeleteCahier(user.uid, body));
       case 'quiz':            return response.status(200).json(await actionQuiz(user.uid, body));
+      case 'listCahiers':     return response.status(200).json(await actionListCahiers(user.uid, body));
       default:                return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
