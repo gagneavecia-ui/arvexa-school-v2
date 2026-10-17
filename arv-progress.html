@@ -1433,15 +1433,15 @@ const db = getFirestore(app);
 const MIN_CONTENT_LENGTH = 40;
 const MAX_CONTENT_LENGTH = 15000;
 
-var SUBJECTS = {
-  mathematiques: { label: 'Mathématiques', emoji: '📐' },
-  physique:      { label: 'Physique',      emoji: '⚡' },
-  chimie:        { label: 'Chimie',        emoji: '🧪' },
-  svt:           { label: 'SVT',           emoji: '🧬' },
-  philosophie:   { label: 'Philosophie',   emoji: '🧠' },
-  histoire:      { label: 'Histoire',      emoji: '🌍' },
-  geographie:    { label: 'Géographie',    emoji: '🗺️' },
-  anglais:       { label: 'Anglais',       emoji: '🇬🇧' }
+  var SUBJECTS = {
+  mathematiques: { label: 'Mathématiques', emoji: '📐', profile: 'scientific' },
+  physique:      { label: 'Physique',      emoji: '⚡', profile: 'scientific' },
+  chimie:        { label: 'Chimie',        emoji: '🧪', profile: 'scientific' },
+  svt:           { label: 'SVT',           emoji: '🧬', profile: 'svt' },
+  philosophie:   { label: 'Philosophie',   emoji: '🧠', profile: 'philosophy' },
+  histoire:      { label: 'Histoire',      emoji: '🌍', profile: 'history' },
+  geographie:    { label: 'Géographie',    emoji: '🗺️', profile: 'history' },
+  anglais:       { label: 'Anglais',       emoji: '🇬🇧', profile: 'language' }
 };
 const ALL_SUBJECT_KEYS = Object.keys(SUBJECTS);
 
