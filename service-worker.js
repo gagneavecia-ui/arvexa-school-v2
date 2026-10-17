@@ -43,6 +43,7 @@ const PRECACHE_SHELL = [
   './icon.png',
   './arv-progress.html',
   './katex-utils.js',
+  './perf.css',
   './bac-date.js'
 ];
 
