@@ -1,9 +1,10 @@
 // ================================================================
-// API RÉVISEUR v7.3 — ARVEXA School
+// API RÉVISEUR v7.4 — ARVEXA School
 // Génération progressive + cahier persistant + lecture gratuite
 // Support multi-format : scientifiques + leçons
 // Providers : OpenRouter (principal) + Groq (fallback)
-// ✅ Quotas fonctionnels : 3 crédits/jour par utilisateur
+// Quotas : 3 crédits/jour par utilisateur
+// ✅ Ajout : listCahiers (historique)
 // ================================================================
 
 const fs = require('fs');
@@ -19,12 +20,12 @@ const MAX_REQUESTS_PER_WINDOW_LIGHT = 60;
 const MAX_REQUESTS_PER_WINDOW_HEAVY = 20;
 const requestLog = new Map();
 
-// ✅ 3 crédits gratuits par jour
 const FREE_REVISEUR_LIMIT = 3;
 
 const ALLOWED_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie', 'svt', 'philosophie', 'histoire', 'geographie']);
 const ALLOWED_MODES = new Set(['fiche', 'flashcard']);
 
+// ✅ Actions autorisées (avec listCahiers)
 const ALLOWED_ACTIONS = new Set([
   'loadCahier',
   'generateInitial',
@@ -50,6 +51,7 @@ const CAHIER_COLLECTION = 'reviseurCahier';
 const KNOWLEDGE_MEMORY_CACHE = new Map();
 let adminServices = null;
 
+// ✅ Labels des matières
 const SUBJECT_LABELS = {
   mathematiques: 'Mathématiques',
   physique: 'Physique',
@@ -59,8 +61,9 @@ const SUBJECT_LABELS = {
   histoire: 'Histoire',
   geographie: 'Géographie'
 };
+
 // ────────────────────────────────────────────────────────────────
-// ✅ CLASSIFICATION DES MATIÈRES
+// CLASSIFICATION DES MATIÈRES
 // ────────────────────────────────────────────────────────────────
 const SCIENTIFIC_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie']);
 const LESSON_SUBJECTS = new Set(['svt', 'philosophie', 'histoire', 'geographie']);
@@ -183,8 +186,10 @@ function rateLimited(ip, maxRequests) {
   return recent.length > limit;
 }
 
-function jsonError(response, status, error, code) {
-  return response.status(status).json({ success: false, error, ...(code ? { code } : {}) });
+function jsonError(response, status, error, code, debug) {
+  const payload = { success: false, error, ...(code ? { code } : {}) };
+  if (debug) payload.debug = debug;
+  return response.status(status).json(payload);
 }
 
 async function verifyFirebaseToken(request) {
@@ -270,9 +275,8 @@ function deepClean(obj) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// ✅ QUOTAS — Fonctions de gestion du quota gratuit
+// QUOTAS
 // ════════════════════════════════════════════════════════════════
-
 function getUsageDate() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -779,6 +783,57 @@ async function actionLoadNotion(uid, body) {
   return { success: true, notion };
 }
 
+// ✅ NOUVELLE ACTION : lister les cahiers (pour l'historique)
+async function actionListCahiers(uid, body) {
+  try {
+    const { db } = getAdminServices();
+    const limit = Math.min(100, Number(body.limit) || 50);
+
+    // ✅ Requête simple SANS orderBy (évite les problèmes d'index Firestore)
+    const snap = await db.collection('users').doc(uid)
+      .collection(CAHIER_COLLECTION)
+      .limit(limit)
+      .get();
+
+    const cahiers = snap.docs.map((d) => {
+      const data = d.data();
+      const notions = Array.isArray(data.notions) ? data.notions : [];
+      const generatedIds = Array.isArray(data.generatedIds) ? data.generatedIds : [];
+
+      return {
+        id: d.id,
+        subject: data.subject || '',
+        subjectLabel: SUBJECT_LABELS[data.subject] || data.subject || 'Matière',
+        chapter: data.chapter || 'Chapitre',
+        notionsCount: notions.length,
+        generatedCount: generatedIds.length,
+        updatedAt: toISO(data.updatedAt || data.createdAt),
+        createdAt: toISO(data.createdAt)
+      };
+    });
+
+    // ✅ Tri côté serveur (JS) au lieu de Firestore
+    cahiers.sort((a, b) => {
+      const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    return {
+      success: true,
+      cahiers
+    };
+  } catch (error) {
+    console.error('[REVISEUR] listCahiers échouée:', error.message);
+    console.error('[REVISEUR] listCahiers stack:', error.stack);
+    throw {
+      status: 500,
+      message: 'Impossible de charger l\'historique.',
+      debug: error.message
+    };
+  }
+}
+
 async function actionGenerateInitial(uid, body) {
   const { subject, chapter } = body;
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
@@ -813,9 +868,8 @@ async function actionGenerateInitial(uid, body) {
   }
 
   const notionsToGenerate = remainingNotions.slice(0, INITIAL_NOTIONS_COUNT);
-  console.log(`[REVISEUR v7.3] generateInitial | ${subject} (${subjectType}) > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
+  console.log(`[REVISEUR v7.4] generateInitial | ${subject} (${subjectType}) > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
 
-  // ✅ Réservation du quota
   let reservation = null;
   try {
     reservation = await reserveFreeGeneration(uid);
@@ -849,7 +903,6 @@ async function actionGenerateInitial(uid, body) {
   } catch (err) {
     console.error('[REVISEUR] IA échouée:', err.message);
 
-    // ✅ Libérer le quota si échec IA
     if (reservation?.reserved) {
       try { await releaseFreeGeneration(uid, reservation.usageDate); } catch (_) {}
     }
@@ -912,9 +965,8 @@ async function actionGenerateMore(uid, body) {
 
   const shuffled = shuffle(remainingNotions);
   const notionsToGenerate = shuffled.slice(0, Math.min(MORE_NOTIONS_COUNT, shuffled.length));
-  console.log(`[REVISEUR v7.3] generateMore | ${subject} (${subjectType}) > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
+  console.log(`[REVISEUR v7.4] generateMore | ${subject} (${subjectType}) > ${chapter} | ${notionsToGenerate.length}/${remainingNotions.length} notions`);
 
-  // ✅ Réservation du quota
   let reservation = null;
   try {
     reservation = await reserveFreeGeneration(uid);
@@ -1012,14 +1064,11 @@ async function actionQuiz(uid, body) {
     throw { status: 400, message: 'Génère d\'abord des notions avant de faire un quiz.' };
   }
 
-  // ✅ NOUVEAU : réserver 1 crédit pour le quiz
   let reservation = null;
   try {
-    console.log(`[REVISEUR] Quiz — réservation quota pour uid=${uid.slice(0, 8)}`);
     reservation = await reserveFreeGeneration(uid);
-    console.log(`[REVISEUR] Quiz — réservation OK:`, JSON.stringify(reservation));
   } catch (error) {
-    console.error('[REVISEUR] Quiz — ERREUR réservation:', error.message);
+    console.error('[REVISEUR] Erreur quota:', error.message);
     throw { status: 503, message: 'Quota temporairement indisponible.' };
   }
 
@@ -1042,7 +1091,6 @@ async function actionQuiz(uid, body) {
   } catch (err) {
     console.error('[REVISEUR] Quiz IA échoué:', err.message);
 
-    // ✅ Libérer le quota si IA échoue
     if (reservation?.reserved) {
       try { await releaseFreeGeneration(uid, reservation.usageDate); } catch (_) {}
     }
@@ -1054,7 +1102,6 @@ async function actionQuiz(uid, body) {
   const validQuiz = (quizData.quiz || []).filter((q) => q && q.question && Array.isArray(q.options) && q.options.length === 4);
 
   if (validQuiz.length === 0) {
-    // ✅ Libérer le quota si aucune question valide
     if (reservation?.reserved) {
       try { await releaseFreeGeneration(uid, reservation.usageDate); } catch (_) {}
     }
@@ -1075,44 +1122,6 @@ async function actionQuiz(uid, body) {
       ? { type: 'premium', unlimited: true }
       : { type: 'free', used: reservation?.used, limit: FREE_REVISEUR_LIMIT }
   };
-}
-
-async function actionListCahiers(uid, body) {
-  try {
-    const { db } = getAdminServices();
-    const limit = Math.min(100, Number(body.limit) || 50);
-
-    const snap = await db.collection('users').doc(uid)
-      .collection(CAHIER_COLLECTION)
-      .orderBy('updatedAt', 'desc')
-      .limit(limit)
-      .get();
-
-    const cahiers = snap.docs.map((d) => {
-      const data = d.data();
-      const notions = Array.isArray(data.notions) ? data.notions : [];
-      const generatedIds = Array.isArray(data.generatedIds) ? data.generatedIds : [];
-
-      return {
-        id: d.id,
-        subject: data.subject || '',
-        subjectLabel: SUBJECT_LABELS[data.subject] || data.subject || 'Matière',
-        chapter: data.chapter || 'Chapitre',
-        notionsCount: notions.length,
-        generatedCount: generatedIds.length,
-        updatedAt: toISO(data.updatedAt || data.createdAt),
-        createdAt: toISO(data.createdAt)
-      };
-    });
-
-    return {
-      success: true,
-      cahiers
-    };
-  } catch (error) {
-    console.error('[REVISEUR] listCahiers échouée:', error.message);
-    throw { status: 500, message: 'Impossible de charger l\'historique.' };
-  }
 }
 
 async function actionDeleteCahier(uid, body) {
@@ -1160,17 +1169,17 @@ module.exports = async function handler(request, response) {
     switch (action) {
       case 'loadCahier':      return response.status(200).json(await actionLoadCahier(user.uid, body));
       case 'loadNotion':      return response.status(200).json(await actionLoadNotion(user.uid, body));
+      case 'listCahiers':     return response.status(200).json(await actionListCahiers(user.uid, body));
       case 'generateInitial': return response.status(200).json(await actionGenerateInitial(user.uid, body));
       case 'generateMore':    return response.status(200).json(await actionGenerateMore(user.uid, body));
       case 'deleteNotion':    return response.status(200).json(await actionDeleteNotion(user.uid, body));
       case 'deleteCahier':    return response.status(200).json(await actionDeleteCahier(user.uid, body));
       case 'quiz':            return response.status(200).json(await actionQuiz(user.uid, body));
-      case 'listCahiers':     return response.status(200).json(await actionListCahiers(user.uid, body));
       default:                return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[REVISEUR v7.3] "${action}" échouée:`, error.message);
-    if (error.status) return jsonError(response, error.status, error.message, error.code);
+    console.error(`[REVISEUR v7.4] "${action}" échouée:`, error.message);
+    if (error.status) return jsonError(response, error.status, error.message, error.code, error.debug);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
 };
