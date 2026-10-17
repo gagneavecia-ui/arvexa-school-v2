@@ -1,15 +1,13 @@
 // ================================================================
-// API EXAM v5.2 — ARVEXA School
-// Mode examen 100% IA + Pool Firestore + Correction pédagogique
-// Historique Premium · Rate limit adaptatif · Tokens élargis
-// Corrections appliquées : voir commentaires ✅
+// API EXAM v5.3 — ARVEXA School
+// Corrections notes : max 20 strict, 0 si pas de réponse
 // ================================================================
 
 module.exports.config = { maxDuration: 90 };
 
 const WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS_PER_WINDOW_LIGHT = 60;   // Actions légères (listExams, loadExam, deleteExam)
-const MAX_REQUESTS_PER_WINDOW_HEAVY = 3;    // Actions lourdes (generate, correct)
+const MAX_REQUESTS_PER_WINDOW_LIGHT = 60;
+const MAX_REQUESTS_PER_WINDOW_HEAVY = 3;
 const requestLog = new Map();
 
 const ALLOWED_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie', 'svt', 'philosophie', 'histoire', 'geographie']);
@@ -17,18 +15,17 @@ const ALLOWED_DIFFICULTIES = new Set(['easy', 'medium', 'hard', 'bac']);
 const ALLOWED_DURATIONS = new Set([30, 60, 90, 120, 180]);
 const ALLOWED_ACTIONS = new Set(['generate', 'correct', 'listExams', 'loadExam', 'deleteExam']);
 const LIGHT_ACTIONS = new Set(['listExams', 'loadExam', 'deleteExam']);
-const PREMIUM_ACTIONS = new Set(['listExams', 'loadExam']);  // 🔒 Premium requis
+const PREMIUM_ACTIONS = new Set(['listExams', 'loadExam']);
 const REQUIRED_EXERCISES = 3;
 const QUESTIONS_PER_EXERCISE = 5;
 const TOTAL_POINTS = 20;
 const FREE_EXAM_LIMIT = 2;
 const POOL_COLLECTION = 'examPool';
 
-// ✅ TOKENS ÉLARGIS — intervalle plus large pour éviter les coupures
 const MAX_TOKENS = {
-  GENERATE: 16000,       // était 12000 → marge de 33% en plus
-  CORRECT: 18000,        // était 14000 → marge de 28% en plus
-  PROVIDER_DEFAULT: 16000 // était 12000 → alignement sur GENERATE
+  GENERATE: 16000,
+  CORRECT: 18000,
+  PROVIDER_DEFAULT: 16000
 };
 
 const SUBJECT_LABELS = {
@@ -45,9 +42,6 @@ const CHOICE_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie']);
 
 let adminServices = null;
 
-// ════════════════════════════════════════════════════════════════
-// FIREBASE ADMIN
-// ════════════════════════════════════════════════════════════════
 function getAdminServices() {
   if (adminServices) return adminServices;
   const credentials = process.env.FIREBASE_ADMIN_CREDENTIALS;
@@ -65,9 +59,6 @@ function getAdminServices() {
   return adminServices;
 }
 
-// ════════════════════════════════════════════════════════════════
-// UTILITAIRES
-// ════════════════════════════════════════════════════════════════
 function clientIp(request) {
   return String(request.headers['x-forwarded-for'] || request.socket?.remoteAddress || 'unknown').split(',')[0].trim();
 }
@@ -148,9 +139,6 @@ function round2(n) {
   return Math.round(n * 100) / 100;
 }
 
-// ════════════════════════════════════════════════════════════════
-// POST-TRAITEMENT LATEX
-// ════════════════════════════════════════════════════════════════
 const UNICODE_TO_LATEX = {
   'π': '\\pi ', '√': '\\sqrt{}', '×': '\\times ', '÷': '\\div ',
   '≤': '\\leq ', '≥': '\\geq ', '≠': '\\neq ', '∞': '\\infty ',
@@ -204,9 +192,6 @@ function deepClean(obj) {
   return obj;
 }
 
-// ════════════════════════════════════════════════════════════════
-// QUOTAS
-// ════════════════════════════════════════════════════════════════
 function getUsageDate() { return new Date().toISOString().slice(0, 10); }
 
 async function reserveFreeGeneration(uid) {
@@ -227,7 +212,6 @@ async function reserveFreeGeneration(uid) {
   });
 }
 
-// ✅ CORRECTION #2 — Protéger releaseFreeGeneration contre les erreurs Firebase Admin
 async function releaseFreeGeneration(uid, usageDate) {
   if (!usageDate) return;
   try {
@@ -241,9 +225,6 @@ async function releaseFreeGeneration(uid, usageDate) {
   } catch (_) {}
 }
 
-// ════════════════════════════════════════════════════════════════
-// FOURNISSEURS IA
-// ════════════════════════════════════════════════════════════════
 function getProviders() {
   const providers = [];
   if (process.env.GROQ_API_KEY) {
@@ -269,10 +250,8 @@ function getProviders() {
 }
 
 async function callProvider(provider, prompt, maxTokens) {
-  // ✅ TOKENS ÉLARGIS — valeur par défaut plus généreuse
   if (!maxTokens) maxTokens = MAX_TOKENS.PROVIDER_DEFAULT;
   const controller = new AbortController();
-  // ✅ Timeout élargi : 20s → 28s pour laisser plus de marge aux gros modèles
   const timeout = setTimeout(() => controller.abort(), 28000);
   try {
     console.log(`[AI] ${provider.name} | prompt: ${prompt.length} car | max_tokens: ${maxTokens}`);
@@ -321,9 +300,6 @@ async function callProvider(provider, prompt, maxTokens) {
   }
 }
 
-// ════════════════════════════════════════════════════════════════
-// POOL FIRESTORE
-// ════════════════════════════════════════════════════════════════
 async function saveExercisesToPool(exam, subject, difficulty, uid) {
   try {
     const { db, FieldValue } = getAdminServices();
@@ -373,7 +349,6 @@ async function buildExamFromPool(config) {
 
     const allEx = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-    // ═══ Priorité 1 : filtrer par chapitre demandé ═══
     let poolEx = allEx;
     if (config.chapter && config.chapter !== 'all') {
       const byChapter = allEx.filter((e) => e.chapter === config.chapter);
@@ -382,7 +357,6 @@ async function buildExamFromPool(config) {
       }
     }
 
-    // ═══ Priorité 2 : filtrer par difficulté ═══
     let filtered = poolEx.filter((e) => e.difficulty === config.difficulty);
     if (filtered.length < 6) filtered = poolEx;
 
@@ -463,9 +437,6 @@ async function buildUnavailableExam(config) {
   };
 }
 
-// ════════════════════════════════════════════════════════════════
-// PROMPTS
-// ════════════════════════════════════════════════════════════════
 const LATEX_RULES = `
 ═══════════════════════════════════════════════════════════════
 RÈGLES LATEX — OBLIGATOIRES
@@ -716,9 +687,6 @@ FORMAT JSON :
 Réponds UNIQUEMENT avec l'objet JSON.`;
 }
 
-// ════════════════════════════════════════════════════════════════
-// RÉPARATION & VALIDATION
-// ════════════════════════════════════════════════════════════════
 function repairExamStructure(exam, subjectName) {
   if (!exam || typeof exam !== 'object') return null;
   const supportsChoices = CHOICE_SUBJECTS.has(subjectName);
@@ -853,7 +821,6 @@ async function generateWithFallback(prompt, subjectName) {
     const provider = providers[i];
     try {
       console.log('[AI] Tentative ' + provider.name + '...');
-      // ✅ Utilise MAX_TOKENS.GENERATE (élargi à 16000)
       let rawExam = await callProvider(provider, prompt, MAX_TOKENS.GENERATE);
       rawExam = repairExamStructure(rawExam, subjectName);
 
@@ -871,17 +838,14 @@ async function generateWithFallback(prompt, subjectName) {
   throw new Error('all_providers_failed: ' + errors.join(' | '));
 }
 
-// ✅ CORRECTION #6 — Validation renforcée de la structure de correction
 async function correctWithFallback(prompt) {
   const providers = getProviders();
   if (!providers.length) throw new Error('provider_missing');
   const errors = [];
   for (const provider of providers) {
     try {
-      // ✅ Utilise MAX_TOKENS.CORRECT (élargi à 18000)
       const result = await callProvider(provider, prompt, MAX_TOKENS.CORRECT);
 
-      // ✅ Validation renforcée
       if (!result || typeof result !== 'object') {
         errors.push(provider.name + ': résultat non-objet');
         continue;
@@ -890,7 +854,6 @@ async function correctWithFallback(prompt) {
         errors.push(provider.name + ': exercises vide ou invalide');
         continue;
       }
-      // ✅ Vérifier que chaque exercice a au moins une question
       const hasValidExercises = result.exercises.every((ex) =>
         ex && Array.isArray(ex.questions) && ex.questions.length > 0
       );
@@ -898,7 +861,6 @@ async function correctWithFallback(prompt) {
         errors.push(provider.name + ': questions manquantes dans un exercice');
         continue;
       }
-      // ✅ Vérifier que le score est un nombre
       if (typeof result.score !== 'number' || isNaN(result.score)) {
         errors.push(provider.name + ': score invalide');
         continue;
@@ -912,9 +874,6 @@ async function correctWithFallback(prompt) {
   throw new Error('all_providers_failed: ' + errors.join(' | '));
 }
 
-// ════════════════════════════════════════════════════════════════
-// CORRECTION HYBRIDE
-// ════════════════════════════════════════════════════════════════
 function correctQCMDeterministic(subject, subjectId, answers) {
   const exercises = [];
   subject.exercises.forEach((exercise, exIdx) => {
@@ -988,6 +947,58 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
   const subject = exam.subjects.find((s) => s.id === subjectId) || exam.subjects[0];
   if (!subject) throw new Error('subject_not_found');
 
+  // ✅ CORRECTION : Vérifier s'il y a AU MOINS une réponse
+  const hasAnyAnswer = Object.values(answers || {}).some(
+    (a) => a !== null && a !== undefined && String(a).trim() !== ''
+  );
+
+  if (!hasAnyAnswer) {
+    console.log('[EXAM] Aucune réponse fournie → note forcée à 0/20');
+
+    const emptyExercises = subject.exercises.map((ex, exIdx) => ({
+      number: ex.number || (exIdx + 1),
+      title: ex.title || `Exercice ${exIdx + 1}`,
+      score: 0,
+      maxScore: Number(ex.points) || 6.67,
+      correctAnswers: 0,
+      totalQuestions: ex.questions.length,
+      questions: ex.questions.map((q, qIdx) => ({
+        number: q.number || `${exIdx + 1}.${qIdx + 1}`,
+        questionText: q.text || '',
+        type: q.type || 'text',
+        studentAnswer: null,
+        correctAnswer: q.correctAnswer || null,
+        points: 0,
+        maxPoints: Number(q.points) || 1.33,
+        status: 'unanswered',
+        feedback: 'Pas de réponse.',
+        explanation: q.correctAnswer ? `La bonne réponse était : ${q.correctAnswer}` : 'Aucune réponse fournie.',
+        steps: [],
+        concept: '',
+        whyWrong: null,
+        commonMistake: null,
+        toReview: null,
+        betterMethod: null
+      })),
+      explanation: 'Aucune réponse fournie.',
+      advice: 'Réponds aux questions la prochaine fois !'
+    }));
+
+    return {
+      score: 0,
+      totalScore: TOTAL_POINTS,
+      percentage: 0,
+      grade: 'Insuffisant',
+      exercises: emptyExercises,
+      revisionTopics: ['Revoir tout le chapitre'],
+      globalFeedback: {
+        strengths: [],
+        weaknesses: ['Aucune réponse fournie'],
+        encouragement: 'Il faut répondre aux questions pour être évalué !'
+      }
+    };
+  }
+
   const deterministicResults = correctQCMDeterministic(subject, subjectId, answers);
   const hasTextQuestions = deterministicResults.some((r) => r.textQuestions.length > 0);
 
@@ -1018,8 +1029,28 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
             if (aiQ.correctAnswer && !match.correctAnswer) match.correctAnswer = aiQ.correctAnswer;
 
             if (match.status === 'pending') {
-              match.points = Number(aiQ.points) || 0;
-              match.status = aiQ.status || (match.points > 0 ? 'correct' : 'wrong');
+              // ✅ CORRECTION : Si aucune réponse → 0 point, quoi que dise l'IA
+              if (!match.studentAnswer || String(match.studentAnswer).trim() === '') {
+                match.points = 0;
+                match.status = 'unanswered';
+                match.feedback = aiQ.feedback || 'Pas de réponse. Voici comment on fait.';
+                return;
+              }
+
+              // ✅ Si la réponse de l'élève est vide/blanche → 0 point
+              const studentStr = String(match.studentAnswer).trim().toLowerCase();
+              if (studentStr === '' || studentStr === 'aucune' || studentStr === 'vide' || studentStr === 'null') {
+                match.points = 0;
+                match.status = 'unanswered';
+                return;
+              }
+
+              // ✅ Sinon, on fait confiance à l'IA mais on plafonne les points
+              const maxQ = Number(match.maxPoints) || 1.33;
+              const aiPoints = Math.max(0, Math.min(maxQ, Number(aiQ.points) || 0));
+              match.points = aiPoints;
+              match.status = aiQ.status || (aiPoints > 0 ? 'correct' : 'wrong');
+
               if (match.status === 'correct') {
                 target.exerciseResult.score += match.points;
                 target.exerciseResult.correctAnswers++;
@@ -1046,7 +1077,6 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
     }
   }
 
-  // ✅ CORRECTION #15 — Calcul final du score (une seule fois, propre)
   const finalExercises = deterministicResults.map((r) => r.exerciseResult);
 
   let rawScore = 0;
@@ -1084,7 +1114,12 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
     finalScore = 0;
   }
 
-  finalScore = round2(Math.max(0, Math.min(TOTAL_POINTS, finalScore)));
+  // ✅ CORRECTION : Plafonner STRICTEMENT à 20
+  finalScore = Math.max(0, Math.min(TOTAL_POINTS, finalScore));
+  finalScore = round2(finalScore);
+
+  if (finalScore > TOTAL_POINTS) finalScore = TOTAL_POINTS;
+
   const percentage = Math.round((finalScore / TOTAL_POINTS) * 100);
 
   let grade = 'Insuffisant';
@@ -1125,9 +1160,6 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
   };
 }
 
-// ════════════════════════════════════════════════════════════════
-// SAUVEGARDE RÉSULTAT
-// ════════════════════════════════════════════════════════════════
 async function saveExamResult(uid, body, result) {
   const { db, FieldValue } = getAdminServices();
   const selected = body.exam.subjects.find((s) => s.id === body.subjectId) || body.exam.subjects[0];
@@ -1157,9 +1189,6 @@ async function saveExamResult(uid, body, result) {
   });
 }
 
-// ════════════════════════════════════════════════════════════════
-// VALIDATIONS
-// ════════════════════════════════════════════════════════════════
 function validateConfig(body) {
   const config = {
     subject: String(body.subject || ''),
@@ -1178,21 +1207,15 @@ function validateConfig(body) {
   return null;
 }
 
-// ✅ CORRECTION #14 — Validation correction plus souple
 function validateCorrection(body) {
   if (!body.exam || !Array.isArray(body.exam.subjects) || !body.subjectId || !body.answers) {
     return 'Données invalides.';
   }
-  // ✅ Limite augmentée : 250 Ko → 500 Ko (les examens riches peuvent être volumineux)
   const size = JSON.stringify(body).length;
   if (size > 500000) return 'Examen trop volumineux.';
   return null;
 }
 
-// ════════════════════════════════════════════════════════════════
-// CHARGEMENT CONTEXTE CAHIER
-// ✅ CORRECTION #8 — Parallélisation des requêtes Firestore
-// ════════════════════════════════════════════════════════════════
 async function loadNotebookContext(uid, subject, chapterId, chapterTitle) {
   const { db } = getAdminServices();
   const notebookKey = subject;
@@ -1205,8 +1228,6 @@ async function loadNotebookContext(uid, subject, chapterId, chapterTitle) {
   let chapterData = null;
   let actualChapterId = chapterId;
 
-  // ✅ Optimisation : si on a un chapterId, on lance en parallèle
-  // la récupération du chapter ET la potentielle recherche par titre
   const chapterRef = chapterId
     ? db.collection('users').doc(uid).collection('notebooks').doc(notebookKey)
         .collection('chapters').doc(chapterId).get()
@@ -1217,7 +1238,6 @@ async function loadNotebookContext(uid, subject, chapterId, chapterTitle) {
         .collection('chapters').get().catch(() => ({ docs: [] }))
     : null;
 
-  // Attendre les deux en parallèle
   const [chapterSnap, chaptersSnap] = await Promise.all([
     chapterRef || Promise.resolve(null),
     chaptersListPromise || Promise.resolve(null)
@@ -1226,7 +1246,6 @@ async function loadNotebookContext(uid, subject, chapterId, chapterTitle) {
   if (chapterSnap && chapterSnap.exists) {
     chapterData = { id: chapterId, ...chapterSnap.data() };
   } else if (chaptersSnap && chaptersSnap.docs) {
-    // Fallback : recherche par titre
     const target = normalizeText(chapterTitle);
     const found = chaptersSnap.docs.find((d) => {
       const t = normalizeText(d.data().title);
@@ -1240,7 +1259,6 @@ async function loadNotebookContext(uid, subject, chapterId, chapterTitle) {
 
   if (!chapterData) return null;
 
-  // ✅ Une seule requête Firestore supplémentaire pour les sections
   const sectionsSnap = await db.collection('users').doc(uid)
     .collection('notebooks').doc(notebookKey)
     .collection('chapters').doc(actualChapterId)
@@ -1269,9 +1287,6 @@ async function loadNotebookContext(uid, subject, chapterId, chapterTitle) {
   };
 }
 
-// ════════════════════════════════════════════════════════════════
-// HANDLER PRINCIPAL
-// ════════════════════════════════════════════════════════════════
 module.exports = async function handler(request, response) {
   applyCors(request, response);
   if (request.method === 'OPTIONS') return response.status(204).end();
@@ -1280,7 +1295,6 @@ module.exports = async function handler(request, response) {
     return jsonError(response, 405, 'Méthode non autorisée.');
   }
 
-  // Rate limit adaptatif selon l'action
   const body = request.body && typeof request.body === 'object' ? request.body : {};
   const action = body.action || 'generate';
   const isLight = LIGHT_ACTIONS.has(action);
@@ -1297,7 +1311,6 @@ module.exports = async function handler(request, response) {
 
   if (!ALLOWED_ACTIONS.has(action)) return jsonError(response, 400, 'Action invalide.');
 
-  // ═══ VÉRIFICATION PREMIUM POUR L'HISTORIQUE ═══
   if (PREMIUM_ACTIONS.has(action)) {
     try {
       const { db } = getAdminServices();
@@ -1319,7 +1332,6 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══ HISTORIQUE : LISTER ═══
   if (action === 'listExams') {
     try {
       const { db } = getAdminServices();
@@ -1351,7 +1363,6 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══ HISTORIQUE : CHARGER ═══
   if (action === 'loadExam') {
     if (!body.examId) return jsonError(response, 400, 'examId requis.');
     try {
@@ -1381,7 +1392,6 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══ HISTORIQUE : SUPPRIMER (autorisé même sans Premium) ═══
   if (action === 'deleteExam') {
     if (!body.examId) return jsonError(response, 400, 'examId requis.');
     try {
@@ -1393,7 +1403,6 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══ GÉNÉRATION ═══
   if (action === 'generate') {
     const validationError = validateConfig(body);
     if (validationError) return jsonError(response, 400, validationError);
@@ -1461,7 +1470,6 @@ module.exports = async function handler(request, response) {
     }
   }
 
-  // ═══ CORRECTION ═══
   if (action === 'correct') {
     const validationError = validateCorrection(body);
     if (validationError) return jsonError(response, 400, validationError);
