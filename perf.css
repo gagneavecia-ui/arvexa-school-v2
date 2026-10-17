@@ -1,0 +1,253 @@
+/* ============================================================
+   ARVEXA — PERF.CSS v1.0
+   Optimisations de fluidité · Zéro impact visuel
+   Charger APRÈS tous les autres CSS
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────────
+   FIX 1 — backdrop-filter : désactivé pendant le scroll
+   C'est le tueur n°1 sur mobile. On garde un fond opaque
+   équivalent visuellement (98% d'opacité = même rendu à l'œil).
+   ───────────────────────────────────────────────────────────── */
+
+/* Headers sticky → fond quasi-opaque, sans flou GPU */
+.header,
+.topbar,
+.app-header,
+.quota-bar,
+.input-zone,
+.toolbar,
+.exam-top,
+.site-header,
+header.header,
+.display {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Overlays/panneaux qui restent visibles pendant le scroll */
+.card,
+.panel,
+.sub-card,
+.bg-card,
+.next-card,
+.tip-card,
+.feat-card,
+.blog-card,
+.price-card,
+.testi-card,
+.team-card,
+.impact-card,
+.stat-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* On garde le flou UNIQUEMENT sur les modales plein écran
+   (elles ne scrollent pas derrière → coût négligeable) */
+.modal-overlay,
+.sidebar-overlay,
+.detail-overlay,
+.msg-menu-overlay,
+.image-modal,
+.lightbox,
+.arvexa-popup-overlay {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX 2 — Glow animés : gel des animations continues
+   Les blur(80-90px) qui tournent en boucle coûtent ~15-25% GPU.
+   On garde l'effet visuel statique (même apparence au repos).
+   ───────────────────────────────────────────────────────────── */
+
+.glow,
+.glow-1,
+.glow-2,
+.glow-3,
+.cover-glow,
+.bg-glow {
+  animation: none !important;
+}
+
+/* Sur mobile, on allège encore plus (blur réduit, pas supprimé) */
+@media (max-width: 768px) {
+  .glow,
+  .bg-glow {
+    filter: blur(40px) !important;
+    opacity: 0.1 !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX 3 — transition: all → uniquement les propriétés utiles
+   Évite au navigateur de surveiller padding, margin, font-size…
+   ───────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  transition-property: transform, opacity, background-color, border-color, color, box-shadow !important;
+}
+
+/* Exception : champs de saisie et éléments critiques gardent leur transition complète */
+input,
+textarea,
+select,
+.btn-submit,
+.btn-submit::before,
+.btn-subscribe-main,
+.sidebar,
+.sidebar-overlay,
+.modal,
+.modal-overlay,
+.detail-panel,
+.detail-overlay,
+.chat-container {
+  transition-property: all !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX 4 — will-change : uniquement au moment de l'animation
+   ───────────────────────────────────────────────────────────── */
+
+.reveal {
+  will-change: auto !important;
+}
+.reveal.visible {
+  will-change: auto !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX 5 — content-visibility sur les longues listes
+   Le navigateur saute le rendu de ce qui est hors écran.
+   Grosse victoire sur chapitre.html, matiere.html, formulaires.html.
+   ───────────────────────────────────────────────────────────── */
+
+.part-card,
+.chapter-card,
+.f-card,
+.screen-card,
+.conv-item,
+.history-item,
+.notif-card,
+.exam-item,
+.msg-menu-item,
+.faq-item,
+.blog-card,
+.testi-card,
+.price-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 120px;
+}
+
+/* Sur les pages avec beaucoup de cartes, un peu plus précis */
+.subject-grid .screen-card {
+  contain-intrinsic-size: auto 260px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX 6 — Animations infinies décoratives : moins coûteuses
+   On garde l'effet mais on réduit la fréquence.
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes glowMove {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(30px, -20px) scale(1.1); }
+}
+
+/* On garde les animations de pulse mais avec un coût moindre */
+.status-dot,
+.notif-dot,
+.online-dot {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX 7 — Images : forcer lazy + décodage async
+   ───────────────────────────────────────────────────────────── */
+
+img:not([loading]) {
+  loading: lazy;
+}
+
+img {
+  decoding: async;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX 8 — Scroll-behavior : natif sur mobile (plus fluide)
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  html {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX 9 — Box-shadow : désactiver les ombres coûteuses sur hover mobile
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .screen-card:hover,
+  .feature-card:hover,
+  .blog-card:hover,
+  .testi-card:hover,
+  .price-card:hover,
+  .tool-card:hover,
+  .el:hover {
+    box-shadow: none !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX 10 — Containment global (isolation des repaints)
+   ───────────────────────────────────────────────────────────── */
+
+.card,
+.panel,
+.notif-card,
+.exam-item,
+.chapter-card,
+.part-card,
+.f-card {
+  contain: layout style paint;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX 11 — Smooth scroll des ancres (fallback safe)
+   ───────────────────────────────────────────────────────────── */
+
+:target {
+  scroll-margin-top: 80px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FIX 12 — Anti-jank sur les sticky headers
+   → isole le header du reste pour éviter les repaints croisés
+   ───────────────────────────────────────────────────────────── */
+
+.header,
+.topbar,
+.app-header,
+.exam-top {
+  contain: layout style;
+  isolation: isolate;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RESPECT DES PRÉFÉRENCES UTILISATEUR
+   ───────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
