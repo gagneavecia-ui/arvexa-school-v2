@@ -2997,9 +2997,14 @@
       recap.className = 'recap-section';
       recap.innerHTML = '<h3 class="recap-title">📚 Détail des exercices</h3>';
 
-      exercises.forEach(function (exercise, idx) {
-        var percent = exercise.maxScore > 0 ? (exercise.score / exercise.maxScore) * 100 : 0;
-        var icon = percent >= 75 ? '✅' : percent >= 50 ? '⚠️' : '❌';
+         exercises.forEach(function (exercise, idx) {
+      var percent = exercise.maxScore > 0 ? Math.min(100, (exercise.score / exercise.maxScore) * 100) : 0;
+      ...
+      '<div class="exercise-card-meta">' + 
+        Math.min(Number(exercise.score || 0), Number(exercise.maxScore || 6.67)).toFixed(2) + 
+        ' / ' + 
+        Number(exercise.maxScore || 6.67).toFixed(2) + 
+        ' pts · ' + ...
 
         var card = document.createElement('button');
         card.className = 'exercise-card';
@@ -3041,12 +3046,16 @@
     var header = document.createElement('div');
     header.className = 'exercise-detail-header';
     header.innerHTML =
-      '<button class="back-btn-detail" id="backToRecapBtn"><i class="fas fa-arrow-left"></i> Retour</button>' +
-      '<div class="exercise-detail-title">' +
-      '<div class="exercise-detail-icon">' + icon + '</div>' +
-      '<div><h3>Exercice ' + (exercise.number || (exerciseIndex + 1)) + (exercise.title ? ' — ' + escapeHtml(exercise.title) : '') + '</h3>' +
-      '<div class="exercise-detail-meta">' + Number(exercise.score || 0).toFixed(2) + ' / ' + Number(exercise.maxScore || 6.67).toFixed(2) + ' pts · ' + (exercise.correctAnswers || 0) + '/' + (exercise.totalQuestions || 5) + ' correctes</div>' +
-      '</div></div>';
+    '<button class="back-btn-detail" id="backToRecapBtn"><i class="fas fa-arrow-left"></i> Retour</button>' +
+    '<div class="exercise-detail-title">' +
+    '<div class="exercise-detail-icon">' + icon + '</div>' +
+    '<div><h3>Exercice ' + (exercise.number || (exerciseIndex + 1)) + (exercise.title ? ' — ' + escapeHtml(exercise.title) : '') + '</h3>' +
+    '<div class="exercise-detail-meta">' + 
+      Math.min(Number(exercise.score || 0), Number(exercise.maxScore || 6.67)).toFixed(2) + 
+      ' / ' + 
+      Number(exercise.maxScore || 6.67).toFixed(2) + 
+      ' pts · ' + (exercise.correctAnswers || 0) + '/' + (exercise.totalQuestions || 5) + ' correctes</div>' +
+    '</div></div>';
     details.appendChild(header);
 
     var questions = Array.isArray(exercise.questions) ? exercise.questions : [];
