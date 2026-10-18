@@ -236,85 +236,70 @@ img {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   ⚡ SEUL AJOUT : FEEDBACK TACTILE (micro-scale au tap)
-   Aucune couleur, aucune bordure, aucun outline modifié.
-   Juste un léger enfoncement pour montrer que le tap est pris.
+   ⚡ FEEDBACK TACTILE — liste ultra-restreinte
+   UNIQUEMENT les éléments qui sont de vrais liens/boutons
+   interactifs. Pas de .card, pas de .panel, pas de conteneurs.
    ═════════════════════════════════════════════════════════════ */
 
-.subject-chip,
-.tool-card,
-.chapter-card,
-.part-card,
-.f-card,
-.screen-card,
-.notif-card,
-.exam-item,
-.history-item,
-.blog-card,
-.testi-card,
-.price-card,
-.card,
-.panel,
-.btn-submit,
-.btn-subscribe-main,
-.btn-primary,
-.btn-start,
-.btn-profile,
-.avis-btn,
-.btn-secondary,
-.btn-cancel,
-.icon-btn,
-.menu-toggle,
-.header-icon-btn,
-.back-btn,
-.theme-btn,
-.sidebar-close,
-.filter-btn,
-.tab-btn,
-.chip,
-.gallery-tab,
-.payment-logo-btn {
+/* Transparence du tap-highlight (aucune couleur ajoutée) */
+a,
+button,
+[role="button"] {
   -webkit-tap-highlight-color: transparent;
 }
 
-.subject-chip:active,
-.tool-card:active,
-.chapter-card:active,
-.part-card:active,
-.f-card:active,
-.screen-card:active,
-.notif-card:active,
-.exam-item:active,
-.history-item:active,
-.blog-card:active,
-.testi-card:active,
-.price-card:active,
-.card:active,
-.panel:active {
+/* Cartes de matière (uniquement les liens <a class="subject-chip">) */
+a.subject-chip,
+a.tool-card,
+a.chapter-card,
+a.part-card,
+a.screen-card,
+a.blog-card {
+  transition: transform 0.12s ease-out !important;
+}
+
+a.subject-chip:active,
+a.tool-card:active,
+a.chapter-card:active,
+a.part-card:active,
+a.screen-card:active,
+a.blog-card:active {
   transform: scale(0.97) !important;
 }
 
-.btn-submit:active,
-.btn-subscribe-main:active,
-.btn-primary:active,
-.btn-start:active,
-.btn-profile:active,
-.avis-btn:active,
-.btn-secondary:active,
-.btn-cancel:active {
+/* Boutons d'action */
+button.btn-submit:active,
+button.btn-subscribe-main:active,
+button.btn-primary:active,
+button.btn-start:active,
+button.btn-profile:active,
+button.avis-btn:active,
+button.avis-btn-inline:active,
+button.fcm-btn-activate:active,
+button.fcm-btn-later:active,
+button.arvexa-confirm-btn:active,
+button.arvexa-popup-btn:active,
+button.modal-btn:active,
+button.toolbar-btn:active,
+button.nav-btn:active,
+button.btn-secondary:active,
+button.btn-cancel:active,
+button.btn-back:active {
   transform: scale(0.94) !important;
 }
 
-.icon-btn:active,
-.menu-toggle:active,
-.header-icon-btn:active,
-.back-btn:active,
-.theme-btn:active,
-.sidebar-close:active,
-.filter-btn:active,
-.tab-btn:active,
-.chip:active,
-.gallery-tab:active,
-.payment-logo-btn:active {
+/* Boutons-icônes */
+button.icon-btn:active,
+button.menu-toggle:active,
+button.header-icon-btn:active,
+button.back-btn:active,
+button.theme-btn:active,
+button.sidebar-close:active,
+button.filter-btn:active,
+button.tab-btn:active,
+button.chip:active,
+button.gallery-tab:active,
+button.payment-logo-btn:active,
+button.avis-cat-chip:active {
   transform: scale(0.92) !important;
 }
