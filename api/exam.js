@@ -1066,17 +1066,14 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
       if (Array.isArray(aiResult?.revisionTopics)) deterministicResults.revisionTopics = aiResult.revisionTopics;
       if (aiResult?.globalFeedback) deterministicResults.globalFeedback = aiResult.globalFeedback;
     } catch (error) {
-      console.warn('AI correction failed:', error.message);
-      deterministicResults.forEach((r) => {
-        r.textQuestions.forEach((tq) => {
-          tq.questionResult.status = 'unanswered';
-          tq.questionResult.feedback = 'Correction IA temporairement indisponible.';
-          tq.questionResult.explanation = 'Nous n\'avons pas pu corriger cette question. Réessaie plus tard.';
-        });
-      });
+  console.warn('AI correction failed:', error.message);
+  // ✅ CAS B : l'élève a répondu, mais l'IA n'a pas pu corriger.
+  // On ne peut PAS inventer une note pour des questions ouvertes.
+  // On remonte une erreur explicite : le client affichera « réessaie »
+  // et conservera les réponses de l'élève dans sa session active.
+  throw new Error('CORRECTION_UNAVAILABLE');
     }
-  }
-
+    
   const finalExercises = deterministicResults.map((r) => r.exerciseResult);
 
   let rawScore = 0;
@@ -1489,27 +1486,33 @@ module.exports = async function handler(request, response) {
   }
 
   if (action === 'correct') {
-    const validationError = validateCorrection(body);
-    if (validationError) return jsonError(response, 400, validationError);
+  const validationError = validateCorrection(body);
+  if (validationError) return jsonError(response, 400, validationError);
 
-    try {
-      const result = await correctExamHybrid(body.exam, body.subjectId, body.answers, verifiedUser.uid);
-      try { await saveExamResult(verifiedUser.uid, body, result); }
-      catch (e) { console.error('Save exam result failed:', e.message); }
+  try {
+    const result = await correctExamHybrid(body.exam, body.subjectId, body.answers, verifiedUser.uid);
+    try { await saveExamResult(verifiedUser.uid, body, result); }
+    catch (e) { console.error('Save exam result failed:', e.message); }
 
-      return response.status(200).json({ success: true, result });
-    } catch (error) {
-      console.error('Exam correction failed:', error.message);
-      return response.status(200).json({
-        success: true,
-        result: {
-          score: 0, totalScore: TOTAL_POINTS, percentage: 0, grade: 'Indéterminé',
-          exercises: [], revisionTopics: [],
-          globalFeedback: { strengths: [], weaknesses: [], encouragement: 'Correction indisponible.' }
-        }
-      });
+    return response.status(200).json({ success: true, result });
+  } catch (error) {
+    console.error('Exam correction failed:', error.message);
+
+    // ✅ CAS B : correction réellement indisponible → on le dit clairement
+    // au client avec un statut HTTP d'erreur, et on ne sauvegarde AUCUNE note.
+    if (error.message === 'CORRECTION_UNAVAILABLE') {
+      return jsonError(
+        response,
+        503,
+        'La correction est temporairement indisponible. Tes réponses sont conservées : réessaie dans quelques minutes.',
+        'CORRECTION_UNAVAILABLE'
+      );
     }
-  }
 
+    // Autres erreurs inattendues (bug, données invalides…)
+    console.error('Unexpected correction error:', error.stack || error);
+    return jsonError(response, 500, 'Une erreur inattendue est survenue pendant la correction.');
+  }
+  }
   return jsonError(response, 400, 'Action inconnue.');
 };
