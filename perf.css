@@ -1,14 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
    ARVEXA — PERF.CSS
-   Version safe : UNIQUEMENT les optimisations GPU au scroll.
-   Aucune couleur modifiée, aucun layout modifié, aucune
-   transition cassée. Testé pour ne pas casser les pages.
+   Version safe + exclusion de matiere.html (via :has)
    ═══════════════════════════════════════════════════════════════ */
 
 /* ─────────────────────────────────────────────────────────────
    1. BACKDROP-FILTER sur les CARDS uniquement
-   (le header est sticky → on garde son blur)
-   (la sidebar, les modales, les overlays → on n'y touche pas)
    ───────────────────────────────────────────────────────────── */
 .card,
 .panel,
@@ -40,8 +36,21 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
+   1.b. EXCEPTION : matiere.html (contient #subjectHero)
+   On remet les styles d'origine pour ne rien casser
+   ───────────────────────────────────────────────────────────── */
+body:has(#subjectHero) .chapter-info,
+body:has(#subjectHero) .chapter-progress,
+body:has(#subjectHero) .progress-wrap,
+body:has(#subjectHero) .subject-hero,
+body:has(#subjectHero) .subject-chip,
+body:has(#subjectHero) .chapter-card {
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
    2. GLOWS : réduire le blur (80-90px → 40px)
-   (le blur sur position:fixed est très coûteux au repaint)
    ───────────────────────────────────────────────────────────── */
 .glow,
 .glow-1,
@@ -52,7 +61,6 @@
 
 /* ─────────────────────────────────────────────────────────────
    3. ANIMATIONS INFINIES purement décoratives
-   (uniquement les glows et le shimmer du logo)
    ───────────────────────────────────────────────────────────── */
 .glow,
 .glow-1,
@@ -64,7 +72,7 @@
   animation: none !important;
 }
 
-/* Fixe la couleur du texte doré quand on retire le shimmer */
+/* Fixe la couleur du texte doré */
 .logo .gold,
 .brand span,
 .footer-logo span {
@@ -76,7 +84,6 @@
 
 /* ─────────────────────────────────────────────────────────────
    4. SIDEBAR : retire le backdrop-filter
-   (position: fixed + scroll interne = combo coûteux)
    ───────────────────────────────────────────────────────────── */
 .sidebar {
   backdrop-filter: none !important;
@@ -84,7 +91,7 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   5. SCROLL FLUIDE (safe, aucune casse)
+   5. SCROLL FLUIDE
    ───────────────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
