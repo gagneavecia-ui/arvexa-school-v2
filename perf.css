@@ -1,14 +1,11 @@
 /* ============================================================
-   ARVEXA — PERF.CSS v5.0 FINAL
-   Performance maximale (niveau v4) · Zéro bug de design
-   Aucune règle ne touche : outline, box-shadow, border, focus,
-   tap-highlight, contour, couleur.
+   ARVEXA — PERF.CSS v6.0 FINAL
+   Performance niveau v4 · Zéro bug de design
    À charger APRÈS tous les autres CSS.
    ============================================================ */
 
 /* ═════════════════════════════════════════════════════════════
    1. BACKDROP-FILTER : retiré des éléments scrollés
-   Gain : 35-45 % de fluidité
    ═════════════════════════════════════════════════════════════ */
 
 .header,
@@ -40,7 +37,6 @@ header.header,
   -webkit-backdrop-filter: none !important;
 }
 
-/* Modales : flou conservé (ne scrollent pas derrière) */
 .modal-overlay,
 .sidebar-overlay,
 .detail-overlay,
@@ -67,8 +63,7 @@ header.header,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   2. GLOW : animation infinie gelée (blur conservé, figé)
-   Gain : 10-15 %
+   2. GLOW : animation infinie gelée
    ═════════════════════════════════════════════════════════════ */
 
 .glow,
@@ -90,8 +85,124 @@ header.header,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   3. TRANSITIONS : ciblage des propriétés utiles
-   Gain : 3-5 %
+   3. ⚡ BOX-SHADOW : LE SECRET DE LA FLUIDITÉ v4
+   On tue les ombres UNIQUEMENT sur les cartes/panneaux/boutons
+   (là où l'ombre coûte cher et n'est pas essentielle au design)
+   On GARDE les ombres sur : modales, icônes, avatars, effets
+   ═════════════════════════════════════════════════════════════ */
+
+.card,
+.panel,
+.sub-card,
+.bg-card,
+.next-card,
+.tip-card,
+.feat-card,
+.blog-card,
+.price-card,
+.testi-card,
+.team-card,
+.impact-card,
+.stat-card,
+.notif-card,
+.exam-item,
+.chapter-card,
+.part-card,
+.f-card,
+.screen-card,
+.history-item,
+.tool-card,
+.subject-chip,
+.conv-item,
+.faq-item,
+.msg-menu-item,
+.avis-card,
+.hero-card,
+.subject-hero,
+.progress-wrap,
+.chapter-progress,
+.avis-btn-inline,
+.btn-subscribe-main,
+.btn-submit,
+.btn-start,
+.btn-primary,
+.btn-accept,
+.btn-profile,
+.btn-secondary,
+.btn-cancel,
+.btn-back,
+.avis-btn,
+.fcm-btn-activate,
+.fcm-btn-later,
+.arvexa-confirm-btn,
+.arvexa-popup-btn,
+.modal-btn,
+.toolbar-btn,
+.nav-btn,
+.icon-btn,
+.menu-toggle,
+.header-icon-btn,
+.back-btn,
+.theme-btn,
+.sidebar-close,
+.filter-btn,
+.tab-btn,
+.chip,
+.avis-cat-chip,
+.gallery-tab,
+.payment-logo-btn,
+.cta-card,
+.premium-cta,
+.card:hover,
+.panel:hover,
+.notif-card:hover,
+.exam-item:hover,
+.chapter-card:hover,
+.part-card:hover,
+.f-card:hover,
+.screen-card:hover,
+.history-item:hover,
+.tool-card:hover,
+.subject-chip:hover,
+.blog-card:hover,
+.testi-card:hover,
+.price-card:hover,
+.feature-card:hover,
+.impact-card:hover {
+  box-shadow: none !important;
+}
+
+/* On GARDE les ombres essentielles (visuellement identifiables) */
+.modal,
+.avis-modal,
+.arvexa-confirm-modal,
+.arvexa-popup,
+.detail-panel,
+.sidebar,
+.phone-mock,
+.demo-phone-wrap,
+.screen-card,
+.lightbox-img-wrap,
+.image-modal img,
+.hero-icon,
+.hero-icon::before,
+.avis-icon-wrap,
+.arvexa-popup-icon,
+.pending-icon-wrap,
+.premium-crown-wrap,
+.avatar-wrapper,
+.avatar-wrapper .avatar,
+.profile-avatar,
+.user-avatar,
+.testi-avatar,
+.team-avatar,
+.message-avatar,
+.subject-icon-wrap {
+  /* rien : on garde leur box-shadow par défaut */
+}
+
+/* ═════════════════════════════════════════════════════════════
+   4. TRANSITIONS : ciblage précis
    ═════════════════════════════════════════════════════════════ */
 
 *,
@@ -122,7 +233,7 @@ select,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   4. WILL-CHANGE : plus d'usage permanent
+   5. WILL-CHANGE
    ═════════════════════════════════════════════════════════════ */
 
 .reveal,
@@ -143,8 +254,7 @@ select,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   5. CONTENT-VISIBILITY : rendu différé hors écran
-   Gain massif sur les longues listes
+   6. CONTENT-VISIBILITY
    ═════════════════════════════════════════════════════════════ */
 
 .part-card,
@@ -181,8 +291,7 @@ select,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   6. ANIMATIONS DÉCORATIVES INFINIES : gel
-   Gain : 5-10 % (les animations qui tournent en boucle)
+   7. ANIMATIONS DÉCORATIVES INFINIES : gel
    ═════════════════════════════════════════════════════════════ */
 
 .cover-glow,
@@ -220,7 +329,6 @@ select,
   animation: none !important;
 }
 
-/* Shimmer de texte conservé (rendu premium, coût négligeable) */
 .sidebar .logo span,
 .footer-logo span,
 .brand-name em,
@@ -233,7 +341,7 @@ select,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   7. IMAGES : lazy + async decoding
+   8. IMAGES
    ═════════════════════════════════════════════════════════════ */
 
 img:not([loading]) {
@@ -245,7 +353,7 @@ img {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   8. SCROLL-BEHAVIOR : natif sur mobile
+   9. SCROLL-BEHAVIOR
    ═════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
@@ -259,7 +367,7 @@ img {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   9. CONTAINMENT : isolation des repaints
+   10. CONTAINMENT
    ═════════════════════════════════════════════════════════════ */
 
 .card,
@@ -279,7 +387,7 @@ img {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   10. STICKY HEADERS : isolation anti-repaint
+   11. STICKY HEADERS
    ═════════════════════════════════════════════════════════════ */
 
 .header,
@@ -293,7 +401,7 @@ img {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   11. HOVER MOBILE : pas de transform/box-shadow coûteux
+   12. HOVER MOBILE : pas de transform
    ═════════════════════════════════════════════════════════════ */
 
 @media (hover: none) and (pointer: coarse) {
@@ -318,7 +426,7 @@ img {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   12. GPU TRANSFORM 3D ciblé
+   13. GPU TRANSFORM 3D
    ═════════════════════════════════════════════════════════════ */
 
 .sidebar,
@@ -335,7 +443,7 @@ img {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   13. FONT AWESOME : rendu accéléré
+   14. FONT AWESOME
    ═════════════════════════════════════════════════════════════ */
 
 .fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands {
@@ -344,7 +452,7 @@ img {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   14. INPUTS : containment
+   15. INPUTS
    ═════════════════════════════════════════════════════════════ */
 
 input,
@@ -360,7 +468,7 @@ select:focus {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   15. AVATARS : containment
+   16. AVATARS
    ═════════════════════════════════════════════════════════════ */
 
 .user-avatar,
@@ -376,7 +484,7 @@ select:focus {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   16. SCROLLBAR : cachée sur mobile
+   17. SCROLLBAR mobile
    ═════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
@@ -388,7 +496,7 @@ select:focus {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   17. KATEX : rendu accéléré
+   18. KATEX
    ═════════════════════════════════════════════════════════════ */
 
 .katex {
@@ -403,7 +511,7 @@ select:focus {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   18. ACCESSIBILITÉ : respect prefers-reduced-motion
+   19. ACCESSIBILITÉ
    ═════════════════════════════════════════════════════════════ */
 
 @media (prefers-reduced-motion: reduce) {
