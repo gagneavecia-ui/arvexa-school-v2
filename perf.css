@@ -782,11 +782,10 @@ button::after,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   30. FEEDBACK TAP ÉLÉGANT — remplace les contours blancs
-   Utilise l'accent doré du site, non-flashy, avec micro-animation
+   30. FEEDBACK TAP — micro-mouvement uniquement (pas de couleur)
    ═════════════════════════════════════════════════════════════ */
 
-/* Cartes principales : bordure dorée + scale au tap */
+/* Cartes cliquables : enfoncement subtil au tap */
 .subject-chip,
 .tool-card,
 .chapter-card,
@@ -807,7 +806,7 @@ button::after,
 .tip-card,
 .next-card,
 .sub-card {
-  transition: transform 0.12s ease-out, border-color 0.15s ease-out, background-color 0.15s ease-out, box-shadow 0.15s ease-out !important;
+  transition: transform 0.12s ease-out !important;
   -webkit-tap-highlight-color: transparent !important;
 }
 
@@ -832,13 +831,44 @@ button::after,
 .next-card:active,
 .sub-card:active {
   transform: scale(0.97) !important;
-  border-color: rgba(224, 184, 74, 0.55) !important;
-  background-color: rgba(184, 134, 11, 0.06) !important;
-  box-shadow: 0 0 0 2px rgba(224, 184, 74, 0.15) !important;
   outline: none !important;
+  box-shadow: none !important;
 }
 
-/* Boutons principaux : effet de "press" plus prononcé */
+/* Boutons : enfoncement légèrement plus prononcé */
+.btn-subscribe-main,
+.btn-submit,
+.btn-start,
+.btn-primary,
+.btn-accept,
+.btn-profile,
+.avis-btn,
+.avis-btn-inline,
+.fcm-btn-activate,
+.arvexa-confirm-btn,
+.arvexa-popup-btn,
+.modal-btn,
+.toolbar-btn,
+.nav-btn,
+.btn-secondary,
+.btn-cancel,
+.btn-back,
+.icon-btn,
+.menu-toggle,
+.header-icon-btn,
+.back-btn,
+.theme-btn,
+.sidebar-close,
+.filter-btn,
+.tab-btn,
+.chip,
+.avis-cat-chip,
+.gallery-tab,
+.payment-logo-btn {
+  transition: transform 0.12s ease-out !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
 .btn-subscribe-main:active,
 .btn-submit:active,
 .btn-start:active,
@@ -852,14 +882,7 @@ button::after,
 .arvexa-popup-btn:active,
 .modal-btn:active,
 .toolbar-btn:active,
-.nav-btn:active {
-  transform: scale(0.95) !important;
-  filter: brightness(0.92) !important;
-  box-shadow: 0 2px 8px rgba(184, 134, 11, 0.3) !important;
-  outline: none !important;
-}
-
-/* Boutons secondaires (contour fin, pas de gradient) */
+.nav-btn:active,
 .btn-secondary:active,
 .btn-cancel:active,
 .btn-back:active,
@@ -876,30 +899,35 @@ button::after,
 .gallery-tab:active,
 .payment-logo-btn:active {
   transform: scale(0.94) !important;
-  border-color: rgba(224, 184, 74, 0.4) !important;
-  background-color: rgba(184, 134, 11, 0.08) !important;
   outline: none !important;
+  box-shadow: none !important;
 }
 
-/* Liens de navigation (sidebar, footer) */
+/* Liens de navigation : très léger enfoncement */
+.sidebar .nav a,
+.footer-links a {
+  transition: transform 0.12s ease-out !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
 .sidebar .nav a:active,
 .footer-links a:active {
-  background-color: rgba(184, 134, 11, 0.1) !important;
-  border-color: rgba(224, 184, 74, 0.3) !important;
   transform: scale(0.98) !important;
   outline: none !important;
 }
 
-/* Liens de texte (dans le contenu) */
-a:not(.subject-chip):not(.tool-card):not(.chapter-card):not(.part-card):not(.f-card):not(.btn):not(.btn-profile):not(.btn-submit):not(.btn-subscribe-main):not(.back-btn):not(.icon-btn):not(.menu-toggle):not(.header-icon-btn):not(.theme-btn):active {
-  color: #F0CC65 !important;
-  opacity: 0.85 !important;
+/* Inputs : aucun feedback visuel au tap (le focus garde sa bordure dorée normale) */
+input:active,
+textarea:active,
+select:active {
+  transform: none !important;
   outline: none !important;
+  box-shadow: none !important;
 }
 
 /* ═════════════════════════════════════════════════════════════
-   31. FOCUS CLAVIER UNIQUEMENT (accessibilité desktop préservée)
-   Le contour doré n'apparaît QUE si l'utilisateur navigue au clavier
+   31. Focus clavier (accessibilité desktop UNIQUEMENT)
+   Apparaît seulement si l'utilisateur navigue au clavier
    ═════════════════════════════════════════════════════════════ */
 
 @media (hover: hover) and (pointer: fine) {
@@ -910,56 +938,41 @@ a:not(.subject-chip):not(.tool-card):not(.chapter-card):not(.part-card):not(.f-c
   select:focus-visible,
   [role="button"]:focus-visible,
   [tabindex]:focus-visible {
-    outline: 2px solid rgba(224, 184, 74, 0.7) !important;
-    outline-offset: 3px !important;
-    border-radius: 8px !important;
+    outline: 2px solid rgba(224, 184, 74, 0.6) !important;
+    outline-offset: 2px !important;
   }
 }
 
 /* ═════════════════════════════════════════════════════════════
-   32. MOBILE : feedback subtil mais visible
+   32. Mobile : forcer l'effet (certains navigateurs ignorent :active)
    ═════════════════════════════════════════════════════════════ */
 
 @media (hover: none) and (pointer: coarse) {
-  /* Sur mobile, on force l'effet :active partout */
   .subject-chip:active,
   .tool-card:active,
   .chapter-card:active,
   .part-card:active,
   .f-card:active,
-  .screen-card:active {
+  .screen-card:active,
+  .notif-card:active,
+  .exam-item:active,
+  .history-item:active,
+  .card:active,
+  .panel:active {
     transform: scale(0.96) !important;
-    border-color: rgba(224, 184, 74, 0.6) !important;
-    box-shadow: 0 0 0 2px rgba(224, 184, 74, 0.2) !important;
   }
 
   .btn-subscribe-main:active,
   .btn-submit:active,
   .btn-start:active,
-  .btn-primary:active {
-    transform: scale(0.94) !important;
-    filter: brightness(0.9) !important;
+  .btn-primary:active,
+  .btn-profile:active,
+  .avis-btn:active,
+  .avis-btn-inline:active {
+    transform: scale(0.93) !important;
   }
-}
+     }
 
-/* ═════════════════════════════════════════════════════════════
-   33. ÉTAT "SÉLECTIONNÉ" PERSISTANT (utile pour les cartes actives)
-   ═════════════════════════════════════════════════════════════ */
-
-.subject-chip.selected,
-.tool-card.selected,
-.chapter-card.selected,
-.part-card.selected,
-.filter-btn.active,
-.tab-btn.active,
-.chip.active,
-.gallery-tab.active,
-.avis-cat-chip.active,
-.payment-logo-btn.active {
-  border-color: rgba(224, 184, 74, 0.5) !important;
-  background-color: rgba(184, 134, 11, 0.08) !important;
-  box-shadow: 0 0 0 1px rgba(224, 184, 74, 0.2) !important;
-}
 /* ═════════════════════════════════════════════════════════════
    29. RECAP FINAL
    ═════════════════════════════════════════════════════════════ */
