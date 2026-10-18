@@ -1,93 +1,26 @@
 /* ═══════════════════════════════════════════════════════════════
    ARVEXA — PERF.CSS
-   Version : matiere.html est EXCLU dès le départ via :has()
-   Aucune règle ne s'applique à matiere.html.
+   TEST 1 : cible UNIQUEMENT index.html
+   (reconnaissable par le #greetingText qui n'existe que là)
    ═══════════════════════════════════════════════════════════════ */
 
-/* ─────────────────────────────────────────────────────────────
-   RÈGLE 1 : backdrop-filter retiré sur les cards
-   Exclu automatiquement sur matiere.html via body:not(:has(#subjectHero))
-   ───────────────────────────────────────────────────────────── */
-body:not(:has(#subjectHero)) .card,
-body:not(:has(#subjectHero)) .panel,
-body:not(:has(#subjectHero)) .tool-card,
-body:not(:has(#subjectHero)) .notif-card,
-body:not(:has(#subjectHero)) .next-card,
-body:not(:has(#subjectHero)) .subject-chip,
-body:not(:has(#subjectHero)) .tip-card,
-body:not(:has(#subjectHero)) .chapter-info,
-body:not(:has(#subjectHero)) .chapter-progress,
-body:not(:has(#subjectHero)) .progress-wrap,
-body:not(:has(#subjectHero)) .subject-hero,
-body:not(:has(#subjectHero)) .form-card,
-body:not(:has(#subjectHero)) .f-card,
-body:not(:has(#subjectHero)) .day-card,
-body:not(:has(#subjectHero)) .priority-card,
-body:not(:has(#subjectHero)) .profile-card,
-body:not(:has(#subjectHero)) .skill-card,
-body:not(:has(#subjectHero)) .history-item,
-body:not(:has(#subjectHero)) .exam-item,
-body:not(:has(#subjectHero)) .list-item,
-body:not(:has(#subjectHero)) .streak-card,
-body:not(:has(#subjectHero)) .badge-item,
-body:not(:has(#subjectHero)) .stat-item,
-body:not(:has(#subjectHero)) .avis-card,
-body:not(:has(#subjectHero)) .sub-card {
+/* ─── 1. Backdrop-filter retiré sur les cards — INDEX UNIQUEMENT ─── */
+body:has(#greetingText) .card,
+body:has(#greetingText) .panel,
+body:has(#greetingText) .tool-card,
+body:has(#greetingText) .notif-card,
+body:has(#greetingText) .subject-chip,
+body:has(#greetingText) .next-card,
+body:has(#greetingText) .tip-card {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   RÈGLE 2 : glows (blur réduit)
-   Exclu sur matiere.html
-   ───────────────────────────────────────────────────────────── */
-body:not(:has(#subjectHero)) .glow,
-body:not(:has(#subjectHero)) .glow-1,
-body:not(:has(#subjectHero)) .glow-2,
-body:not(:has(#subjectHero)) .glow-3 {
+/* ─── 2. Glows — INDEX UNIQUEMENT ─── */
+body:has(#greetingText) .glow,
+body:has(#greetingText) .glow-1,
+body:has(#greetingText) .glow-2,
+body:has(#greetingText) .glow-3 {
   filter: blur(40px) !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   RÈGLE 3 : animations infinies décoratives
-   Exclu sur matiere.html
-   ───────────────────────────────────────────────────────────── */
-body:not(:has(#subjectHero)) .glow,
-body:not(:has(#subjectHero)) .glow-1,
-body:not(:has(#subjectHero)) .glow-2,
-body:not(:has(#subjectHero)) .glow-3,
-body:not(:has(#subjectHero)) .logo .gold,
-body:not(:has(#subjectHero)) .brand span,
-body:not(:has(#subjectHero)) .footer-logo span {
   animation: none !important;
-}
-
-/* Fixe la couleur du texte doré (partout, car safe) */
-.logo .gold,
-.brand span,
-.footer-logo span {
-  background: linear-gradient(90deg, #B8860B, #E0B84A) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   RÈGLE 4 : sidebar (blur retiré)
-   Exclu sur matiere.html
-   ───────────────────────────────────────────────────────────── */
-body:not(:has(#subjectHero)) .sidebar {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   RÈGLE 5 : scroll fluide
-   ───────────────────────────────────────────────────────────── */
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  -webkit-overflow-scrolling: touch;
 }
