@@ -20,8 +20,8 @@
   // ══════════════════════════════════════════════════════════════
 
   window.ARVEXA_BAC_DATE = {
-    month: 5,      // 5 = juin
-    day: 1,        // 1 = 1er juin
+    month: 6,      // 5 = juin
+    day: 14,        // 1 = 1er juin
     label: 'BAC'   // Étiquette affichée (optionnel)
   };
 
