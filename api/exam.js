@@ -1,6 +1,6 @@
 // ================================================================
-// API EXAM v5.3 — ARVEXA School
-// Corrections notes : max 20 strict, 0 si pas de réponse
+// API EXAM v6.0 — ARVEXA School
+// Corrections : Cas B, Notes strictes, Niveau BAC, Schémas Physique
 // ================================================================
 
 module.exports.config = { maxDuration: 90 };
@@ -23,9 +23,9 @@ const FREE_EXAM_LIMIT = 2;
 const POOL_COLLECTION = 'examPool';
 
 const MAX_TOKENS = {
-  GENERATE: 16000,
-  CORRECT: 18000,
-  PROVIDER_DEFAULT: 16000
+  GENERATE: 8000, // ✅ Baissé de 16000 à 8000 pour éviter les timeouts
+  CORRECT: 8000,
+  PROVIDER_DEFAULT: 8000
 };
 
 const SUBJECT_LABELS = {
@@ -252,13 +252,13 @@ function getProviders() {
 async function callProvider(provider, prompt, maxTokens) {
   if (!maxTokens) maxTokens = MAX_TOKENS.PROVIDER_DEFAULT;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 28000);
+  const timeout = setTimeout(() => controller.abort(), 45000); // ✅ Augmenté à 45s
   try {
     console.log(`[AI] ${provider.name} | prompt: ${prompt.length} car | max_tokens: ${maxTokens}`);
 
     const body = {
       model: provider.model,
-      temperature: 0.15,
+      temperature: 0.3,
       max_tokens: maxTokens,
       messages: [
         { role: 'system', content: 'Tu produis exclusivement du JSON valide. Tu respectes scrupuleusement le schéma demandé.' },
@@ -389,7 +389,7 @@ async function buildExamFromPool(config) {
 
     console.log('[POOL] Examen reconstruit depuis le pool');
 
-    return {
+    return repairExamStructure({
       subject: config.subject,
       level: config.level,
       duration: config.duration,
@@ -413,7 +413,7 @@ async function buildExamFromPool(config) {
         }
       ],
       _fromPool: true
-    };
+    }, config.subject);
   } catch (e) {
     console.warn('[POOL] Erreur reconstruction:', e.message);
     return null;
@@ -429,13 +429,17 @@ async function buildUnavailableExam(config) {
     chapter: config.chapter,
     fromNotebook: false,
     unavailable: true,
-    message: 'Le service est temporairement indisponible et aucun contenu n\'est en cache. Merci de réessayer dans quelques minutes.',
+    message: 'Le service est temporairement indisponible. Merci de réessayer dans quelques minutes.',
     subjects: [
       { id: 'subject_1', title: 'Indisponible', level: 'consolidation', instructions: '', exercises: [] },
       { id: 'subject_2', title: 'Indisponible', level: 'approfondissement', instructions: '', exercises: [] }
     ]
   };
 }
+
+// ================================================================
+// RÈGLES PÉDAGOGIQUES ET DE DIFFICULTÉ
+// ================================================================
 
 const LATEX_RULES = `
 ═══════════════════════════════════════════════════════════════
@@ -450,20 +454,50 @@ RÈGLES LATEX — OBLIGATOIRES
 
 const PEDAGOGY_RULES = `
 ═══════════════════════════════════════════════════════════════
-MISSION PÉDAGOGIQUE
+MISSION PÉDAGOGIQUE (NIVEAU BAC NIGER)
 ═══════════════════════════════════════════════════════════════
 Tu prépares un élève de Terminale D au Niger pour le BAC.
 Les exercices doivent être :
-- Réalistes (niveau BAC)
-- Progressifs (facile → difficile)
-- Résolubles en 5-15 minutes
-- Chaque question teste UNE notion précise
-- Chaque question a UNE SEULE bonne réponse (pour QCM)
+- Réalistes (niveau BAC, comme les épreuves officielles)
+- Progressifs (facile → difficile au sein du même exercice)
+- Chaque question teste UNE notion précise, mais peut nécessiter plusieurs étapes.
+- Les points sont FIXES : Exercice = 6.67 pts, Question = 1.33 pts.
+- INTERDIT de générer des questions simplistes du type "Calculer la vitesse si v=5m/s". L'élève doit réfléchir.
+`;
 
-Les points sont FIXES :
-- Chaque exercice vaut exactement 6.67 points (× 3 = 20.01 → arrondi à 20)
-- Chaque question vaut exactement 1.33 points (× 5 = 6.65)
-- NE JAMAIS attribuer de points différents
+const DIFFICULTY_RULES = {
+  easy: `Niveau FACILE : Calculs directs en 1 ou 2 étapes. Application immédiate du cours. Pas de mélange de notions.`,
+  medium: `Niveau MOYEN : Calculs en 3 ou 4 étapes. Application du cours avec une petite réflexion.`,
+  hard: `Niveau DIFFICILE : Problèmes à plusieurs étapes. L'élève doit mobiliser plusieurs notions du chapitre.`,
+  bac: `Niveau BAC (TRÈS DIFFICILE) : Exercices de synthèse type "Pascal Laine" ou "Salissou Nazifi". 
+  - Les calculs doivent être longs (équations du 3ème/4ème degré, changements de variable, trigonométrie inverse).
+  - Mélanger plusieurs phases de mouvement ou plusieurs réactions.
+  - L'élève doit utiliser un cahier de brouillon pour réussir.
+  - Exemple Maths : "Résoudre z^4 + (3-6i)z^2 - 8 - 6i = 0".
+  - Exemple Physique : "Une voiture et un motard se croisent, calculer l'instant et la position de dépassement."`
+};
+
+const PHYSICS_RULES = `
+═══════════════════════════════════════════════════════════════
+RÈGLES SPÉCIFIQUES PHYSIQUE
+═══════════════════════════════════════════════════════════════
+1. L'énoncé doit décrire une situation concrète complexe (ex: train, voiture/motard, projectile).
+2. LA PREMIÈRE QUESTION (1.a) EST OBLIGATOIREMENT DE TYPE "drawing" :
+   - Demander de faire le schéma, de placer le repère, ou de tracer les vecteurs.
+3. Les questions suivantes (1.b à 1.e) demandent des équations horaires, des calculs de distance/temps, ou des analyses graphiques.
+`;
+
+const CHEMISTRY_RULES = `
+═══════════════════════════════════════════════════════════════
+RÈGLES SPÉCIFIQUES CHIMIE
+═══════════════════════════════════════════════════════════════
+1. PAS de question de dessin. Toutes les questions sont de type "text" ou "choice".
+2. L'énoncé ("statement") DOIT inclure un bloc "Données :" (masses molaires, volumes, concentrations).
+3. Les questions doivent être progressives : 
+   - Q1 : Équation de dissolution ou masse molaire.
+   - Q2 : Calcul de concentration.
+   - Q3 : Calcul de pH ou inventaire des espèces.
+   - Q4 : Dilution ou électroneutralité.
 `;
 
 const STRUCTURE_CONTROL = `
@@ -474,34 +508,37 @@ Ton JSON contient EXACTEMENT :
 - "subjects" : tableau de 2 objets
 - Chaque subject a : "id" ("subject_1" / "subject_2"), "title", "level", "instructions", "exercises" (3 objets)
 - Chaque exercise a : "number" (1-3), "title", "points" (6.67), "statement", "questions" (5 objets)
-- Chaque question a : "number" ("1.a"), "text", "points" (1.33), "type" ("choice" ou "text")
+- Chaque question a : "number" ("1.a"), "text", "points" (1.33), "type" ("choice", "text", ou "drawing")
   - Si "choice" : "options" (4 objets {id:A/B/C/D, text}) + "correctAnswer" (A/B/C/D)
   - Si "text" : PAS d'options, PAS de correctAnswer
+  - Si "drawing" : PAS d'options, PAS de correctAnswer (utilisé uniquement en Physique Q1)
 `;
 
 function generationPrompt(config) {
   const subjectLabel = SUBJECT_LABELS[config.subject] || config.subject;
-  const usesChoices = CHOICE_SUBJECTS.has(config.subject);
-  const qFormat = usesChoices
-    ? 'Pour les questions de calcul : type "choice" avec 4 options A/B/C/D. Pour les questions de raisonnement : type "text".'
-    : 'Toutes les questions : type "text" (sauf QCM explicite).';
+  
+  let specificRules = '';
+  if (config.subject === 'physique') specificRules = PHYSICS_RULES;
+  else if (config.subject === 'chimie') specificRules = CHEMISTRY_RULES;
+  
+  const diffRules = DIFFICULTY_RULES[config.difficulty] || DIFFICULTY_RULES.medium;
 
   return `Tu es un professeur expert du BAC au Niger.
 
 ${PEDAGOGY_RULES}
+${specificRules}
 
 MISSION : Génère DEUX sujets d'examen complets.
 
 Matière : ${subjectLabel}
 Niveau : ${config.level}
 Chapitre : ${config.chapter === 'all' ? 'tous les chapitres' : config.chapter}
-Difficulté : ${config.difficulty}
-Durée : ${config.duration} minutes
+Difficulté exigée : ${config.difficulty}
+RÈGLES DE DIFFICULTÉ :
+${diffRules}
 
 SUJET 1 — "Consolidation" (facile à moyen) : tester les bases.
 SUJET 2 — "Approfondissement" (moyen à difficile) : aller plus loin.
-
-${qFormat}
 
 ${LATEX_RULES}
 
@@ -525,20 +562,25 @@ Réponds UNIQUEMENT avec le JSON complet et valide.`;
 
 function generationPromptFromNotebook(config, notebookContext) {
   const subjectLabel = SUBJECT_LABELS[config.subject] || config.subject;
-  const usesChoices = CHOICE_SUBJECTS.has(config.subject);
-  const qFormat = usesChoices
-    ? 'Pour les questions de calcul : type "choice". Pour les questions de raisonnement : type "text".'
-    : 'Toutes les questions : type "text".';
+  
+  let specificRules = '';
+  if (config.subject === 'physique') specificRules = PHYSICS_RULES;
+  else if (config.subject === 'chimie') specificRules = CHEMISTRY_RULES;
+  
+  const diffRules = DIFFICULTY_RULES[config.difficulty] || DIFFICULTY_RULES.medium;
 
   return `Tu es un professeur expert du BAC au Niger.
 
 ${PEDAGOGY_RULES}
+${specificRules}
 
 L'élève a étudié un chapitre dans son cahier. Génère DEUX sujets basés STRICTEMENT sur ce contenu.
 
 Chapitre : ${notebookContext.chapterTitle}
 Matière : ${subjectLabel}
-Sections : ${notebookContext.sectionsCount}
+Difficulté exigée : ${config.difficulty}
+RÈGLES DE DIFFICULTÉ :
+${diffRules}
 
 ═══════════════════════════════════════════════════════════════
 CONTENU DU CHAPITRE ÉTUDIÉ
@@ -547,7 +589,6 @@ ${notebookContext.contentText}
 
 RÈGLE ABSOLUE : génère UNIQUEMENT à partir du contenu ci-dessus.
 
-${qFormat}
 ${LATEX_RULES}
 
 FORMAT JSON :
@@ -592,49 +633,30 @@ function correctionPrompt(body) {
     });
   });
 
-  return `Tu es un professeur correcteur expert du BAC au Niger. Ton rôle : corriger CHAQUE question avec une PÉDAGOGIE MAXIMALE pour que l'élève COMPRENNE, même s'il a raté.
+  return `Tu es un professeur correcteur expert du BAC au Niger. Ton rôle : corriger CHAQUE question avec une PÉDAGOGIE MAXIMALE.
 
 ${PEDAGOGY_RULES}
 
 MISSION DE CORRECTION :
 Pour CHAQUE question, tu dois produire une analyse pédagogique complète.
 
-DONNÉES (chaque question avec réponse élève) :
+DONNÉES :
 ${JSON.stringify(questionsDetail, null, 2)}
 
-═══════════════════════════════════════════════════════════════
-CE QUE TU DOIS GÉNÉRER POUR CHAQUE QUESTION
-═══════════════════════════════════════════════════════════════
-1. "explanation" : Explication complète de POURQUOI la bonne réponse est correcte (3-6 phrases).
-
-2. "steps" : Tableau des ÉTAPES du calcul à suivre pour résoudre la question.
-   Chaque étape = 1 phrase claire avec les calculs intermédiaires.
-   Minimum 3 étapes, maximum 7 étapes.
-
+CE QUE TU DOIS GÉNÉRER POUR CHAQUE QUESTION :
+1. "explanation" : Explication complète (3-6 phrases).
+2. "steps" : Tableau des ÉTAPES du calcul (3 à 7 étapes).
 3. "concept" : La notion/théorème testée (une phrase).
+4. "whyWrong" : Si l'élève a raté, explication de SON erreur.
+5. "commonMistake" : L'erreur classique.
+6. "toReview" : Ce qu'il faut revoir.
+7. "betterMethod" : Une astuce (si pertinent).
+8. "feedback" : Message encourageant adapté.
 
-4. "whyWrong" : Si l'élève a raté, explication de SON erreur probable (1-2 phrases).
-
-5. "commonMistake" : L'erreur classique que les élèves font sur cette question.
-
-6. "toReview" : Ce qu'il faut revoir pour réussir cette question la prochaine fois (1 phrase).
-
-7. "betterMethod" : Une astuce ou méthode plus rapide (si pertinent).
-
-8. "feedback" : Message encourageant adapté au statut :
-   - correct : "🎉 Bravo !"
-   - wrong : "Presque ! Regarde la méthode ci-dessous."
-   - unanswered : "Pas de réponse. Voici comment on fait."
-
-═══════════════════════════════════════════════════════════════
 CALCUL DES POINTS — RÈGLES STRICTES
-═══════════════════════════════════════════════════════════════
-- Chaque question vaut exactement le "points" fourni (généralement 1.33).
-- QCM correct = points maximaux. QCM faux = 0.
-- QCM non répondu = 0.
+- QCM correct = points maximaux. QCM faux = 0. QCM non répondu = 0.
 - Texte libre : évalue le fond. Peut donner 0, 0.5, 1, ou 1.33 pt.
-- Le score d'un exercice = somme des points des 5 questions.
-- Score TOTAL sur 20.
+- Si pas de réponse : 0 point.
 
 ${LATEX_RULES}
 
@@ -644,38 +666,7 @@ FORMAT JSON :
   "totalScore": 20,
   "percentage": 77,
   "grade": "Bien",
-  "exercises": [
-    {
-      "number": 1,
-      "title": "Exercice 1 — Résolution",
-      "score": 5.0,
-      "maxScore": 6.67,
-      "correctAnswers": 4,
-      "totalQuestions": 5,
-      "questions": [
-        {
-          "number": "1.1",
-          "questionText": "Énoncé complet de la question",
-          "type": "choice",
-          "studentAnswer": "B",
-          "correctAnswer": "A",
-          "points": 1.33,
-          "maxPoints": 1.33,
-          "status": "wrong",
-          "explanation": "Explication complète 3-6 phrases...",
-          "steps": ["Étape 1...", "Étape 2...", "Étape 3..."],
-          "concept": "Notion testée",
-          "whyWrong": "Pourquoi ta réponse est fausse...",
-          "commonMistake": "Erreur classique à éviter...",
-          "toReview": "À revoir : ...",
-          "betterMethod": "Astuce...",
-          "feedback": "Presque ! Regarde la méthode."
-        }
-      ],
-      "explanation": "Bilan global de l'exercice",
-      "advice": "Conseil pour progresser"
-    }
-  ],
+  "exercises": [ { ... } ],
   "revisionTopics": ["Notion 1", "Notion 2"],
   "globalFeedback": {
     "strengths": ["Point fort 1"],
@@ -711,7 +702,13 @@ function repairExamStructure(exam, subjectName) {
     if (!subject.id) subject.id = 'subject_' + (sIdx + 1);
     if (!subject.title) subject.title = 'Sujet ' + (sIdx + 1);
     if (!subject.level) subject.level = sIdx === 0 ? 'consolidation' : 'approfondissement';
-    if (!subject.instructions) subject.instructions = 'Traitez le sujet.';
+    
+    // ✅ Instructions garanties et DIFFÉRENTES pour chaque sujet
+    if (sIdx === 0) {
+      subject.instructions = 'Consolidez vos bases avec des exercices progressifs pour maîtriser l\'essentiel du chapitre.';
+    } else {
+      subject.instructions = 'Allez plus loin avec des exercices exigeants pour viser le niveau BAC.';
+    }
 
     if (!Array.isArray(subject.exercises)) subject.exercises = [];
 
@@ -745,40 +742,50 @@ function repairExamStructure(exam, subjectName) {
         if (!question.text) question.text = question.question || '';
         if (!question.points) question.points = 1.33;
 
-        if (!question.type) {
-          question.type = (Array.isArray(question.options) && question.options.length === 4) ? 'choice' : 'text';
-        }
+        // ✅ RÈGLE SPÉCIALE PHYSIQUE : La Q1 est TOUJOURS un dessin
+        if (subjectName === 'physique' && qIdx === 0) {
+          question.type = 'drawing';
+          delete question.options;
+          delete question.correctAnswer;
+          if (!question.text.toLowerCase().includes('schéma') && !question.text.toLowerCase().includes('dessin')) {
+             question.text = "Faire le schéma du dispositif en précisant le repère et les vecteurs. " + question.text;
+          }
+        } else {
+          if (!question.type) {
+            question.type = (Array.isArray(question.options) && question.options.length === 4) ? 'choice' : 'text';
+          }
 
-        if (question.type === 'choice') {
-          if (!Array.isArray(question.options) || question.options.length !== 4) {
+          if (question.type === 'choice') {
+            if (!Array.isArray(question.options) || question.options.length !== 4) {
+              question.type = 'text';
+              delete question.options;
+              delete question.correctAnswer;
+            } else {
+              const letters = ['A', 'B', 'C', 'D'];
+              question.options = question.options.map((opt, oi) => {
+                const text = typeof opt === 'string' ? opt : (opt?.text || opt?.label || String(opt || ''));
+                return { id: letters[oi], text: String(text || '').trim() || ('Option ' + letters[oi]) };
+              });
+
+              let correct = question.correctAnswer;
+              if (correct === null || correct === undefined) correct = 'A';
+              else if (typeof correct === 'number') correct = letters[correct] || 'A';
+              else {
+                correct = String(correct).toUpperCase().trim();
+                if (['A', 'B', 'C', 'D'].indexOf(correct) === -1) correct = 'A';
+              }
+              question.correctAnswer = correct;
+            }
+          } else {
+            delete question.options;
+            delete question.correctAnswer;
+          }
+
+          if (!supportsChoices && question.type === 'choice') {
             question.type = 'text';
             delete question.options;
             delete question.correctAnswer;
-          } else {
-            const letters = ['A', 'B', 'C', 'D'];
-            question.options = question.options.map((opt, oi) => {
-              const text = typeof opt === 'string' ? opt : (opt?.text || opt?.label || String(opt || ''));
-              return { id: letters[oi], text: String(text || '').trim() || ('Option ' + letters[oi]) };
-            });
-
-            let correct = question.correctAnswer;
-            if (correct === null || correct === undefined) correct = 'A';
-            else if (typeof correct === 'number') correct = letters[correct] || 'A';
-            else {
-              correct = String(correct).toUpperCase().trim();
-              if (['A', 'B', 'C', 'D'].indexOf(correct) === -1) correct = 'A';
-            }
-            question.correctAnswer = correct;
           }
-        } else {
-          delete question.options;
-          delete question.correctAnswer;
-        }
-
-        if (!supportsChoices && question.type === 'choice') {
-          question.type = 'text';
-          delete question.options;
-          delete question.correctAnswer;
         }
       });
     });
@@ -790,7 +797,10 @@ function repairExamStructure(exam, subjectName) {
 function validateGeneratedExam(exam, subjectName) {
   const supportsChoices = CHOICE_SUBJECTS.has(subjectName);
   const validQuestion = (q) => {
-    if (!supportsChoices || q.type !== 'choice') return ['text', 'number', 'formula', 'choice'].indexOf(q.type) !== -1;
+    if (subjectName === 'physique' && q.number && q.number.endsWith('a')) {
+      return q.type === 'drawing';
+    }
+    if (!supportsChoices || q.type !== 'choice') return ['text', 'number', 'formula', 'choice', 'drawing'].indexOf(q.type) !== -1;
     return Array.isArray(q.options) && q.options.length === 4 && ['A', 'B', 'C', 'D'].indexOf(q.correctAnswer) !== -1;
   };
   return exam && Array.isArray(exam.subjects) && exam.subjects.length === 2 &&
@@ -808,7 +818,7 @@ async function generateWithFallback(prompt, subjectName) {
   if (!providers.length) throw new Error('provider_missing');
 
   const startTime = Date.now();
-  const TIME_BUDGET_MS = 80000;
+  const TIME_BUDGET_MS = 85000;
   const errors = [];
 
   for (let i = 0; i < providers.length; i++) {
@@ -947,7 +957,6 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
   const subject = exam.subjects.find((s) => s.id === subjectId) || exam.subjects[0];
   if (!subject) throw new Error('subject_not_found');
 
-  // ✅ CORRECTION : Vérifier s'il y a AU MOINS une réponse
   const hasAnyAnswer = Object.values(answers || {}).some(
     (a) => a !== null && a !== undefined && String(a).trim() !== ''
   );
@@ -1029,7 +1038,6 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
             if (aiQ.correctAnswer && !match.correctAnswer) match.correctAnswer = aiQ.correctAnswer;
 
             if (match.status === 'pending') {
-              // ✅ CORRECTION : Si aucune réponse → 0 point, quoi que dise l'IA
               if (!match.studentAnswer || String(match.studentAnswer).trim() === '') {
                 match.points = 0;
                 match.status = 'unanswered';
@@ -1037,7 +1045,6 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
                 return;
               }
 
-              // ✅ Si la réponse de l'élève est vide/blanche → 0 point
               const studentStr = String(match.studentAnswer).trim().toLowerCase();
               if (studentStr === '' || studentStr === 'aucune' || studentStr === 'vide' || studentStr === 'null') {
                 match.points = 0;
@@ -1045,7 +1052,6 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
                 return;
               }
 
-              // ✅ Sinon, on fait confiance à l'IA mais on plafonne les points
               const maxQ = Number(match.maxPoints) || 1.33;
               const aiPoints = Math.max(0, Math.min(maxQ, Number(aiQ.points) || 0));
               match.points = aiPoints;
@@ -1066,60 +1072,56 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
       if (Array.isArray(aiResult?.revisionTopics)) deterministicResults.revisionTopics = aiResult.revisionTopics;
       if (aiResult?.globalFeedback) deterministicResults.globalFeedback = aiResult.globalFeedback;
     } catch (error) {
-  console.warn('AI correction failed:', error.message);
-  // ✅ CAS B : l'élève a répondu, mais l'IA n'a pas pu corriger.
-  // On ne peut PAS inventer une note pour des questions ouvertes.
-  // On remonte une erreur explicite : le client affichera « réessaie »
-  // et conservera les réponses de l'élève dans sa session active.
-  throw new Error('CORRECTION_UNAVAILABLE');
+      console.warn('AI correction failed:', error.message);
+      // ✅ CAS B : l'IA n'a pas pu corriger. On ne renvoie PAS une fausse note.
+      throw new Error('CORRECTION_UNAVAILABLE');
     }
   }
-    
+
   const finalExercises = deterministicResults.map((r) => r.exerciseResult);
 
   let rawScore = 0;
   let maxPossibleScore = 0;
-
   finalExercises.forEach((ex) => {
-    ex.score = 0;
-    ex.maxScore = 0;
-    ex.correctAnswers = 0;
-
     ex.questions.forEach((q) => {
       const qMax = Number(q.maxPoints) || 1.33;
-      const qPoints = Math.max(0, Math.min(qMax, Number(q.points) || 0));
-
-      q.points = round2(qPoints);
+      const qPts = Math.max(0, Math.min(qMax, Number(q.points) || 0));
+      q.points = round2(qPts);
       q.maxPoints = round2(qMax);
-
-      ex.score += qPoints;
-      ex.maxScore += qMax;
-
-      if (q.status === 'correct') ex.correctAnswers++;
+      rawScore += qPts;
+      maxPossibleScore += qMax;
+      if (q.status === 'correct') ex.correctAnswers = (ex.correctAnswers || 0) + 1;
     });
-
-    ex.score = round2(ex.score);
-    ex.maxScore = round2(ex.maxScore);
-
-    rawScore += ex.score;
-    maxPossibleScore += ex.maxScore;
   });
 
-  let finalScore;
-  if (maxPossibleScore > 0) {
-    finalScore = (rawScore / maxPossibleScore) * TOTAL_POINTS;
-  } else {
-    finalScore = 0;
+  let finalScore = maxPossibleScore > 0 ? (rawScore / maxPossibleScore) * TOTAL_POINTS : 0;
+  finalScore = round2(Math.max(0, Math.min(TOTAL_POINTS, finalScore)));
+
+  let sumExScore = 0;
+  let sumExMax = 0;
+  finalExercises.forEach((ex, idx) => {
+    const isLast = idx === finalExercises.length - 1;
+    const exMax = isLast
+      ? round2(TOTAL_POINTS - sumExMax)
+      : round2((ex.questions.reduce((s, q) => s + (Number(q.maxPoints) || 0), 0) / (maxPossibleScore || 1)) * TOTAL_POINTS);
+    const exRaw = ex.questions.reduce((s, q) => s + (Number(q.points) || 0), 0);
+    const exRawMax = ex.questions.reduce((s, q) => s + (Number(q.maxPoints) || 0), 0);
+    const exScore = exRawMax > 0 ? round2((exRaw / exRawMax) * exMax) : 0;
+    ex.maxScore = exMax;
+    ex.score = Math.min(exScore, exMax);
+    sumExMax += exMax;
+    sumExScore += ex.score;
+  });
+
+  if (finalExercises.length > 0) {
+    const last = finalExercises[finalExercises.length - 1];
+    const drift = round2(finalScore - sumExScore);
+    if (drift !== 0) {
+      last.score = round2(Math.max(0, Math.min(last.maxScore, last.score + drift)));
+    }
   }
 
-  // ✅ CORRECTION : Plafonner STRICTEMENT à 20
-  finalScore = Math.max(0, Math.min(TOTAL_POINTS, finalScore));
-  finalScore = round2(finalScore);
-
-  if (finalScore > TOTAL_POINTS) finalScore = TOTAL_POINTS;
-
   const percentage = Math.round((finalScore / TOTAL_POINTS) * 100);
-
   let grade = 'Insuffisant';
   if (percentage >= 90) grade = 'Excellent';
   else if (percentage >= 80) grade = 'Très bien';
@@ -1127,31 +1129,6 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
   else if (percentage >= 60) grade = 'Assez bien';
   else if (percentage >= 50) grade = 'Passable';
 
-  // ✅ CORRECTION : Distribution exacte des points avec ajustement final
-  // On distribue 20 points sur les exercices, avec le dernier qui absorbe l'arrondi
-  let totalDistributed = 0;
-  finalExercises.forEach((ex, idx) => {
-    if (maxPossibleScore > 0) {
-      const ratio = ex.maxScore / maxPossibleScore;
-      let exMax;
-      
-      // Le dernier exercice reçoit le reste pour que la somme = 20 exactement
-      if (idx === finalExercises.length - 1) {
-        exMax = round2(TOTAL_POINTS - totalDistributed);
-      } else {
-        exMax = round2(ratio * TOTAL_POINTS);
-        totalDistributed += exMax;
-      }
-      
-      const exScore = ex.maxScore > 0 
-        ? round2((ex.score / ex.maxScore) * exMax)
-        : 0;
-      
-      ex.score = Math.min(exScore, exMax); // ✅ Ne jamais dépasser le max
-      ex.maxScore = exMax;
-    }
-  });
-  
   const revisionTopics = deterministicResults.revisionTopics || [];
   if (!revisionTopics.length) {
     finalExercises.forEach((ex) => {
@@ -1487,33 +1464,33 @@ module.exports = async function handler(request, response) {
   }
 
   if (action === 'correct') {
-  const validationError = validateCorrection(body);
-  if (validationError) return jsonError(response, 400, validationError);
+    const validationError = validateCorrection(body);
+    if (validationError) return jsonError(response, 400, validationError);
 
-  try {
-    const result = await correctExamHybrid(body.exam, body.subjectId, body.answers, verifiedUser.uid);
-    try { await saveExamResult(verifiedUser.uid, body, result); }
-    catch (e) { console.error('Save exam result failed:', e.message); }
+    try {
+      const result = await correctExamHybrid(body.exam, body.subjectId, body.answers, verifiedUser.uid);
+      try { await saveExamResult(verifiedUser.uid, body, result); }
+      catch (e) { console.error('Save exam result failed:', e.message); }
 
-    return response.status(200).json({ success: true, result });
-  } catch (error) {
-    console.error('Exam correction failed:', error.message);
+      return response.status(200).json({ success: true, result });
+    } catch (error) {
+      const msg = (error && error.message) ? error.message : String(error);
+      console.error('Exam correction failed:', msg);
 
-    // ✅ CAS B : correction réellement indisponible → on le dit clairement
-    // au client avec un statut HTTP d'erreur, et on ne sauvegarde AUCUNE note.
-    if (error.message === 'CORRECTION_UNAVAILABLE') {
-      return jsonError(
-        response,
-        503,
-        'La correction est temporairement indisponible. Tes réponses sont conservées : réessaie dans quelques minutes.',
-        'CORRECTION_UNAVAILABLE'
-      );
+      // ✅ CAS B : correction réellement indisponible
+      if (msg === 'CORRECTION_UNAVAILABLE') {
+        return jsonError(
+          response,
+          503,
+          'La correction est temporairement indisponible. Tes réponses sont conservées : réessaie dans quelques minutes.',
+          'CORRECTION_UNAVAILABLE'
+        );
+      }
+
+      console.error('Unexpected correction error:', (error && error.stack) || msg);
+      return jsonError(response, 500, 'Une erreur inattendue est survenue pendant la correction.');
     }
+  }
 
-    // Autres erreurs inattendues (bug, données invalides…)
-    console.error('Unexpected correction error:', error.stack || error);
-    return jsonError(response, 500, 'Une erreur inattendue est survenue pendant la correction.');
-  }
-  }
   return jsonError(response, 400, 'Action inconnue.');
 };
