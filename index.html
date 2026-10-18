@@ -1158,6 +1158,17 @@
 button:focus-visible {
   outline: none;
 }
+
+    html, body {
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+a, button, [role="button"], [tabindex], *:focus, *:active {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-tap-highlight: transparent !important;
+  -webkit-touch-callout: none !important;
+}
+    
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(184, 134, 11, 0.25); border-radius: 10px; }
