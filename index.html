@@ -45,15 +45,6 @@
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    html, body {
-  -webkit-tap-highlight-color: transparent !important;
-}
-
-a, button, [role="button"], [tabindex], *:focus, *:active {
-  -webkit-tap-highlight-color: transparent !important;
-  -webkit-tap-highlight: transparent !important;
-  -webkit-touch-callout: none !important;
-}
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html { scroll-behavior: smooth; width: 100%; overflow-x: hidden; }
     body {
@@ -1172,38 +1163,6 @@ button:focus-visible {
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(184, 134, 11, 0.25); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(184, 134, 11, 0.4); }
-
-    /* ═══ TUEUR FINAL DE BORDURES ═══ */
-*:focus,
-*:focus-visible,
-*:focus-within,
-*:active,
-html:focus,
-body:focus,
-a:focus,
-a:active,
-button:focus,
-button:active,
-a:focus-visible,
-button:focus-visible,
-.subject-chip:focus,
-.subject-chip:active,
-.subject-chip:focus-visible,
-.tool-card:focus,
-.tool-card:active,
-.tool-card:focus-visible {
-  outline: 0 !important;
-  outline-width: 0 !important;
-  outline-style: none !important;
-  outline-color: transparent !important;
-  outline-offset: 0 !important;
-  border-color: rgba(184, 134, 11, 0.06) !important;  /* ← ta couleur dorée normale */
-  box-shadow: none !important;
-  -webkit-tap-highlight-color: transparent !important;
-  -webkit-tap-highlight: transparent !important;
-  -webkit-touch-callout: none !important;
-  -webkit-focus-ring-color: transparent !important;
-}
   </style>
 </head>
 <body>
