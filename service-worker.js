@@ -4,7 +4,7 @@
 // Les correctifs prennent effet dès le prochain chargement.
 // ================================================================
 
-const CACHE_VERSION = 'arvexa-v10.0.0';
+const CACHE_VERSION = 'arvexa-v11.0.0';
 const CACHE_SHELL = 'arvexa-shell-v7';
 const CACHE_COURS = 'arvexa-cours-v7';
 const CACHE_IMAGES = 'arvexa-images-v7';
