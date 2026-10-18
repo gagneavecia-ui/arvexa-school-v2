@@ -2787,74 +2787,90 @@
   }
 
   function renderExercise() {
-    var exercise = state.selectedSubject.exercises[state.exerciseIndex];
-    if (!exercise) return;
+  var exercise = state.selectedSubject.exercises[state.exerciseIndex];
+  if (!exercise) return;
 
-    $('exerciseTitle').textContent = 'Exercice ' + (exercise.number || (state.exerciseIndex + 1)) + (exercise.title ? ' — ' + exercise.title : '');
-    $('exerciseCounter').textContent = (state.exerciseIndex + 1) + ' / ' + EXAM_CONSTANTS.REQUIRED_EXERCISES;
-    $('exercisePoints').textContent = (Math.round((Number(exercise.points) || 0) * 100) / 100) + ' points · ' + EXAM_CONSTANTS.QUESTIONS_PER_EXERCISE + ' questions';
-    $('exerciseStatement').textContent = exercise.statement || '';
+  $('exerciseTitle').textContent = 'Exercice ' + (exercise.number || (state.exerciseIndex + 1)) + (exercise.title ? ' — ' + exercise.title : '');
+  $('exerciseCounter').textContent = (state.exerciseIndex + 1) + ' / ' + EXAM_CONSTANTS.REQUIRED_EXERCISES;
+  $('exercisePoints').textContent = (Math.round((Number(exercise.points) || 0) * 100) / 100) + ' points · ' + EXAM_CONSTANTS.QUESTIONS_PER_EXERCISE + ' questions';
+  $('exerciseStatement').textContent = exercise.statement || '';
 
-    var list = $('questionsList');
-    list.replaceChildren();
+  var list = $('questionsList');
+  list.replaceChildren();
 
-    exercise.questions.slice(0, EXAM_CONSTANTS.QUESTIONS_PER_EXERCISE).forEach(function (question, qIdx) {
-      var key = answerKey(state.exerciseIndex, qIdx);
-      var wrapper = document.createElement('div');
-      wrapper.className = 'question';
+  exercise.questions.slice(0, EXAM_CONSTANTS.QUESTIONS_PER_EXERCISE).forEach(function (question, qIdx) {
+    var key = answerKey(state.exerciseIndex, qIdx);
+    var wrapper = document.createElement('div');
+    wrapper.className = 'question';
 
-      var title = document.createElement('div');
-      title.className = 'question-title';
-      title.innerHTML =
-        '<span>' + escapeHtml(question.number || ((state.exerciseIndex + 1) + '.' + (qIdx + 1))) + '. ' + escapeHtml(question.text || '') + '</span>' +
-        '<span class="points">' + (Math.round((Number(question.points) || 0) * 100) / 100) + ' pt</span>';
-      wrapper.appendChild(title);
+    var title = document.createElement('div');
+    title.className = 'question-title';
+    title.innerHTML =
+      '<span>' + escapeHtml(question.number || ((state.exerciseIndex + 1) + '.' + (qIdx + 1))) + '. ' + escapeHtml(question.text || '') + '</span>' +
+      '<span class="points">' + (Math.round((Number(question.points) || 0) * 100) / 100) + ' pt</span>';
+    wrapper.appendChild(title);
 
-      if (Array.isArray(question.options) && question.options.length === 4) {
-        var options = document.createElement('div');
-        options.className = 'answer-options';
-        var letters = ['A', 'B', 'C', 'D'];
-        question.options.forEach(function (opt, oIdx) {
-          var letter = (opt && opt.id) ? String(opt.id).toUpperCase().slice(0, 1) : letters[oIdx];
-          var optText = (opt && (opt.text || opt.label)) ? (opt.text || opt.label) : String(opt || '');
-          var label = document.createElement('label');
-          label.className = 'answer-option';
-          var input = document.createElement('input');
-          input.type = 'radio';
-          input.name = key;
-          input.value = letter;
-          input.checked = state.answers[key] === letter;
-          input.addEventListener('change', function () { saveAnswer(key, letter); });
-          var text = document.createElement('span');
-          text.textContent = letter + '. ' + optText;
-          label.appendChild(input);
-          label.appendChild(text);
-          options.appendChild(label);
-        });
-        wrapper.appendChild(options);
+    // ✅ NOUVEAU : Gestion du type "drawing" pour la Physique
+    if (question.type === 'drawing') {
+      var drawingBox = document.createElement('div');
+      drawingBox.style.cssText = 'border: 2px dashed #B8860B; padding: 20px; text-align: center; color: #8A8A7A; border-radius: 10px; margin-top: 12px; background: rgba(184, 134, 11, 0.05);';
+      drawingBox.innerHTML = '<i class="fas fa-pencil-alt" style="font-size: 24px; margin-bottom: 10px; color: #E0B84A;"></i><br>' +
+        '<strong style="color: #E0B84A;">Fais ce schéma sur ton cahier.</strong><br>' +
+        '<span style="font-size: 13px;">Tu pourras vérifier avec la correction à la fin.</span>';
+      wrapper.appendChild(drawingBox);
+    } 
+    // ✅ Gestion des QCM (Choix multiples)
+    else if (Array.isArray(question.options) && question.options.length === 4) {
+      var options = document.createElement('div');
+      options.className = 'answer-options';
+      var letters = ['A', 'B', 'C', 'D'];
+      question.options.forEach(function (opt, oIdx) {
+        var letter = (opt && opt.id) ? String(opt.id).toUpperCase().slice(0, 1) : letters[oIdx];
+        var optText = (opt && (opt.text || opt.label)) ? (opt.text || opt.label) : String(opt || '');
+        var label = document.createElement('label');
+        label.className = 'answer-option';
+        
+        var input = document.createElement('input');
+        input.type = 'radio';
+        input.name = key;
+        input.value = letter;
+        input.checked = state.answers[key] === letter;
+        input.addEventListener('change', function () { saveAnswer(key, letter); });
+        
+        var text = document.createElement('span');
+        text.textContent = letter + '. ' + optText;
+        
+        label.appendChild(input);
+        label.appendChild(text);
+        options.appendChild(label);
+      });
+      wrapper.appendChild(options);
+    } 
+    // ✅ Gestion des réponses Texte / Nombre
+    else {
+      var isNumber = question.type === 'number';
+      var input = document.createElement(isNumber ? 'input' : 'textarea');
+      input.className = 'answer';
+      if (isNumber) {
+        input.type = 'number';
+        input.step = 'any';
+        input.placeholder = 'Ta réponse numérique';
       } else {
-        var isNumber = question.type === 'number';
-        var input = document.createElement(isNumber ? 'input' : 'textarea');
-        input.className = 'answer';
-        if (isNumber) {
-          input.type = 'number';
-          input.step = 'any';
-          input.placeholder = 'Ta réponse numérique';
-        } else {
-          input.placeholder = 'Rédige ta réponse ici...';
-        }
-        input.value = state.answers[key] || '';
-        input.addEventListener('input', function () { saveAnswer(key, input.value); });
-        wrapper.appendChild(input);
+        input.placeholder = 'Rédige ta réponse ici...';
       }
-      list.appendChild(wrapper);
-    });
+      input.value = state.answers[key] || '';
+      input.addEventListener('input', function () { saveAnswer(key, input.value); });
+      wrapper.appendChild(input);
+    }
+    list.appendChild(wrapper);
+  });
 
-    $('previousButton').disabled = state.exerciseIndex === 0;
-    $('nextButton').disabled = state.exerciseIndex >= EXAM_CONSTANTS.REQUIRED_EXERCISES - 1;
-    $('progressBar').style.width = (((state.exerciseIndex + 1) / EXAM_CONSTANTS.REQUIRED_EXERCISES) * 100) + '%';
-    // Rendu KaTeX automatique (katex-utils.js MutationObserver)
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  $('previousButton').disabled = state.exerciseIndex === 0;
+  $('nextButton').disabled = state.exerciseIndex >= EXAM_CONSTANTS.REQUIRED_EXERCISES - 1;
+  $('progressBar').style.width = (((state.exerciseIndex + 1) / EXAM_CONSTANTS.REQUIRED_EXERCISES) * 100) + '%';
+  
+  // Rendu KaTeX automatique (katex-utils.js MutationObserver)
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function goNext() {
