@@ -1,75 +1,158 @@
 /* ============================================================
-   ARVEXA — PERF.CSS v3.0 FINAL
-   Optimisations de fluidité maximales · Zéro impact visuel
-   Compatible : tous les fichiers HTML ARVEXA
-   Charger APRÈS tous les autres CSS
+   ARVEXA — PERF.CSS v4.0 ULTRA
+   Contourne TOUS les contours, flashs, focus rings.
+   À charger APRÈS tous les autres CSS.
    ============================================================ */
 
 /* ═════════════════════════════════════════════════════════════
-   1. RESET TAP-HIGHLIGHT ET FOCUS MOBILE
-   Supprime toutes les bordures blanches / bleues au tap
+   1. TUEUR UNIVERSEL DE CONTOURS (la couche la plus agressive)
    ═════════════════════════════════════════════════════════════ */
 
-* {
+*,
+*::before,
+*::after,
+html,
+body,
+a,
+button,
+input,
+textarea,
+select,
+summary,
+details,
+[role="button"],
+[tabindex],
+[contenteditable] {
+  outline: 0 !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+  outline-offset: 0 !important;
+  -webkit-focus-ring-color: transparent !important;
+  -moz-outline: none !important;
   -webkit-tap-highlight-color: transparent !important;
+  -webkit-tap-highlight: transparent !important;
+  -webkit-touch-callout: none !important;
 }
 
-@media (hover: none) and (pointer: coarse) {
-  *:focus,
-  *:focus-visible,
-  *:focus-within,
-  button,
-  a,
-  [role="button"],
-  [tabindex],
-  .subject-chip,
-  .chapter-card,
-  .part-card,
-  .tool-card,
-  .card,
-  .btn,
-  .screen-card,
-  .gallery-tab,
-  .filter-btn,
-  .conv-cat,
-  .tab-btn,
-  .icon-btn,
-  .menu-toggle,
-  .header-icon-btn,
-  .payment-logo-btn,
-  .qcm-option,
-  .quiz-option,
-  .feedback-btn,
-  .nav-btn,
-  .modal-btn,
-  .arvexa-confirm-btn,
-  .arvexa-popup-btn {
-    outline: none !important;
-    outline-offset: 0 !important;
-    box-shadow: none !important;
-    -webkit-tap-highlight-color: transparent !important;
-    -webkit-focus-ring-color: transparent !important;
-  }
+/* États dynamiques : focus, active, hover, focus-visible, focus-within */
+*:focus,
+*:focus-visible,
+*:focus-within,
+*:active,
+*:hover,
+a:focus,
+a:focus-visible,
+a:active,
+a:hover,
+button:focus,
+button:focus-visible,
+button:active,
+button:hover,
+input:focus,
+input:focus-visible,
+input:active,
+textarea:focus,
+textarea:focus-visible,
+textarea:active,
+select:focus,
+select:focus-visible,
+select:active,
+summary:focus,
+summary:focus-visible,
+summary:active,
+[role="button"]:focus,
+[role="button"]:focus-visible,
+[role="button"]:active,
+[tabindex]:focus,
+[tabindex]:focus-visible,
+[tabindex]:active {
+  outline: 0 !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+  outline-offset: 0 !important;
+  -webkit-focus-ring-color: transparent !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-tap-highlight: transparent !important;
+  -webkit-touch-callout: none !important;
+  box-shadow: none !important;
 }
 
-/* Desktop : pas d'outline au clic souris (uniquement clavier) */
-button:focus:not(:focus-visible),
-a:focus:not(:focus-visible),
-[role="button"]:focus:not(:focus-visible),
-[tabindex]:focus:not(:focus-visible) {
+/* ═════════════════════════════════════════════════════════════
+   2. FORCER LA COULEUR DE BORDURE (empêche le blanc au focus/active)
+   ═════════════════════════════════════════════════════════════ */
+
+.subject-chip:focus,
+.subject-chip:focus-visible,
+.subject-chip:active,
+.tool-card:focus,
+.tool-card:focus-visible,
+.tool-card:active,
+.chapter-card:focus,
+.chapter-card:focus-visible,
+.chapter-card:active,
+.part-card:focus,
+.part-card:focus-visible,
+.part-card:active,
+.f-card:focus,
+.f-card:focus-visible,
+.f-card:active,
+.card:focus,
+.card:focus-visible,
+.card:active,
+.panel:focus,
+.panel:active,
+.btn:focus,
+.btn:focus-visible,
+.btn:active,
+button:focus,
+button:focus-visible,
+button:active,
+a:focus,
+a:focus-visible,
+a:active {
+  border-color: rgba(184, 134, 11, 0.06) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+
+/* Boutons avec bordure plus visible (header actions, menu, etc.) */
+.header .menu-toggle:focus,
+.header .menu-toggle:focus-visible,
+.header .menu-toggle:active,
+.header .header-actions button:focus,
+.header .header-actions button:focus-visible,
+.header .header-actions button:active,
+.icon-btn:focus,
+.icon-btn:focus-visible,
+.icon-btn:active,
+.back-btn:focus,
+.back-btn:focus-visible,
+.back-btn:active,
+.theme-btn:focus,
+.theme-btn:focus-visible,
+.theme-btn:active {
+  border-color: rgba(255, 255, 255, 0.05) !important;
   outline: none !important;
   box-shadow: none !important;
 }
 
-/* Inputs : garder uniquement la bordure dorée naturelle */
+/* Inputs : garder uniquement la bordure dorée naturelle au focus */
 input:focus,
+input:focus-visible,
 textarea:focus,
-select:focus {
+textarea:focus-visible,
+select:focus,
+select:focus-visible {
+  border-color: rgba(184, 134, 11, 0.4) !important;
   outline: none !important;
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.08) !important;
 }
 
 /* ═════════════════════════════════════════════════════════════
-   2. BACKDROP-FILTER : désactivé sur éléments scrollés
+   3. BACKDROP-FILTER : désactivé partout où ça scroll
    ═════════════════════════════════════════════════════════════ */
 
 .header,
@@ -99,7 +182,7 @@ header.header,
   -webkit-backdrop-filter: none !important;
 }
 
-/* Modales plein écran : flou conservé sur desktop uniquement */
+/* Modales : flou conservé desktop */
 .modal-overlay,
 .sidebar-overlay,
 .detail-overlay,
@@ -131,7 +214,7 @@ header.header,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   3. GLOW ANIMÉS : gel des animations infinies
+   4. GLOW : animations infinies gelées
    ═════════════════════════════════════════════════════════════ */
 
 .glow,
@@ -153,7 +236,7 @@ header.header,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   4. TRANSITIONS : ciblage précis des propriétés
+   5. TRANSITIONS : ciblage précis
    ═════════════════════════════════════════════════════════════ */
 
 *,
@@ -162,7 +245,6 @@ header.header,
   transition-property: transform, opacity, background-color, border-color, color, box-shadow, width !important;
 }
 
-/* Exceptions : éléments critiques gardent leur transition complète */
 input,
 textarea,
 select,
@@ -184,7 +266,7 @@ select,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   5. WILL-CHANGE : usage dynamique uniquement
+   6. WILL-CHANGE
    ═════════════════════════════════════════════════════════════ */
 
 .reveal {
@@ -194,7 +276,6 @@ select,
   will-change: auto !important;
 }
 
-/* will-change ciblé uniquement sur hover desktop */
 @media (hover: hover) and (pointer: fine) {
   .card:hover,
   .panel:hover,
@@ -208,7 +289,7 @@ select,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   6. CONTENT-VISIBILITY : rendu différé hors écran
+   7. CONTENT-VISIBILITY
    ═════════════════════════════════════════════════════════════ */
 
 .part-card,
@@ -237,7 +318,6 @@ select,
   contain-intrinsic-size: auto 400px;
 }
 
-/* Longs articles (lecture.html, conditions.html, confidentialite.html) */
 .lecture-section,
 .section,
 .content-section {
@@ -246,7 +326,7 @@ select,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   7. ANIMATIONS DÉCORATIVES INFINIES : gel total
+   8. ANIMATIONS DÉCORATIVES INFINIES : gel
    ═════════════════════════════════════════════════════════════ */
 
 .cover-glow,
@@ -270,7 +350,6 @@ select,
 .premium-countdown.critical,
 .arvexa-confirm-icon-box,
 .arvexa-confirm-icon-box.danger,
-.iconFloat,
 .error-icon::before,
 .offline-icon::before,
 .skeleton-spinner,
@@ -278,7 +357,6 @@ select,
 .skeleton-category,
 .skeleton-line,
 .skeleton-icon,
-.heart-pulse,
 .priority-badge .dot,
 .arvexa-popup-btn.primary::before {
   animation: none !important;
@@ -297,7 +375,7 @@ select,
 }
 
 /* ═════════════════════════════════════════════════════════════
-   8. IMAGES : lazy + async + réservation d'espace
+   9. IMAGES
    ═════════════════════════════════════════════════════════════ */
 
 img:not([loading]) {
@@ -314,7 +392,7 @@ img:not([width]):not([height]) {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   9. SCROLL-BEHAVIOR : natif sur mobile
+   10. SCROLL-BEHAVIOR
    ═════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
@@ -323,13 +401,12 @@ img:not([width]):not([height]) {
   }
 }
 
-/* Ancres : marge safe pour sticky headers */
 :target {
   scroll-margin-top: 80px;
 }
 
 /* ═════════════════════════════════════════════════════════════
-   10. BOX-SHADOW : désactivées sur hover mobile
+   11. BOX-SHADOW : hover mobile
    ═════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
@@ -344,7 +421,6 @@ img:not([width]):not([height]) {
   }
 }
 
-/* Boutons : ombre allégée au repos, restaurée au hover desktop */
 .btn-subscribe-main,
 .btn-submit,
 .btn-start,
@@ -365,7 +441,7 @@ img:not([width]):not([height]) {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   11. CONTAINMENT : isolation des repaints
+   12. CONTAINMENT
    ═════════════════════════════════════════════════════════════ */
 
 .card,
@@ -385,7 +461,7 @@ img:not([width]):not([height]) {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   12. STICKY HEADERS : isolation anti-repaint
+   13. STICKY HEADERS
    ═════════════════════════════════════════════════════════════ */
 
 .header,
@@ -399,7 +475,7 @@ img:not([width]):not([height]) {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   13. HOVER MOBILE : aucun effet (inutile et coûteux)
+   14. HOVER MOBILE : désactivé
    ═════════════════════════════════════════════════════════════ */
 
 @media (hover: none) and (pointer: coarse) {
@@ -426,7 +502,7 @@ img:not([width]):not([height]) {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   14. GPU : transform 3D ciblé sur éléments animables
+   15. GPU TRANSFORM 3D
    ═════════════════════════════════════════════════════════════ */
 
 .sidebar,
@@ -443,7 +519,7 @@ img:not([width]):not([height]) {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   15. FONT AWESOME : rendu accéléré
+   16. FONT AWESOME
    ═════════════════════════════════════════════════════════════ */
 
 .fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands {
@@ -452,7 +528,7 @@ img:not([width]):not([height]) {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   16. INPUTS : contenir les repaints
+   17. INPUTS
    ═════════════════════════════════════════════════════════════ */
 
 input,
@@ -468,7 +544,7 @@ select:focus {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   17. AVATARS / IMAGES RONDES : containment
+   18. AVATARS
    ═════════════════════════════════════════════════════════════ */
 
 .user-avatar,
@@ -484,7 +560,7 @@ select:focus {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   18. SCROLLBAR : cachée sur mobile (gain rendering)
+   19. SCROLLBAR mobile
    ═════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
@@ -496,7 +572,7 @@ select:focus {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   19. FILTERS DÉCORATIFS : suppression mobile
+   20. FILTERS décoratifs mobile
    ═════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
@@ -516,7 +592,7 @@ select:focus {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   20. KATEX : optimisations de rendu des formules
+   21. KATEX
    ═════════════════════════════════════════════════════════════ */
 
 .katex {
@@ -531,82 +607,13 @@ select:focus {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   21. ANIMATIONS DE FEEDBACK : accélérer sans casser
-   ═════════════════════════════════════════════════════════════ */
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
-}
-
-@keyframes messageIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
-}
-
-/* ═════════════════════════════════════════════════════════════
-   22. OPTIMISATIONS SPÉCIFIQUES PAR PAGE
-   ═════════════════════════════════════════════════════════════ */
-
-/* Groupe : chat avec beaucoup de messages */
-.messages-container {
-  contain: strict;
-}
-
-.message-wrapper {
-  contain: layout style paint;
-}
-
-/* Formulaires : grille dense */
-.formulas-list,
-.f-card {
-  contain: layout style paint;
-}
-
-/* Tableau périodique */
-.ptable {
-  contain: layout style paint;
-}
-
-.el {
-  contain: strict;
-}
-
-/* Calculatrice */
-.keypad-row {
-  contain: layout style paint;
-}
-
-.cb {
-  contain: strict;
-}
-
-/* Exam : liste de questions */
-.questionsList,
-.quiz-question {
-  contain: layout style paint;
-}
-
-/* ═════════════════════════════════════════════════════════════
-   23. PRELOAD / FONT-DISPLAY : éviter FOUT/FOIT
-   ═════════════════════════════════════════════════════════════ */
-
-body {
-  font-display: swap;
-}
-
-/* ═════════════════════════════════════════════════════════════
-   24. ANTI-REFLOW SUR CLIC : stabiliser le layout
+   22. ANTI-REFLOW sur clic
    ═════════════════════════════════════════════════════════════ */
 
 button,
 a,
-[role="button"] {
+[role="button"],
+summary {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
@@ -620,7 +627,7 @@ select {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   25. SAFE AREA : éviter les sauts de layout avec encoche
+   23. SAFE AREA
    ═════════════════════════════════════════════════════════════ */
 
 .header,
@@ -630,7 +637,7 @@ select {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   26. ACCESSIBILITÉ — respect des préférences utilisateur
+   24. ACCESSIBILITÉ (respect des préférences)
    ═════════════════════════════════════════════════════════════ */
 
 @media (prefers-reduced-motion: reduce) {
@@ -645,22 +652,7 @@ select {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   27. ACCESSIBILITÉ CLAVIER : focus visible desktop uniquement
-   ═════════════════════════════════════════════════════════════ */
-
-@media (hover: hover) and (pointer: fine) {
-  button:focus-visible,
-  a:focus-visible,
-  input:focus-visible,
-  textarea:focus-visible,
-  select:focus-visible {
-    outline: 2px solid var(--accent-bright, #E0B84A);
-    outline-offset: 2px;
-  }
-}
-
-/* ═════════════════════════════════════════════════════════════
-   28. DARK MODE : stabilisation des couleurs
+   25. COLOR-SCHEME
    ═════════════════════════════════════════════════════════════ */
 
 html {
@@ -672,66 +664,133 @@ html[data-theme="light"] {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   BRUTE FORCE ANTI-BORDURE — ne peut pas être battu
+   26. ⚡ COUCHE FINALE — OVERRIDE ABSOLU
+   Ces règles viennent EN DERNIER et battent tout le reste.
    ═════════════════════════════════════════════════════════════ */
 
-*,
-*::before,
-*::after,
-*:focus,
-*:focus-visible,
-*:focus-within,
-*:hover,
-*:active,
-*:target,
+a,
 button,
+input,
+textarea,
+select,
+summary,
+details,
+[role="button"],
+[tabindex],
+[contenteditable],
+a:focus,
+a:focus-visible,
+a:focus-within,
+a:active,
+a:hover,
 button:focus,
 button:focus-visible,
 button:focus-within,
-button:hover,
 button:active,
-a,
-a:focus,
-a:focus-visible,
-a:hover,
-a:active,
-[role="button"],
-[role="button"]:focus,
-[tabindex],
-[tabindex]:focus,
+button:hover,
 input:focus,
-textarea:focus,
-select:focus,
 input:focus-visible,
+input:active,
+textarea:focus,
 textarea:focus-visible,
-select:focus-visible {
+textarea:active,
+select:focus,
+select:focus-visible,
+select:active,
+summary:focus,
+summary:focus-visible,
+summary:active,
+[role="button"]:focus,
+[role="button"]:focus-visible,
+[role="button"]:active,
+[tabindex]:focus,
+[tabindex]:focus-visible,
+[tabindex]:active {
   outline: none !important;
   outline-width: 0 !important;
   outline-style: none !important;
   outline-color: transparent !important;
   outline-offset: 0 !important;
   -webkit-focus-ring-color: transparent !important;
-  -moz-outline: none !important;
-  box-shadow: none !important;
   -webkit-tap-highlight-color: transparent !important;
   -webkit-tap-highlight: transparent !important;
   -webkit-touch-callout: none !important;
-}
-
-/* Cas spécial : les inputs gardent leur bordure dorée de focus */
-input:focus,
-textarea:focus,
-select:focus {
-  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1) !important;
-}
-
-/* TUEUR DE FOCUS VISIBLE — priorité maximale */
-a:focus,
-a:focus-visible,
-button:focus,
-button:focus-visible,
-*:focus-visible {
-  outline: none !important;
-  outline-offset: 0 !important;
   box-shadow: none !important;
 }
+
+/* ═════════════════════════════════════════════════════════════
+   27. PSEUDO-ÉLÉMENTS : s'assurer qu'aucun ::after/::before ne dessine de contour
+   ═════════════════════════════════════════════════════════════ */
+
+a::before,
+a::after,
+button::before,
+button::after,
+[role="button"]::before,
+[role="button"]::after,
+.subject-chip::before,
+.subject-chip::after,
+.tool-card::before,
+.tool-card::after,
+.chapter-card::before,
+.chapter-card::after,
+.part-card::before,
+.part-card::after,
+.f-card::before,
+.f-card::after {
+  outline: none !important;
+  outline-style: none !important;
+  -webkit-focus-ring-color: transparent !important;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   28. NAVIGATEUR TÊTU : forcer la couleur de bordure normale
+   ═════════════════════════════════════════════════════════════ */
+
+.subject-chip,
+.subject-chip:hover,
+.subject-chip:focus,
+.subject-chip:focus-visible,
+.subject-chip:active {
+  border-color: rgba(184, 134, 11, 0.06) !important;
+}
+
+.tool-card,
+.tool-card:hover,
+.tool-card:focus,
+.tool-card:focus-visible,
+.tool-card:active {
+  border-color: rgba(184, 134, 11, 0.06) !important;
+}
+
+.chapter-card,
+.chapter-card:hover,
+.chapter-card:focus,
+.chapter-card:focus-visible,
+.chapter-card:active,
+.part-card,
+.part-card:hover,
+.part-card:focus,
+.part-card:focus-visible,
+.part-card:active,
+.f-card,
+.f-card:hover,
+.f-card:focus,
+.f-card:focus-visible,
+.f-card:active {
+  border-color: rgba(184, 134, 11, 0.08) !important;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   29. RECAP FINAL
+   ═════════════════════════════════════════════════════════════ */
+
+/**
+ * Si après TOUT ça une bordure blanche persiste, ce n'est PLUS du CSS.
+ * C'est :
+ *  - soit un réglage Android (Accessibilité → Surlignage boutons)
+ *  - soit une extension navigateur
+ *  - soit Chrome lui-même sur ton appareil
+ *  - Dans tous les cas, teste en navigation privée avec Google.com
+ *    pour confirmer. Si Google.com montre la même bordure, c'est le téléphone.
+ */
