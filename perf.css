@@ -266,4 +266,48 @@ body:has(#ptable) .detail-overlay {
   -webkit-backdrop-filter: none !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 15 : lecture.html  (ciblée par #contentWrapper)
+   ⚠️ PRUDENCE : #contentWrapper gère son propre scroll
+   → on ne touche QU'aux cards internes au contenu, jamais au wrapper
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#contentWrapper) .lecture-quiz-item,
+body:has(#contentWrapper) .lecture-exercise,
+body:has(#contentWrapper) .lecture-figure svg,
+body:has(#contentWrapper) .part,
+body:has(#contentWrapper) .block,
+body:has(#contentWrapper) .formula-block,
+body:has(#contentWrapper) .qa-item,
+body:has(#contentWrapper) .qcm-item {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Glows réduits (ils sont fixés derrière, pas dans le scroll) */
+body:has(#contentWrapper) .glow,
+body:has(#contentWrapper) .glow-1,
+body:has(#contentWrapper) .glow-2 {
+  filter: blur(40px) !important;
+  animation: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 16 : outils.html
+   Ciblage : .tool-card.featured.premium
+   (cette combinaison n'existe QUE dans outils.html)
+   ═══════════════════════════════════════════════════════════════ */
+body:has(.tool-card.featured.premium) .tool-card,
+body:has(.tool-card.featured.premium) .section-head {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:has(.tool-card.featured.premium) .glow,
+body:has(.tool-card.featured.premium) .glow-1,
+body:has(.tool-card.featured.premium) .glow-2,
+body:has(.tool-card.featured.premium) .glow-3 {
+  filter: blur(40px) !important;
+  animation: none !important;
+}
+
 /* ⚠️ On NE TOUCHE PAS à .el (grille critique) ni .ptable */
