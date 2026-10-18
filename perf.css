@@ -6,8 +6,11 @@
 
 /* ─────────────────────────────────────────────────────────────
    FIX 1 — backdrop-filter : désactivé pendant le scroll
+   C'est le tueur n°1 sur mobile. On garde un fond opaque
+   équivalent visuellement (98% d'opacité = même rendu à l'œil).
    ───────────────────────────────────────────────────────────── */
 
+/* Headers sticky → fond quasi-opaque, sans flou GPU */
 .header,
 .topbar,
 .app-header,
@@ -22,6 +25,7 @@ header.header,
   -webkit-backdrop-filter: none !important;
 }
 
+/* Overlays/panneaux qui restent visibles pendant le scroll */
 .card,
 .panel,
 .sub-card,
@@ -39,6 +43,8 @@ header.header,
   -webkit-backdrop-filter: none !important;
 }
 
+/* On garde le flou UNIQUEMENT sur les modales plein écran
+   (elles ne scrollent pas derrière → coût négligeable) */
 .modal-overlay,
 .sidebar-overlay,
 .detail-overlay,
@@ -52,6 +58,8 @@ header.header,
 
 /* ─────────────────────────────────────────────────────────────
    FIX 2 — Glow animés : gel des animations continues
+   Les blur(80-90px) qui tournent en boucle coûtent ~15-25% GPU.
+   On garde l'effet visuel statique (même apparence au repos).
    ───────────────────────────────────────────────────────────── */
 
 .glow,
@@ -63,6 +71,7 @@ header.header,
   animation: none !important;
 }
 
+/* Sur mobile, on allège encore plus (blur réduit, pas supprimé) */
 @media (max-width: 768px) {
   .glow,
   .bg-glow {
@@ -73,6 +82,7 @@ header.header,
 
 /* ─────────────────────────────────────────────────────────────
    FIX 3 — transition: all → uniquement les propriétés utiles
+   Évite au navigateur de surveiller padding, margin, font-size…
    ───────────────────────────────────────────────────────────── */
 
 *,
@@ -81,6 +91,7 @@ header.header,
   transition-property: transform, opacity, background-color, border-color, color, box-shadow !important;
 }
 
+/* Exception : champs de saisie et éléments critiques gardent leur transition complète */
 input,
 textarea,
 select,
@@ -98,7 +109,7 @@ select,
 }
 
 /* ─────────────────────────────────────────────────────────────
-   FIX 4 — will-change
+   FIX 4 — will-change : uniquement au moment de l'animation
    ───────────────────────────────────────────────────────────── */
 
 .reveal {
@@ -109,7 +120,9 @@ select,
 }
 
 /* ─────────────────────────────────────────────────────────────
-   FIX 5 — content-visibility
+   FIX 5 — content-visibility sur les longues listes
+   Le navigateur saute le rendu de ce qui est hors écran.
+   Grosse victoire sur chapitre.html, matiere.html, formulaires.html.
    ───────────────────────────────────────────────────────────── */
 
 .part-card,
@@ -129,12 +142,14 @@ select,
   contain-intrinsic-size: auto 120px;
 }
 
+/* Sur les pages avec beaucoup de cartes, un peu plus précis */
 .subject-grid .screen-card {
   contain-intrinsic-size: auto 260px;
 }
 
 /* ─────────────────────────────────────────────────────────────
-   FIX 6 — Animations infinies décoratives
+   FIX 6 — Animations infinies décoratives : moins coûteuses
+   On garde l'effet mais on réduit la fréquence.
    ───────────────────────────────────────────────────────────── */
 
 @keyframes glowMove {
@@ -142,6 +157,7 @@ select,
   100% { transform: translate(30px, -20px) scale(1.1); }
 }
 
+/* On garde les animations de pulse mais avec un coût moindre */
 .status-dot,
 .notif-dot,
 .online-dot {
@@ -150,7 +166,7 @@ select,
 }
 
 /* ─────────────────────────────────────────────────────────────
-   FIX 7 — Images
+   FIX 7 — Images : forcer lazy + décodage async
    ───────────────────────────────────────────────────────────── */
 
 img:not([loading]) {
@@ -162,7 +178,7 @@ img {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   FIX 8 — Scroll-behavior mobile
+   FIX 8 — Scroll-behavior : natif sur mobile (plus fluide)
    ───────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
@@ -172,7 +188,7 @@ img {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   FIX 9 — Box-shadow hover mobile
+   FIX 9 — Box-shadow : désactiver les ombres coûteuses sur hover mobile
    ───────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
@@ -188,7 +204,7 @@ img {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   FIX 10 — Containment
+   FIX 10 — Containment global (isolation des repaints)
    ───────────────────────────────────────────────────────────── */
 
 .card,
@@ -202,7 +218,7 @@ img {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   FIX 11 — Ancres
+   FIX 11 — Smooth scroll des ancres (fallback safe)
    ───────────────────────────────────────────────────────────── */
 
 :target {
@@ -210,7 +226,8 @@ img {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   FIX 12 — Sticky headers
+   FIX 12 — Anti-jank sur les sticky headers
+   → isole le header du reste pour éviter les repaints croisés
    ───────────────────────────────────────────────────────────── */
 
 .header,
@@ -233,73 +250,4 @@ img {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* ═════════════════════════════════════════════════════════════
-   ⚡ FEEDBACK TACTILE — liste ultra-restreinte
-   UNIQUEMENT les éléments qui sont de vrais liens/boutons
-   interactifs. Pas de .card, pas de .panel, pas de conteneurs.
-   ═════════════════════════════════════════════════════════════ */
-
-/* Transparence du tap-highlight (aucune couleur ajoutée) */
-a,
-button,
-[role="button"] {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Cartes de matière (uniquement les liens <a class="subject-chip">) */
-a.subject-chip,
-a.tool-card,
-a.chapter-card,
-a.part-card,
-a.screen-card,
-a.blog-card {
-  transition: transform 0.12s ease-out !important;
-}
-
-a.subject-chip:active,
-a.tool-card:active,
-a.chapter-card:active,
-a.part-card:active,
-a.screen-card:active,
-a.blog-card:active {
-  transform: scale(0.97) !important;
-}
-
-/* Boutons d'action */
-button.btn-submit:active,
-button.btn-subscribe-main:active,
-button.btn-primary:active,
-button.btn-start:active,
-button.btn-profile:active,
-button.avis-btn:active,
-button.avis-btn-inline:active,
-button.fcm-btn-activate:active,
-button.fcm-btn-later:active,
-button.arvexa-confirm-btn:active,
-button.arvexa-popup-btn:active,
-button.modal-btn:active,
-button.toolbar-btn:active,
-button.nav-btn:active,
-button.btn-secondary:active,
-button.btn-cancel:active,
-button.btn-back:active {
-  transform: scale(0.94) !important;
-}
-
-/* Boutons-icônes */
-button.icon-btn:active,
-button.menu-toggle:active,
-button.header-icon-btn:active,
-button.back-btn:active,
-button.theme-btn:active,
-button.sidebar-close:active,
-button.filter-btn:active,
-button.tab-btn:active,
-button.chip:active,
-button.gallery-tab:active,
-button.payment-logo-btn:active,
-button.avis-cat-chip:active {
-  transform: scale(0.92) !important;
 }
