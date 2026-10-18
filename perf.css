@@ -62,3 +62,47 @@ body:has(#userFullName) .glow-3 {
   filter: blur(40px) !important;
   animation: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 4 : matiere.html  (ciblée par #subjectHero)
+   ⚠️ Attention : c'est la page qui cassait avant.
+   On cible uniquement les éléments internes, pas la page entière.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Backdrop-filter retiré UNIQUEMENT sur les cards de matiere.html */
+body:has(#subjectHero) .chapter-card,
+body:has(#subjectHero) .chapter-info,
+body:has(#subjectHero) .progress-wrap {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ⚠️ On NE TOUCHE PAS à .subject-hero (contient un ::after décoratif) */
+/* ⚠️ On NE TOUCHE PAS à .subject-chip (contient des div dynamiques) */
+
+/* Glows réduits */
+body:has(#subjectHero) .glow,
+body:has(#subjectHero) .glow-1,
+body:has(#subjectHero) .glow-2,
+body:has(#subjectHero) .glow-3 {
+  filter: blur(40px) !important;
+  animation: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 5 : chapitre.html  (ciblée par #cardsView)
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#cardsView) .chapter-info,
+body:has(#cardsView) .chapter-progress,
+body:has(#cardsView) .part-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:has(#cardsView) .glow,
+body:has(#cardsView) .glow-1,
+body:has(#cardsView) .glow-2,
+body:has(#cardsView) .glow-3 {
+  filter: blur(40px) !important;
+  animation: none !important;
+}
