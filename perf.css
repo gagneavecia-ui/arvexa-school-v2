@@ -724,3 +724,14 @@ textarea:focus,
 select:focus {
   box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1) !important;
 }
+
+/* TUEUR DE FOCUS VISIBLE — priorité maximale */
+a:focus,
+a:focus-visible,
+button:focus,
+button:focus-visible,
+*:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
