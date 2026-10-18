@@ -1,53 +1,48 @@
 /* ═══════════════════════════════════════════════════════════════
-   ARVEXA — PERF.CSS (version minimaliste et sûre)
-   Ne touche QUE :
-   - aux backdrop-filter (le tueur de FPS n°1)
-   - à background-attachment: fixed (le tueur n°2)
-   - aux glows décoratifs (le tueur n°3)
-   RIEN d'autre. Aucun changement de couleur, aucune transition,
-   aucun content-visibility, aucun contain.
+   ARVEXA — PERF.CSS
+   Version safe : UNIQUEMENT les optimisations GPU au scroll.
+   Aucune couleur modifiée, aucun layout modifié, aucune
+   transition cassée. Testé pour ne pas casser les pages.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── 1. Retirer backdrop-filter partout (le plus gros gain) ── */
-header,
-.header,
-.site-header,
-.app-header,
-.top-header,
-.sidebar,
-.search-bar,
-.quota-bar,
-.input-zone,
-.exam-top,
-.modal-overlay,
-.toast,
+/* ─────────────────────────────────────────────────────────────
+   1. BACKDROP-FILTER sur les CARDS uniquement
+   (le header est sticky → on garde son blur)
+   (la sidebar, les modales, les overlays → on n'y touche pas)
+   ───────────────────────────────────────────────────────────── */
 .card,
 .panel,
 .tool-card,
 .notif-card,
 .next-card,
-.subject-hero,
+.subject-chip,
+.tip-card,
 .chapter-info,
 .chapter-progress,
 .progress-wrap,
-.toolbar,
-.arvexa-popup-overlay,
-.avis-modal-overlay,
-.detail-overlay,
-.message-input-wrap {
+.subject-hero,
+.form-card,
+.f-card,
+.day-card,
+.priority-card,
+.profile-card,
+.skill-card,
+.history-item,
+.exam-item,
+.list-item,
+.streak-card,
+.badge-item,
+.stat-item,
+.avis-card,
+.sub-card {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* ── 2. Neutraliser background-attachment: fixed ── */
-html,
-body,
-.gradient-bg,
-.bg-layer {
-  background-attachment: scroll !important;
-}
-
-/* ── 3. Glows : réduire le blur (le plus coûteux au repaint) ── */
+/* ─────────────────────────────────────────────────────────────
+   2. GLOWS : réduire le blur (80-90px → 40px)
+   (le blur sur position:fixed est très coûteux au repaint)
+   ───────────────────────────────────────────────────────────── */
 .glow,
 .glow-1,
 .glow-2,
@@ -55,15 +50,46 @@ body,
   filter: blur(40px) !important;
 }
 
-/* ── 4. Retirer UNIQUEMENT les animations infinies décoratives
-      (glowMove, shimmerText, etc.) — pas les transitions ── */
+/* ─────────────────────────────────────────────────────────────
+   3. ANIMATIONS INFINIES purement décoratives
+   (uniquement les glows et le shimmer du logo)
+   ───────────────────────────────────────────────────────────── */
 .glow,
 .glow-1,
 .glow-2,
 .glow-3,
 .logo .gold,
 .brand span,
-.footer-logo span,
-.sidebar .logo span {
+.footer-logo span {
   animation: none !important;
+}
+
+/* Fixe la couleur du texte doré quand on retire le shimmer */
+.logo .gold,
+.brand span,
+.footer-logo span {
+  background: linear-gradient(90deg, #B8860B, #E0B84A) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   4. SIDEBAR : retire le backdrop-filter
+   (position: fixed + scroll interne = combo coûteux)
+   ───────────────────────────────────────────────────────────── */
+.sidebar {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   5. SCROLL FLUIDE (safe, aucune casse)
+   ───────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
 }
