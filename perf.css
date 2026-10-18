@@ -1,422 +1,456 @@
-/* ============================================================
-   ARVEXA — PERF.CSS v2.0 FINAL
-   Optimisations de fluidité · Zéro impact visuel
-   Fusion de la couche 1 + couche 2
-   Charger APRÈS tous les autres CSS
-   ============================================================ */
+/* ═══════════════════════════════════════════════════════════════
+   ARVEXA — PERF.CSS
+   Overrides de performance — ne modifie PAS le fonctionnement.
+   À inclure en DERNIER dans le <head>, après tous les <style>.
+   ═══════════════════════════════════════════════════════════════ */
 
-/* ═════════════════════════════════════════════════════════════
-   FIX 1 — backdrop-filter : désactivé sur tout ce qui reste
-   visible pendant le scroll (tueur n°1 sur mobile)
-   ═════════════════════════════════════════════════════════════ */
-
-.header,
-.topbar,
-.app-header,
-.quota-bar,
-.input-zone,
-.toolbar,
-.exam-top,
-.site-header,
-header.header,
-.display,
-.card,
-.panel,
-.sub-card,
-.bg-card,
-.next-card,
-.tip-card,
-.feat-card,
-.blog-card,
-.price-card,
-.testi-card,
-.team-card,
-.impact-card,
-.stat-card {
+/* ─────────────────────────────────────────────────────────────
+   1. SUPPRESSION GLOBALE DES BACKDROP-FILTER
+   C'est LE tueur de FPS n°1 pendant le scroll.
+   ───────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-.modal-overlay,
-.sidebar-overlay,
-.detail-overlay,
-.msg-menu-overlay,
-.image-modal,
-.lightbox,
-.arvexa-popup-overlay {
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+/* ─────────────────────────────────────────────────────────────
+   2. FONDS OPAQUES AU LIEU DES SEMI-TRANSPARENTS
+   Visuellement identique (le fond derrière est noir),
+   mais 100 % fluide au scroll.
+   ───────────────────────────────────────────────────────────── */
+header,
+.header,
+.site-header,
+.app-header,
+.top-header,
+.sidebar,
+.search-bar,
+.quota-bar,
+.input-zone,
+.exam-top,
+.toolbar,
+.display {
+  background: #0A0A0A !important;
 }
 
-@media (max-width: 768px) {
-  *,
-  *::before,
-  *::after {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-
-  .modal-overlay,
-  .sidebar-overlay,
-  .detail-overlay,
-  .msg-menu-overlay,
-  .image-modal,
-  .lightbox,
-  .arvexa-popup-overlay {
-    background: rgba(0, 0, 0, 0.92) !important;
-  }
+/* Sidebar : garde un léger blur SEULEMENT quand ouverte */
+.sidebar.open {
+  background: rgba(10, 10, 10, 0.98) !important;
 }
 
-/* ═════════════════════════════════════════════════════════════
-   FIX 2 — Glow animés : gel des animations infinies
-   ═════════════════════════════════════════════════════════════ */
+/* ─────────────────────────────────────────────────────────────
+   3. CARDS, PANELS, TOOL CARDS → FONDS OPAQUES
+   ───────────────────────────────────────────────────────────── */
+.card,
+.panel,
+.tool-card,
+.notif-card,
+.subject-chip,
+.next-card,
+.tip-card,
+.history-item,
+.exam-item,
+.f-card,
+.list-item,
+.day-card,
+.profile-card,
+.week-goal-card,
+.readiness-card,
+.priority-card,
+.encouragement-card,
+.subject-hero,
+.chapter-card,
+.part-card,
+.chapter-info,
+.chapter-progress,
+.progress-wrap,
+.display,
+.stat-card,
+.conseil-block,
+.action-item,
+.contribution-card,
+.form-card,
+.qcm-item,
+.qa-item,
+.part,
+.block,
+.global-block,
+.session-meta span,
+.custom-select-trigger,
+.custom-select-options,
+.quiz-question,
+.quiz-option,
+.flashcard-face,
+.metric,
+.mastery-block,
+.recommendations,
+.result-hero,
+.skeleton-card,
+.skeleton-item,
+.arvexa-popup,
+.modal,
+.modal-card,
+.modal-sheet,
+.modal-confirm,
+.arvexa-confirm-modal,
+.detail-panel,
+.history-item,
+.tool-card.featured,
+.sub-card,
+.streak-card,
+.badge-item,
+.stat-item,
+.info-row,
+.badges-section,
+.formula-block,
+.lecture-quiz-item,
+.lecture-exercise,
+.lecture-figure svg,
+.fcm-banner-content,
+.avis-modal,
+.avis-textarea,
+.toolbar-btn,
+.input-icon-btn,
+.message-input-wrap,
+.search-input,
+.conv-item,
+.conv-empty,
+.suggestion,
+.sidebar-new-btn,
+.list-item-new,
+.notebook-banner,
+.pending-info-card,
+.premium-info-card,
+.premium-benefits,
+.expired-info,
+.recap,
+.payment-section,
+.payment-logo-btn,
+.qr-zone,
+.qr-placeholder,
+.qr-image-wrap,
+.payment-instructions,
+.form-input,
+.form-textarea,
+.search-wrap,
+.bac-toggle,
+.legend-row,
+.table-scroll,
+.skeleton-banner,
+.skeleton-card,
+.help-doc,
+.doc-card,
+.calculator-display,
+.keypad button,
+.calc-btn,
+.part-card.read,
+.week-grid,
+.week-goal-cell,
+.alert-item,
+.swot-card,
+.metric-card,
+.action-link,
+.formula-item,
+.method-list li,
+.example-steps li,
+.qa-musthave,
+.qcm-options,
+.qa-answer-inner,
+.info-box,
+.filters,
+.filter-btn,
+.actions,
+.actions .btn {
+  background-color: #141414 !important;
+}
 
+/* Variantes qui doivent rester un peu différentes */
+.card,
+.panel,
+.tool-card,
+.notif-card,
+.f-card,
+.day-card,
+.priority-card,
+.readiness-card,
+.arvexa-popup,
+.modal {
+  background-image: none !important;
+}
+
+/* Cards "featured" et "premium" : garde la teinte dorée */
+.tool-card.featured,
+.tool-card.premium,
+.avis-card,
+.week-goal-card,
+.encouragement-card,
+.arvexa-popup,
+.premium-lock-screen,
+.fcm-banner-content,
+.notebook-banner,
+.streak-card {
+  background: linear-gradient(135deg, #1a1814 0%, #141414 100%) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   4. GLOWS DÉCORATIFS → BLUR RÉDUIT
+   filter: blur(80-90px) sur position:fixed = repaint GPU constant.
+   ───────────────────────────────────────────────────────────── */
 .glow,
-.glow-1,
-.glow-2,
-.glow-3,
-.cover-glow,
-.bg-glow {
+[class*="glow-"],
+.gradient-bg + .glow {
+  filter: blur(40px) !important;
+  opacity: 0.08 !important;
   animation: none !important;
 }
 
-@media (max-width: 768px) {
-  .glow,
-  .bg-glow {
-    filter: blur(40px) !important;
-    opacity: 0.1 !important;
-  }
+/* ─────────────────────────────────────────────────────────────
+   5. SUPPRESSION DES ANIMATIONS INFINIES DÉCORATIVES
+   Ces animations tournent en boucle 24/7 sans utilité.
+   ───────────────────────────────────────────────────────────── */
+.glow,
+.hero-icon,
+.fcm-icon,
+.premium-lock-icon,
+.countdown-icon,
+.premium-crown-wrap,
+.avatar-wrapper::before,
+.badge-item.unlocked::before,
+.streak-icon,
+.subject-icon-wrap,
+.avis-icon-wrap,
+.hourglass-svg,
+.hourglass-wrap::before,
+.cover-glow,
+.hero-icon,
+.notif-icon.unread-dot::after,
+.typing-dot,
+.arvexa-popup-icon,
+.avis-star.active {
+  animation: none !important;
 }
 
-/* ═════════════════════════════════════════════════════════════
-   FIX 3 — transition : cibler les propriétés utiles
-   ═════════════════════════════════════════════════════════════ */
-
-*,
-*::before,
-*::after {
-  transition-property: transform, opacity, background-color, border-color, color, box-shadow !important;
+/* Animations de bordure (borderShimmer, shimmerText, etc.) */
+.card::before,
+.panel::before,
+.form-card::before,
+.tool-card::before,
+.notif-card::before,
+.modal::before,
+.arvexa-popup::before,
+.avis-modal::before,
+.profile-card::before,
+.hero-card::before,
+.next-card::before,
+.streak-card::before,
+.arvexa-confirm-modal::before,
+.premium-popup::before,
+.encouragement-card::before,
+.fcm-banner-content::before,
+.launch-panel::before {
+  animation: none !important;
 }
 
-input,
-textarea,
-select,
-.btn-submit,
-.btn-submit::before,
-.btn-subscribe-main,
-.sidebar,
-.sidebar-overlay,
-.modal,
-.modal-overlay,
-.detail-panel,
-.detail-overlay,
-.chat-container {
-  transition-property: all !important;
+/* Effet shimmer sur les logos et textes dorés */
+.logo .gold,
+.brand span,
+.footer-logo span,
+.sidebar .logo span,
+.premium-screen-content h1 span {
+  animation: none !important;
+  background: linear-gradient(90deg, var(--accent), var(--accent-bright)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
 }
 
-/* ═════════════════════════════════════════════════════════════
-   FIX 4 — will-change : plus d'usage permanent
-   ═════════════════════════════════════════════════════════════ */
-
-.reveal {
-  will-change: auto !important;
-}
-.reveal.visible {
-  will-change: auto !important;
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 5 — content-visibility sur les longues listes
-   ═════════════════════════════════════════════════════════════ */
-
-.part-card,
+/* ─────────────────────────────────────────────────────────────
+   6. WILL-CHANGE INUTILES
+   ───────────────────────────────────────────────────────────── */
+.notion-body,
+.notion-card,
 .chapter-card,
 .f-card,
-.screen-card,
-.conv-item,
-.history-item,
-.notif-card,
-.exam-item,
-.msg-menu-item,
-.faq-item,
-.blog-card,
-.testi-card,
-.price-card {
+.part,
+.flashcard,
+.flashcard-inner,
+.cb {
+  will-change: auto !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   7. BACKGROUND-ATTACHMENT FIXED (reviseur.html notamment)
+   Casse complètement le scroll composité sur mobile.
+   ───────────────────────────────────────────────────────────── */
+html {
+  background-attachment: scroll !important;
+  background: #0A0A0A !important;
+}
+
+body {
+  background-attachment: scroll !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   8. SCROLL FLUIDE GLOBAL
+   ───────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
+}
+
+/* Conteneurs scrollables */
+.messages-container,
+.chat-container,
+.content-wrapper,
+.conversations-list,
+.detail-panel,
+.modal-sheet,
+.modal,
+.custom-select-options,
+.qa-answer,
+.sidebar,
+.notion-body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   9. IMAGES ET MÉDIAS — OPTIMISATIONS
+   ───────────────────────────────────────────────────────────── */
+img,
+svg,
+video {
   content-visibility: auto;
-  contain-intrinsic-size: auto 120px;
-}
-
-.subject-grid .screen-card,
-.gallery-panel,
-.gallery-grid,
-.hero-phones,
-.demo-phone-wrap {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 400px;
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 6 — Animations décoratives infinies : gel
-   ═════════════════════════════════════════════════════════════ */
-
-.cover-glow,
-.premium-crown-wrap,
-.hero-icon,
-.hero-icon::before,
-.avis-icon-wrap,
-.arvexa-popup-icon,
-.pending-icon-wrap,
-.fcm-icon,
-.tts-btn.speaking i,
-.hourglass-wrap::before,
-.hourglass-svg,
-.badge-item.unlocked::before,
-.avis-link i,
-.notif-dot.show,
-.status-dot,
-.online-dot,
-.premium-badge,
-.countdown-status.critical,
-.premium-countdown.critical,
-.arvexa-confirm-icon-box,
-.arvexa-confirm-icon-box.danger,
-.iconFloat,
-.error-icon::before,
-.offline-icon::before {
-  animation: none !important;
-}
-
-.sidebar .logo span,
-.footer-logo span,
-.brand-name em,
-.brand span,
-.footer-brand-name em,
-.arvexa-popup-title em,
-.premium-screen-content h1 span {
-  animation: shimmerText 5s linear infinite;
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 7 — Images : lazy + async decoding
-   ═════════════════════════════════════════════════════════════ */
-
-img:not([loading]) {
-  loading: lazy;
 }
 
 img {
-  decoding: async;
+  image-rendering: -webkit-optimize-contrast;
 }
 
-img:not([width]):not([height]) {
-  min-height: 200px;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 8 — Scroll-behavior natif sur mobile (plus fluide)
-   ═════════════════════════════════════════════════════════════ */
-
-@media (max-width: 768px) {
-  html {
-    scroll-behavior: auto !important;
-  }
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 9 — Box-shadow : désactiver les ombres au hover mobile
-   ═════════════════════════════════════════════════════════════ */
-
-@media (max-width: 768px) {
-  .screen-card:hover,
-  .feature-card:hover,
-  .blog-card:hover,
-  .testi-card:hover,
-  .price-card:hover,
-  .tool-card:hover,
-  .el:hover {
-    box-shadow: none !important;
-  }
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 10 — Containment global (isolation des repaints)
-   ═════════════════════════════════════════════════════════════ */
-
-.card,
-.panel,
-.notif-card,
-.exam-item,
+/* Lazy rendering natif pour les sections hors-écran */
+.lecture-section,
+.notion-card,
 .chapter-card,
 .part-card,
-.f-card,
-.chapter-list,
-.parts-list,
-.notif-list,
-.exams-list,
-.history-list,
-.faq-list {
-  contain: layout style paint;
+.week-grid > *,
+.day-card,
+.priority-card,
+.tool-card,
+.tool-card.featured,
+.subject-card,
+.chapter-card,
+.list-item,
+.exam-item,
+.notif-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 200px;
 }
 
-/* ═════════════════════════════════════════════════════════════
-   FIX 11 — Sticky headers : isolation anti-repaint
-   ═════════════════════════════════════════════════════════════ */
-
-.header,
-.topbar,
-.app-header,
-.exam-top {
-  contain: layout style;
-  isolation: isolate;
+/* ─────────────────────────────────────────────────────────────
+   10. TRANSITIONS ALLÉGÉES
+   Retire les transitions coûteuses sur les propriétés de layout.
+   ───────────────────────────────────────────────────────────── */
+* {
+  transition-property: color, background-color, border-color, opacity, transform !important;
+  transition-duration: 0.2s !important;
+  transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 
-/* ═════════════════════════════════════════════════════════════
-   FIX 12 — Hover mobile = aucun effet (inutile et coûteux)
-   ═════════════════════════════════════════════════════════════ */
+/* EXCEPTIONS — ne pas casser les animations qui DOIVENT se voir */
+.flashcard-inner {
+  transition-property: transform !important;
+  transition-duration: 0.6s !important;
+}
 
-@media (hover: none) and (pointer: coarse) {
+.notion-body {
+  transition-property: max-height !important;
+  transition-duration: 0.4s !important;
+}
+
+.progress-fill,
+.mastery-track-fill,
+.goal-fill,
+.cp-fill,
+.cc-progress-fill,
+.flashcard-track-fill,
+.quota-fill,
+.quizProgress,
+#quizProgress {
+  transition-property: width !important;
+}
+
+.notification-enter,
+.message,
+.toast {
+  transition-property: all !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   11. HOVER : SUPPRIMER LES TRANSFORM SUR MOBILE
+   Les translateY au hover déclenchent des repaints.
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
   .card:hover,
-  .panel:hover,
+  .tool-card:hover,
   .notif-card:hover,
+  .subject-chip:hover,
+  .exam-item:hover,
+  .f-card:hover,
   .chapter-card:hover,
   .part-card:hover,
-  .f-card:hover,
-  .screen-card:hover,
-  .feature-card:hover,
-  .blog-card:hover,
-  .testi-card:hover,
-  .price-card:hover,
-  .tool-card:hover,
-  .subject-chip:hover,
-  .el:hover {
+  .list-item:hover,
+  .history-item:hover,
+  .day-card:hover,
+  .priority-card:hover,
+  .conv-item:hover {
     transform: none !important;
-    box-shadow: none !important;
-    border-color: inherit !important;
   }
 }
 
-/* ═════════════════════════════════════════════════════════════
-   FIX 13 — Optimisation GPU : transform 3D ciblé
-   ═════════════════════════════════════════════════════════════ */
-
-.sidebar,
-.modal,
-.detail-panel,
-.arvexa-popup,
-.avis-modal,
-.chat-container {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 14 — Font Awesome : rendu accéléré
-   ═════════════════════════════════════════════════════════════ */
-
-.fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands {
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeSpeed;
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 15 — Inputs : contenir les repaints
-   ═════════════════════════════════════════════════════════════ */
-
+/* ─────────────────────────────────────────────────────────────
+   12. ZONE DANGEREUSE : sécurise les éléments interactifs critiques
+   On s'assure que rien ne casse le fonctionnement.
+   ───────────────────────────────────────────────────────────── */
+button,
+a,
 input,
 textarea,
-select {
-  contain: strict;
+select,
+label,
+summary,
+.arvexa-popup-btn,
+.arvexa-popup-close,
+.modal-close,
+.avis-close,
+.premium-close,
+.premium-popup-close,
+.detail-close,
+.msg-menu-item,
+.qcm-option,
+.qcm-option-letter,
+.quiz-option,
+.quiz-option-letter,
+.feedback-btn,
+.reply-quote,
+.send-btn,
+.input-icon-btn,
+.menu-btn,
+.header-icon-btn {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-  contain: layout style;
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 16 — Avatars / images rondes : containment
-   ═════════════════════════════════════════════════════════════ */
-
-.user-avatar,
-.testi-avatar,
-.team-avatar,
-.message-avatar,
-.avatar,
-.identity-avatar,
-.profile-avatar {
-  contain: layout style paint;
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 17 — Scrollbar : cachée sur mobile (gain rendering)
-   ═════════════════════════════════════════════════════════════ */
-
-@media (max-width: 768px) {
-  ::-webkit-scrollbar {
-    width: 0 !important;
-    height: 0 !important;
-    display: none !important;
-  }
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 18 — Filters décoratifs : suppression mobile
-   ═════════════════════════════════════════════════════════════ */
-
-@media (max-width: 768px) {
-  .hero-icon::before,
-  .error-icon::before,
-  .offline-icon::before,
-  .sub-card::before,
-  .btn-subscribe-main::after,
-  .plan-card::before,
-  .phone-mock::before,
-  .demo-phone-wrap::before,
-  .error-number,
-  .pending-screen-content p strong,
-  .crown-icon {
-    filter: none !important;
-  }
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 19 — Boutons principaux : box-shadow allégée
-   ═════════════════════════════════════════════════════════════ */
-
-.btn-subscribe-main,
-.btn-submit,
-.btn-start,
-.btn-primary,
-.btn-accept,
-.cta-card,
-.premium-cta {
-  box-shadow: none !important;
-}
-
-.btn-subscribe-main:hover,
-.btn-submit:hover:not(:disabled),
-.btn-start:hover:not(:disabled),
-.btn-primary:hover,
-.cta-card:hover,
-.premium-cta:hover {
-  box-shadow: 0 4px 16px rgba(184, 134, 11, 0.2) !important;
-}
-
-/* ═════════════════════════════════════════════════════════════
-   FIX 20 — Ancres : marge de scroll safe
-   ═════════════════════════════════════════════════════════════ */
-
-:target {
-  scroll-margin-top: 80px;
-}
-
-/* ═════════════════════════════════════════════════════════════
-   ACCESSIBILITÉ — respect des préférences utilisateur
-   ═════════════════════════════════════════════════════════════ */
-
+/* ─────────────────────────────────────────────────────────────
+   13. RESPECTER prefers-reduced-motion
+   ───────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -424,131 +458,35 @@ select:focus {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-/* ═════════════════════════════════════════════════════════════
-   ⚡ AJOUT FINAL — ANTI-BORDURE BLANCHE + FEEDBACK
-   ═════════════════════════════════════════════════════════════ */
-
-/* 1. Flash au tap : transparent */
-a,
-button,
-[role="button"] {
-  -webkit-tap-highlight-color: transparent;
+/* ─────────────────────────────────────────────────────────────
+   14. KATEX — désactive les animations internes
+   ───────────────────────────────────────────────────────────── */
+.katex,
+.katex * {
+  animation: none !important;
 }
 
-/* 2. Tuer le contour blanc natif sur les liens et boutons */
-a:focus,
-a:focus-visible,
-a:active,
-button:focus,
-button:focus-visible,
-button:active,
-[role="button"]:focus,
-[role="button"]:focus-visible,
-[role="button"]:active {
-  outline: none !important;
-  outline-width: 0 !important;
-  outline-offset: 0 !important;
-  box-shadow: none !important;
-  -webkit-tap-highlight-color: transparent !important;
-  -webkit-touch-callout: none !important;
-}
-
-/* 3. Forcer la bordure à rester dorée (évite le blanc) */
-a.subject-chip,
-a.tool-card,
-a.chapter-card,
-a.part-card,
-a.screen-card,
-a.blog-card,
-a.price-card {
-  border-color: rgba(184, 134, 11, 0.06) !important;
-}
-
-/* 4. Micro-scale au tap (uniquement les vrais liens/boutons) */
-a.subject-chip,
-a.tool-card,
-a.chapter-card,
-a.part-card,
-a.screen-card,
-a.blog-card,
-a.price-card,
-a.exam-item,
-a.history-item,
-button.btn-submit,
-button.btn-subscribe-main,
-button.btn-primary,
-button.btn-start,
-button.btn-profile,
-button.avis-btn,
-button.avis-btn-inline,
-button.fcm-btn-activate,
-button.fcm-btn-later,
-button.arvexa-confirm-btn,
-button.arvexa-popup-btn,
-button.modal-btn,
-button.toolbar-btn,
-button.nav-btn,
-button.btn-secondary,
-button.btn-cancel,
-button.btn-back,
-button.icon-btn,
-button.menu-toggle,
-button.header-icon-btn,
-button.back-btn,
-button.theme-btn,
-button.sidebar-close,
-button.filter-btn,
-button.tab-btn,
-button.chip,
-button.gallery-tab,
-button.payment-logo-btn,
-button.avis-cat-chip {
-  transition: transform 0.12s ease-out !important;
-}
-
-a.subject-chip:active,
-a.tool-card:active,
-a.chapter-card:active,
-a.part-card:active,
-a.screen-card:active,
-a.blog-card:active,
-a.price-card:active,
-a.exam-item:active,
-a.history-item:active {
-  transform: scale(0.97) !important;
-}
-
-button.btn-submit:active,
-button.btn-subscribe-main:active,
-button.btn-primary:active,
-button.btn-start:active,
-button.btn-profile:active,
-button.avis-btn:active,
-button.avis-btn-inline:active,
-button.fcm-btn-activate:active,
-button.fcm-btn-later:active,
-button.arvexa-confirm-btn:active,
-button.arvexa-popup-btn:active,
-button.modal-btn:active,
-button.toolbar-btn:active,
-button.nav-btn:active,
-button.btn-secondary:active,
-button.btn-cancel:active,
-button.btn-back:active,
-button.icon-btn:active,
-button.menu-toggle:active,
-button.header-icon-btn:active,
-button.back-btn:active,
-button.theme-btn:active,
-button.sidebar-close:active,
-button.filter-btn:active,
-button.tab-btn:active,
-button.chip:active,
-button.gallery-tab:active,
-button.payment-logo-btn:active,
-button.avis-cat-chip:active {
-  transform: scale(0.94) !important;
+/* ─────────────────────────────────────────────────────────────
+   15. LISTES LONGUES — virtualisation légère
+   ───────────────────────────────────────────────────────────── */
+.lecture-section,
+.notebook-card,
+.chapter-card,
+.lesson-card,
+.qa-item,
+.qcm-item,
+.quiz-question,
+.history-item,
+.exam-item,
+.notif-card,
+.day-card,
+.priority-card,
+.tool-card,
+.list-item,
+.f-card {
+  contain: layout style;
 }
