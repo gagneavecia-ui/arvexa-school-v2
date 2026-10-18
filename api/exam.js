@@ -1073,6 +1073,7 @@ async function correctExamHybrid(exam, subjectId, answers, uid) {
   // et conservera les réponses de l'élève dans sa session active.
   throw new Error('CORRECTION_UNAVAILABLE');
     }
+  }
     
   const finalExercises = deterministicResults.map((r) => r.exerciseResult);
 
