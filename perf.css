@@ -37,7 +37,6 @@ header.header,
   -webkit-backdrop-filter: none !important;
 }
 
-/* Modales plein écran : on garde le flou (ne scrollent pas derrière) */
 .modal-overlay,
 .sidebar-overlay,
 .detail-overlay,
@@ -49,7 +48,6 @@ header.header,
   -webkit-backdrop-filter: blur(12px) !important;
 }
 
-/* Sur mobile : aucun flou nulle part, fond opaque équivalent */
 @media (max-width: 768px) {
   *,
   *::before,
@@ -100,7 +98,6 @@ header.header,
   transition-property: transform, opacity, background-color, border-color, color, box-shadow !important;
 }
 
-/* Exceptions : éléments critiques gardent leur transition complète */
 input,
 textarea,
 select,
@@ -189,7 +186,6 @@ select,
   animation: none !important;
 }
 
-/* On garde uniquement les shimmer de texte (coût quasi nul) */
 .sidebar .logo span,
 .footer-logo span,
 .brand-name em,
@@ -429,4 +425,130 @@ select:focus {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-   }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ⚡ AJOUT FINAL — ANTI-BORDURE BLANCHE + FEEDBACK
+   ═════════════════════════════════════════════════════════════ */
+
+/* 1. Flash au tap : transparent */
+a,
+button,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 2. Tuer le contour blanc natif sur les liens et boutons */
+a:focus,
+a:focus-visible,
+a:active,
+button:focus,
+button:focus-visible,
+button:active,
+[role="button"]:focus,
+[role="button"]:focus-visible,
+[role="button"]:active {
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+}
+
+/* 3. Forcer la bordure à rester dorée (évite le blanc) */
+a.subject-chip,
+a.tool-card,
+a.chapter-card,
+a.part-card,
+a.screen-card,
+a.blog-card,
+a.price-card {
+  border-color: rgba(184, 134, 11, 0.06) !important;
+}
+
+/* 4. Micro-scale au tap (uniquement les vrais liens/boutons) */
+a.subject-chip,
+a.tool-card,
+a.chapter-card,
+a.part-card,
+a.screen-card,
+a.blog-card,
+a.price-card,
+a.exam-item,
+a.history-item,
+button.btn-submit,
+button.btn-subscribe-main,
+button.btn-primary,
+button.btn-start,
+button.btn-profile,
+button.avis-btn,
+button.avis-btn-inline,
+button.fcm-btn-activate,
+button.fcm-btn-later,
+button.arvexa-confirm-btn,
+button.arvexa-popup-btn,
+button.modal-btn,
+button.toolbar-btn,
+button.nav-btn,
+button.btn-secondary,
+button.btn-cancel,
+button.btn-back,
+button.icon-btn,
+button.menu-toggle,
+button.header-icon-btn,
+button.back-btn,
+button.theme-btn,
+button.sidebar-close,
+button.filter-btn,
+button.tab-btn,
+button.chip,
+button.gallery-tab,
+button.payment-logo-btn,
+button.avis-cat-chip {
+  transition: transform 0.12s ease-out !important;
+}
+
+a.subject-chip:active,
+a.tool-card:active,
+a.chapter-card:active,
+a.part-card:active,
+a.screen-card:active,
+a.blog-card:active,
+a.price-card:active,
+a.exam-item:active,
+a.history-item:active {
+  transform: scale(0.97) !important;
+}
+
+button.btn-submit:active,
+button.btn-subscribe-main:active,
+button.btn-primary:active,
+button.btn-start:active,
+button.btn-profile:active,
+button.avis-btn:active,
+button.avis-btn-inline:active,
+button.fcm-btn-activate:active,
+button.fcm-btn-later:active,
+button.arvexa-confirm-btn:active,
+button.arvexa-popup-btn:active,
+button.modal-btn:active,
+button.toolbar-btn:active,
+button.nav-btn:active,
+button.btn-secondary:active,
+button.btn-cancel:active,
+button.btn-back:active,
+button.icon-btn:active,
+button.menu-toggle:active,
+button.header-icon-btn:active,
+button.back-btn:active,
+button.theme-btn:active,
+button.sidebar-close:active,
+button.filter-btn:active,
+button.tab-btn:active,
+button.chip:active,
+button.gallery-tab:active,
+button.payment-logo-btn:active,
+button.avis-cat-chip:active {
+  transform: scale(0.94) !important;
+}
