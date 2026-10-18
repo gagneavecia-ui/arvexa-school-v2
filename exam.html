@@ -2731,6 +2731,7 @@
       var exerciseCount = subject.exercises.length;
       var totalQuestions = subject.exercises.reduce(function (sum, ex) { return sum + ((ex.questions && ex.questions.length) || 0); }, 0);
       var points = subject.exercises.reduce(function (sum, ex) { return sum + (Number(ex.points) || 0); }, 0);
+      points = Math.min(20, Math.round(points * 100) / 100); // ✅ Plafonné à 20
       var level = subject.level || (index === 0 ? 'consolidation' : 'approfondissement');
       var levelLabel = level === 'consolidation' ? 'Consolidation' : 'Approfondissement';
       var levelClass = level === 'consolidation' ? 'consolidation' : 'approfondissement';
