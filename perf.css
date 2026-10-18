@@ -186,3 +186,84 @@ body:has(#tabs) .glow-2 {
   filter: blur(40px) !important;
   animation: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 10 : exam-history.html  (ciblée par #examsContainer)
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#examsContainer) .exam-item,
+body:has(#examsContainer) .panel,
+body:has(#examsContainer) .summary-card,
+body:has(#examsContainer) .custom-select-trigger {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:has(#examsContainer) .glow,
+body:has(#examsContainer) .glow-1,
+body:has(#examsContainer) .glow-2,
+body:has(#examsContainer) .glow-3 {
+  filter: blur(40px) !important;
+  animation: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 11 : arv-progress.html  (ciblée par #view-notebooks)
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#view-notebooks) .subject-card,
+body:has(#view-notebooks) .list-item,
+body:has(#view-notebooks) .list-item-icon,
+body:has(#view-notebooks) .streak-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 12 : arv-pilot.html  (ciblée par #pilotGrid)
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#pilotGrid) .stat-card,
+body:has(#pilotGrid) .conseil-block,
+body:has(#pilotGrid) .action-item {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:has(#pilotGrid) .glow,
+body:has(#pilotGrid) .glow-1,
+body:has(#pilotGrid) .glow-2,
+body:has(#pilotGrid) .glow-3 {
+  filter: blur(40px) !important;
+  animation: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 13 : planificateur.html  (ciblée par #loadPlanButton)
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#loadPlanButton) .launch-panel,
+body:has(#loadPlanButton) .readiness-card,
+body:has(#loadPlanButton) .week-goal-card,
+body:has(#loadPlanButton) .priority-card,
+body:has(#loadPlanButton) .day-card,
+body:has(#loadPlanButton) .swot-card,
+body:has(#loadPlanButton) .metric-card,
+body:has(#loadPlanButton) .encouragement-card,
+body:has(#loadPlanButton) .action-link,
+body:has(#loadPlanButton) .alert-item {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 14 : tableau-periodique.html  (ciblée par #ptable)
+   ⚠️ ATTENTION : grille CSS complexe, on touche UNIQUEMENT le détail
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#ptable) .detail-panel {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:has(#ptable) .detail-overlay {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ⚠️ On NE TOUCHE PAS à .el (grille critique) ni .ptable */
