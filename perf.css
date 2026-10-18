@@ -106,3 +106,83 @@ body:has(#cardsView) .glow-3 {
   filter: blur(40px) !important;
   animation: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 6 : exam.html  (ciblée par #generateButton)
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#generateButton) .panel,
+body:has(#generateButton) .subject-card,
+body:has(#generateButton) .quiz-question,
+body:has(#generateButton) .quiz-option,
+body:has(#generateButton) .metric,
+body:has(#generateButton) .exercise-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:has(#generateButton) .glow,
+body:has(#generateButton) .glow-1,
+body:has(#generateButton) .glow-2,
+body:has(#generateButton) .glow-3 {
+  filter: blur(40px) !important;
+  animation: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 7 : abonnement.html  (ciblée par #subscribeBtn)
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#subscribeBtn) .sub-card,
+body:has(#subscribeBtn) .status-section,
+body:has(#subscribeBtn) .benefits-grid .item,
+body:has(#subscribeBtn) .premium-info-card,
+body:has(#subscribeBtn) .premium-benefits,
+body:has(#subscribeBtn) .pending-info-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:has(#subscribeBtn) .glow,
+body:has(#subscribeBtn) .glow-1,
+body:has(#subscribeBtn) .glow-2,
+body:has(#subscribeBtn) .glow-3 {
+  filter: blur(40px) !important;
+  animation: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 8 : notifications.html  (ciblée par #notifList)
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#notifList) .notif-card,
+body:has(#notifList) .skeleton-card,
+body:has(#notifList) .empty-state {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:has(#notifList) .glow,
+body:has(#notifList) .glow-1,
+body:has(#notifList) .glow-2,
+body:has(#notifList) .glow-3 {
+  filter: blur(40px) !important;
+  animation: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 9 : formulaires.html  (ciblée par #constSearch... non, par #searchInput)
+   ⚠️ Attention : #searchInput existe aussi dans groupe.html
+   On utilise #activeTab ou un ID unique. Ici : #tabs
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#tabs) .f-card,
+body:has(#tabs) .modal,
+body:has(#tabs) .modal-formula-box,
+body:has(#tabs) .search-input {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:has(#tabs) .glow,
+body:has(#tabs) .glow-1,
+body:has(#tabs) .glow-2 {
+  filter: blur(40px) !important;
+  animation: none !important;
+}
