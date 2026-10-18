@@ -1,78 +1,68 @@
 /* ═══════════════════════════════════════════════════════════════
    ARVEXA — PERF.CSS
-   Version safe + exclusion de matiere.html (via :has)
+   Version : matiere.html est EXCLU dès le départ via :has()
+   Aucune règle ne s'applique à matiere.html.
    ═══════════════════════════════════════════════════════════════ */
 
 /* ─────────────────────────────────────────────────────────────
-   1. BACKDROP-FILTER sur les CARDS uniquement
+   RÈGLE 1 : backdrop-filter retiré sur les cards
+   Exclu automatiquement sur matiere.html via body:not(:has(#subjectHero))
    ───────────────────────────────────────────────────────────── */
-.card,
-.panel,
-.tool-card,
-.notif-card,
-.next-card,
-.subject-chip,
-.tip-card,
-.chapter-info,
-.chapter-progress,
-.progress-wrap,
-.subject-hero,
-.form-card,
-.f-card,
-.day-card,
-.priority-card,
-.profile-card,
-.skill-card,
-.history-item,
-.exam-item,
-.list-item,
-.streak-card,
-.badge-item,
-.stat-item,
-.avis-card,
-.sub-card {
+body:not(:has(#subjectHero)) .card,
+body:not(:has(#subjectHero)) .panel,
+body:not(:has(#subjectHero)) .tool-card,
+body:not(:has(#subjectHero)) .notif-card,
+body:not(:has(#subjectHero)) .next-card,
+body:not(:has(#subjectHero)) .subject-chip,
+body:not(:has(#subjectHero)) .tip-card,
+body:not(:has(#subjectHero)) .chapter-info,
+body:not(:has(#subjectHero)) .chapter-progress,
+body:not(:has(#subjectHero)) .progress-wrap,
+body:not(:has(#subjectHero)) .subject-hero,
+body:not(:has(#subjectHero)) .form-card,
+body:not(:has(#subjectHero)) .f-card,
+body:not(:has(#subjectHero)) .day-card,
+body:not(:has(#subjectHero)) .priority-card,
+body:not(:has(#subjectHero)) .profile-card,
+body:not(:has(#subjectHero)) .skill-card,
+body:not(:has(#subjectHero)) .history-item,
+body:not(:has(#subjectHero)) .exam-item,
+body:not(:has(#subjectHero)) .list-item,
+body:not(:has(#subjectHero)) .streak-card,
+body:not(:has(#subjectHero)) .badge-item,
+body:not(:has(#subjectHero)) .stat-item,
+body:not(:has(#subjectHero)) .avis-card,
+body:not(:has(#subjectHero)) .sub-card {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
 /* ─────────────────────────────────────────────────────────────
-   1.b. EXCEPTION : matiere.html (contient #subjectHero)
-   On remet les styles d'origine pour ne rien casser
+   RÈGLE 2 : glows (blur réduit)
+   Exclu sur matiere.html
    ───────────────────────────────────────────────────────────── */
-body:has(#subjectHero) .chapter-info,
-body:has(#subjectHero) .chapter-progress,
-body:has(#subjectHero) .progress-wrap,
-body:has(#subjectHero) .subject-hero,
-body:has(#subjectHero) .subject-chip,
-body:has(#subjectHero) .chapter-card {
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   2. GLOWS : réduire le blur (80-90px → 40px)
-   ───────────────────────────────────────────────────────────── */
-.glow,
-.glow-1,
-.glow-2,
-.glow-3 {
+body:not(:has(#subjectHero)) .glow,
+body:not(:has(#subjectHero)) .glow-1,
+body:not(:has(#subjectHero)) .glow-2,
+body:not(:has(#subjectHero)) .glow-3 {
   filter: blur(40px) !important;
 }
 
 /* ─────────────────────────────────────────────────────────────
-   3. ANIMATIONS INFINIES purement décoratives
+   RÈGLE 3 : animations infinies décoratives
+   Exclu sur matiere.html
    ───────────────────────────────────────────────────────────── */
-.glow,
-.glow-1,
-.glow-2,
-.glow-3,
-.logo .gold,
-.brand span,
-.footer-logo span {
+body:not(:has(#subjectHero)) .glow,
+body:not(:has(#subjectHero)) .glow-1,
+body:not(:has(#subjectHero)) .glow-2,
+body:not(:has(#subjectHero)) .glow-3,
+body:not(:has(#subjectHero)) .logo .gold,
+body:not(:has(#subjectHero)) .brand span,
+body:not(:has(#subjectHero)) .footer-logo span {
   animation: none !important;
 }
 
-/* Fixe la couleur du texte doré */
+/* Fixe la couleur du texte doré (partout, car safe) */
 .logo .gold,
 .brand span,
 .footer-logo span {
@@ -83,15 +73,16 @@ body:has(#subjectHero) .chapter-card {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   4. SIDEBAR : retire le backdrop-filter
+   RÈGLE 4 : sidebar (blur retiré)
+   Exclu sur matiere.html
    ───────────────────────────────────────────────────────────── */
-.sidebar {
+body:not(:has(#subjectHero)) .sidebar {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
 /* ─────────────────────────────────────────────────────────────
-   5. SCROLL FLUIDE
+   RÈGLE 5 : scroll fluide
    ───────────────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
