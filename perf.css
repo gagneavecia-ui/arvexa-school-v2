@@ -1,25 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════
-   ARVEXA — PERF.CSS
-   Overrides de performance — ne modifie PAS le fonctionnement.
-   À inclure en DERNIER dans le <head>, après tous les <style>.
+   ARVEXA — PERF.CSS (version minimaliste et sûre)
+   Ne touche QUE :
+   - aux backdrop-filter (le tueur de FPS n°1)
+   - à background-attachment: fixed (le tueur n°2)
+   - aux glows décoratifs (le tueur n°3)
+   RIEN d'autre. Aucun changement de couleur, aucune transition,
+   aucun content-visibility, aucun contain.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ─────────────────────────────────────────────────────────────
-   1. SUPPRESSION GLOBALE DES BACKDROP-FILTER
-   C'est LE tueur de FPS n°1 pendant le scroll.
-   ───────────────────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   2. FONDS OPAQUES AU LIEU DES SEMI-TRANSPARENTS
-   Visuellement identique (le fond derrière est noir),
-   mais 100 % fluide au scroll.
-   ───────────────────────────────────────────────────────────── */
+/* ── 1. Retirer backdrop-filter partout (le plus gros gain) ── */
 header,
 .header,
 .site-header,
@@ -30,463 +19,51 @@ header,
 .quota-bar,
 .input-zone,
 .exam-top,
-.toolbar,
-.display {
-  background: #0A0A0A !important;
-}
-
-/* Sidebar : garde un léger blur SEULEMENT quand ouverte */
-.sidebar.open {
-  background: rgba(10, 10, 10, 0.98) !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   3. CARDS, PANELS, TOOL CARDS → FONDS OPAQUES
-   ───────────────────────────────────────────────────────────── */
+.modal-overlay,
+.toast,
 .card,
 .panel,
 .tool-card,
 .notif-card,
-.subject-chip,
 .next-card,
-.tip-card,
-.history-item,
-.exam-item,
-.f-card,
-.list-item,
-.day-card,
-.profile-card,
-.week-goal-card,
-.readiness-card,
-.priority-card,
-.encouragement-card,
 .subject-hero,
-.chapter-card,
-.part-card,
 .chapter-info,
 .chapter-progress,
 .progress-wrap,
-.display,
-.stat-card,
-.conseil-block,
-.action-item,
-.contribution-card,
-.form-card,
-.qcm-item,
-.qa-item,
-.part,
-.block,
-.global-block,
-.session-meta span,
-.custom-select-trigger,
-.custom-select-options,
-.quiz-question,
-.quiz-option,
-.flashcard-face,
-.metric,
-.mastery-block,
-.recommendations,
-.result-hero,
-.skeleton-card,
-.skeleton-item,
-.arvexa-popup,
-.modal,
-.modal-card,
-.modal-sheet,
-.modal-confirm,
-.arvexa-confirm-modal,
-.detail-panel,
-.history-item,
-.tool-card.featured,
-.sub-card,
-.streak-card,
-.badge-item,
-.stat-item,
-.info-row,
-.badges-section,
-.formula-block,
-.lecture-quiz-item,
-.lecture-exercise,
-.lecture-figure svg,
-.fcm-banner-content,
-.avis-modal,
-.avis-textarea,
-.toolbar-btn,
-.input-icon-btn,
-.message-input-wrap,
-.search-input,
-.conv-item,
-.conv-empty,
-.suggestion,
-.sidebar-new-btn,
-.list-item-new,
-.notebook-banner,
-.pending-info-card,
-.premium-info-card,
-.premium-benefits,
-.expired-info,
-.recap,
-.payment-section,
-.payment-logo-btn,
-.qr-zone,
-.qr-placeholder,
-.qr-image-wrap,
-.payment-instructions,
-.form-input,
-.form-textarea,
-.search-wrap,
-.bac-toggle,
-.legend-row,
-.table-scroll,
-.skeleton-banner,
-.skeleton-card,
-.help-doc,
-.doc-card,
-.calculator-display,
-.keypad button,
-.calc-btn,
-.part-card.read,
-.week-grid,
-.week-goal-cell,
-.alert-item,
-.swot-card,
-.metric-card,
-.action-link,
-.formula-item,
-.method-list li,
-.example-steps li,
-.qa-musthave,
-.qcm-options,
-.qa-answer-inner,
-.info-box,
-.filters,
-.filter-btn,
-.actions,
-.actions .btn {
-  background-color: #141414 !important;
-}
-
-/* Variantes qui doivent rester un peu différentes */
-.card,
-.panel,
-.tool-card,
-.notif-card,
-.f-card,
-.day-card,
-.priority-card,
-.readiness-card,
-.arvexa-popup,
-.modal {
-  background-image: none !important;
-}
-
-/* Cards "featured" et "premium" : garde la teinte dorée */
-.tool-card.featured,
-.tool-card.premium,
-.avis-card,
-.week-goal-card,
-.encouragement-card,
-.arvexa-popup,
-.premium-lock-screen,
-.fcm-banner-content,
-.notebook-banner,
-.streak-card {
-  background: linear-gradient(135deg, #1a1814 0%, #141414 100%) !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   4. GLOWS DÉCORATIFS → BLUR RÉDUIT
-   filter: blur(80-90px) sur position:fixed = repaint GPU constant.
-   ───────────────────────────────────────────────────────────── */
-.glow,
-[class*="glow-"],
-.gradient-bg + .glow {
-  filter: blur(40px) !important;
-  opacity: 0.08 !important;
-  animation: none !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   5. SUPPRESSION DES ANIMATIONS INFINIES DÉCORATIVES
-   Ces animations tournent en boucle 24/7 sans utilité.
-   ───────────────────────────────────────────────────────────── */
-.glow,
-.hero-icon,
-.fcm-icon,
-.premium-lock-icon,
-.countdown-icon,
-.premium-crown-wrap,
-.avatar-wrapper::before,
-.badge-item.unlocked::before,
-.streak-icon,
-.subject-icon-wrap,
-.avis-icon-wrap,
-.hourglass-svg,
-.hourglass-wrap::before,
-.cover-glow,
-.hero-icon,
-.notif-icon.unread-dot::after,
-.typing-dot,
-.arvexa-popup-icon,
-.avis-star.active {
-  animation: none !important;
-}
-
-/* Animations de bordure (borderShimmer, shimmerText, etc.) */
-.card::before,
-.panel::before,
-.form-card::before,
-.tool-card::before,
-.notif-card::before,
-.modal::before,
-.arvexa-popup::before,
-.avis-modal::before,
-.profile-card::before,
-.hero-card::before,
-.next-card::before,
-.streak-card::before,
-.arvexa-confirm-modal::before,
-.premium-popup::before,
-.encouragement-card::before,
-.fcm-banner-content::before,
-.launch-panel::before {
-  animation: none !important;
-}
-
-/* Effet shimmer sur les logos et textes dorés */
-.logo .gold,
-.brand span,
-.footer-logo span,
-.sidebar .logo span,
-.premium-screen-content h1 span {
-  animation: none !important;
-  background: linear-gradient(90deg, var(--accent), var(--accent-bright)) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   6. WILL-CHANGE INUTILES
-   ───────────────────────────────────────────────────────────── */
-.notion-body,
-.notion-card,
-.chapter-card,
-.f-card,
-.part,
-.flashcard,
-.flashcard-inner,
-.cb {
-  will-change: auto !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   7. BACKGROUND-ATTACHMENT FIXED (reviseur.html notamment)
-   Casse complètement le scroll composité sur mobile.
-   ───────────────────────────────────────────────────────────── */
-html {
-  background-attachment: scroll !important;
-  background: #0A0A0A !important;
-}
-
-body {
-  background-attachment: scroll !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   8. SCROLL FLUIDE GLOBAL
-   ───────────────────────────────────────────────────────────── */
-html {
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-body {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: none;
-}
-
-/* Conteneurs scrollables */
-.messages-container,
-.chat-container,
-.content-wrapper,
-.conversations-list,
-.detail-panel,
-.modal-sheet,
-.modal,
-.custom-select-options,
-.qa-answer,
-.sidebar,
-.notion-body {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   9. IMAGES ET MÉDIAS — OPTIMISATIONS
-   ───────────────────────────────────────────────────────────── */
-img,
-svg,
-video {
-  content-visibility: auto;
-}
-
-img {
-  image-rendering: -webkit-optimize-contrast;
-}
-
-/* Lazy rendering natif pour les sections hors-écran */
-.lecture-section,
-.notion-card,
-.chapter-card,
-.part-card,
-.week-grid > *,
-.day-card,
-.priority-card,
-.tool-card,
-.tool-card.featured,
-.subject-card,
-.chapter-card,
-.list-item,
-.exam-item,
-.notif-card {
-  content-visibility: auto;
-  contain-intrinsic-size: 200px;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   10. TRANSITIONS ALLÉGÉES
-   Retire les transitions coûteuses sur les propriétés de layout.
-   ───────────────────────────────────────────────────────────── */
-* {
-  transition-property: color, background-color, border-color, opacity, transform !important;
-  transition-duration: 0.2s !important;
-  transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1) !important;
-}
-
-/* EXCEPTIONS — ne pas casser les animations qui DOIVENT se voir */
-.flashcard-inner {
-  transition-property: transform !important;
-  transition-duration: 0.6s !important;
-}
-
-.notion-body {
-  transition-property: max-height !important;
-  transition-duration: 0.4s !important;
-}
-
-.progress-fill,
-.mastery-track-fill,
-.goal-fill,
-.cp-fill,
-.cc-progress-fill,
-.flashcard-track-fill,
-.quota-fill,
-.quizProgress,
-#quizProgress {
-  transition-property: width !important;
-}
-
-.notification-enter,
-.message,
-.toast {
-  transition-property: all !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   11. HOVER : SUPPRIMER LES TRANSFORM SUR MOBILE
-   Les translateY au hover déclenchent des repaints.
-   ───────────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .card:hover,
-  .tool-card:hover,
-  .notif-card:hover,
-  .subject-chip:hover,
-  .exam-item:hover,
-  .f-card:hover,
-  .chapter-card:hover,
-  .part-card:hover,
-  .list-item:hover,
-  .history-item:hover,
-  .day-card:hover,
-  .priority-card:hover,
-  .conv-item:hover {
-    transform: none !important;
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   12. ZONE DANGEREUSE : sécurise les éléments interactifs critiques
-   On s'assure que rien ne casse le fonctionnement.
-   ───────────────────────────────────────────────────────────── */
-button,
-a,
-input,
-textarea,
-select,
-label,
-summary,
-.arvexa-popup-btn,
-.arvexa-popup-close,
-.modal-close,
-.avis-close,
-.premium-close,
-.premium-popup-close,
-.detail-close,
-.msg-menu-item,
-.qcm-option,
-.qcm-option-letter,
-.quiz-option,
-.quiz-option-letter,
-.feedback-btn,
-.reply-quote,
-.send-btn,
-.input-icon-btn,
-.menu-btn,
-.header-icon-btn {
+.toolbar,
+.arvexa-popup-overlay,
+.avis-modal-overlay,
+.detail-overlay,
+.message-input-wrap {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   13. RESPECTER prefers-reduced-motion
-   ───────────────────────────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/* ── 2. Neutraliser background-attachment: fixed ── */
+html,
+body,
+.gradient-bg,
+.bg-layer {
+  background-attachment: scroll !important;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   14. KATEX — désactive les animations internes
-   ───────────────────────────────────────────────────────────── */
-.katex,
-.katex * {
+/* ── 3. Glows : réduire le blur (le plus coûteux au repaint) ── */
+.glow,
+.glow-1,
+.glow-2,
+.glow-3 {
+  filter: blur(40px) !important;
+}
+
+/* ── 4. Retirer UNIQUEMENT les animations infinies décoratives
+      (glowMove, shimmerText, etc.) — pas les transitions ── */
+.glow,
+.glow-1,
+.glow-2,
+.glow-3,
+.logo .gold,
+.brand span,
+.footer-logo span,
+.sidebar .logo span {
   animation: none !important;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   15. LISTES LONGUES — virtualisation légère
-   ───────────────────────────────────────────────────────────── */
-.lecture-section,
-.notebook-card,
-.chapter-card,
-.lesson-card,
-.qa-item,
-.qcm-item,
-.quiz-question,
-.history-item,
-.exam-item,
-.notif-card,
-.day-card,
-.priority-card,
-.tool-card,
-.list-item,
-.f-card {
-  contain: layout style;
 }
