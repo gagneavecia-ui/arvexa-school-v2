@@ -1,10 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════
    ARVEXA — PERF.CSS
-   TEST 1 : cible UNIQUEMENT index.html
-   (reconnaissable par le #greetingText qui n'existe que là)
+   Ciblage par ID unique de chaque page → aucune casse possible.
+   Pages activées : index.html, reviseur.html, profil.html
    ═══════════════════════════════════════════════════════════════ */
 
-/* ─── 1. Backdrop-filter retiré sur les cards — INDEX UNIQUEMENT ─── */
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 1 : index.html  (ciblée par #greetingText)
+   ═══════════════════════════════════════════════════════════════ */
 body:has(#greetingText) .card,
 body:has(#greetingText) .panel,
 body:has(#greetingText) .tool-card,
@@ -16,11 +18,47 @@ body:has(#greetingText) .tip-card {
   -webkit-backdrop-filter: none !important;
 }
 
-/* ─── 2. Glows — INDEX UNIQUEMENT ─── */
 body:has(#greetingText) .glow,
 body:has(#greetingText) .glow-1,
 body:has(#greetingText) .glow-2,
 body:has(#greetingText) .glow-3 {
+  filter: blur(40px) !important;
+  animation: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 2 : reviseur.html  (ciblée par #configForm + #generateBtn)
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#generateBtn) .panel,
+body:has(#generateBtn) .notion-card,
+body:has(#generateBtn) .global-block {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:has(#generateBtn) .glow,
+body:has(#generateBtn) .glow-1,
+body:has(#generateBtn) .glow-2,
+body:has(#generateBtn) .glow-3 {
+  filter: blur(40px) !important;
+  animation: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE 3 : profil.html  (ciblée par #userFullName)
+   ═══════════════════════════════════════════════════════════════ */
+body:has(#userFullName) .profile-card,
+body:has(#userFullName) .stat-item,
+body:has(#userFullName) .badge-item,
+body:has(#userFullName) .info-row {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body:has(#userFullName) .glow,
+body:has(#userFullName) .glow-1,
+body:has(#userFullName) .glow-2,
+body:has(#userFullName) .glow-3 {
   filter: blur(40px) !important;
   animation: none !important;
 }
