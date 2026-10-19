@@ -709,7 +709,7 @@ function getProviders() {
       endpoint: 'https://api.mistral.ai/v1/chat/completions',
       model: process.env.MISTRAL_MODEL || 'mistral-large-latest',
       jsonMode: false,
-      maxTokensCap: 6000  // ✅ plafond Mistral vérifié
+      maxTokensCap: 4000  // ✅ plafond Mistral vérifié
     }
   ].filter((p) => Boolean(p.key));
 }
