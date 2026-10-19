@@ -1,19 +1,19 @@
 // ================================================================
-// API PROGRESS v8.7 — ARVEXA School
+// API PROGRESS v8.8 — ARVEXA School
 // Cahier intelligent + Fan-out IA + Tracking temps d'étude
-// ✅ Rate limit par UID (pas par IP) — pas de faux positifs
-// ✅ Limites pédagogiques arbitraires supprimées (plus de plafond à 5)
+// ✅ Rate limit par UID (pas par IP)
+// ✅ Limites pédagogiques arbitraires supprimées
 // ✅ Règles pédagogiques explicites par matière
-// ✅ Validation qualité : explication, questions, QCM, couverture
+// ✅ Validation qualité + fallback défensif (conserve les parties valides)
 // ✅ Détection troncature via finish_reason
-// ✅ Décision de fallback basée sur la qualité réelle
+// ✅ Prompts explanation allégés pour cours longs (≤ 8000 chars)
+// ✅ Plafond Mistral abaissé (4000) pour éviter JSON tronqué
 // ================================================================
 
 module.exports.config = { maxDuration: 120 };
 
 const WINDOW_MS = 60 * 1000;
 
-// ✅ Limites techniques conservées
 const RATE_LIMITS = {
   getDashboard: 60,
   listChapters: 60,
@@ -50,6 +50,9 @@ var SUBJECT_INFO = {
 
 const MIN_CONTENT_LENGTH = 40;
 const MAX_CONTENT_LENGTH = 15000;
+
+// ✅ Limite d'entrée spécifique à la tâche "explanation" pour éviter les timeouts
+const EXPLANATION_INPUT_CAP = 8000;
 
 const FREE_SECTION_LIMIT = 5;
 const GLOBAL_AI_TIME_BUDGET_MS = 45000;
@@ -534,22 +537,26 @@ function normalizeMathInput(text) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// VALIDATION D'ANALYSE — v8.7 (NOUVEAU)
+// VALIDATION D'ANALYSE (v8.8)
 // ════════════════════════════════════════════════════════════════
 function countWords(text) {
   if (!text || typeof text !== 'string') return 0;
   return (text.match(/[a-zA-ZÀ-ÿ0-9]{2,}/g) || []).length;
 }
 
+/**
+ * Vérifie qu'une explication contient du contenu UTILE.
+ * v8.8 : accepte une explication partielle mais utile (au moins 1 partie avec contenu).
+ */
 function validateExplanation(explanation) {
   if (!explanation || typeof explanation !== 'object') {
-    return { ok: false, reason: 'explanation_absente' };
+    return { ok: false, reason: 'explanation_absente', usableParts: [] };
   }
 
   const understanding = String(explanation.understanding || '').trim();
   const parts = Array.isArray(explanation.parts) ? explanation.parts : [];
 
-  const partsWithContent = parts.filter((p) => {
+  const usableParts = parts.filter((p) => {
     if (!p || typeof p !== 'object') return false;
     const idea = String(p.mainIdea || '').trim();
     const expl = String(p.simpleExplanation || '').trim();
@@ -557,23 +564,28 @@ function validateExplanation(explanation) {
   });
 
   const totalWords = countWords(understanding) +
-    partsWithContent.reduce((s, p) => s + countWords(p.simpleExplanation), 0);
+    usableParts.reduce((s, p) => s + countWords(p.simpleExplanation), 0);
 
   const stats = {
     understandingWords: countWords(understanding),
     partsCount: parts.length,
-    partsWithContent: partsWithContent.length,
+    partsWithContent: usableParts.length,
     totalWords
   };
 
-  if (partsWithContent.length === 0) {
-    return { ok: false, reason: 'aucune_partie_avec_contenu', stats };
+  // ✅ v8.8 : au moins UNE partie avec contenu OU un understanding substantiel
+  if (usableParts.length === 0) {
+    if (countWords(understanding) < 15) {
+      return { ok: false, reason: 'aucune_partie_avec_contenu', stats, usableParts };
+    }
+    // understanding seul mais utile
+    return { ok: true, stats, usableParts };
   }
-  if (totalWords < 40) {
-    return { ok: false, reason: 'explication_trop_courte', stats };
+  if (totalWords < 30) {
+    return { ok: false, reason: 'explication_trop_courte', stats, usableParts };
   }
 
-  return { ok: true, stats };
+  return { ok: true, stats, usableParts };
 }
 
 function validateQuestions(questions) {
@@ -709,7 +721,8 @@ function getProviders() {
       endpoint: 'https://api.mistral.ai/v1/chat/completions',
       model: process.env.MISTRAL_MODEL || 'mistral-large-latest',
       jsonMode: false,
-      maxTokensCap: 4000  // ✅ plafond Mistral vérifié
+      // ✅ v8.8 : abaissé à 4000 pour éviter les JSON tronqués sur explanation
+      maxTokensCap: 4000
     }
   ].filter((p) => Boolean(p.key));
 }
@@ -750,13 +763,12 @@ function repairJson(str) {
 
 async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 4000, deadline }) {
   const controller = new AbortController();
-  const timeouts = { 'Groq': 15000, 'OpenRouter': 20000, 'Mistral': 8000 };
+  const timeouts = { 'Groq': 18000, 'OpenRouter': 20000, 'Mistral': 12000 };
   const baseTimeout = timeouts[provider.name] || 15000;
   const remaining = deadline ? Math.max(5000, deadline - Date.now()) : baseTimeout;
   const timeoutMs = Math.min(baseTimeout, remaining);
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-  // ✅ Plafond éventuel par provider
   const effectiveMax = provider.maxTokensCap
     ? Math.min(maxTokens, provider.maxTokensCap)
     : maxTokens;
@@ -817,7 +829,6 @@ async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 40
       }
     }
 
-    // ✅ Signaler la troncature (finish_reason=length → contenu coupé)
     if (finishReason === 'length' || finishReason === 'max_tokens') {
       console.warn(`[AI] ${provider.name} — Réponse tronquée (finish_reason=${finishReason})`);
       if (parsed && typeof parsed === 'object') {
@@ -859,7 +870,6 @@ async function runParallelTasks(tasks, providers, deadline) {
 
       const errMsg = String(r.reason?.message || '');
       const isStructural = errMsg.includes('JSON') || errMsg.includes('structure') || errMsg.includes('tronqu');
-      const isTimeout = errMsg.includes('timeout') || errMsg.includes('aborted') || errMsg.includes('AbortError');
       const isDeadlineNear = deadline && Date.now() > deadline - 10000;
 
       if (isDeadlineNear) {
@@ -867,7 +877,6 @@ async function runParallelTasks(tasks, providers, deadline) {
         return { status: 'rejected', error: r.reason, task: tasks[i], provider: 'none' };
       }
 
-      // ✅ Erreur structurelle : un seul fallback (pas en boucle)
       if (isStructural) {
         const remainingProviders = providers.filter((p) => p.name !== assignments[i].provider.name);
         if (remainingProviders.length > 0) {
@@ -888,7 +897,6 @@ async function runParallelTasks(tasks, providers, deadline) {
         return { status: 'rejected', error: r.reason, task: tasks[i], provider: 'none' };
       }
 
-      // Timeout ou autre erreur : fallback classique sur tous les autres providers
       console.warn(`[FAN-OUT] Tâche "${tasks[i].name}" échouée sur ${assignments[i].provider.name}, fallback...`);
       for (const provider of providers) {
         if (provider.name === assignments[i].provider.name) continue;
@@ -959,7 +967,6 @@ function mergeAnalysis(results, profile) {
     }
   }
 
-  // ─── Forçage tableaux (existant) ──────────────────────────
   if (merged.explanation) {
     if (!Array.isArray(merged.explanation.parts)) merged.explanation.parts = [];
   }
@@ -981,7 +988,6 @@ function mergeAnalysis(results, profile) {
     cleanFormulas(merged.structure);
   }
 
-  // ─── Validation ciblée ────────────────────────────────────
   merged.__quality.explanation = validateExplanation(merged.explanation);
 
   const qCheck = validateQuestions(merged.questions);
@@ -995,7 +1001,6 @@ function mergeAnalysis(results, profile) {
   const concepts = Array.isArray(merged.extracted?.mainConcepts) ? merged.extracted.mainConcepts : [];
   merged.__quality.coverage = checkConceptCoverage(concepts, merged.explanation);
 
-  // Dédoublonnage questions par id
   const seen = new Set();
   merged.questions = merged.questions.filter((q) => {
     if (!q || !q.id) return true;
@@ -1033,10 +1038,8 @@ RÈGLE JSON STRICTE :
 - Échappe correctement les guillemets doubles dans les chaînes (\\").
 - Utilise des apostrophes droites (') et non typographiques.
 - Le nombre d'éléments dans les tableaux doit être proportionnel à la richesse
-  du cours fourni. NE PLAFONNE PAS artificiellement : si le cours contient
-  8 mécanismes distincts, liste les 8.
-- À l'inverse, ne remplis pas artificiellement : si le cours ne contient que
-  2 formules, n'en invente pas une 3e.
+  du cours fourni. NE PLAFONNE PAS artificiellement.
+- À l'inverse, ne remplis pas artificiellement.
 - Si une information est absente du cours, ne l'invente pas :
   omets le champ ou mets null.
 - Si tu approches de la fin de ta réponse, PRIORISE la complétude des éléments
@@ -1050,34 +1053,26 @@ RÈGLES D'EXPLICATION (OBLIGATOIRES) :
 2. Conserve les termes scientifiques et scolaires indispensables.
    Si un terme technique est difficile, explique-le brièvement
    dans la phrase qui suit (entre parenthèses ou en apposition).
-3. Présente les notions dans un ordre logique : du plus simple au plus complexe,
-   du général au particulier, ou dans l'ordre chronologique si le cours s'y prête.
+3. Présente les notions dans un ordre logique : du plus simple au plus complexe.
 4. Si le cours décrit un mécanisme ou un processus, décris chaque étape
    dans l'ordre, sans en sauter.
 5. Si le cours aborde des causes, des conséquences, des relations entre notions
    ou des différences, explique-les explicitement.
 6. Donne un exemple concret UNIQUEMENT lorsqu'il aide réellement à comprendre.
-   N'invente pas d'exemple si le cours n'en fournit pas et que le concept
-   est abstrait — signale-le plutôt.
 7. N'utilise PAS une simple définition à la place d'une explication.
    Définir n'est pas expliquer : l'explication doit répondre à "pourquoi" et "comment".
 8. Il n'y a PAS de limite fixe de phrases. La longueur doit être proportionnelle
    à la complexité de la notion et à la richesse du cours fourni.
 9. Évite les répétitions et les phrases de remplissage.
-10. N'invente AUCUNE information absente du cours. Si une donnée semble manquer
-    ou est ambiguë, signale-le explicitement dans le champ concerné.
+10. N'invente AUCUNE information absente du cours.
 `.trim();
 
 const SUMMARY_RULES = `
 RÈGLES DE RÉSUMÉ (OBLIGATOIRES) :
-1. Le résumé doit conserver TOUTES les connaissances importantes du cours :
-   définitions, propriétés, mécanismes et leurs étapes, causes, conséquences,
-   formules et unités, dates et faits, concepts et arguments, distinctions
-   essentielles, exemples indispensables à la compréhension.
+1. Le résumé doit conserver TOUTES les connaissances importantes du cours.
 2. Supprime les répétitions, raccourcis les formulations inutilement longues,
-   simplifie les explications SANS DÉFORMER LEUR SENS.
+   simplifie SANS DÉFORMER LE SENS.
 3. NE SUPPRIME JAMAIS une notion importante uniquement pour raccourcir.
-   La longueur du résumé dépend de la complexité et de la longueur du cours.
 4. Conserve les nuances du cours : conditions, restrictions, exceptions.
 5. Ne fusionne pas deux notions distinctes sous prétexte qu'elles sont proches.
 6. Ne présente PAS une information absente du cours comme si elle y figurait.
@@ -1086,25 +1081,14 @@ RÈGLES DE RÉSUMÉ (OBLIGATOIRES) :
 const QUESTIONS_RULES = `
 RÈGLES DE GÉNÉRATION DE QUESTIONS (OBLIGATOIRES) :
 1. Couvre SYSTÉMATIQUEMENT toutes les notions importantes présentes dans le cours.
-   Pas une notion importante sans au moins une question.
-2. Choisis les TYPES de questions adaptés à la nature de chaque notion.
-   Types disponibles selon la matière :
-   - définition, restitution, explication, description,
-   - comparaison, justification,
-   - causes / conséquences / relations,
-   - application (calcul, résolution),
-   - synthèse,
-   - lecture de schéma (si le cours en contient).
+2. Choisis les TYPES de questions adaptés à la nature de chaque notion
+   (définition, restitution, explication, comparaison, justification,
+   causes/conséquences, application, synthèse, lecture de schéma).
    Ne force PAS tous les types pour chaque notion.
 3. Chaque réponse doit être COMPLÈTE, CORRECTE, COMPRÉHENSIBLE.
-   - Une réponse de définition doit contenir le terme, son genre, son domaine
-     et ses caractères distinctifs.
-   - Une réponse d'explication doit contenir "pourquoi" et "comment".
-   - Une réponse de comparaison doit énoncer les points communs ET les différences.
 4. Utilise le vocabulaire attendu dans la matière (termes du cours).
 5. Le champ "mustHave" doit lister les éléments INDISPENSABLES sans lesquels
    la réponse serait considérée incomplète par un correcteur de BAC.
-   Chaque élément doit être court (mots-clés, pas une phrase).
 6. N'invente AUCUNE information absente du cours.
 `.trim();
 
@@ -1133,11 +1117,9 @@ ${rawInput}
 - Décris les phénomènes étape par étape quand ils évoluent.`,
     chimie: `Focus CHIMIE :
 - Privilégie notions, réactions, équations-bilans, propriétés,
-  conditions expérimentales (température, pression, catalyseur),
-  méthodes de calcul (concentrations, quantités de matière, rendements).
+  conditions expérimentales, méthodes de calcul.
 - Toute équation doit être équilibrée.
-- Pour chaque réaction, précise les conditions expérimentales et
-  les produits observables.`
+- Pour chaque réaction, précise les conditions expérimentales.`
   };
 
   const subjectFocus = focusBySubject[subject] || focusBySubject.mathematiques;
@@ -1153,8 +1135,6 @@ ${baseContext}
 
 ${PERIMETER_RULES}
 ${SUMMARY_RULES}
-
-Extrait UNIQUEMENT les concepts présents dans cette section.
 
 ${subjectFocus}
 
@@ -1174,7 +1154,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 7000,
+      maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
       userPrompt: `Tu es professeur expert du BAC (Terminale D, Niger). Explique cette section
 comme à un élève qui découvre la notion.
@@ -1188,8 +1168,7 @@ ${LATEX_RULES}
 ${subjectFocus}
 
 Adapte le nombre de parties à la richesse du cours (généralement 3 à 8).
-Chaque partie doit contenir une explication réellement pédagogique,
-pas une simple reformulation de définition.
+Chaque partie doit contenir une explication réellement pédagogique.
 
 Format JSON :
 {
@@ -1199,7 +1178,7 @@ Format JSON :
     {
       "partTitle": "Partie 1",
       "mainIdea": "Idée principale",
-      "simpleExplanation": "Explication pédagogique complète. Longueur adaptée à la notion.",
+      "simpleExplanation": "Explication pédagogique complète.",
       "keyTerms": [{"term": "...", "meaning": "..."}],
       "relations": ["relation 1"],
       "example": "Exemple chiffré si présent dans le cours",
@@ -1226,7 +1205,7 @@ ${LATEX_RULES}
 
 ${subjectFocus}
 
-Ne mets QUE ce qui est présent dans la section. Si pas de formule → tableau vide.
+Ne mets QUE ce qui est présent dans la section.
 
 Format JSON :
 {
@@ -1242,7 +1221,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'questions',
-      maxTokens: 6500,
+      maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère une banque de questions basée UNIQUEMENT sur cette section.
 
@@ -1265,7 +1244,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'qcm',
-      maxTokens: 4500,
+      maxTokens: 4000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère des QCM UNIQUEMENT sur cette section.
 
@@ -1300,7 +1279,7 @@ ${rawInput}
   fonctions, mécanismes biologiques et leurs étapes, causes et conséquences,
   relations entre niveaux d'organisation.
 - Décris les mécanismes étape par étape.
-- Explique les relations entre organes / niveaux d'organisation quand le cours les aborde.`;
+- Explique les relations entre organes / niveaux d'organisation.`;
 
   return [
     {
@@ -1315,12 +1294,12 @@ ${PERIMETER_RULES}
 ${SUMMARY_RULES}
 ${svtFocus}
 
-RÈGLE SVT : PAS de formules. Priorise mécanismes, relations, étapes, définitions.
+RÈGLE SVT : PAS de formules.
 
 Format JSON :
 {
   "sectionTitle": "...",
-  "resume": "Résumé fidèle et complet du cours (3 à 8 phrases).",
+  "resume": "Résumé fidèle et complet du cours.",
   "mainConcepts": ["..."],
   "terms": [{"term": "...", "definition": "..."}],
   "mechanisms": ["mécanisme 1"]
@@ -1332,7 +1311,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 7000,
+      maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
       userPrompt: `Tu es professeur de SVT (Terminale D, Niger). Explique cette section
 comme à un élève qui découvre la notion.
@@ -1343,7 +1322,7 @@ ${PERIMETER_RULES}
 ${EXPLANATION_RULES}
 ${svtFocus}
 
-Adapte le nombre de parties à la richesse du cours (généralement 3 à 8).
+Adapte le nombre de parties à la richesse du cours.
 
 Format JSON :
 {
@@ -1378,8 +1357,6 @@ ${PERIMETER_RULES}
 ${SUMMARY_RULES}
 ${svtFocus}
 
-PAS de formules.
-
 Format JSON :
 {
   "mechanisms": [{"name": "...", "steps": ["..."], "relations": ["..."], "consequences": ["..."]}],
@@ -1393,7 +1370,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'questions',
-      maxTokens: 6500,
+      maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère une banque de questions de SVT sur cette section UNIQUEMENT.
 
@@ -1414,7 +1391,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'qcm',
-      maxTokens: 4500,
+      maxTokens: 4000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `QCM de SVT sur cette section UNIQUEMENT.
 
@@ -1446,7 +1423,7 @@ ${rawInput}
   const philoFocus = `Focus PHILOSOPHIE :
 - Privilégie concepts, problématiques, thèses, arguments, distinctions conceptuelles,
   exemples pertinents.
-- Distingue clairement thèse / antithèse / synthèse quand le cours les aborde.
+- Distingue thèse / antithèse / synthèse quand le cours les aborde.
 - Explique le sens des concepts philosophiques AVANT de les utiliser.`;
 
   return [
@@ -1465,7 +1442,7 @@ ${philoFocus}
 Format JSON :
 {
   "sectionTitle": "...",
-  "resume": "Résumé fidèle (3 à 8 phrases).",
+  "resume": "Résumé fidèle.",
   "mainConcepts": ["..."],
   "theses": [{"author": "nom", "thesis": "..."}],
   "arguments": ["..."],
@@ -1478,7 +1455,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 7000,
+      maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
       userPrompt: `Tu es professeur de philosophie (Terminale, Niger). Explique cette section
 COMME SI L'ÉLÈVE N'Y CONNAISSAIT RIEN.
@@ -1488,8 +1465,6 @@ ${baseContext}
 ${PERIMETER_RULES}
 ${EXPLANATION_RULES}
 ${philoFocus}
-
-Adapte le nombre de parties à la richesse du cours.
 
 Format JSON :
 {
@@ -1537,7 +1512,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'questions',
-      maxTokens: 6500,
+      maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère des questions de philosophie sur cette section UNIQUEMENT.
 
@@ -1560,7 +1535,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'qcm',
-      maxTokens: 4500,
+      maxTokens: 4000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `QCM de philosophie sur cette section.
 
@@ -1595,10 +1570,10 @@ ${rawInput}
     ? `Focus GÉOGRAPHIE :
 - Privilégie localisations, espaces, acteurs, enjeux spatiaux,
   causes et conséquences des dynamiques territoriales.
-- Situe les phénomènes dans l'espace (pays, régions, villes).`
+- Situe les phénomènes dans l'espace.`
     : `Focus HISTOIRE :
 - Privilégie faits, dates, acteurs, contextes, causes, conséquences, enjeux.
-- Respecte la chronologie des événements.`;
+- Respecte la chronologie.`;
 
   return [
     {
@@ -1616,7 +1591,7 @@ ${focus}
 Format JSON :
 {
   "sectionTitle": "...",
-  "resume": "Résumé fidèle (3 à 8 phrases).",
+  "resume": "Résumé fidèle.",
   "dates": [{"date": "...", "event": "..."}],
   "persons": [{"name": "...", "role": "..."}],
   "places": [{"place": "...", "stake": "..."}],
@@ -1640,8 +1615,6 @@ ${baseContext}
 ${PERIMETER_RULES}
 ${EXPLANATION_RULES}
 ${focus}
-
-Adapte la longueur à la richesse du cours.
 
 Format JSON :
 {
@@ -1690,18 +1663,15 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'questions',
-      maxTokens: 6500,
+      maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Génère une banque de questions ${isGeo ? 'de géographie' : "d'histoire"} sur cette section.
+      userPrompt: `Génère une banque de questions ${isGeo ? 'de géographie' : "d'histoire"}.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
 ${QUESTIONS_RULES}
 ${focus}
-
-Couvre TOUS les faits importants (dates, acteurs, événements,
-causes, conséquences, enjeux). Nombre proportionnel au contenu.
 
 Format JSON :
 {
@@ -1714,7 +1684,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'qcm',
-      maxTokens: 4500,
+      maxTokens: 4000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `QCM ${isGeo ? 'de géographie' : "d'histoire"} sur cette section.
 
@@ -1758,7 +1728,7 @@ ${SUMMARY_RULES}
 Format JSON :
 {
   "sectionTitle": "...",
-  "resume": "Résumé fidèle (3 à 8 phrases).",
+  "resume": "Résumé fidèle.",
   "mainConcepts": ["..."],
   "texts": [{"title": "...", "author": "..."}],
   "literaryDevices": ["..."],
@@ -1771,7 +1741,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 6500,
+      maxTokens: 5500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Tu es professeur de français. Explique cette section clairement.
 
@@ -1823,7 +1793,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'questions',
-      maxTokens: 6000,
+      maxTokens: 5500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère des questions de français sur cette section.
 
@@ -1864,8 +1834,7 @@ Réponds UNIQUEMENT avec le JSON.`
   ];
 }
 
-// Note : buildLanguagePrompts est conservé (code mort inoffensif)
-// pour une activation future quand ALLOWED_SUBJECTS inclura 'anglais'.
+// Note : buildLanguagePrompts est conservé (code mort inoffensif).
 function buildLanguagePrompts({ subjectLabel, rawInput }) {
   const baseContext = `Matière : ${subjectLabel}
 ═══════════════════════════════════════════════════════════════
@@ -1889,7 +1858,7 @@ ${SUMMARY_RULES}
 Format JSON :
 {
   "sectionTitle": "...",
-  "resume": "Résumé fidèle (3 à 8 phrases).",
+  "resume": "Résumé fidèle.",
   "vocabulary": [{"english": "word", "french": "traduction"}],
   "grammarRules": [{"rule": "...", "explanation": "..."}],
   "structures": ["structure 1"],
@@ -1902,7 +1871,7 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 6000,
+      maxTokens: 5500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Tu es professeur d'anglais pour des FRANCOPHONES DÉBUTANTS.
 
@@ -2443,8 +2412,23 @@ async function createSection(uid, body) {
 
   const normalizedInput = normalizeMathInput(trimmed);
 
+  // ✅ v8.8 : limite spécifique à la tâche "explanation" pour éviter les timeouts
+  const truncatedForExplanation = normalizedInput.length > EXPLANATION_INPUT_CAP
+    ? normalizedInput.slice(0, EXPLANATION_INPUT_CAP)
+    : normalizedInput;
+
   const context = { subjectLabel, rawInput: normalizedInput, subject };
-  const tasks = getPromptsForProfile(profile, context);
+  const tasks = getPromptsForProfile(profile, context).map((t) => {
+    if (t.name !== 'explanation') return t;
+    if (normalizedInput.length <= EXPLANATION_INPUT_CAP) return t;
+    const enriched = getPromptsForProfile(profile, {
+      subjectLabel,
+      rawInput: truncatedForExplanation,
+      subject
+    });
+    return enriched.find((x) => x.name === 'explanation') || t;
+  });
+
   const providers = getProviders();
 
   if (!providers.length) {
@@ -2470,9 +2454,16 @@ async function createSection(uid, body) {
     analysis = mergeAnalysis(results, profile);
     analysis = deepClean(analysis);
 
-    // ✅ Décision basée sur __quality
+    // ✅ LOG DE DIAGNOSTIC (utile en prod pour comprendre un KO)
+    if (!analysis.__quality.explanation?.ok) {
+      console.warn(
+        `[DEBUG] explanation KO (${analysis.__quality.explanation?.reason || 'unknown'}). ` +
+        `Structure brute: ${JSON.stringify(analysis.explanation || {}).slice(0, 800)}`
+      );
+    }
+
     const q = analysis.__quality || {};
-    const explCheck = q.explanation || { ok: false, reason: 'non_evaluee' };
+    const explCheck = q.explanation || { ok: false, reason: 'non_evaluee', usableParts: [] };
     const qCheck = q.questions || { ok: false, valid: [] };
     const qcmCheck = q.qcm || { ok: false, valid: [] };
     const coverage = q.coverage || { covered: 0, total: 0, missing: [], ratio: 1 };
@@ -2494,23 +2485,41 @@ async function createSection(uid, body) {
       console.warn('[PROGRESS] Analyse inutilisable (expl KO + 0 question) → fallback complet');
       analysis = buildFallbackAnalysis({ rawInput: normalizedInput, profile });
     }
-    // Cas 2 : explication KO mais questions valides → fallback minimal
+    // ✅ Cas 2 (v8.8) : fallback défensif — on conserve les parties valides
     else if (!explCheck.ok) {
-      console.warn(`[PROGRESS] Explication KO (${explCheck.reason}) → fallback minimal sur explication, questions conservées`);
-      analysis.explanation = {
-        sectionTitle: analysis.sectionTitle || 'Section',
-        understanding: "L'explication pédagogique n'a pas pu être générée correctement pour cette section. Les questions et QCM ci-dessous restent disponibles.",
-        parts: []
-      };
+      const usableParts = Array.isArray(explCheck.usableParts) ? explCheck.usableParts : [];
+      console.warn(
+        `[PROGRESS] Explication KO (${explCheck.reason}) → conservation de ${usableParts.length} partie(s) exploitable(s)`
+      );
+
+      if (usableParts.length > 0) {
+        analysis.explanation = {
+          sectionTitle: analysis.sectionTitle || 'Section',
+          understanding:
+            "L'explication a été partiellement générée. Les parties disponibles ci-dessous contiennent les notions essentielles. Les questions et QCM restent disponibles.",
+          parts: usableParts
+        };
+      } else {
+        analysis.explanation = {
+          sectionTitle: analysis.sectionTitle || 'Section',
+          understanding:
+            "L'explication pédagogique n'a pas pu être générée correctement pour cette section. Les questions et QCM ci-dessous restent disponibles.",
+          parts: []
+        };
+      }
     }
     // Cas 3 : couverture faible → log informatif
     else if (coverage.total > 0 && coverage.ratio < 0.5) {
-      console.warn(`[PROGRESS] Couverture faible (${coverage.covered}/${coverage.total}). Notions manquantes : ${coverage.missing.join(', ')}`);
+      console.warn(
+        `[PROGRESS] Couverture faible (${coverage.covered}/${coverage.total}). ` +
+        `Notions manquantes : ${coverage.missing.join(', ')}`
+      );
     }
 
-    // Cas 4 : aucun QCM valide
     if (qcmCheck.valid.length === 0 && (qcmCheck.invalid?.length || 0) > 0) {
-      console.warn(`[PROGRESS] Tous les QCM invalides (${qcmCheck.invalid.map((i) => i.reason).join(',')}) → qcm vidé`);
+      console.warn(
+        `[PROGRESS] Tous les QCM invalides (${qcmCheck.invalid.map((i) => i.reason).join(',')}) → qcm vidé`
+      );
     }
 
   } catch (err) {
@@ -2721,7 +2730,6 @@ module.exports = async function handler(request, response) {
   const body = request.body && typeof request.body === 'object' ? request.body : {};
   const action = body.action || '';
 
-  // ✅ AUTH d'abord
   let user;
   try { user = await verifyFirebaseToken(request); }
   catch (e) {
@@ -2731,14 +2739,13 @@ module.exports = async function handler(request, response) {
 
   if (!user) return jsonError(response, 401, 'Connexion requise.', 'AUTH_REQUIRED');
 
-  // ✅ Rate limit APRÈS l'auth (par UID)
   if (rateLimitedByUid(user.uid, action)) {
     return jsonError(response, 429, 'Trop de requêtes. Patiente quelques secondes et réessaie.', 'RATE_LIMITED');
   }
 
   const uid = user.uid;
 
-  console.log(`[PROGRESS v8.7] ${action} | uid=${uid.slice(0, 8)}`);
+  console.log(`[PROGRESS v8.8] ${action} | uid=${uid.slice(0, 8)}`);
 
   try {
     switch (action) {
@@ -2757,7 +2764,7 @@ module.exports = async function handler(request, response) {
         return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[PROGRESS v8.7] "${action}" failed:`, error.message);
+    console.error(`[PROGRESS v8.8] "${action}" failed:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
