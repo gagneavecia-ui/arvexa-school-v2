@@ -1,21 +1,25 @@
 // ================================================================
-// API PROGRESS v8.6 — ARVEXA School
+// API PROGRESS v8.7 — ARVEXA School
 // Cahier intelligent + Fan-out IA + Tracking temps d'étude
 // ✅ Rate limit par UID (pas par IP) — pas de faux positifs
-// ✅ Limites généreuses : createSection = 10/min
+// ✅ Limites pédagogiques arbitraires supprimées (plus de plafond à 5)
+// ✅ Règles pédagogiques explicites par matière
+// ✅ Validation qualité : explication, questions, QCM, couverture
+// ✅ Détection troncature via finish_reason
+// ✅ Décision de fallback basée sur la qualité réelle
 // ================================================================
 
 module.exports.config = { maxDuration: 120 };
 
 const WINDOW_MS = 60 * 1000;
 
-// ✅ CORRECTION : Limites plus généreuses, adaptées à un usage normal
+// ✅ Limites techniques conservées
 const RATE_LIMITS = {
   getDashboard: 60,
   listChapters: 60,
   createChapter: 30,
   getChapter: 60,
-  createSection: 10,       // 10/min = largement suffisant
+  createSection: 10,
   getSection: 60,
   updateNotes: 60,
   deleteSection: 30,
@@ -43,6 +47,7 @@ var SUBJECT_INFO = {
   histoire:      { label: 'Histoire',       profile: 'history' },
   geographie:    { label: 'Géographie',     profile: 'history' }
 };
+
 const MIN_CONTENT_LENGTH = 40;
 const MAX_CONTENT_LENGTH = 15000;
 
@@ -52,7 +57,7 @@ const GLOBAL_AI_TIME_BUDGET_MS = 45000;
 let adminServices = null;
 
 // ════════════════════════════════════════════════════════════════
-// NORMALISATION LATEX
+// NORMALISATION LATEX (inchangé)
 // ════════════════════════════════════════════════════════════════
 const UNICODE_MATH_MAP = {
   'α': '\\alpha ', 'β': '\\beta ', 'γ': '\\gamma ', 'δ': '\\delta ',
@@ -389,10 +394,9 @@ function clientIp(request) {
     .split(',')[0].trim();
 }
 
-// ✅ CORRECTION : Rate limit par UID (pas par IP)
 function rateLimitedByUid(uid, action) {
   if (!uid) return false;
-  
+
   const limit = RATE_LIMITS[action] || DEFAULT_RATE_LIMIT;
   const now = Date.now();
   const key = `uid:${uid}:${action}`;
@@ -529,6 +533,153 @@ function normalizeMathInput(text) {
   return r;
 }
 
+// ════════════════════════════════════════════════════════════════
+// VALIDATION D'ANALYSE — v8.7 (NOUVEAU)
+// ════════════════════════════════════════════════════════════════
+function countWords(text) {
+  if (!text || typeof text !== 'string') return 0;
+  return (text.match(/[a-zA-ZÀ-ÿ0-9]{2,}/g) || []).length;
+}
+
+function validateExplanation(explanation) {
+  if (!explanation || typeof explanation !== 'object') {
+    return { ok: false, reason: 'explanation_absente' };
+  }
+
+  const understanding = String(explanation.understanding || '').trim();
+  const parts = Array.isArray(explanation.parts) ? explanation.parts : [];
+
+  const partsWithContent = parts.filter((p) => {
+    if (!p || typeof p !== 'object') return false;
+    const idea = String(p.mainIdea || '').trim();
+    const expl = String(p.simpleExplanation || '').trim();
+    return (idea.length > 0) || (countWords(expl) >= 5);
+  });
+
+  const totalWords = countWords(understanding) +
+    partsWithContent.reduce((s, p) => s + countWords(p.simpleExplanation), 0);
+
+  const stats = {
+    understandingWords: countWords(understanding),
+    partsCount: parts.length,
+    partsWithContent: partsWithContent.length,
+    totalWords
+  };
+
+  if (partsWithContent.length === 0) {
+    return { ok: false, reason: 'aucune_partie_avec_contenu', stats };
+  }
+  if (totalWords < 40) {
+    return { ok: false, reason: 'explication_trop_courte', stats };
+  }
+
+  return { ok: true, stats };
+}
+
+function validateQuestions(questions) {
+  if (!Array.isArray(questions)) {
+    return { ok: false, valid: [], invalid: [], reason: 'questions_non_tableau' };
+  }
+
+  const valid = [];
+  const invalid = [];
+
+  for (const q of questions) {
+    if (!q || typeof q !== 'object') { invalid.push({ q, reason: 'not_object' }); continue; }
+    const question = String(q.question || '').trim();
+    const answer = String(q.answer || '').trim();
+    const mustHave = Array.isArray(q.mustHave)
+      ? q.mustHave.filter((m) => String(m || '').trim().length > 0)
+      : [];
+
+    if (question.length < 5) { invalid.push({ q, reason: 'question_vide' }); continue; }
+    if (answer.length < 5) { invalid.push({ q, reason: 'reponse_vide' }); continue; }
+    if (countWords(answer) < 3) { invalid.push({ q, reason: 'reponse_trop_courte' }); continue; }
+
+    valid.push({ ...q, mustHave });
+  }
+
+  return {
+    ok: valid.length > 0,
+    valid,
+    invalid,
+    reason: valid.length === 0 ? 'aucune_question_valide' : null
+  };
+}
+
+function validateQcm(qcmList) {
+  if (!Array.isArray(qcmList)) {
+    return { ok: false, valid: [], invalid: [], reason: 'qcm_non_tableau' };
+  }
+
+  const valid = [];
+  const invalid = [];
+
+  for (const q of qcmList) {
+    if (!q || typeof q !== 'object') { invalid.push({ q, reason: 'not_object' }); continue; }
+    const question = String(q.question || '').trim();
+    const options = Array.isArray(q.options) ? q.options : [];
+    const correct = String(q.correct || '').trim();
+    const optionIds = options.map((o) => String(o?.id || '')).filter(Boolean);
+
+    if (question.length < 5) { invalid.push({ q, reason: 'question_vide' }); continue; }
+    if (options.length < 2) { invalid.push({ q, reason: 'moins_de_2_options' }); continue; }
+    if (!optionIds.includes(correct)) { invalid.push({ q, reason: 'correct_absent_des_options' }); continue; }
+
+    valid.push(q);
+  }
+
+  return {
+    ok: valid.length > 0,
+    valid,
+    invalid,
+    reason: valid.length === 0 ? 'aucun_qcm_valide' : null
+  };
+}
+
+function checkConceptCoverage(mainConcepts, explanation) {
+  if (!Array.isArray(mainConcepts) || mainConcepts.length === 0) {
+    return { covered: 0, total: 0, missing: [], ratio: 1 };
+  }
+  if (!explanation || !Array.isArray(explanation.parts)) {
+    return { covered: 0, total: mainConcepts.length, missing: mainConcepts, ratio: 0 };
+  }
+
+  const haystack = [
+    String(explanation.understanding || ''),
+    ...explanation.parts.map((p) =>
+      `${p.partTitle || ''} ${p.mainIdea || ''} ${p.simpleExplanation || ''} ${
+        Array.isArray(p.keyTerms)
+          ? p.keyTerms.map((t) => `${t.term || ''} ${t.meaning || ''}`).join(' ')
+          : ''
+      }`
+    )
+  ].join(' ').toLowerCase();
+
+  const missing = [];
+  let covered = 0;
+  for (const concept of mainConcepts) {
+    const c = String(concept || '').trim().toLowerCase();
+    if (c.length < 3) continue;
+    const wholeMatch = haystack.includes(c);
+    const wordMatch = c.split(/[\s,;()]+/).some((w) => w.length >= 5 && haystack.includes(w));
+    if (wholeMatch || wordMatch) covered++;
+    else missing.push(concept);
+  }
+
+  const total = mainConcepts.length;
+  return { covered, total, missing, ratio: total > 0 ? covered / total : 1 };
+}
+
+function cleanFormulas(structure) {
+  if (!structure || !Array.isArray(structure.formulas)) return;
+  structure.formulas = structure.formulas.filter((f) => {
+    if (!f || typeof f !== 'object') return false;
+    const latex = String(f.latex || '').trim();
+    return latex.length >= 2;
+  });
+}
+
 // ────────────────────────────────────────────────────────────────
 // IA — FOURNISSEURS
 // ────────────────────────────────────────────────────────────────
@@ -557,7 +708,8 @@ function getProviders() {
       key: process.env.MISTRAL_API_KEY,
       endpoint: 'https://api.mistral.ai/v1/chat/completions',
       model: process.env.MISTRAL_MODEL || 'mistral-large-latest',
-      jsonMode: false
+      jsonMode: false,
+      maxTokensCap: 6000  // ✅ plafond Mistral vérifié
     }
   ].filter((p) => Boolean(p.key));
 }
@@ -604,11 +756,16 @@ async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 40
   const timeoutMs = Math.min(baseTimeout, remaining);
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
+  // ✅ Plafond éventuel par provider
+  const effectiveMax = provider.maxTokensCap
+    ? Math.min(maxTokens, provider.maxTokensCap)
+    : maxTokens;
+
   try {
     const body = {
       model: provider.model,
       temperature: 0.3,
-      max_tokens: maxTokens,
+      max_tokens: effectiveMax,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
@@ -634,21 +791,42 @@ async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 40
       throw new Error(`${provider.name}: ${msg}`);
     }
 
-    const rawContent = data?.choices?.[0]?.message?.content;
+    const choice = data?.choices?.[0];
+    const rawContent = choice?.message?.content;
+    const finishReason = choice?.finish_reason;
+
     if (!rawContent) throw new Error(`${provider.name}: réponse vide`);
 
-    const cleaned = String(rawContent).replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    const cleaned = String(rawContent)
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
 
-    try { return JSON.parse(cleaned); }
-    catch (_) {
+    let parsed = null;
+
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch (_) {
       const repaired = repairJson(cleaned);
       if (repaired) {
-        console.warn(`[AI] ${provider.name} — JSON réparé avec succès`);
-        return repaired;
+        console.warn(`[AI] ${provider.name} — JSON réparé (finish_reason=${finishReason})`);
+        parsed = repaired;
+      } else {
+        console.warn(`[AI] ${provider.name} — JSON invalide non réparable. Début: ${cleaned.slice(0, 200)}`);
+        throw new Error(`${provider.name}: JSON invalide`);
       }
-      console.warn(`[AI] ${provider.name} — JSON invalide non réparable. Début: ${cleaned.slice(0, 200)}`);
-      throw new Error(`${provider.name}: JSON invalide`);
     }
+
+    // ✅ Signaler la troncature (finish_reason=length → contenu coupé)
+    if (finishReason === 'length' || finishReason === 'max_tokens') {
+      console.warn(`[AI] ${provider.name} — Réponse tronquée (finish_reason=${finishReason})`);
+      if (parsed && typeof parsed === 'object') {
+        parsed.__truncated = true;
+        parsed.__provider = provider.name;
+      }
+    }
+
+    return parsed;
   } finally {
     clearTimeout(timeout);
   }
@@ -671,23 +849,47 @@ async function runParallelTasks(tasks, providers, deadline) {
   return await Promise.all(
     results.map(async (r, i) => {
       if (r.status === 'fulfilled') {
-        return { status: 'fulfilled', value: r.value, task: tasks[i], provider: assignments[i].provider.name };
+        return {
+          status: 'fulfilled',
+          value: r.value,
+          task: tasks[i],
+          provider: assignments[i].provider.name
+        };
       }
 
       const errMsg = String(r.reason?.message || '');
-      const isStructural = errMsg.includes('JSON') || errMsg.includes('structure');
-      if (isStructural) {
-        console.warn(`[FAN-OUT] Tâche "${tasks[i].name}" : erreur structurelle, pas de fallback`);
-        return { status: 'rejected', error: r.reason, task: tasks[i], provider: 'none' };
-      }
+      const isStructural = errMsg.includes('JSON') || errMsg.includes('structure') || errMsg.includes('tronqu');
+      const isTimeout = errMsg.includes('timeout') || errMsg.includes('aborted') || errMsg.includes('AbortError');
+      const isDeadlineNear = deadline && Date.now() > deadline - 10000;
 
-      if (deadline && Date.now() > deadline - 10000) {
+      if (isDeadlineNear) {
         console.warn(`[FAN-OUT] Tâche "${tasks[i].name}" : deadline proche, pas de fallback`);
         return { status: 'rejected', error: r.reason, task: tasks[i], provider: 'none' };
       }
 
-      console.warn(`[FAN-OUT] Tâche "${tasks[i].name}" échouée sur ${assignments[i].provider.name}, fallback...`);
+      // ✅ Erreur structurelle : un seul fallback (pas en boucle)
+      if (isStructural) {
+        const remainingProviders = providers.filter((p) => p.name !== assignments[i].provider.name);
+        if (remainingProviders.length > 0) {
+          const fallbackProvider = remainingProviders[0];
+          console.warn(`[FAN-OUT] Tâche "${tasks[i].name}" structurellement invalide sur ${assignments[i].provider.name}, tentative unique sur ${fallbackProvider.name}`);
+          try {
+            const value = await callProvider(fallbackProvider, {
+              systemPrompt: tasks[i].systemPrompt,
+              userPrompt: tasks[i].userPrompt,
+              maxTokens: tasks[i].maxTokens,
+              deadline
+            });
+            return { status: 'fulfilled', value, task: tasks[i], provider: fallbackProvider.name };
+          } catch (e) {
+            console.warn(`[FAN-OUT] Fallback ${fallbackProvider.name} échoué : ${e.message}`);
+          }
+        }
+        return { status: 'rejected', error: r.reason, task: tasks[i], provider: 'none' };
+      }
 
+      // Timeout ou autre erreur : fallback classique sur tous les autres providers
+      console.warn(`[FAN-OUT] Tâche "${tasks[i].name}" échouée sur ${assignments[i].provider.name}, fallback...`);
       for (const provider of providers) {
         if (provider.name === assignments[i].provider.name) continue;
         try {
@@ -715,13 +917,26 @@ function mergeAnalysis(results, profile) {
     structure: null,
     questions: [],
     qcm: [],
-    extracted: null
+    extracted: null,
+    __quality: {
+      explanation: null,
+      questions: null,
+      qcm: null,
+      coverage: null,
+      failedTasks: [],
+      truncatedTasks: []
+    }
   };
 
   for (const r of results) {
-    if (r.status !== 'fulfilled' || !r.value) continue;
+    if (r.status !== 'fulfilled' || !r.value) {
+      if (r.task?.name) merged.__quality.failedTasks.push(r.task.name);
+      continue;
+    }
     const data = r.value;
     const taskName = r.task.name;
+
+    if (data.__truncated) merged.__quality.truncatedTasks.push(taskName);
 
     switch (taskName) {
       case 'extraction':
@@ -744,13 +959,10 @@ function mergeAnalysis(results, profile) {
     }
   }
 
-  // ✅ CORRECTION : Forcer les tableaux où il faut
+  // ─── Forçage tableaux (existant) ──────────────────────────
   if (merged.explanation) {
-    if (!Array.isArray(merged.explanation.parts)) {
-      merged.explanation.parts = [];
-    }
+    if (!Array.isArray(merged.explanation.parts)) merged.explanation.parts = [];
   }
-
   if (merged.structure) {
     const arrayFields = [
       'formulas', 'examples', 'traps', 'mechanisms', 'definitions',
@@ -763,11 +975,34 @@ function mergeAnalysis(results, profile) {
         merged.structure[field] = [];
       }
     });
-
     if (merged.structure.method && !Array.isArray(merged.structure.method.steps)) {
       merged.structure.method.steps = [];
     }
+    cleanFormulas(merged.structure);
   }
+
+  // ─── Validation ciblée ────────────────────────────────────
+  merged.__quality.explanation = validateExplanation(merged.explanation);
+
+  const qCheck = validateQuestions(merged.questions);
+  merged.__quality.questions = qCheck;
+  merged.questions = qCheck.valid;
+
+  const qcmCheck = validateQcm(merged.qcm);
+  merged.__quality.qcm = qcmCheck;
+  merged.qcm = qcmCheck.valid;
+
+  const concepts = Array.isArray(merged.extracted?.mainConcepts) ? merged.extracted.mainConcepts : [];
+  merged.__quality.coverage = checkConceptCoverage(concepts, merged.explanation);
+
+  // Dédoublonnage questions par id
+  const seen = new Set();
+  merged.questions = merged.questions.filter((q) => {
+    if (!q || !q.id) return true;
+    if (seen.has(q.id)) return false;
+    seen.add(q.id);
+    return true;
+  });
 
   return merged;
 }
@@ -797,13 +1032,86 @@ RÈGLE JSON STRICTE :
 - Pas de markdown (\`\`\`).
 - Échappe correctement les guillemets doubles dans les chaînes (\\").
 - Utilise des apostrophes droites (') et non typographiques.
-- Maximum 5 éléments dans les tableaux longs (parts, questions, etc.).
+- Le nombre d'éléments dans les tableaux doit être proportionnel à la richesse
+  du cours fourni. NE PLAFONNE PAS artificiellement : si le cours contient
+  8 mécanismes distincts, liste les 8.
+- À l'inverse, ne remplis pas artificiellement : si le cours ne contient que
+  2 formules, n'en invente pas une 3e.
+- Si une information est absente du cours, ne l'invente pas :
+  omets le champ ou mets null.
+- Si tu approches de la fin de ta réponse, PRIORISE la complétude des éléments
+  déjà commencés plutôt que d'en ajouter de nouveaux tronqués.
+`.trim();
+
+const EXPLANATION_RULES = `
+RÈGLES D'EXPLICATION (OBLIGATOIRES) :
+1. Public cible : élève de Terminale D au Niger préparant le BAC.
+   Utilise un français simple et direct, sans être infantilisant.
+2. Conserve les termes scientifiques et scolaires indispensables.
+   Si un terme technique est difficile, explique-le brièvement
+   dans la phrase qui suit (entre parenthèses ou en apposition).
+3. Présente les notions dans un ordre logique : du plus simple au plus complexe,
+   du général au particulier, ou dans l'ordre chronologique si le cours s'y prête.
+4. Si le cours décrit un mécanisme ou un processus, décris chaque étape
+   dans l'ordre, sans en sauter.
+5. Si le cours aborde des causes, des conséquences, des relations entre notions
+   ou des différences, explique-les explicitement.
+6. Donne un exemple concret UNIQUEMENT lorsqu'il aide réellement à comprendre.
+   N'invente pas d'exemple si le cours n'en fournit pas et que le concept
+   est abstrait — signale-le plutôt.
+7. N'utilise PAS une simple définition à la place d'une explication.
+   Définir n'est pas expliquer : l'explication doit répondre à "pourquoi" et "comment".
+8. Il n'y a PAS de limite fixe de phrases. La longueur doit être proportionnelle
+   à la complexité de la notion et à la richesse du cours fourni.
+9. Évite les répétitions et les phrases de remplissage.
+10. N'invente AUCUNE information absente du cours. Si une donnée semble manquer
+    ou est ambiguë, signale-le explicitement dans le champ concerné.
+`.trim();
+
+const SUMMARY_RULES = `
+RÈGLES DE RÉSUMÉ (OBLIGATOIRES) :
+1. Le résumé doit conserver TOUTES les connaissances importantes du cours :
+   définitions, propriétés, mécanismes et leurs étapes, causes, conséquences,
+   formules et unités, dates et faits, concepts et arguments, distinctions
+   essentielles, exemples indispensables à la compréhension.
+2. Supprime les répétitions, raccourcis les formulations inutilement longues,
+   simplifie les explications SANS DÉFORMER LEUR SENS.
+3. NE SUPPRIME JAMAIS une notion importante uniquement pour raccourcir.
+   La longueur du résumé dépend de la complexité et de la longueur du cours.
+4. Conserve les nuances du cours : conditions, restrictions, exceptions.
+5. Ne fusionne pas deux notions distinctes sous prétexte qu'elles sont proches.
+6. Ne présente PAS une information absente du cours comme si elle y figurait.
+`.trim();
+
+const QUESTIONS_RULES = `
+RÈGLES DE GÉNÉRATION DE QUESTIONS (OBLIGATOIRES) :
+1. Couvre SYSTÉMATIQUEMENT toutes les notions importantes présentes dans le cours.
+   Pas une notion importante sans au moins une question.
+2. Choisis les TYPES de questions adaptés à la nature de chaque notion.
+   Types disponibles selon la matière :
+   - définition, restitution, explication, description,
+   - comparaison, justification,
+   - causes / conséquences / relations,
+   - application (calcul, résolution),
+   - synthèse,
+   - lecture de schéma (si le cours en contient).
+   Ne force PAS tous les types pour chaque notion.
+3. Chaque réponse doit être COMPLÈTE, CORRECTE, COMPRÉHENSIBLE.
+   - Une réponse de définition doit contenir le terme, son genre, son domaine
+     et ses caractères distinctifs.
+   - Une réponse d'explication doit contenir "pourquoi" et "comment".
+   - Une réponse de comparaison doit énoncer les points communs ET les différences.
+4. Utilise le vocabulaire attendu dans la matière (termes du cours).
+5. Le champ "mustHave" doit lister les éléments INDISPENSABLES sans lesquels
+   la réponse serait considérée incomplète par un correcteur de BAC.
+   Chaque élément doit être court (mots-clés, pas une phrase).
+6. N'invente AUCUNE information absente du cours.
 `.trim();
 
 // ────────────────────────────────────────────────────────────────
 // PROMPTS PAR PROFIL
 // ────────────────────────────────────────────────────────────────
-function buildScientificPrompts({ subjectLabel, rawInput }) {
+function buildScientificPrompts({ subjectLabel, rawInput, subject }) {
   const baseContext = `Matière : ${subjectLabel}
 ═══════════════════════════════════════════════════════════════
 CONTENU DE LA SECTION FOURNIE PAR L'ÉLÈVE
@@ -811,23 +1119,50 @@ CONTENU DE LA SECTION FOURNIE PAR L'ÉLÈVE
 ${rawInput}
 ═══════════════════════════════════════════════════════════════`.trim();
 
+  const focusBySubject = {
+    mathematiques: `Focus MATHÉMATIQUES :
+- Privilégie définitions, propriétés, théorèmes, formules,
+  conditions d'application, méthodes de résolution, interprétations.
+- Pour chaque formule, précise les conditions de validité et le domaine.
+- Pour chaque méthode, donne les étapes dans l'ordre.`,
+    physique: `Focus PHYSIQUE :
+- Privilégie phénomènes, grandeurs physiques, unités (SI), relations
+  entre grandeurs, conditions d'application, méthodes de résolution.
+- Toute formule doit être accompagnée de l'unité de chaque grandeur
+  et des conditions de validité.
+- Décris les phénomènes étape par étape quand ils évoluent.`,
+    chimie: `Focus CHIMIE :
+- Privilégie notions, réactions, équations-bilans, propriétés,
+  conditions expérimentales (température, pression, catalyseur),
+  méthodes de calcul (concentrations, quantités de matière, rendements).
+- Toute équation doit être équilibrée.
+- Pour chaque réaction, précise les conditions expérimentales et
+  les produits observables.`
+  };
+
+  const subjectFocus = focusBySubject[subject] || focusBySubject.mathematiques;
+
   return [
     {
       name: 'extraction',
-      maxTokens: 1500,
+      maxTokens: 2200,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Analyse cette section de cours scientifique.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${SUMMARY_RULES}
 
 Extrait UNIQUEMENT les concepts présents dans cette section.
+
+${subjectFocus}
 
 Format JSON :
 {
   "sectionTitle": "Titre court (max 60 caractères)",
-  "mainConcepts": ["concept 1"],
+  "resume": "Résumé structuré du cours en 3 à 8 phrases, fidèle au document.",
+  "mainConcepts": ["concept 1", "concept 2"],
   "formulas": ["formule 1"],
   "variables": [{"symbol": "x", "meaning": "signification", "unit": "unité"}],
   "definitions": [{"term": "terme", "definition": "définition"}]
@@ -839,31 +1174,35 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 5000,
+      maxTokens: 7000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
-      userPrompt: `Tu es professeur expert du BAC. Explique cette section comme à un élève qui découvre.
+      userPrompt: `Tu es professeur expert du BAC (Terminale D, Niger). Explique cette section
+comme à un élève qui découvre la notion.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${EXPLANATION_RULES}
 ${LATEX_RULES}
 
-RÈGLE : Chaque idée doit être EXPLIQUÉE en français simple.
-Pas de jargon non expliqué. Phrases complètes, pas de listes télégraphiques.
-Nombre de parties adapté au contenu.
+${subjectFocus}
+
+Adapte le nombre de parties à la richesse du cours (généralement 3 à 8).
+Chaque partie doit contenir une explication réellement pédagogique,
+pas une simple reformulation de définition.
 
 Format JSON :
 {
   "sectionTitle": "...",
-  "understanding": "Ce que tu dois comprendre en 2-3 phrases.",
+  "understanding": "Ce que tu dois comprendre en 2-4 phrases.",
   "parts": [
     {
       "partTitle": "Partie 1",
       "mainIdea": "Idée principale",
-      "simpleExplanation": "Explication en français simple (3-6 phrases).",
+      "simpleExplanation": "Explication pédagogique complète. Longueur adaptée à la notion.",
       "keyTerms": [{"term": "...", "meaning": "..."}],
       "relations": ["relation 1"],
-      "example": "Exemple chiffré si présent",
+      "example": "Exemple chiffré si présent dans le cours",
       "toRemember": "Ce qu'il faut retenir"
     }
   ]
@@ -875,14 +1214,17 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'structure',
-      maxTokens: 3500,
+      maxTokens: 5000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Extrait la structure scientifique de cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${SUMMARY_RULES}
 ${LATEX_RULES}
+
+${subjectFocus}
 
 Ne mets QUE ce qui est présent dans la section. Si pas de formule → tableau vide.
 
@@ -900,16 +1242,17 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'questions',
-      maxTokens: 4000,
+      maxTokens: 6500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère une banque de questions basée UNIQUEMENT sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTIONS_RULES}
 ${LATEX_RULES}
 
-RÈGLE : 2 à 3 questions par notion importante.
+${subjectFocus}
 
 Format JSON :
 {
@@ -922,13 +1265,14 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'qcm',
-      maxTokens: 3000,
+      maxTokens: 4500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère des QCM UNIQUEMENT sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTIONS_RULES}
 ${LATEX_RULES}
 
 Format JSON :
@@ -951,22 +1295,32 @@ CONTENU DE LA SECTION FOURNIE PAR L'ÉLÈVE
 ${rawInput}
 ═══════════════════════════════════════════════════════════════`.trim();
 
+  const svtFocus = `Focus SVT :
+- Privilégie définitions, structures (cellule, tissu, organe, système),
+  fonctions, mécanismes biologiques et leurs étapes, causes et conséquences,
+  relations entre niveaux d'organisation.
+- Décris les mécanismes étape par étape.
+- Explique les relations entre organes / niveaux d'organisation quand le cours les aborde.`;
+
   return [
     {
       name: 'extraction',
-      maxTokens: 1500,
+      maxTokens: 2200,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Analyse cette section de SVT.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${SUMMARY_RULES}
+${svtFocus}
 
 RÈGLE SVT : PAS de formules. Priorise mécanismes, relations, étapes, définitions.
 
 Format JSON :
 {
   "sectionTitle": "...",
+  "resume": "Résumé fidèle et complet du cours (3 à 8 phrases).",
   "mainConcepts": ["..."],
   "terms": [{"term": "...", "definition": "..."}],
   "mechanisms": ["mécanisme 1"]
@@ -978,19 +1332,18 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 5000,
+      maxTokens: 7000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
-      userPrompt: `Tu es professeur de SVT. Explique cette section comme à un élève qui découvre.
+      userPrompt: `Tu es professeur de SVT (Terminale D, Niger). Explique cette section
+comme à un élève qui découvre la notion.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${EXPLANATION_RULES}
+${svtFocus}
 
-RÈGLES SVT :
-- Explication EN FRANÇAIS simple.
-- Décris chaque MÉCANISME étape par étape.
-- Explique les RELATIONS (organe A → organe B).
-- Utilise des termes biologiques précis MAIS explique-les.
+Adapte le nombre de parties à la richesse du cours (généralement 3 à 8).
 
 Format JSON :
 {
@@ -1009,23 +1362,21 @@ Format JSON :
   ]
 }
 
-CONTRAINTES :
-- Maximum 5 parties (parts).
-- Chaque simpleExplanation : 3 à 6 phrases.
-
 ${JSON_STRICT_RULES}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'structure',
-      maxTokens: 3000,
+      maxTokens: 5000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Structure cette section de SVT.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${SUMMARY_RULES}
+${svtFocus}
 
 PAS de formules.
 
@@ -1042,15 +1393,15 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'questions',
-      maxTokens: 4000,
+      maxTokens: 6500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère une banque de questions de SVT sur cette section UNIQUEMENT.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
-
-2-3 questions par notion importante.
+${QUESTIONS_RULES}
+${svtFocus}
 
 Format JSON :
 {
@@ -1063,13 +1414,14 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'qcm',
-      maxTokens: 3000,
+      maxTokens: 4500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `QCM de SVT sur cette section UNIQUEMENT.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTIONS_RULES}
 
 Format JSON :
 {
@@ -1091,20 +1443,29 @@ CONTENU DE LA SECTION FOURNIE PAR L'ÉLÈVE
 ${rawInput}
 ═══════════════════════════════════════════════════════════════`.trim();
 
+  const philoFocus = `Focus PHILOSOPHIE :
+- Privilégie concepts, problématiques, thèses, arguments, distinctions conceptuelles,
+  exemples pertinents.
+- Distingue clairement thèse / antithèse / synthèse quand le cours les aborde.
+- Explique le sens des concepts philosophiques AVANT de les utiliser.`;
+
   return [
     {
       name: 'extraction',
-      maxTokens: 1500,
+      maxTokens: 2200,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Analyse cette section de philosophie.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${SUMMARY_RULES}
+${philoFocus}
 
 Format JSON :
 {
   "sectionTitle": "...",
+  "resume": "Résumé fidèle (3 à 8 phrases).",
   "mainConcepts": ["..."],
   "theses": [{"author": "nom", "thesis": "..."}],
   "arguments": ["..."],
@@ -1117,18 +1478,18 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 5000,
+      maxTokens: 7000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
-      userPrompt: `Tu es professeur de philosophie. Explique cette section COMME SI L'ÉLÈVE N'Y CONNAISSAIT RIEN.
+      userPrompt: `Tu es professeur de philosophie (Terminale, Niger). Explique cette section
+COMME SI L'ÉLÈVE N'Y CONNAISSAIT RIEN.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${EXPLANATION_RULES}
+${philoFocus}
 
-RÈGLES PHILO :
-- VULGARISE chaque concept philosophique.
-- Décompose chaque argument.
-- Donne des exemples du quotidien.
+Adapte le nombre de parties à la richesse du cours.
 
 Format JSON :
 {
@@ -1138,7 +1499,7 @@ Format JSON :
     {
       "partTitle": "...",
       "mainIdea": "...",
-      "simpleExplanation": "Explication longue (5-10 phrases).",
+      "simpleExplanation": "...",
       "keyTerms": [{"term": "...", "meaning": "..."}],
       "arguments": ["Argument 1"],
       "everydayExamples": ["Exemple 1"],
@@ -1153,13 +1514,15 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'structure',
-      maxTokens: 3000,
+      maxTokens: 5000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Structure cette section de philosophie.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${SUMMARY_RULES}
+${philoFocus}
 
 Format JSON :
 {
@@ -1174,19 +1537,21 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'questions',
-      maxTokens: 4000,
+      maxTokens: 6500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère des questions de philosophie sur cette section UNIQUEMENT.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTIONS_RULES}
+${philoFocus}
 
-Chaque réponse doit être UNE PHRASE complète.
+Chaque réponse doit être une phrase complète, argumentée.
 
 Format JSON :
 {
-  "questions": [{"id": "q1", "level": 1, "type": "definition", "question": "...", "answer": "Une phrase complète.", "mustHave": ["..."], "importance": 1}]
+  "questions": [{"id": "q1", "level": 1, "type": "definition", "question": "...", "answer": "...", "mustHave": ["..."], "importance": 1}]
 }
 
 ${JSON_STRICT_RULES}
@@ -1195,13 +1560,14 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'qcm',
-      maxTokens: 2500,
+      maxTokens: 4500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `QCM de philosophie sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTIONS_RULES}
 
 Format JSON :
 {
@@ -1215,7 +1581,7 @@ Réponds UNIQUEMENT avec le JSON.`
   ];
 }
 
-function buildHistoryPrompts({ subjectLabel, rawInput }) {
+function buildHistoryPrompts({ subjectLabel, rawInput, subject }) {
   const baseContext = `Matière : ${subjectLabel}
 ═══════════════════════════════════════════════════════════════
 CONTENU DE LA SECTION FOURNIE PAR L'ÉLÈVE
@@ -1223,20 +1589,34 @@ CONTENU DE LA SECTION FOURNIE PAR L'ÉLÈVE
 ${rawInput}
 ═══════════════════════════════════════════════════════════════`.trim();
 
+  const isGeo = subject === 'geographie';
+
+  const focus = isGeo
+    ? `Focus GÉOGRAPHIE :
+- Privilégie localisations, espaces, acteurs, enjeux spatiaux,
+  causes et conséquences des dynamiques territoriales.
+- Situe les phénomènes dans l'espace (pays, régions, villes).`
+    : `Focus HISTOIRE :
+- Privilégie faits, dates, acteurs, contextes, causes, conséquences, enjeux.
+- Respecte la chronologie des événements.`;
+
   return [
     {
       name: 'extraction',
-      maxTokens: 1800,
+      maxTokens: 2400,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Analyse cette section d'histoire-géographie.
+      userPrompt: `Analyse cette section ${isGeo ? 'de géographie' : "d'histoire"}.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${SUMMARY_RULES}
+${focus}
 
 Format JSON :
 {
   "sectionTitle": "...",
+  "resume": "Résumé fidèle (3 à 8 phrases).",
   "dates": [{"date": "...", "event": "..."}],
   "persons": [{"name": "...", "role": "..."}],
   "places": [{"place": "...", "stake": "..."}],
@@ -1251,21 +1631,32 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 2500,
+      maxTokens: 5500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Présente cette section d'histoire-géo de manière CLAIRE et CONCISE.
+      userPrompt: `Présente cette section ${isGeo ? 'de géographie' : "d'histoire"} de manière CLAIRE et FIDÈLE.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${EXPLANATION_RULES}
+${focus}
 
-RÈGLE : résumé bref (5-10 phrases max) + accent sur les faits.
+Adapte la longueur à la richesse du cours.
 
 Format JSON :
 {
   "sectionTitle": "...",
-  "understanding": "Résumé en 5-8 phrases.",
+  "understanding": "...",
   "context": "...",
+  "parts": [
+    {
+      "partTitle": "...",
+      "mainIdea": "...",
+      "simpleExplanation": "...",
+      "keyTerms": [{"term": "...", "meaning": "..."}],
+      "toRemember": "..."
+    }
+  ],
   "keyFacts": ["fait 1"]
 }
 
@@ -1275,13 +1666,15 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'structure',
-      maxTokens: 2500,
+      maxTokens: 5000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Structure cette section d'histoire-géo.
+      userPrompt: `Structure cette section ${isGeo ? 'de géographie' : "d'histoire"}.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${SUMMARY_RULES}
+${focus}
 
 Format JSON :
 {
@@ -1297,15 +1690,18 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'questions',
-      maxTokens: 4500,
+      maxTokens: 6500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Génère une BANQUE MASSIVE de questions d'histoire-géo sur cette section.
+      userPrompt: `Génère une banque de questions ${isGeo ? 'de géographie' : "d'histoire"} sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTIONS_RULES}
+${focus}
 
-RÈGLE HIST-GÉO : MAX de questions sur les faits.
+Couvre TOUS les faits importants (dates, acteurs, événements,
+causes, conséquences, enjeux). Nombre proportionnel au contenu.
 
 Format JSON :
 {
@@ -1318,13 +1714,14 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'qcm',
-      maxTokens: 3500,
+      maxTokens: 4500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `QCM d'histoire-géo sur cette section.
+      userPrompt: `QCM ${isGeo ? 'de géographie' : "d'histoire"} sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTIONS_RULES}
 
 Format JSON :
 {
@@ -1349,17 +1746,19 @@ ${rawInput}
   return [
     {
       name: 'extraction',
-      maxTokens: 1500,
+      maxTokens: 2200,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Analyse cette section de français.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${SUMMARY_RULES}
 
 Format JSON :
 {
   "sectionTitle": "...",
+  "resume": "Résumé fidèle (3 à 8 phrases).",
   "mainConcepts": ["..."],
   "texts": [{"title": "...", "author": "..."}],
   "literaryDevices": ["..."],
@@ -1372,13 +1771,14 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 4000,
+      maxTokens: 6500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Tu es professeur de français. Explique cette section clairement.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${EXPLANATION_RULES}
 
 Format JSON :
 {
@@ -1401,13 +1801,14 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'structure',
-      maxTokens: 2500,
+      maxTokens: 4500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Structure cette section de français.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${SUMMARY_RULES}
 
 Format JSON :
 {
@@ -1422,13 +1823,14 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'questions',
-      maxTokens: 3500,
+      maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère des questions de français sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTIONS_RULES}
 
 Format JSON :
 {
@@ -1441,13 +1843,14 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'qcm',
-      maxTokens: 2500,
+      maxTokens: 4000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `QCM de français sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTIONS_RULES}
 
 Format JSON :
 {
@@ -1461,6 +1864,8 @@ Réponds UNIQUEMENT avec le JSON.`
   ];
 }
 
+// Note : buildLanguagePrompts est conservé (code mort inoffensif)
+// pour une activation future quand ALLOWED_SUBJECTS inclura 'anglais'.
 function buildLanguagePrompts({ subjectLabel, rawInput }) {
   const baseContext = `Matière : ${subjectLabel}
 ═══════════════════════════════════════════════════════════════
@@ -1472,17 +1877,19 @@ ${rawInput}
   return [
     {
       name: 'extraction',
-      maxTokens: 1500,
+      maxTokens: 2200,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Analyse cette section d'anglais.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${SUMMARY_RULES}
 
 Format JSON :
 {
   "sectionTitle": "...",
+  "resume": "Résumé fidèle (3 à 8 phrases).",
   "vocabulary": [{"english": "word", "french": "traduction"}],
   "grammarRules": [{"rule": "...", "explanation": "..."}],
   "structures": ["structure 1"],
@@ -1495,13 +1902,14 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'explanation',
-      maxTokens: 4500,
+      maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Tu es professeur d'anglais pour des FRANCOPHONES DÉBUTANTS.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${EXPLANATION_RULES}
 
 RÈGLES LANGUE :
 - EXPLICATIONS TOUJOURS EN FRANÇAIS.
@@ -1515,7 +1923,7 @@ Format JSON :
     {
       "partTitle": "...",
       "mainIdea": "...",
-      "simpleExplanation": "Explication EN FRANÇAIS (5-10 phrases).",
+      "simpleExplanation": "Explication EN FRANÇAIS.",
       "keyTerms": [{"english": "word", "french": "traduction", "example": "example"}],
       "examples": [{"english": "English sentence.", "french": "Traduction."}],
       "commonMistakes": [{"mistake": "...", "correction": "..."}],
@@ -1530,13 +1938,14 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'structure',
-      maxTokens: 3000,
+      maxTokens: 4500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Structure cette section d'anglais.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${SUMMARY_RULES}
 
 Format JSON :
 {
@@ -1551,13 +1960,14 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'questions',
-      maxTokens: 3500,
+      maxTokens: 5500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère des questions d'anglais.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTIONS_RULES}
 
 Format JSON :
 {
@@ -1570,13 +1980,14 @@ Réponds UNIQUEMENT avec le JSON.`
     },
     {
       name: 'qcm',
-      maxTokens: 2500,
+      maxTokens: 4000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `QCM d'anglais sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTIONS_RULES}
 
 Format JSON :
 {
@@ -2032,7 +2443,7 @@ async function createSection(uid, body) {
 
   const normalizedInput = normalizeMathInput(trimmed);
 
-  const context = { subjectLabel, rawInput: normalizedInput };
+  const context = { subjectLabel, rawInput: normalizedInput, subject };
   const tasks = getPromptsForProfile(profile, context);
   const providers = getProviders();
 
@@ -2057,26 +2468,72 @@ async function createSection(uid, body) {
     });
 
     analysis = mergeAnalysis(results, profile);
-
     analysis = deepClean(analysis);
 
-    if (!analysis.explanation || typeof analysis.explanation !== 'object') {
-      console.warn('[FAN-OUT] explanation manquant -> fallback minimal');
+    // ✅ Décision basée sur __quality
+    const q = analysis.__quality || {};
+    const explCheck = q.explanation || { ok: false, reason: 'non_evaluee' };
+    const qCheck = q.questions || { ok: false, valid: [] };
+    const qcmCheck = q.qcm || { ok: false, valid: [] };
+    const coverage = q.coverage || { covered: 0, total: 0, missing: [], ratio: 1 };
+
+    const totalQ = (qCheck.valid?.length || 0) + (qCheck.invalid?.length || 0);
+    const totalQcm = (qcmCheck.valid?.length || 0) + (qcmCheck.invalid?.length || 0);
+
+    console.log(
+      `[PROGRESS] Qualité — expl=${explCheck.ok ? 'OK' : 'KO(' + explCheck.reason + ')'} ` +
+      `questions=${qCheck.valid.length}/${totalQ} ` +
+      `qcm=${qcmCheck.valid.length}/${totalQcm} ` +
+      `couverture=${coverage.covered}/${coverage.total} ` +
+      `échecs=${(q.failedTasks || []).join(',') || 'aucun'} ` +
+      `tronquées=${(q.truncatedTasks || []).join(',') || 'aucune'}`
+    );
+
+    // Cas 1 : explication KO + 0 question valide → fallback complet
+    if (!explCheck.ok && qCheck.valid.length === 0) {
+      console.warn('[PROGRESS] Analyse inutilisable (expl KO + 0 question) → fallback complet');
+      analysis = buildFallbackAnalysis({ rawInput: normalizedInput, profile });
+    }
+    // Cas 2 : explication KO mais questions valides → fallback minimal
+    else if (!explCheck.ok) {
+      console.warn(`[PROGRESS] Explication KO (${explCheck.reason}) → fallback minimal sur explication, questions conservées`);
       analysis.explanation = {
         sectionTitle: analysis.sectionTitle || 'Section',
-        understanding: 'L\'explication pédagogique n\'a pas pu être générée pour cette section. Les questions et QCM restent disponibles ci-dessous.',
+        understanding: "L'explication pédagogique n'a pas pu être générée correctement pour cette section. Les questions et QCM ci-dessous restent disponibles.",
         parts: []
       };
     }
-
-    const hasContent = analysis.explanation || analysis.questions.length > 0;
-    if (!hasContent) {
-      console.warn('[FAN-OUT] Tout a échoué -> fallback complet');
-      analysis = buildFallbackAnalysis({ rawInput: normalizedInput, profile });
+    // Cas 3 : couverture faible → log informatif
+    else if (coverage.total > 0 && coverage.ratio < 0.5) {
+      console.warn(`[PROGRESS] Couverture faible (${coverage.covered}/${coverage.total}). Notions manquantes : ${coverage.missing.join(', ')}`);
     }
+
+    // Cas 4 : aucun QCM valide
+    if (qcmCheck.valid.length === 0 && (qcmCheck.invalid?.length || 0) > 0) {
+      console.warn(`[PROGRESS] Tous les QCM invalides (${qcmCheck.invalid.map((i) => i.reason).join(',')}) → qcm vidé`);
+    }
+
   } catch (err) {
     if (quota.reserved) await releaseSectionQuota(uid);
     throw err;
+  }
+
+  // ✅ Nettoyage des marqueurs internes AVANT sauvegarde
+  if (analysis && typeof analysis === 'object') {
+    delete analysis.__quality;
+    delete analysis.__partial;
+  }
+  if (analysis.explanation && typeof analysis.explanation === 'object') {
+    delete analysis.explanation.__truncated;
+    delete analysis.explanation.__provider;
+  }
+  if (analysis.structure && typeof analysis.structure === 'object') {
+    delete analysis.structure.__truncated;
+    delete analysis.structure.__provider;
+  }
+  if (analysis.extracted && typeof analysis.extracted === 'object') {
+    delete analysis.extracted.__truncated;
+    delete analysis.extracted.__provider;
   }
 
   const sectionRef = chapterRef.collection('sections').doc();
@@ -2281,7 +2738,7 @@ module.exports = async function handler(request, response) {
 
   const uid = user.uid;
 
-  console.log(`[PROGRESS v8.6] ${action} | uid=${uid.slice(0, 8)}`);
+  console.log(`[PROGRESS v8.7] ${action} | uid=${uid.slice(0, 8)}`);
 
   try {
     switch (action) {
@@ -2300,7 +2757,7 @@ module.exports = async function handler(request, response) {
         return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[PROGRESS v8.6] "${action}" failed:`, error.message);
+    console.error(`[PROGRESS v8.7] "${action}" failed:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
