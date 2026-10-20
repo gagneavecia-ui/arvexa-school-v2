@@ -1,7 +1,6 @@
 // api/creer-checkout.js
-// Endpoint conforme à la doc api.saspay.me : POST /checkout-sessions/
-
-import { randomUUID } from 'crypto'; // plus utilisé pour l'idempotence (non supportée ici)
+// Conforme à la documentation api.saspay.me — page « Paiements »
+// Endpoint : POST /checkout-sessions/
 
 const PRICES = { monthly: 2000, annual: 18000 };
 const SITE_URL = 'https://arvexaschool.vercel.app';
@@ -29,48 +28,50 @@ export default async function handler(req, res) {
 
     const reference = `ARV-${Date.now()}-${String(uid).slice(0, 6)}`;
 
-    // ✅ ENDPOINT CORRECT (confirmé par la doc « Paiements »)
+    // ✅ Endpoint confirmé : POST /checkout-sessions/
+    // ⚠️ Pas d'Idempotency-Key : non supporté sur cet endpoint (doc explicite)
+    const payload = {
+      amount: amount,
+      currency: 'XOF',
+      reference: reference,
+      description: `Abonnement ARVEXA ${plan}`,
+      success_url: `${SITE_URL}/abonnement.html?statut=succes&ref=${reference}`,
+      cancel_url:  `${SITE_URL}/abonnement.html?statut=annule`,
+      webhook_url: `${SITE_URL}/api/saspay-webhook`
+    };
+
+    console.log('📤 Payload envoyé à SasPay :', JSON.stringify(payload, null, 2));
+
     const saspayRes = await fetch(`${BASE}/checkout-sessions/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${API_KEY}`
-        // ⚠️ PAS d'Idempotency-Key : non supporté sur cet endpoint
       },
-      body: JSON.stringify({
-        amount: amount,
-        currency: 'XOF',
-        reference: reference,
-        description: `Abonnement ARVEXA ${plan}`,
-        success_url: `${SITE_URL}/abonnement.html?statut=succes&ref=${reference}`,
-        cancel_url:  `${SITE_URL}/abonnement.html?statut=annule`,
-        webhook_url: `${SITE_URL}/api/saspay-webhook`
-      })
+      body: JSON.stringify(payload)
     });
 
     const data = await saspayRes.json();
 
     if (!data.success) {
-      console.error('SasPay checkout-sessions erreur :', data);
+      console.error('SasPay checkout-sessions erreur :', JSON.stringify(data, null, 2));
       return res.status(500).json({
         error: data.error?.message || 'Échec création session SasPay',
-        detail: data
+        sasPayRaw: data
       });
     }
 
-    // ⚠️ Le nom exact du champ URL dans la réponse est à confirmer.
-    // La doc mentionne « checkout_url » dans la vue d'ensemble.
-    // On essaie plusieurs noms par sécurité.
+    // Extraction de l'URL de checkout depuis la réponse SasPay
     const checkoutUrl =
       data.data?.checkout_url ||
       data.data?.payment_url ||
-      data.data?.url ||
-      data.data?.checkoutUrl;
+      data.data?.url;
 
     if (!checkoutUrl) {
+      console.error('URL checkout absente de la réponse :', JSON.stringify(data.data, null, 2));
       return res.status(500).json({
         error: 'URL de checkout absente de la réponse SasPay',
-        raw: data.data
+        sasPayRaw: data.data
       });
     }
 
