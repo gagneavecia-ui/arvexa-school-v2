@@ -2648,9 +2648,20 @@ const subscribeManualBtn = document.getElementById('subscribeManualBtn');
 subscribeAutoBtn.addEventListener('click', async () => {
   if (!currentUser) { window.location.replace('login.html'); return; }
 
-  // ✅ Vérifier que l'email existe (sinon on bloque avec un message clair)
+  // ✅ Récupérer le nom depuis userData (Firestore)
+  const fullName = userData?.fullName
+    || ((userData?.firstName || '') + ' ' + (userData?.lastName || '')).trim()
+    || currentUser.displayName
+    || '';
+
   if (!currentUser.email) {
     alert('Ton compte n\'a pas d\'email associé. Contacte le support avant de payer.');
+    return;
+  }
+
+  if (!fullName) {
+    alert('Ton profil est incomplet (nom manquant). Complète ton profil avant de payer.');
+    window.location.href = 'profil.html';
     return;
   }
 
@@ -2666,14 +2677,14 @@ subscribeAutoBtn.addEventListener('click', async () => {
         uid: currentUser.uid,
         plan: currentPlan,
         promoCode: appliedPromo?.code || null,
-        email: currentUser.email   // ✅ maintenant garanti non-null
+        email: currentUser.email,
+        fullName: fullName   // ✅ maintenant fourni
       })
     });
 
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || 'Erreur paiement');
 
-    // Enregistrer la référence SANS changer le statut
     try {
       const { updateDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
       await updateDoc(doc(db, 'users', currentUser.uid), {
