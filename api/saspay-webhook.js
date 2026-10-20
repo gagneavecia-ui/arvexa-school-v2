@@ -82,10 +82,10 @@ export default async function handler(req, res) {
       }
 
       // Trouver l'utilisateur via sa référence
-      const usersSnap = await db.collection('users')
-        .where('subscriptionRequestId', '==', reference)
-        .limit(1)
-        .get();
+     const usersSnap = await db.collection('users')
+  .where('saspayCheckoutReference', '==', reference)
+  .limit(1)
+  .get();
 
       if (usersSnap.empty) {
         console.warn('Aucun utilisateur pour la référence :', reference);
