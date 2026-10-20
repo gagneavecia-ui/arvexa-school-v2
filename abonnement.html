@@ -2654,11 +2654,13 @@ subscribeAutoBtn.addEventListener('click', async () => {
     const res = await fetch('/api/creer-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        uid: currentUser.uid,
-        plan: currentPlan,
-        promoCode: appliedPromo?.code || null
-      })
+     body: JSON.stringify({
+  uid: currentUser.uid,
+  plan: currentPlan,
+  promoCode: appliedPromo?.code || null,
+  email: currentUser.email,
+  fullName: (userData?.fullName || (userData?.firstName || '') + ' ' + (userData?.lastName || '')).trim() || currentUser.email.split('@')[0]
+})
     });
 
     const data = await res.json();
