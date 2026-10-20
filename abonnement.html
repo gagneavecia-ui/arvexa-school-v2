@@ -1315,6 +1315,44 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(184, 134, 11, 0.25); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(184, 134, 11, 0.4); }
+
+    /* DEUX BOUTONS D'ABONNEMENT */
+.dual-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.btn-subscribe-auto,
+.btn-subscribe-manual {
+  padding: 16px 14px;
+  border-radius: 30px;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 54px;
+}
+.btn-subscribe-auto {
+  background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+  color: #0A0A0A;
+  box-shadow: 0 4px 16px rgba(184, 134, 11, 0.25);
+}
+.btn-subscribe-auto:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(184, 134, 11, 0.4); }
+.btn-subscribe-auto:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-subscribe-manual {
+  background: rgba(37, 211, 102, 0.08);
+  color: #25D366;
+  border: 1.5px solid rgba(37, 211, 102, 0.3);
+}
+.btn-subscribe-manual:hover { background: rgba(37, 211, 102, 0.15); border-color: rgba(37, 211, 102, 0.5); transform: translateY(-2px); }
+@media (max-width: 420px) { .dual-actions { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -1462,15 +1500,21 @@
         </div>
 
         <div class="subscribe-section">
-          <button class="btn-subscribe-main" id="subscribeBtn">
-            <i class="fas fa-crown"></i>
-            <span>S'abonner maintenant</span>
-          </button>
-          <div class="secure-badges">
-            <span class="badge"><i class="fas fa-lock"></i> Paiement sécurisé</span>
-            <span class="badge"><i class="fas fa-bolt"></i> Activation rapide</span>
-            <span class="badge"><i class="fas fa-rotate-left"></i> Pas d'engagement</span>
-          </div>
+  <div class="dual-actions">
+    <button class="btn-subscribe-auto" id="subscribeAutoBtn">
+      <i class="fas fa-bolt"></i>
+      <span>Paiement automatique</span>
+    </button>
+    <button class="btn-subscribe-manual" id="subscribeManualBtn">
+      <i class="fab fa-whatsapp"></i>
+      <span>Paiement manuel</span>
+    </button>
+  </div>
+  <div class="secure-badges">
+    <span class="badge"><i class="fas fa-lock"></i> Paiement sécurisé</span>
+    <span class="badge"><i class="fas fa-bolt"></i> Activation rapide</span>
+    <span class="badge"><i class="fas fa-rotate-left"></i> Pas d'engagement</span>
+  </div>
         </div>
 
       </div>
@@ -2586,12 +2630,87 @@ document.querySelectorAll('.payment-logo-btn').forEach(btn => {
 fullNameInput.addEventListener('input', updateConfirmButtonState);
 whatsappInput.addEventListener('input', updateConfirmButtonState);
 
-subscribeBtn.addEventListener('click', openModal);
 closeModalBtn.addEventListener('click', closeModal);
 cancelModalBtn.addEventListener('click', closeModal);
 modal.addEventListener('click', (e) => {
   if (e.target === modal) closeModal();
 });
+
+  // ================================================================
+// DEUX FLUX D'ABONNEMENT
+// ================================================================
+const subscribeAutoBtn   = document.getElementById('subscribeAutoBtn');
+const subscribeManualBtn = document.getElementById('subscribeManualBtn');
+
+// ---------- FLUX AUTOMATIQUE (SasPay) ----------
+subscribeAutoBtn.addEventListener('click', async () => {
+  if (!currentUser) { window.location.replace('login.html'); return; }
+
+  subscribeAutoBtn.disabled = true;
+  const originalHTML = subscribeAutoBtn.innerHTML;
+  subscribeAutoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Redirection…</span>';
+
+  try {
+    const res = await fetch('/api/creer-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        uid: currentUser.uid,
+        plan: currentPlan,
+        promoCode: appliedPromo?.code || null
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Erreur paiement');
+
+    // ⚡ Enregistrer la référence AVANT la redirection
+    // (le webhook en aura besoin pour retrouver l'utilisateur)
+    try {
+      const { updateDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
+      await updateDoc(doc(db, 'users', currentUser.uid), {
+        subscriptionStatus: 'pending',
+        subscriptionPlan: currentPlan,
+        subscriptionPrice: data.raw?.amount || null,
+        subscriptionRequestId: data.reference,
+        subscriptionRequestDate: serverTimestamp(),
+        subscriptionPaymentMethod: 'saspay'
+      });
+    } catch (e) {
+      console.warn('Impossible d\'enregistrer la demande :', e.message);
+    }
+
+    // Redirection vers SasPay
+    window.location.href = data.checkoutUrl;
+
+  } catch (err) {
+    console.error(err);
+    alert('Erreur : ' + err.message);
+    subscribeAutoBtn.disabled = false;
+    subscribeAutoBtn.innerHTML = originalHTML;
+  }
+});
+
+// ---------- FLUX MANUEL (WhatsApp + QR) ----------
+subscribeManualBtn.addEventListener('click', () => {
+  if (!currentUser) { window.location.replace('login.html'); return; }
+  openModal();
+});
+
+// ---------- Retour SasPay ----------
+const urlParams = new URLSearchParams(window.location.search);
+const statut = urlParams.get('statut');
+if (statut === 'succes') {
+  setTimeout(() => {
+    alert('✅ Paiement reçu ! Ton abonnement sera activé dans quelques instants.');
+    window.history.replaceState({}, '', window.location.pathname);
+  }, 500);
+} else if (statut === 'annule') {
+  setTimeout(() => {
+    alert('❌ Paiement annulé. Tu peux réessayer quand tu veux.');
+    window.history.replaceState({}, '', window.location.pathname);
+  }, 500);
+}
 
 confirmBtn.addEventListener('click', sendToWhatsApp);
 
