@@ -1,11 +1,11 @@
 // api/saspay-webhook.js
 // URL : https://arvexaschool.vercel.app/api/saspay-webhook
+// Reçoit les events SasPay et active l'abonnement sur transaction.success
 
 import crypto from 'crypto';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 
-// Init Firebase Admin (une seule fois)
 if (!getApps().length) {
   const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
   initializeApp({ credential: cert(sa) });
@@ -48,7 +48,9 @@ export default async function handler(req, res) {
     const timestamp = req.headers['x-webhook-timestamp'];
     const eventType = req.headers['x-webhook-event'];
 
-    if (!signature || !timestamp) return res.status(401).send('Signature manquante');
+    if (!signature || !timestamp) {
+      return res.status(401).send('Signature manquante');
+    }
 
     const secret = process.env.SASPAY_WEBHOOK_SECRET;
     if (!secret) {
@@ -77,15 +79,15 @@ export default async function handler(req, res) {
     if (event === 'transaction.success' && (data.type === 'PAIEMENT' || !data.type)) {
       const reference = data.reference;
       if (!reference) {
-        console.warn('Référence absente du payload');
+        console.warn('Référence absente');
         return res.status(200).json({ received: true });
       }
 
-      // Trouver l'utilisateur via sa référence
-     const usersSnap = await db.collection('users')
-  .where('saspayCheckoutReference', '==', reference)
-  .limit(1)
-  .get();
+      // Trouver l'utilisateur via saspayCheckoutReference (enregistré par le front)
+      const usersSnap = await db.collection('users')
+        .where('saspayCheckoutReference', '==', reference)
+        .limit(1)
+        .get();
 
       if (usersSnap.empty) {
         console.warn('Aucun utilisateur pour la référence :', reference);
@@ -95,7 +97,7 @@ export default async function handler(req, res) {
       const userDoc = usersSnap.docs[0];
       const userData = userDoc.data();
 
-      // Calcul de la date de fin
+      // Calcul date de fin
       const now = new Date();
       const endDate = new Date(now);
       if (userData.subscriptionPlan === 'annual') {
@@ -122,11 +124,12 @@ export default async function handler(req, res) {
       console.log('✅ Abonnement activé pour', userDoc.id);
     }
 
+    // ---------- ÉCHEC / ANNULATION ----------
     if (event === 'transaction.failed' || event === 'transaction.cancelled') {
       const reference = data.reference;
       if (reference) {
         const usersSnap = await db.collection('users')
-          .where('subscriptionRequestId', '==', reference)
+          .where('saspayCheckoutReference', '==', reference)
           .limit(1).get();
         if (!usersSnap.empty) {
           await usersSnap.docs[0].ref.update({ subscriptionStatus: 'free' });
@@ -141,4 +144,4 @@ export default async function handler(req, res) {
     console.error('Erreur webhook :', err);
     return res.status(200).send('Erreur loggée');
   }
-      }
+}
