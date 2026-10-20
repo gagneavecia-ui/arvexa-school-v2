@@ -2642,7 +2642,9 @@ modal.addEventListener('click', (e) => {
 const subscribeAutoBtn   = document.getElementById('subscribeAutoBtn');
 const subscribeManualBtn = document.getElementById('subscribeManualBtn');
 
-// ---------- FLUX AUTOMATIQUE (SasPay) ----------
+// ================================================================
+// FLUX AUTOMATIQUE (SasPay)
+// ================================================================
 subscribeAutoBtn.addEventListener('click', async () => {
   if (!currentUser) { window.location.replace('login.html'); return; }
 
@@ -2654,35 +2656,29 @@ subscribeAutoBtn.addEventListener('click', async () => {
     const res = await fetch('/api/creer-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-     body: JSON.stringify({
-  uid: currentUser.uid,
-  plan: currentPlan,
-  promoCode: appliedPromo?.code || null,
-  email: currentUser.email,
-  fullName: (userData?.fullName || (userData?.firstName || '') + ' ' + (userData?.lastName || '')).trim() || currentUser.email.split('@')[0]
-})
+      body: JSON.stringify({
+        uid: currentUser.uid,
+        plan: currentPlan,
+        promoCode: appliedPromo?.code || null
+      })
     });
 
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || 'Erreur paiement');
 
-    // ⚡ Enregistrer la référence AVANT la redirection
-    // (le webhook en aura besoin pour retrouver l'utilisateur)
+    // ✅ Enregistrer la référence SANS changer le statut
     try {
       const { updateDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
       await updateDoc(doc(db, 'users', currentUser.uid), {
-        subscriptionStatus: 'pending',
-        subscriptionPlan: currentPlan,
-        subscriptionPrice: data.raw?.amount || null,
-        subscriptionRequestId: data.reference,
-        subscriptionRequestDate: serverTimestamp(),
-        subscriptionPaymentMethod: 'saspay'
+        saspayCheckoutReference: data.reference,
+        saspayCheckoutSessionId: data.sessionId || null,
+        saspayCheckoutStartedAt: serverTimestamp()
       });
     } catch (e) {
-      console.warn('Impossible d\'enregistrer la demande :', e.message);
+      console.warn('Référence SasPay non enregistrée :', e.message);
     }
 
-    // Redirection vers SasPay
+    // ✅ Redirection vers SasPay — la page reste sur "free" jusqu'au retour
     window.location.href = data.checkoutUrl;
 
   } catch (err) {
@@ -2692,7 +2688,6 @@ subscribeAutoBtn.addEventListener('click', async () => {
     subscribeAutoBtn.innerHTML = originalHTML;
   }
 });
-
 // ---------- FLUX MANUEL (WhatsApp + QR) ----------
 subscribeManualBtn.addEventListener('click', () => {
   if (!currentUser) { window.location.replace('login.html'); return; }
