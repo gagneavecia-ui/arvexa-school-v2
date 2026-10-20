@@ -1,24 +1,10 @@
-// api/creer-checkout.js
-// Conforme à la documentation api.saspay.me — page « Paiements »
-// Endpoint : POST /checkout-sessions/
-// Vérifie les codes promo dans Firestore
-
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-
-// Init Firebase Admin (une seule fois)
-if (!getApps().length) {
-  const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
-  initializeApp({ credential: cert(sa) });
-}
-const db = getFirestore();
+// api/creer-checkout.js - VERSION DE TEST (SANS FIRESTORE)
 
 const PRICES = { monthly: 2000, annual: 18000 };
 const SITE_URL = 'https://arvexaschool.vercel.app';
 const BASE = 'https://api.saspay.me/api/v1';
 
 export default async function handler(req, res) {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', SITE_URL);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -28,67 +14,38 @@ export default async function handler(req, res) {
   try {
     const { uid, plan, promoCode } = req.body || {};
 
-    // 1. Validation
     if (!uid || !plan) {
-      return res.status(400).json({ error: 'Champs manquants : uid, plan' });
-    }
-    if (!PRICES[plan]) {
-      return res.status(400).json({ error: 'Plan invalide (monthly ou annual)' });
+      return res.status(400).json({ error: 'Champs manquants' });
     }
 
-    // 2. Calcul du montant
     let amount = PRICES[plan];
     let promoApplied = null;
 
-    // ✅ Vérification du code promo DANS FIRESTORE
-    if (promoCode && plan === 'annual') {
-      const codeUpper = promoCode.toUpperCase().trim();
-      try {
-        const promoSnap = await db.collection('promoCodes').doc(codeUpper).get();
-
-        if (promoSnap.exists) {
-          const promoData = promoSnap.data();
-          const discount = Number(promoData.discount);
-
-          if (discount > 0) {
-            amount = Math.round(amount * (1 - discount / 100));
-            promoApplied = { code: codeUpper, discount };
-            console.log(`🎟️ Code promo valide : ${codeUpper} (-${discount}%)`);
-          } else {
-            console.warn(`Code promo ${codeUpper} sans discount valide`);
-          }
-        } else {
-          console.warn(`Code promo ${codeUpper} inexistant dans Firestore`);
-        }
-      } catch (e) {
-        console.warn('Erreur vérification promo :', e.message);
-        // On continue sans promo plutôt que de bloquer le paiement
-      }
+    // ⚠️ TEST : Code promo en dur, sans Firestore
+    if (promoCode && plan === 'annual' && promoCode.toUpperCase() === 'PROMO25') {
+      amount = Math.round(amount * 0.75);
+      promoApplied = { code: 'PROMO25', discount: 25 };
     }
 
-    // 3. Clé API SasPay
     const API_KEY = process.env.SASPAY_API_KEY;
     if (!API_KEY) {
-      return res.status(500).json({ error: 'SASPAY_API_KEY manquante sur le serveur' });
+      return res.status(500).json({ error: 'SASPAY_API_KEY manquante' });
     }
 
-    // 4. Référence unique
     const reference = `ARV-${Date.now()}-${String(uid).slice(0, 6)}`;
 
-    // 5. Payload SasPay
     const payload = {
       amount: amount,
       currency: 'XOF',
       reference: reference,
-      description: `Abonnement ARVEXA ${plan}${promoApplied ? ` (promo ${promoApplied.code})` : ''}`,
+      description: `Abonnement ARVEXA ${plan}`,
       success_url: `${SITE_URL}/abonnement.html?statut=succes&ref=${reference}`,
       cancel_url:  `${SITE_URL}/abonnement.html?statut=annule`,
       webhook_url: `${SITE_URL}/api/saspay-webhook`
     };
 
-    console.log('📤 Payload envoyé à SasPay :', JSON.stringify(payload, null, 2));
+    console.log('📤 Payload envoyé à SasPay :', JSON.stringify(payload));
 
-    // 6. Appel SasPay
     const saspayRes = await fetch(`${BASE}/checkout-sessions/`, {
       method: 'POST',
       headers: {
@@ -98,59 +55,39 @@ export default async function handler(req, res) {
       body: JSON.stringify(payload)
     });
 
-    const data = await saspayRes.json();
+    // ⚠️ IMPORTANT : On lit le texte d'abord pour éviter l'erreur "Unexpected token"
+    const textData = await saspayRes.text();
+    let data;
+    
+    try {
+      data = JSON.parse(textData);
+    } catch (e) {
+      console.error('SasPay a renvoyé du HTML/texte :', textData);
+      return res.status(500).json({ 
+        error: 'SasPay a renvoyé une erreur non-JSON', 
+        raw: textData.substring(0, 200) 
+      });
+    }
 
-    // 7. Gestion d'erreur SasPay
     if (!data.success) {
-      console.error('SasPay checkout-sessions erreur :', JSON.stringify(data, null, 2));
-      return res.status(500).json({
-        error: data.error?.message || 'Échec création session SasPay',
-        sasPayRaw: data
-      });
+      console.error('Erreur SasPay :', data);
+      return res.status(500).json({ error: 'Erreur SasPay', sasPayRaw: data });
     }
 
-    // 8. Extraction de l'URL de checkout
-    const checkoutUrl =
-      data.data?.checkout_url ||
-      data.data?.payment_url ||
-      data.data?.url;
-
+    const checkoutUrl = data.data?.checkout_url || data.data?.payment_url || data.data?.url;
     if (!checkoutUrl) {
-      console.error('URL checkout absente de la réponse :', JSON.stringify(data.data, null, 2));
-      return res.status(500).json({
-        error: 'URL de checkout absente de la réponse SasPay',
-        sasPayRaw: data.data
-      });
+      return res.status(500).json({ error: 'URL absente', raw: data.data });
     }
 
-    // 9. Incrémenter le compteur d'utilisation du code promo
-    if (promoApplied) {
-      try {
-        await db.collection('promoCodes').doc(promoApplied.code).update({
-          uses: FieldValue.increment(1)
-        });
-        console.log(`✅ Compteur uses incrémenté pour ${promoApplied.code}`);
-      } catch (e) {
-        console.warn('Impossible d\'incrémenter uses :', e.message);
-      }
-    }
-
-    // 10. Réponse au client
     return res.status(200).json({
       ok: true,
       reference,
       checkoutUrl,
-      sessionId: data.data?.id || null,
-      amount,           // montant réellement facturé
-      originalAmount: PRICES[plan],
-      promoApplied      // null ou { code, discount }
+      amount
     });
 
   } catch (err) {
-    console.error('Erreur creer-checkout :', err);
-    return res.status(500).json({
-      error: 'Erreur serveur',
-      detail: err.message
-    });
+    console.error('Erreur crash serveur :', err);
+    return res.status(500).json({ error: 'Erreur serveur', detail: err.message });
   }
 }
