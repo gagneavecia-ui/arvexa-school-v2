@@ -2666,6 +2666,7 @@ subscribeAutoBtn.addEventListener('click', async () => {
         promoCode: appliedPromo?.code || null,
         customerEmail: userEmail,   // ✅ On envoie l'email
         customerName: userName      // ✅ On envoie le nom
+        clientAmount: getPrice().final // ✅ Ajout de cette ligne
       })
     });
 
