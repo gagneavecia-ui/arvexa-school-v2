@@ -1,4 +1,4 @@
-// api/creer-checkout.js
+// api/creer-checkout.mjs
 
 const PRICES = { monthly: 2000, annual: 18000 };
 const SITE_URL = 'https://arvexaschool.vercel.app';
@@ -13,7 +13,6 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    // ✅ 1. On récupère clientAmount envoyé par le navigateur
     const { uid, plan, promoCode, customerEmail, customerName, clientAmount } = req.body || {};
     
     if (!uid || !plan) return res.status(400).json({ error: 'Champs manquants' });
@@ -22,40 +21,38 @@ export default async function handler(req, res) {
     let amount = PRICES[plan];
     let promoApplied = null;
 
-    // --- 2. VÉRIFICATION DU CODE PROMO VIA API REST FIRESTORE ---
+    // 1. Vérification Firestore (si la clé est là)
     if (promoCode && plan === 'annual') {
       try {
         const codeUpper = promoCode.toUpperCase().trim();
         const firebaseApiKey = process.env.FIREBASE_WEB_API_KEY;
         
-        if (!firebaseApiKey) throw new Error('FIREBASE_WEB_API_KEY manquante');
-
-        const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/promoCodes/${codeUpper}?key=${firebaseApiKey}`;
-        const promoRes = await fetch(firestoreUrl);
-        
-        if (promoRes.ok) {
-          const promoData = await promoRes.json();
-          const discount = Number(promoData.fields?.discount?.integerValue || promoData.fields?.discount?.doubleValue || 0);
+        if (firebaseApiKey) {
+          const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/promoCodes/${codeUpper}?key=${firebaseApiKey}`;
+          const promoRes = await fetch(firestoreUrl);
           
-          if (discount > 0) {
-            amount = Math.round(amount * (1 - discount / 100));
-            promoApplied = { code: codeUpper, discount };
-            console.log(`🎟️ Promo appliqué via Firestore : ${codeUpper} (-${discount}%)`);
+          if (promoRes.ok) {
+            const promoData = await promoRes.json();
+            const discount = Number(promoData.fields?.discount?.integerValue || promoData.fields?.discount?.doubleValue || 0);
+            
+            if (discount > 0) {
+              amount = Math.round(amount * (1 - discount / 100));
+              promoApplied = { code: codeUpper, discount };
+            }
           }
         }
       } catch (e) {
-        console.warn('Erreur vérification promo Firestore :', e.message);
+        console.warn('Erreur promo :', e.message);
       }
     }
 
-    // ✅ 3. SÉCURITÉ : Si le navigateur a calculé un montant plus bas (via son cache), on l'utilise
+    // 2. On prend le montant calculé par le navigateur si le code n'a pas marché sur Firestore
     if (clientAmount && clientAmount < amount) {
       amount = clientAmount;
       promoApplied = { code: promoCode || 'CLIENT', discount: 'client-side' };
-      console.log(`🎟️ Promo appliqué via client : ${amount} FCFA`);
     }
 
-    // --- 4. APPEL À L'API SASPAY ---
+    // 3. Appel SasPay
     const API_KEY = process.env.SASPAY_API_KEY;
     if (!API_KEY) return res.status(500).json({ error: 'SASPAY_API_KEY manquante' });
 
@@ -64,7 +61,7 @@ export default async function handler(req, res) {
     const payload = {
       amount,
       currency: 'XOF',
-      country: 'NE', // ✅ 5. Force le Niger (NE)
+      country: 'NE', // Force le Niger
       reference,
       description: `Abonnement ARVEXA ${plan}${promoApplied ? ` (promo ${promoApplied.code})` : ''}`,
       customer_name: customerName || 'Élève ARVEXA',
@@ -73,8 +70,6 @@ export default async function handler(req, res) {
       cancel_url: `${SITE_URL}/abonnement.html?statut=annule`,
       webhook_url: `${SITE_URL}/api/saspay-webhook`
     };
-
-    console.log('📤 Envoi SasPay (Montant: ' + amount + ', Pays: NE)');
 
     const saspayRes = await fetch(`${BASE}/checkout-sessions/`, {
       method: 'POST',
