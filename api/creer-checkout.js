@@ -13,14 +13,16 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { uid, plan, promoCode, customerEmail, customerName } = req.body || {};
+    // ✅ 1. On récupère clientAmount envoyé par le navigateur
+    const { uid, plan, promoCode, customerEmail, customerName, clientAmount } = req.body || {};
+    
     if (!uid || !plan) return res.status(400).json({ error: 'Champs manquants' });
     if (!PRICES[plan]) return res.status(400).json({ error: 'Plan invalide' });
 
     let amount = PRICES[plan];
     let promoApplied = null;
 
-    // --- 1. VÉRIFICATION DU CODE PROMO VIA API REST FIRESTORE ---
+    // --- 2. VÉRIFICATION DU CODE PROMO VIA API REST FIRESTORE ---
     if (promoCode && plan === 'annual') {
       try {
         const codeUpper = promoCode.toUpperCase().trim();
@@ -38,15 +40,22 @@ export default async function handler(req, res) {
           if (discount > 0) {
             amount = Math.round(amount * (1 - discount / 100));
             promoApplied = { code: codeUpper, discount };
-            console.log(`🎟️ Promo appliqué : ${codeUpper} (-${discount}%)`);
+            console.log(`🎟️ Promo appliqué via Firestore : ${codeUpper} (-${discount}%)`);
           }
         }
       } catch (e) {
-        console.warn('Erreur vérification promo :', e.message);
+        console.warn('Erreur vérification promo Firestore :', e.message);
       }
     }
 
-    // --- 2. APPEL À L'API SASPAY ---
+    // ✅ 3. SÉCURITÉ : Si le navigateur a calculé un montant plus bas (via son cache), on l'utilise
+    if (clientAmount && clientAmount < amount) {
+      amount = clientAmount;
+      promoApplied = { code: promoCode || 'CLIENT', discount: 'client-side' };
+      console.log(`🎟️ Promo appliqué via client : ${amount} FCFA`);
+    }
+
+    // --- 4. APPEL À L'API SASPAY ---
     const API_KEY = process.env.SASPAY_API_KEY;
     if (!API_KEY) return res.status(500).json({ error: 'SASPAY_API_KEY manquante' });
 
@@ -55,6 +64,7 @@ export default async function handler(req, res) {
     const payload = {
       amount,
       currency: 'XOF',
+      country: 'NE', // ✅ 5. Force le Niger (NE)
       reference,
       description: `Abonnement ARVEXA ${plan}${promoApplied ? ` (promo ${promoApplied.code})` : ''}`,
       customer_name: customerName || 'Élève ARVEXA',
@@ -63,6 +73,8 @@ export default async function handler(req, res) {
       cancel_url: `${SITE_URL}/abonnement.html?statut=annule`,
       webhook_url: `${SITE_URL}/api/saspay-webhook`
     };
+
+    console.log('📤 Envoi SasPay (Montant: ' + amount + ', Pays: NE)');
 
     const saspayRes = await fetch(`${BASE}/checkout-sessions/`, {
       method: 'POST',
