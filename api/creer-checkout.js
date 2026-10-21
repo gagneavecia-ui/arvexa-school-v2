@@ -1,9 +1,9 @@
-// api/creer-checkout.js - Version avec API REST Firestore (Sans firebase-admin)
+// api/creer-checkout.js
 
 const PRICES = { monthly: 2000, annual: 18000 };
 const SITE_URL = 'https://arvexaschool.vercel.app';
 const BASE = 'https://api.saspay.me/api/v1';
-const PROJECT_ID = 'arvexa-fbf10'; // Votre ID de projet Firebase
+const PROJECT_ID = 'arvexa-fbf10';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', SITE_URL);
@@ -28,13 +28,11 @@ export default async function handler(req, res) {
         
         if (!firebaseApiKey) throw new Error('FIREBASE_WEB_API_KEY manquante');
 
-        // Appel REST vers Firestore
         const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/promoCodes/${codeUpper}?key=${firebaseApiKey}`;
         const promoRes = await fetch(firestoreUrl);
         
         if (promoRes.ok) {
           const promoData = await promoRes.json();
-          // Firestore REST renvoie les nombres sous forme de chaîne
           const discount = Number(promoData.fields?.discount?.integerValue || promoData.fields?.discount?.doubleValue || 0);
           
           if (discount > 0) {
@@ -42,8 +40,6 @@ export default async function handler(req, res) {
             promoApplied = { code: codeUpper, discount };
             console.log(`🎟️ Promo appliqué : ${codeUpper} (-${discount}%)`);
           }
-        } else if (promoRes.status === 404) {
-          console.log(`Code promo ${codeUpper} introuvable.`);
         }
       } catch (e) {
         console.warn('Erreur vérification promo :', e.message);
@@ -86,27 +82,6 @@ export default async function handler(req, res) {
 
     const checkoutUrl = data.data?.checkout_url || data.data?.payment_url || data.data?.url;
     if (!checkoutUrl) return res.status(500).json({ error: 'URL absente', raw: data.data });
-
-    // --- 3. INCRÉMENTATION DU COMPTEUR D'UTILISATION DU CODE PROMO ---
-    if (promoApplied) {
-      try {
-        const firebaseApiKey = process.env.FIREBASE_WEB_API_KEY;
-        // PATCH pour incrémenter le champ "uses"
-        const patchUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/promoCodes/${promoApplied.code}?updateMask.fieldPaths=uses&key=${firebaseApiKey}`;
-        
-        await fetch(patchUrl, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fields: {
-              uses: { integerValue: (promoApplied.uses || 0) + 1 } // Note: pour un vrai incrément, il faudrait lire la valeur actuelle
-            }
-          })
-        });
-      } catch (e) {
-        console.warn('Impossible d\'incrémenter uses via REST :', e.message);
-      }
-    }
 
     return res.status(200).json({ ok: true, reference, checkoutUrl, amount, promoApplied });
 
