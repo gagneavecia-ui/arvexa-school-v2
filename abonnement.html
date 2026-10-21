@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <meta name="theme-color" content="#0A0A0A">
   <meta name="description" content="ARVEXA School - Abonnement Premium">
-  <meta name="apple-mobile-web-app-capable" content="yes">à
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.png">
@@ -2641,7 +2641,7 @@ modal.addEventListener('click', (e) => {
 // ================================================================
 const subscribeAutoBtn   = document.getElementById('subscribeAutoBtn');
 const subscribeManualBtn = document.getElementById('subscribeManualBtn');
-
+  
 // ================================================================
 // FLUX AUTOMATIQUE (SasPay)
 // ================================================================
@@ -2652,11 +2652,15 @@ subscribeAutoBtn.addEventListener('click', async () => {
   const originalHTML = subscribeAutoBtn.innerHTML;
   subscribeAutoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Redirection…</span>';
 
-  // ✅ RÉCUPÉRATION DU NOM ET DE L'EMAIL
-  const userEmail = currentUser.email || 'eleve@arvexaschool.com';
-  const userName = userData?.fullName || userData?.firstName || 'Élève ARVEXA';
-
   try {
+    // 1. Calcul du prix final (avec réduction éventuelle)
+    const finalAmount = getPrice().final; 
+    
+    // 2. Récupération des infos utilisateur
+    const userEmail = currentUser.email || 'eleve@arvexaschool.com';
+    const userName = userData?.fullName || userData?.firstName || 'Élève ARVEXA';
+
+    // 3. Appel à l'API Vercel
     const res = await fetch('/api/creer-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2664,30 +2668,29 @@ subscribeAutoBtn.addEventListener('click', async () => {
         uid: currentUser.uid,
         plan: currentPlan,
         promoCode: appliedPromo?.code || null,
-        customerEmail: userEmail,   // ✅ On envoie l'email
-        customerName: userName      // ✅ On envoie le nom
-        clientAmount: getPrice().final // ✅ Ajout de cette ligne
+        customerEmail: userEmail,
+        customerName: userName,
+        clientAmount: finalAmount // ✅ ENVOIE LE MONTANT RÉDUIT AU SERVEUR
       })
     });
 
+    // 4. Lecture sécurisée de la réponse
     const textResponse = await res.text();
     let data;
-
     try {
       data = JSON.parse(textResponse);
     } catch (e) {
-      console.error('Réponse du serveur non-JSON :', textResponse);
-      throw new Error('Erreur serveur (voir la console).');
+      console.error('Réponse non-JSON :', textResponse);
+      throw new Error('Erreur serveur. Vérifiez les logs Vercel.');
     }
 
-       if (!res.ok || !data.ok) {
+    // 5. Gestion des erreurs retournées par SasPay
+    if (!res.ok || !data.ok) {
       const detail = data.sasPayRaw ? JSON.stringify(data.sasPayRaw) : data.error;
-      throw new Error(detail || 'Erreur lors du paiement.');
+      throw new Error(detail || 'Erreur lors de la création du paiement.');
     }
 
-    // ⚠️ LIGNE TEMPORAIRE DE DÉBOGAGE :
-    alert("Montant envoyé à SasPay : " + data.amount + " FCFA\nLien : " + data.checkoutUrl);
-
+    // 6. Sauvegarde de la référence dans Firestore (pour le webhook)
     try {
       const { updateDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
       await updateDoc(doc(db, 'users', currentUser.uid), {
@@ -2696,9 +2699,10 @@ subscribeAutoBtn.addEventListener('click', async () => {
         saspayCheckoutStartedAt: serverTimestamp()
       });
     } catch (e) {
-      console.warn('Référence non enregistrée :', e.message);
+      console.warn('Impossible de sauvegarder la référence SasPay :', e.message);
     }
 
+    // 7. Redirection vers la page de paiement SasPay
     window.location.href = data.checkoutUrl;
 
   } catch (err) {
