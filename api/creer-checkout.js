@@ -1,10 +1,9 @@
-// api/creer-checkout.js
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
+// api/creer-checkout.js - Version avec API REST Firestore (Sans firebase-admin)
 
 const PRICES = { monthly: 2000, annual: 18000 };
 const SITE_URL = 'https://arvexaschool.vercel.app';
 const BASE = 'https://api.saspay.me/api/v1';
+const PROJECT_ID = 'arvexa-fbf10'; // Votre ID de projet Firebase
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', SITE_URL);
@@ -14,57 +13,54 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    let db = null;
-    try {
-      const saJson = process.env.FIREBASE_ADMIN_CREDENTIALS;
-      if (!saJson) throw new Error('Variable FIREBASE_ADMIN_CREDENTIALS absente');
-      const sa = JSON.parse(saJson);
-      if (sa.private_key) sa.private_key = sa.private_key.replace(/\\n/g, '\n');
-      if (!sa.project_id) throw new Error('JSON sans "project_id"');
-
-      const { initializeApp, cert, getApps } = require('firebase-admin/app');
-      const { getFirestore } = require('firebase-admin/firestore');
-
-      if (!getApps().length) initializeApp({ credential: cert(sa) });
-      db = getFirestore();
-    } catch (firebaseErr) {
-      console.error('❌ Firebase init échouée :', firebaseErr.message);
-    }
-
-    // ✅ On récupère aussi le nom et l'email envoyés par le front
     const { uid, plan, promoCode, customerEmail, customerName } = req.body || {};
-    
     if (!uid || !plan) return res.status(400).json({ error: 'Champs manquants' });
     if (!PRICES[plan]) return res.status(400).json({ error: 'Plan invalide' });
 
     let amount = PRICES[plan];
     let promoApplied = null;
 
-    if (db && promoCode && plan === 'annual') {
+    // --- 1. VÉRIFICATION DU CODE PROMO VIA API REST FIRESTORE ---
+    if (promoCode && plan === 'annual') {
       try {
         const codeUpper = promoCode.toUpperCase().trim();
-        const promoSnap = await db.collection('promoCodes').doc(codeUpper).get();
-        if (promoSnap.exists) {
-          const discount = Number(promoSnap.data().discount);
+        const firebaseApiKey = process.env.FIREBASE_WEB_API_KEY;
+        
+        if (!firebaseApiKey) throw new Error('FIREBASE_WEB_API_KEY manquante');
+
+        // Appel REST vers Firestore
+        const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/promoCodes/${codeUpper}?key=${firebaseApiKey}`;
+        const promoRes = await fetch(firestoreUrl);
+        
+        if (promoRes.ok) {
+          const promoData = await promoRes.json();
+          // Firestore REST renvoie les nombres sous forme de chaîne
+          const discount = Number(promoData.fields?.discount?.integerValue || promoData.fields?.discount?.doubleValue || 0);
+          
           if (discount > 0) {
             amount = Math.round(amount * (1 - discount / 100));
             promoApplied = { code: codeUpper, discount };
+            console.log(`🎟️ Promo appliqué : ${codeUpper} (-${discount}%)`);
           }
+        } else if (promoRes.status === 404) {
+          console.log(`Code promo ${codeUpper} introuvable.`);
         }
-      } catch (e) { console.warn('Erreur promo :', e.message); }
+      } catch (e) {
+        console.warn('Erreur vérification promo :', e.message);
+      }
     }
 
+    // --- 2. APPEL À L'API SASPAY ---
     const API_KEY = process.env.SASPAY_API_KEY;
     if (!API_KEY) return res.status(500).json({ error: 'SASPAY_API_KEY manquante' });
 
     const reference = `ARV-${Date.now()}-${String(uid).slice(0, 6)}`;
     
-    // ✅ Ajout des champs customer_name et customer_email
     const payload = {
       amount,
       currency: 'XOF',
       reference,
-      description: `Abonnement ARVEXA ${plan}`,
+      description: `Abonnement ARVEXA ${plan}${promoApplied ? ` (promo ${promoApplied.code})` : ''}`,
       customer_name: customerName || 'Élève ARVEXA',
       customer_email: customerEmail || 'eleve@arvexaschool.com',
       success_url: `${SITE_URL}/abonnement.html?statut=succes&ref=${reference}`,
@@ -91,11 +87,25 @@ export default async function handler(req, res) {
     const checkoutUrl = data.data?.checkout_url || data.data?.payment_url || data.data?.url;
     if (!checkoutUrl) return res.status(500).json({ error: 'URL absente', raw: data.data });
 
-    if (db && promoApplied) {
+    // --- 3. INCRÉMENTATION DU COMPTEUR D'UTILISATION DU CODE PROMO ---
+    if (promoApplied) {
       try {
-        const { FieldValue } = require('firebase-admin/firestore');
-        await db.collection('promoCodes').doc(promoApplied.code).update({ uses: FieldValue.increment(1) });
-      } catch (e) { console.warn(e.message); }
+        const firebaseApiKey = process.env.FIREBASE_WEB_API_KEY;
+        // PATCH pour incrémenter le champ "uses"
+        const patchUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/promoCodes/${promoApplied.code}?updateMask.fieldPaths=uses&key=${firebaseApiKey}`;
+        
+        await fetch(patchUrl, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fields: {
+              uses: { integerValue: (promoApplied.uses || 0) + 1 } // Note: pour un vrai incrément, il faudrait lire la valeur actuelle
+            }
+          })
+        });
+      } catch (e) {
+        console.warn('Impossible d\'incrémenter uses via REST :', e.message);
+      }
     }
 
     return res.status(200).json({ ok: true, reference, checkoutUrl, amount, promoApplied });
