@@ -1,18 +1,32 @@
 // ================================================================
-// API PROGRESS v8.4 — ARVEXA School
+// API PROGRESS v8.6 — ARVEXA School
 // Cahier intelligent + Fan-out IA + Tracking temps d'étude
-// + Normalisation LaTeX renforcée (formules 100% propres)
+// ✅ Rate limit par UID (pas par IP) — pas de faux positifs
+// ✅ Limites généreuses : createSection = 10/min
 // ================================================================
 
 module.exports.config = { maxDuration: 120 };
 
 const WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS_PER_WINDOW = 60;
+
+// ✅ CORRECTION : Limites plus généreuses, adaptées à un usage normal
+const RATE_LIMITS = {
+  getDashboard: 60,
+  listChapters: 60,
+  createChapter: 30,
+  getChapter: 60,
+  createSection: 10,       // 10/min = largement suffisant
+  getSection: 60,
+  updateNotes: 60,
+  deleteSection: 30,
+  deleteChapter: 30,
+  getFullLesson: 30,
+  trackStudyTime: 120
+};
+
+const DEFAULT_RATE_LIMIT = 60;
 const requestLog = new Map();
 
-// ────────────────────────────────────────────────────────────────
-// CONFIG
-// ────────────────────────────────────────────────────────────────
 var ALLOWED_SUBJECTS = new Set([
   'mathematiques', 'physique', 'chimie', 'svt',
   'philosophie', 'histoire', 'geographie'
@@ -38,58 +52,46 @@ const GLOBAL_AI_TIME_BUDGET_MS = 45000;
 let adminServices = null;
 
 // ════════════════════════════════════════════════════════════════
-// NORMALISATION LATEX — v8.4 renforcée
+// NORMALISATION LATEX
 // ════════════════════════════════════════════════════════════════
-
-// ─── 1. Table Unicode → LaTeX (exhaustive) ─────────────────────
 const UNICODE_MATH_MAP = {
-  // Grec minuscules
   'α': '\\alpha ', 'β': '\\beta ', 'γ': '\\gamma ', 'δ': '\\delta ',
   'ε': '\\epsilon ', 'ζ': '\\zeta ', 'η': '\\eta ', 'θ': '\\theta ',
   'ι': '\\iota ', 'κ': '\\kappa ', 'λ': '\\lambda ', 'μ': '\\mu ',
   'ν': '\\nu ', 'ξ': '\\xi ', 'π': '\\pi ', 'ρ': '\\rho ',
   'σ': '\\sigma ', 'ς': '\\varsigma ', 'τ': '\\tau ', 'υ': '\\upsilon ',
   'φ': '\\phi ', 'χ': '\\chi ', 'ψ': '\\psi ', 'ω': '\\omega ',
-  // Grec majuscules
   'Γ': '\\Gamma ', 'Δ': '\\Delta ', 'Θ': '\\Theta ',
   'Λ': '\\Lambda ', 'Ξ': '\\Xi ', 'Π': '\\Pi ',
   'Σ': '\\Sigma ', 'Υ': '\\Upsilon ', 'Φ': '\\Phi ',
   'Ψ': '\\Psi ', 'Ω': '\\Omega ',
-  // Opérateurs
   '×': '\\times ', '÷': '\\div ', '±': '\\pm ', '∓': '\\mp ',
   '·': '\\cdot ', '⋅': '\\cdot ', '∘': '\\circ ', '∗': '\\ast ',
   '⋆': '\\star ', '∙': '\\bullet ', '⊕': '\\oplus ', '⊗': '\\otimes ',
   '⊙': '\\odot ',
-  // Relations
   '≤': '\\leq ', '≥': '\\geq ', '≠': '\\neq ', '≈': '\\approx ',
   '≡': '\\equiv ', '≅': '\\cong ', '∼': '\\sim ', '≃': '\\simeq ',
   '∝': '\\propto ', '≪': '\\ll ', '≫': '\\gg ',
-  // Ensembles et logique
   '∈': '\\in ', '∉': '\\notin ', '∋': '\\ni ', '⊂': '\\subset ',
   '⊃': '\\supset ', '⊆': '\\subseteq ', '⊇': '\\supseteq ',
   '⊄': '\\not\\subset ', '∪': '\\cup ', '∩': '\\cap ', '∅': '\\emptyset ',
   '∀': '\\forall ', '∃': '\\exists ', '∄': '\\nexists ', '¬': '\\neg ',
   '∧': '\\wedge ', '∨': '\\vee ',
-  // Grands opérateurs
   '∑': '\\sum ', '∏': '\\prod ', '∫': '\\int ', '∮': '\\oint ',
   '∂': '\\partial ', '∇': '\\nabla ', '√': '\\sqrt ',
-  // Flèches
   '→': '\\to ', '←': '\\leftarrow ', '↔': '\\leftrightarrow ',
   '↑': '\\uparrow ', '↓': '\\downarrow ', '↕': '\\updownarrow ',
   '⇒': '\\Rightarrow ', '⇐': '\\Leftarrow ', '⇔': '\\Leftrightarrow ',
   '⟹': '\\Longrightarrow ', '⟸': '\\Longleftarrow ', '⟺': '\\Longleftrightarrow ',
   '↦': '\\mapsto ', '↪': '\\hookrightarrow ', '↩': '\\hookleftarrow ',
   '↗': '\\nearrow ', '↘': '\\searrow ', '↙': '\\swarrow ', '↖': '\\nwarrow ',
-  // Chimie
   '⇌': '\\rightleftharpoons ', '⇋': '\\leftrightharpoons ',
   '⟶': '\\longrightarrow ', '⟵': '\\longleftarrow ',
-  // Divers
   '∞': '\\infty ', 'ℵ': '\\aleph ', 'ℓ': '\\ell ', 'ℏ': '\\hbar ',
   'ℜ': '\\Re ', 'ℑ': '\\Im ', '°': '^{\\circ} ', '′': "'", '″': "''",
   '‰': '\\text{‰} ', '§': '\\text{§} ',
 };
 
-// ─── 2. Exposants Unicode ─────────────────────────────────────
 const SUPERSCRIPT_MAP = {
   '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
   '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
@@ -97,16 +99,12 @@ const SUPERSCRIPT_MAP = {
   'ⁿ': 'n', 'ⁱ': 'i'
 };
 
-// ─── 3. Indices Unicode ──────────────────────────────────────
 const SUBSCRIPT_MAP = {
   '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4',
   '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9',
   '₊': '+', '₋': '-', '₌': '=', '₍': '(', '₎': ')'
 };
 
-// ─── 4. Commandes LaTeX sans arguments ────────────────────────
-// TRÈS IMPORTANT : triées par longueur décroissante
-// pour que \cdotp soit testé avant \cdot, \varepsilon avant \epsilon
 const NO_ARG_LATEX_COMMANDS = [
   'rightleftharpoons', 'leftrightharpoons', 'longrightarrow', 'longleftarrow',
   'Longleftrightarrow', 'Longleftarrow', 'Longrightarrow',
@@ -130,15 +128,11 @@ const NO_ARG_LATEX_COMMANDS = [
   'quad', 'qquad'
 ];
 
-// Regex pour insérer un espace après une commande sans argument
-// suivie immédiatement d'une lettre ou d'un chiffre.
-// Trie par longueur décroissante (déjà fait dans le tableau ci-dessus)
 const CMD_SPACE_REGEX = new RegExp(
   `(\\\\(?:${NO_ARG_LATEX_COMMANDS.join('|')}))(?=[a-zA-Z0-9])`,
   'g'
 );
 
-// ─── 5. Détection de caractères Unicode mathématiques ─────────
 const HAS_UNICODE_MATH_REGEX = /[α-ωΑ-Ω×÷±∓·⋅∘∗⋆∙⊕⊗⊙≤≥≠≈≡≅∼≃∝≪≫∈∉∋⊂⊃⊆⊇⊄∪∩∅∀∃∄¬∧∨∑∏∫∮∂∇√→←↔↑↓↕⇒⇐⇔⟹⟸⟺↦↪↩↗↘↙↖⇌⇋⟶⟵∞ℵℓℏℜℑ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿⁱ₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎]/;
 
 function hasUnicodeMath(text) {
@@ -146,22 +140,15 @@ function hasUnicodeMath(text) {
   return HAS_UNICODE_MATH_REGEX.test(text);
 }
 
-// ════════════════════════════════════════════════════════════════
-// FONCTIONS DE NETTOYAGE LATEX
-// ════════════════════════════════════════════════════════════════
-
-// ─── Passe 1 : Convertir les exposants/indices Unicode ───────
 function replaceUnicodeScripts(text) {
   if (!text || typeof text !== 'string') return text;
   let r = text;
 
-  // Exposants : x² → x^{2}, x²y³ → x^{2}y^{3}, mol⁻¹ → mol^{-1}
   r = r.replace(/([a-zA-Z0-9}\)\]_])([⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿⁱ]+)/g, (m, base, sups) => {
     const conv = sups.split('').map((c) => SUPERSCRIPT_MAP[c] || c).join('');
     return `${base}^{${conv}}`;
   });
 
-  // Indices : x₀ → x_{0}, H₂O → H_{2}O
   r = r.replace(/([a-zA-Z0-9}\)\]])([₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎]+)/g, (m, base, subs) => {
     const conv = subs.split('').map((c) => SUBSCRIPT_MAP[c] || c).join('');
     return `${base}_{${conv}}`;
@@ -170,19 +157,15 @@ function replaceUnicodeScripts(text) {
   return r;
 }
 
-// ─── Passe 2 : Convertir Unicode → LaTeX (hors formules) ─────
 function replaceUnicodeMath(text) {
   if (!text || typeof text !== 'string') return text;
 
-  // Découper pour ne pas toucher aux formules déjà entre $...$
   const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$)/g);
 
   return parts.map((part, i) => {
-    // Partie impaire = formule déjà délimitée : ne pas toucher
     if (i % 2 === 1) return part;
 
     let r = part;
-    // Appliquer chaque substitution Unicode → LaTeX
     for (const [uni, latex] of Object.entries(UNICODE_MATH_MAP)) {
       if (r.indexOf(uni) !== -1) {
         r = r.split(uni).join(latex);
@@ -192,84 +175,59 @@ function replaceUnicodeMath(text) {
   }).join('');
 }
 
-// ─── Passe 3 : Corriger les commandes collées au texte ────────
-// Exemple : \cdotpmol → \cdotp mol, \alphax → \alpha x
 function fixCommandSpacing(text) {
   if (!text || typeof text !== 'string') return text;
   return text.replace(CMD_SPACE_REGEX, '$1 ');
 }
 
-// ─── Passe 4 : Normaliser les délimiteurs ────────────────────
 function normalizeDelimiters(text) {
   if (!text || typeof text !== 'string') return text;
   let r = text;
 
-  // \( ... \) → $ ... $
   r = r.replace(/\\\(([\s\S]*?)\\\)/g, (m, inner) => `$${inner.trim()}$`);
-
-  // \[ ... \] → $$ ... $$
   r = r.replace(/\\\[([\s\S]*?)\\\]/g, (m, inner) => `$$${inner.trim()}$$`);
-
-  // \begin{equation} ... \end{equation} → $$ ... $$
   r = r.replace(/\\begin\{(?:equation|align|gather)\*?\}([\s\S]*?)\\end\{(?:equation|align|gather)\*?\}/g,
                 (m, inner) => `$$${inner.trim()}$$`);
 
   return r;
 }
 
-// ─── Passe 5 : Nettoyer les délimiteurs cassés ───────────────
 function cleanBrokenDelimiters(text) {
   if (!text || typeof text !== 'string') return text;
   let r = text;
 
-  // $$$$$$ → $$ (display)
   r = r.replace(/\${6,}/g, '$$$$');
-  // $$$$ reste $$$$ (display), $$$ → $$$
   r = r.replace(/\${5}/g, '$$$$');
-  // $$$ → $$ (probablement display mal écrit)
   r = r.replace(/\${3}/g, '$$');
-  // $ $ → espace
   r = r.replace(/\$\s*\$/g, ' ');
-  // $$ $$ → espace
   r = r.replace(/\$\$\s*\$\$/g, ' ');
 
   return r;
 }
 
-// ─── Passe 6 : Encadrer le LaTeX orphelin ────────────────────
-// Transforme "\frac{a}{b}" → "$\frac{a}{b}$"
-// et "La formule \sqrt{x} est belle" → "La formule $\sqrt{x}$ est belle"
 function wrapOrphanLatex(text) {
   if (!text || typeof text !== 'string') return text;
-
-  // Rien à faire si pas de LaTeX orphelin
   if (!/\\[a-zA-Z]/.test(text)) return text;
 
-  // Découper pour ne pas toucher aux formules déjà délimitées
   const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$)/g);
 
   return parts.map((part, i) => {
-    // Partie impaire = formule déjà délimitée : ne pas toucher
     if (i % 2 === 1) return part;
-
     return wrapSegmentLatex(part);
   }).join('');
 }
 
-// ✅ FIX 2.1 — Environnements préservés + filtrage aux commandes connues
 function wrapSegmentLatex(segment) {
   if (!segment) return segment;
   if (!/\\[a-zA-Z]/.test(segment)) return segment;
 
   let r = segment;
 
-  // ÉTAPE 0 : préserver les environnements complets AVANT tout le reste
   r = r.replace(
     /\\begin\{([a-zA-Z*]+)\}([\s\S]*?)\\end\{\1\}/g,
     (match) => ` $$${match}$$ `
   );
 
-  // ÉTAPE A : commandes avec arguments (filtrées sur commandes connues)
   const KNOWN_CMDS = new Set([
     ...NO_ARG_LATEX_COMMANDS,
     'frac', 'sqrt', 'dfrac', 'tfrac', 'cfrac',
@@ -290,13 +248,11 @@ function wrapSegmentLatex(segment) {
     }
   );
 
-  // ÉTAPE B : variables avec exposants/indices isolés
   r = r.replace(
     /(?:^|\s)([a-zA-Z]\s*[_^]\s*(?:\{[^}]*\}|[a-zA-Z0-9]))(?=\s|$|[.,;:!?])/g,
     (match, expr) => match.replace(expr, `$${expr.trim()}$`)
   );
 
-  // ÉTAPE C : fusionner les $...$ adjacents
   for (let iteration = 0; iteration < 5; iteration++) {
     const before = r;
     r = r.replace(
@@ -306,12 +262,10 @@ function wrapSegmentLatex(segment) {
     if (before === r) break;
   }
 
-  // ÉTAPE D : nettoyer les $ inutiles
   r = r.replace(/\$\s*\$/g, ' ');
   r = r.replace(/\$\s+/g, '$');
   r = r.replace(/\s+\$/g, '$');
 
-  // ÉTAPE E : espaces multiples
   r = r.replace(/\s+/g, ' ');
   r = r.replace(/\s+([.,;:!?])/g, '$1');
 
@@ -332,24 +286,17 @@ function cleanFormulaContent(formula) {
     return formula;
   }
 
-  // Nettoyer les espaces multiples dans le contenu
   inner = inner.replace(/\s+/g, ' ').trim();
-
-  // Fixer les commandes collées
   inner = fixCommandSpacing(inner);
+  inner = inner.replace(/^\$+/, '').replace(/\$+$/, '');
 
-// ✅ FIX 2.2 — Ne supprimer que les $ orphelins en bord
-inner = inner.replace(/^\$+/, '').replace(/\$+$/, '');
-  
   return open + inner + close;
 }
 
-// ─── Fonction principale de nettoyage LaTeX ──────────────────
 function cleanLatexText(text) {
   if (!text || typeof text !== 'string') return text;
   if (!text.trim()) return text;
 
-  // Skip si aucun caractère spécial
   const hasBackslash = text.indexOf('\\') !== -1;
   const hasDollar = text.indexOf('$') !== -1;
   const hasUnicode = hasUnicodeMath(text);
@@ -358,44 +305,29 @@ function cleanLatexText(text) {
 
   let r = text;
 
-  // 1. Normaliser les délimiteurs alternatifs
   r = normalizeDelimiters(r);
-
-  // 2. Nettoyer les délimiteurs cassés
   r = cleanBrokenDelimiters(r);
-
-  // 3. Convertir exposants/indices Unicode (avant Unicode général)
   r = replaceUnicodeScripts(r);
-
-  // 4. Convertir Unicode → LaTeX (hors formules)
   r = replaceUnicodeMath(r);
-
-  // 5. Fixer les commandes collées
   r = fixCommandSpacing(r);
-
-  // 6. Encadrer le LaTeX orphelin
   r = wrapOrphanLatex(r);
 
-  // 7. Découper final pour nettoyer chaque formule délimitée
   const parts = r.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$)/g);
   r = parts.map((part, i) => {
     if (i % 2 === 1) return cleanFormulaContent(part);
     return part;
   }).join('');
 
-  // 8. Espaces multiples
   r = r.replace(/[ \t]+/g, ' ');
   r = r.replace(/\s+([.,;:!?])/g, '$1');
 
   return r;
 }
 
-// ─── Deep clean : traverse l'objet IA et nettoie les chaînes ─
 function deepClean(obj, depth = 0) {
-  if (depth > 20) return obj; // Protection anti-récursion
+  if (depth > 20) return obj;
 
   if (typeof obj === 'string') {
-    // Skip les chaînes courtes sans caractères spéciaux (ids, types, etc.)
     if (obj.length < 6 && !/[\\$]/.test(obj) && !hasUnicodeMath(obj)) return obj;
     return cleanLatexText(obj);
   }
@@ -405,7 +337,6 @@ function deepClean(obj, depth = 0) {
   if (obj && typeof obj === 'object') {
     const cleaned = {};
     for (const k in obj) {
-      // Skip les clés techniques
       if (k === 'id' || k === 'type' || k === 'level' || k === 'importance' ||
           k === 'correct' || k === 'notionId' || k === 'number') {
         cleaned[k] = obj[k];
@@ -458,12 +389,17 @@ function clientIp(request) {
     .split(',')[0].trim();
 }
 
-function rateLimited(ip) {
+// ✅ CORRECTION : Rate limit par UID (pas par IP)
+function rateLimitedByUid(uid, action) {
+  if (!uid) return false;
+  
+  const limit = RATE_LIMITS[action] || DEFAULT_RATE_LIMIT;
   const now = Date.now();
-  const recent = (requestLog.get(ip) || []).filter((t) => now - t < WINDOW_MS);
+  const key = `uid:${uid}:${action}`;
+  const recent = (requestLog.get(key) || []).filter((t) => now - t < WINDOW_MS);
   recent.push(now);
-  requestLog.set(ip, recent);
-  return recent.length > MAX_REQUESTS_PER_WINDOW;
+  requestLog.set(key, recent);
+  return recent.length > limit;
 }
 
 function jsonError(response, status, error, code) {
@@ -566,9 +502,6 @@ function formatMinutes(totalMin) {
   return `${hours} h ${String(minutes).padStart(2, '0')}`;
 }
 
-// ────────────────────────────────────────────────────────────────
-// NORMALISATION DES ENTRÉES CLAVIER
-// ────────────────────────────────────────────────────────────────
 function normalizeMathInput(text) {
   if (!text || typeof text !== 'string') return '';
   let r = text;
@@ -774,9 +707,6 @@ async function runParallelTasks(tasks, providers, deadline) {
   );
 }
 
-// ────────────────────────────────────────────────────────────────
-// FUSION FINALE
-// ────────────────────────────────────────────────────────────────
 function mergeAnalysis(results, profile) {
   const merged = {
     profile,
@@ -806,11 +736,36 @@ function mergeAnalysis(results, profile) {
         merged.structure = data;
         break;
       case 'questions':
-        merged.questions = data.questions || [];
+        merged.questions = Array.isArray(data.questions) ? data.questions : [];
         break;
       case 'qcm':
-        merged.qcm = data.qcm || [];
+        merged.qcm = Array.isArray(data.qcm) ? data.qcm : [];
         break;
+    }
+  }
+
+  // ✅ CORRECTION : Forcer les tableaux où il faut
+  if (merged.explanation) {
+    if (!Array.isArray(merged.explanation.parts)) {
+      merged.explanation.parts = [];
+    }
+  }
+
+  if (merged.structure) {
+    const arrayFields = [
+      'formulas', 'examples', 'traps', 'mechanisms', 'definitions',
+      'classifications', 'theses', 'vocabulary', 'plans', 'timeline',
+      'causesConsequences', 'keyFigures', 'literaryDevices', 'texts',
+      'grammar', 'phrases'
+    ];
+    arrayFields.forEach((field) => {
+      if (merged.structure[field] && !Array.isArray(merged.structure[field])) {
+        merged.structure[field] = [];
+      }
+    });
+
+    if (merged.structure.method && !Array.isArray(merged.structure.method.steps)) {
+      merged.structure.method.steps = [];
     }
   }
 
@@ -848,8 +803,6 @@ RÈGLE JSON STRICTE :
 // ────────────────────────────────────────────────────────────────
 // PROMPTS PAR PROFIL
 // ────────────────────────────────────────────────────────────────
-
-// ═══ SCIENTIFIQUE ═══
 function buildScientificPrompts({ subjectLabel, rawInput }) {
   const baseContext = `Matière : ${subjectLabel}
 ═══════════════════════════════════════════════════════════════
@@ -990,7 +943,6 @@ Réponds UNIQUEMENT avec le JSON.`
   ];
 }
 
-// ═══ SVT ═══
 function buildSvtPrompts({ subjectLabel, rawInput }) {
   const baseContext = `Matière : ${subjectLabel}
 ═══════════════════════════════════════════════════════════════
@@ -1131,7 +1083,6 @@ Réponds UNIQUEMENT avec le JSON.`
   ];
 }
 
-// ═══ PHILOSOPHIE ═══
 function buildPhilosophyPrompts({ subjectLabel, rawInput }) {
   const baseContext = `Matière : ${subjectLabel}
 ═══════════════════════════════════════════════════════════════
@@ -1264,7 +1215,6 @@ Réponds UNIQUEMENT avec le JSON.`
   ];
 }
 
-// ═══ HISTOIRE-GÉO ═══
 function buildHistoryPrompts({ subjectLabel, rawInput }) {
   const baseContext = `Matière : ${subjectLabel}
 ═══════════════════════════════════════════════════════════════
@@ -1388,7 +1338,6 @@ Réponds UNIQUEMENT avec le JSON.`
   ];
 }
 
-// ═══ FRANÇAIS ═══
 function buildFrenchPrompts({ subjectLabel, rawInput }) {
   const baseContext = `Matière : ${subjectLabel}
 ═══════════════════════════════════════════════════════════════
@@ -1512,7 +1461,6 @@ Réponds UNIQUEMENT avec le JSON.`
   ];
 }
 
-// ═══ LANGUE (Anglais) ═══
 function buildLanguagePrompts({ subjectLabel, rawInput }) {
   const baseContext = `Matière : ${subjectLabel}
 ═══════════════════════════════════════════════════════════════
@@ -1642,9 +1590,6 @@ Réponds UNIQUEMENT avec le JSON.`
   ];
 }
 
-// ────────────────────────────────────────────────────────────────
-// SÉLECTION DU PROFIL
-// ────────────────────────────────────────────────────────────────
 function getPromptsForProfile(profile, context) {
   switch (profile) {
     case 'scientific': return buildScientificPrompts(context);
@@ -1657,9 +1602,6 @@ function getPromptsForProfile(profile, context) {
   }
 }
 
-// ────────────────────────────────────────────────────────────────
-// FALLBACK LOCAL
-// ────────────────────────────────────────────────────────────────
 function buildFallbackAnalysis({ rawInput, profile }) {
   return {
     profile,
@@ -1714,10 +1656,11 @@ async function reserveSectionQuota(uid) {
 }
 
 async function releaseSectionQuota(uid) {
-  const { db, FieldValue } = getAdminServices();
-  const period = monthKey();
-  const quotaRef = db.collection('users').doc(uid).collection('notebookQuota').doc(`sections-${period}`);
   try {
+    const { db, FieldValue } = getAdminServices();
+    const period = monthKey();
+    const quotaRef = db.collection('users').doc(uid).collection('notebookQuota').doc(`sections-${period}`);
+
     await db.runTransaction(async (transaction) => {
       const snap = await transaction.get(quotaRef);
       const used = Math.max(0, Number(snap.data()?.count || 0) - 1);
@@ -1726,7 +1669,9 @@ async function releaseSectionQuota(uid) {
         updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
     });
-  } catch (_) {}
+  } catch (err) {
+    console.warn('[PROGRESS] releaseSectionQuota failed:', err.message);
+  }
 }
 
 async function markDailyActivity(uid, inc = {}) {
@@ -1740,9 +1685,6 @@ async function markDailyActivity(uid, inc = {}) {
   }, { merge: true });
 }
 
-// ────────────────────────────────────────────────────────────────
-// TRACKING TEMPS D'ÉTUDE
-// ────────────────────────────────────────────────────────────────
 async function trackStudyTime(uid, body) {
   const minutes = Math.min(120, Math.max(1, Math.round(Number(body.minutes) || 0)));
   if (minutes <= 0) return { success: true, skipped: true };
@@ -1767,7 +1709,7 @@ async function computeStudyTime(uid) {
     snap = await db.collection('users').doc(uid).collection('dailyActivity')
       .orderBy('date', 'desc').limit(365).get();
   } catch (e) {
-    console.warn('[PROGRESS] computeStudyTime failed:', e.message);
+    console.error('[PROGRESS] computeStudyTime failed:', e.message);
     return {
       totalMinutes: 0,
       totalHours: 0,
@@ -1913,7 +1855,7 @@ async function computeStreak(uid) {
     snap = await db.collection('users').doc(uid).collection('dailyActivity')
       .orderBy('date', 'desc').limit(90).get();
   } catch (e) {
-    console.warn('[PROGRESS] computeStreak failed:', e.message);
+    console.error('[PROGRESS] computeStreak failed:', e.message);
     return { current: 0, best: 0 };
   }
 
@@ -2116,7 +2058,6 @@ async function createSection(uid, body) {
 
     analysis = mergeAnalysis(results, profile);
 
-    // ⚡ Nettoyage LaTeX RENFORCÉ v8.4
     analysis = deepClean(analysis);
 
     if (!analysis.explanation || typeof analysis.explanation !== 'object') {
@@ -2320,10 +2261,10 @@ module.exports = async function handler(request, response) {
     return jsonError(response, 405, 'Méthode non autorisée.');
   }
 
-  if (rateLimited(clientIp(request))) {
-    return jsonError(response, 429, 'Trop de demandes. Réessaie.');
-  }
+  const body = request.body && typeof request.body === 'object' ? request.body : {};
+  const action = body.action || '';
 
+  // ✅ AUTH d'abord
   let user;
   try { user = await verifyFirebaseToken(request); }
   catch (e) {
@@ -2333,11 +2274,14 @@ module.exports = async function handler(request, response) {
 
   if (!user) return jsonError(response, 401, 'Connexion requise.', 'AUTH_REQUIRED');
 
-  const body = request.body && typeof request.body === 'object' ? request.body : {};
-  const action = body.action;
+  // ✅ Rate limit APRÈS l'auth (par UID)
+  if (rateLimitedByUid(user.uid, action)) {
+    return jsonError(response, 429, 'Trop de requêtes. Patiente quelques secondes et réessaie.', 'RATE_LIMITED');
+  }
+
   const uid = user.uid;
 
-  console.log(`[PROGRESS v8.4] ${action} | uid=${uid.slice(0, 8)}`);
+  console.log(`[PROGRESS v8.6] ${action} | uid=${uid.slice(0, 8)}`);
 
   try {
     switch (action) {
@@ -2356,7 +2300,7 @@ module.exports = async function handler(request, response) {
         return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[PROGRESS v8.4] "${action}" failed:`, error.message);
+    console.error(`[PROGRESS v8.6] "${action}" failed:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
