@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <meta name="theme-color" content="#0A0A0A">
   <meta name="description" content="ARVEXA School - Abonnement Premium">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">à
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.png">
@@ -2679,10 +2679,13 @@ subscribeAutoBtn.addEventListener('click', async () => {
       throw new Error('Erreur serveur (voir la console).');
     }
 
-    if (!res.ok || !data.ok) {
+       if (!res.ok || !data.ok) {
       const detail = data.sasPayRaw ? JSON.stringify(data.sasPayRaw) : data.error;
       throw new Error(detail || 'Erreur lors du paiement.');
     }
+
+    // ⚠️ LIGNE TEMPORAIRE DE DÉBOGAGE :
+    alert("Montant envoyé à SasPay : " + data.amount + " FCFA\nLien : " + data.checkoutUrl);
 
     try {
       const { updateDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
