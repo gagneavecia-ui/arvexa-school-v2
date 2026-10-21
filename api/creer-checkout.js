@@ -14,30 +14,34 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    // --- INITIALISATION FIREBASE SÉCURISÉE ---
     let db = null;
     try {
       if (!getApps().length) {
-        const saJson = process.env.FIREBASE_SERVICE_ACCOUNT;
-        if (!saJson) throw new Error('Variable FIREBASE_SERVICE_ACCOUNT absente');
-        
-        const sa = JSON.parse(saJson);
-        if (sa.private_key) {
-          sa.private_key = sa.private_key.replace(/\\n/g, '\n');
-        }
-        
-        // Vérification de sécurité avant d'initialiser
-        if (!sa.project_id) {
-          throw new Error('Le JSON Firebase ne contient pas "project_id"');
+        // ✅ Utilisation des variables séparées
+        const projectId = process.env.FIREBASE_PROJECT_ID;
+        const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+        let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+        if (!projectId || !clientEmail || !privateKey) {
+          throw new Error('Variables Firebase manquantes sur Vercel');
         }
 
-        initializeApp({ credential: cert(sa) });
-        console.log('✅ Firebase initialisé pour le projet:', sa.project_id);
+        // Remplacement des \n littéraux par de vrais retours à la ligne
+        privateKey = privateKey.replace(/\\n/g, '\n');
+
+        initializeApp({
+          credential: cert({
+            project_id: projectId,
+            client_email: clientEmail,
+            private_key: privateKey,
+          }),
+        });
+        console.log('✅ Firebase initialisé via variables séparées');
       }
       db = getFirestore();
     } catch (firebaseErr) {
-      console.error('❌ Firebase init a échoué :', firebaseErr.message);
-      // Le code continue sans planter
+      console.error('❌ Firebase init échouée :', firebaseErr.message);
+      // On continue sans Firestore pour ne pas bloquer le paiement
     }
 
     const { uid, plan, promoCode } = req.body || {};
@@ -58,9 +62,7 @@ export default async function handler(req, res) {
             promoApplied = { code: codeUpper, discount };
           }
         }
-      } catch (e) {
-        console.warn('Erreur promo :', e.message);
-      }
+      } catch (e) { console.warn('Erreur promo :', e.message); }
     }
 
     const API_KEY = process.env.SASPAY_API_KEY;
@@ -68,9 +70,7 @@ export default async function handler(req, res) {
 
     const reference = `ARV-${Date.now()}-${String(uid).slice(0, 6)}`;
     const payload = {
-      amount,
-      currency: 'XOF',
-      reference,
+      amount, currency: 'XOF', reference,
       description: `Abonnement ARVEXA ${plan}`,
       success_url: `${SITE_URL}/abonnement.html?statut=succes&ref=${reference}`,
       cancel_url: `${SITE_URL}/abonnement.html?statut=annule`,
@@ -79,32 +79,23 @@ export default async function handler(req, res) {
 
     const saspayRes = await fetch(`${BASE}/checkout-sessions/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
       body: JSON.stringify(payload)
     });
 
     const responseText = await saspayRes.text();
     let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
+    try { data = JSON.parse(responseText); } catch (e) {
       return res.status(500).json({ error: 'SasPay non-JSON', raw: responseText.substring(0, 300) });
     }
 
-    if (!data.success) {
-      return res.status(500).json({ error: 'Erreur SasPay', sasPayRaw: data });
-    }
+    if (!data.success) return res.status(500).json({ error: 'Erreur SasPay', sasPayRaw: data });
 
     const checkoutUrl = data.data?.checkout_url || data.data?.payment_url || data.data?.url;
     if (!checkoutUrl) return res.status(500).json({ error: 'URL absente', raw: data.data });
 
     if (db && promoApplied) {
-      try {
-        await db.collection('promoCodes').doc(promoApplied.code).update({ uses: FieldValue.increment(1) });
-      } catch (e) { console.warn('uses non incrémenté :', e.message); }
+      try { await db.collection('promoCodes').doc(promoApplied.code).update({ uses: FieldValue.increment(1) }); } catch (e) { console.warn(e.message); }
     }
 
     return res.status(200).json({ ok: true, reference, checkoutUrl, amount, promoApplied });
