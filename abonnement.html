@@ -2653,7 +2653,6 @@ subscribeAutoBtn.addEventListener('click', async () => {
   subscribeAutoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Redirection…</span>';
 
   try {
-    // ⚠️ On envoie le code promo appliqué (ou null)
     const res = await fetch('/api/creer-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2664,10 +2663,26 @@ subscribeAutoBtn.addEventListener('click', async () => {
       })
     });
 
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || 'Erreur paiement');
+    // 1. Lire le texte de la réponse d'abord
+    const textResponse = await res.text();
+    let data;
 
-    // ✅ Enregistrer la référence SANS changer le statut
+    // 2. Essayer de le convertir en JSON
+    try {
+      data = JSON.parse(textResponse);
+    } catch (e) {
+      console.error('Réponse du serveur non-JSON :', textResponse);
+      throw new Error('Erreur serveur (voir la console).');
+    }
+
+    // 3. Vérifier les erreurs de l'API
+    if (!res.ok || !data.ok) {
+      // Si l'API a renvoyé l'erreur brute de SasPay (sasPayRaw), on l'affiche
+      const detail = data.sasPayRaw ? JSON.stringify(data.sasPayRaw) : data.error;
+      throw new Error(detail || 'Erreur lors du paiement.');
+    }
+
+    // 4. Succès : Enregistrer la référence et rediriger
     try {
       const { updateDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
       await updateDoc(doc(db, 'users', currentUser.uid), {
@@ -2676,10 +2691,9 @@ subscribeAutoBtn.addEventListener('click', async () => {
         saspayCheckoutStartedAt: serverTimestamp()
       });
     } catch (e) {
-      console.warn('Référence SasPay non enregistrée :', e.message);
+      console.warn('Référence non enregistrée :', e.message);
     }
 
-    // ✅ Redirection vers SasPay
     window.location.href = data.checkoutUrl;
 
   } catch (err) {
@@ -2689,7 +2703,7 @@ subscribeAutoBtn.addEventListener('click', async () => {
     subscribeAutoBtn.innerHTML = originalHTML;
   }
 });
-
+  
 // ---------- FLUX MANUEL (WhatsApp + QR) ----------
 subscribeManualBtn.addEventListener('click', () => {
   if (!currentUser) { window.location.replace('login.html'); return; }
