@@ -1,6 +1,5 @@
 // api/saspay-webhook.js
-// URL : https://arvexaschool.vercel.app/api/saspay-webhook
-// Reçoit les events SasPay et active l'abonnement sur transaction.success
+// Gère les notifications de SasPay et active les abonnements
 
 import crypto from 'crypto';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
@@ -34,9 +33,7 @@ function verifierSignature(rawBody, signature, timestamp, secret) {
   const a = Buffer.from(signature || '');
   const b = Buffer.from(expected);
   if (a.length !== b.length) return { ok: false, reason: 'signature_invalid' };
-  return crypto.timingSafeEqual(a, b)
-    ? { ok: true }
-    : { ok: false, reason: 'signature_invalid' };
+  return crypto.timingSafeEqual(a, b) ? { ok: true } : { ok: false, reason: 'signature_invalid' };
 }
 
 export default async function handler(req, res) {
@@ -54,7 +51,6 @@ export default async function handler(req, res) {
 
     const secret = process.env.SASPAY_WEBHOOK_SECRET;
     if (!secret) {
-      console.error('SASPAY_WEBHOOK_SECRET manquante');
       return res.status(500).send('Config manquante');
     }
 
@@ -68,63 +64,45 @@ export default async function handler(req, res) {
     const event = payload.event || eventType;
     const data = payload.data || {};
 
-    console.log('📩 Webhook SasPay :', {
-      event,
-      reference: data.reference,
-      status: data.status,
-      net_amount: data.net_amount
-    });
+    console.log('📩 Webhook reçu :', { event, reference: data.reference, status: data.status });
 
-    // ---------- ACTIVATION ABONNEMENT ----------
+    // Activation de l'abonnement
     if (event === 'transaction.success' && (data.type === 'PAIEMENT' || !data.type)) {
       const reference = data.reference;
-      if (!reference) {
-        console.warn('Référence absente');
-        return res.status(200).json({ received: true });
-      }
+      if (!reference) return res.status(200).json({ received: true });
 
-      // Trouver l'utilisateur via saspayCheckoutReference (enregistré par le front)
       const usersSnap = await db.collection('users')
         .where('saspayCheckoutReference', '==', reference)
-        .limit(1)
-        .get();
+        .limit(1).get();
 
-      if (usersSnap.empty) {
-        console.warn('Aucun utilisateur pour la référence :', reference);
-        return res.status(200).json({ received: true });
+      if (!usersSnap.empty) {
+        const userDoc = usersSnap.docs[0];
+        const userData = userDoc.data();
+
+        const now = new Date();
+        const endDate = new Date(now);
+        if (userData.subscriptionPlan === 'annual') {
+          endDate.setFullYear(endDate.getFullYear() + 1);
+        } else {
+          endDate.setMonth(endDate.getMonth() + 1);
+        }
+
+        await userDoc.ref.update({
+          subscriptionStatus: 'active',
+          premium: true,
+          isUnlocked: true,
+          subscriptionStartDate: Timestamp.fromDate(now),
+          subscriptionEndDate: Timestamp.fromDate(endDate),
+          saspayTransactionId: data.id || null,
+          saspayReference: reference,
+          saspayAmountPaid: parseFloat(data.charged || data.amount || '0'),
+          subscriptionPaidAt: FieldValue.serverTimestamp()
+        });
+        console.log('✅ Abonnement activé pour', userDoc.id);
       }
-
-      const userDoc = usersSnap.docs[0];
-      const userData = userDoc.data();
-
-      // Calcul date de fin
-      const now = new Date();
-      const endDate = new Date(now);
-      if (userData.subscriptionPlan === 'annual') {
-        endDate.setFullYear(endDate.getFullYear() + 1);
-      } else {
-        endDate.setMonth(endDate.getMonth() + 1);
-      }
-
-      // Mise à jour Firestore
-      await userDoc.ref.update({
-        subscriptionStatus: 'active',
-        premium: true,
-        isUnlocked: true,
-        subscriptionStartDate: Timestamp.fromDate(now),
-        subscriptionEndDate: Timestamp.fromDate(endDate),
-        saspayTransactionId: data.id || null,
-        saspayReference: reference,
-        saspayAmountPaid: parseFloat(data.charged || data.amount || '0'),
-        saspayNetAmount: parseFloat(data.net_amount || data.amount || '0'),
-        saspayCurrency: data.currency || 'XOF',
-        subscriptionPaidAt: FieldValue.serverTimestamp()
-      });
-
-      console.log('✅ Abonnement activé pour', userDoc.id);
     }
 
-    // ---------- ÉCHEC / ANNULATION ----------
+    // Gestion des échecs
     if (event === 'transaction.failed' || event === 'transaction.cancelled') {
       const reference = data.reference;
       if (reference) {
@@ -132,8 +110,7 @@ export default async function handler(req, res) {
           .where('saspayCheckoutReference', '==', reference)
           .limit(1).get();
         if (!usersSnap.empty) {
-          await usersSnap.docs[0].ref.update({ subscriptionStatus: 'free' });
-          console.log('❌ Abonnement remis à free pour', reference);
+          await usersSnap[0].ref.update({ subscriptionStatus: 'free' });
         }
       }
     }
