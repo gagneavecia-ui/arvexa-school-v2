@@ -2652,6 +2652,10 @@ subscribeAutoBtn.addEventListener('click', async () => {
   const originalHTML = subscribeAutoBtn.innerHTML;
   subscribeAutoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Redirection…</span>';
 
+  // ✅ RÉCUPÉRATION DU NOM ET DE L'EMAIL
+  const userEmail = currentUser.email || 'eleve@arvexaschool.com';
+  const userName = userData?.fullName || userData?.firstName || 'Élève ARVEXA';
+
   try {
     const res = await fetch('/api/creer-checkout', {
       method: 'POST',
@@ -2659,15 +2663,15 @@ subscribeAutoBtn.addEventListener('click', async () => {
       body: JSON.stringify({
         uid: currentUser.uid,
         plan: currentPlan,
-        promoCode: appliedPromo?.code || null
+        promoCode: appliedPromo?.code || null,
+        customerEmail: userEmail,   // ✅ On envoie l'email
+        customerName: userName      // ✅ On envoie le nom
       })
     });
 
-    // 1. Lire le texte de la réponse d'abord
     const textResponse = await res.text();
     let data;
 
-    // 2. Essayer de le convertir en JSON
     try {
       data = JSON.parse(textResponse);
     } catch (e) {
@@ -2675,14 +2679,11 @@ subscribeAutoBtn.addEventListener('click', async () => {
       throw new Error('Erreur serveur (voir la console).');
     }
 
-    // 3. Vérifier les erreurs de l'API
     if (!res.ok || !data.ok) {
-      // Si l'API a renvoyé l'erreur brute de SasPay (sasPayRaw), on l'affiche
       const detail = data.sasPayRaw ? JSON.stringify(data.sasPayRaw) : data.error;
       throw new Error(detail || 'Erreur lors du paiement.');
     }
 
-    // 4. Succès : Enregistrer la référence et rediriger
     try {
       const { updateDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
       await updateDoc(doc(db, 'users', currentUser.uid), {
