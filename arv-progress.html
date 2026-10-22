@@ -3033,11 +3033,35 @@ textarea:focus-visible {
     `);
 
     const body = $('sectionBody');
-    const counter = $('sectionCounter');
-    const submitBtn = $('sectionSubmitBtn');
-    const toggle = $('symbolsToggle');
-    const panel = $('symbolsPanel');
+const counter = $('sectionCounter');
+const submitBtn = $('sectionSubmitBtn');
+const toggle = $('symbolsToggle');
+const panel = $('symbolsPanel');
 
+// ✅ Brouillon : sauvegarde automatique pendant la saisie
+const DRAFT_KEY = 'arvexa_section_draft_' + subject + '_' + chapterId;
+
+// ✅ Restaurer le brouillon s'il existe (récupération après fermeture accidentelle)
+try {
+  const saved = localStorage.getItem(DRAFT_KEY);
+  if (saved && saved.trim().length > 0) {
+    body.value = saved;
+    // Mettre à jour le compteur et l'état du bouton
+    body.dispatchEvent(new Event('input'));
+  }
+} catch (e) {}
+
+// ✅ Sauvegarder à chaque frappe (instantané, pas de debounce)
+body.addEventListener('input', () => {
+  try {
+    if (body.value.trim().length > 0) {
+      localStorage.setItem(DRAFT_KEY, body.value);
+    } else {
+      localStorage.removeItem(DRAFT_KEY);
+    }
+  } catch (e) {}
+});
+    
     const releaseGarde = () => { __isAddSectionModalOpen = false; };
     $('modalBackdrop')?.addEventListener('click', (e) => {
       if (e.target === $('modalBackdrop')) releaseGarde();
@@ -3105,6 +3129,8 @@ textarea:focus-visible {
         const result = await callApi('createSection', { subject, chapterId, rawInput });
         cleanupProgress();
         showToast('Section analysée', 'success');
+        // ✅ Envoi réussi → on efface le brouillon
+        try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
         delete state.cache.chapter[`${subject}/${chapterId}`];
         applyRoute({ view: 'section', params: { subject, chapterId, sectionId: result.sectionId } });
       } catch (e) {
