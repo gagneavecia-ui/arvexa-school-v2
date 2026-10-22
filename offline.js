@@ -1,6 +1,6 @@
 // ================================================================
 // OFFLINE.JS — ARVEXA School
-// Version : v5.0 — Téléchargement intelligent (ignore les absents)
+// Version : v6.0 — Offline complet (appli + cours)
 // ================================================================
 
 (function () {
@@ -147,7 +147,9 @@
     }
   }
 
-  // ═══ TÉLÉCHARGEMENT INTELLIGENT ═══
+  // ═══════════════════════════════════════════════════════════════
+  // TÉLÉCHARGEMENT COMPLET (appli + cours)
+  // ═══════════════════════════════════════════════════════════════
   async function downloadAllForOffline() {
     if (!isOnline) {
       showToast('📶 Connecte-toi pour télécharger', 'error');
@@ -162,6 +164,34 @@
     showToast('🔍 Recherche du contenu disponible...', 'info');
 
     try {
+      // ═══ ÉTAPE 1 : pages de l'application ═══
+      const appPages = [
+        'index.html',
+        'outils.html',
+        'profil.html',
+        'notifications.html',
+        'abonnement.html',
+        'matiere.html',
+        'chapitre.html',
+        'lecture.html',
+        'calculatrice.html',
+        'formulaires.html',
+        'tableau-periodique.html',
+        'arv-progress.html',
+        'arv.html',
+        'arv-pilot.html',
+        'exam.html',
+        'exam-history.html',
+        'reviseur.html',
+        'reviseur-history.html',
+        'planificateur.html',
+        'groupe.html',
+        'conditions.html',
+        'confidentialite.html',
+        '404.html'
+      ];
+
+      // ═══ ÉTAPE 2 : contenu des cours via JSON ═══
       const subjectFiles = [
         'cours/mathematiques.json',
         'cours/physique.json',
@@ -172,7 +202,6 @@
       const candidateFiles = new Set();
       const validJsonFiles = [];
 
-      // ═══ ÉTAPE 1 : lire les JSON et collecter les fichiers candidats ═══
       for (const jsonFile of subjectFiles) {
         try {
           const res = await fetch(jsonFile);
@@ -188,24 +217,23 @@
             });
           });
         } catch (e) {
-          // Matière absente → ignorer silencieusement
+          // Matière absente → ignorer
         }
       }
 
-      if (candidateFiles.size === 0) {
-        showToast('ℹ️ Aucun contenu disponible pour le moment', 'info');
-        return;
-      }
-
-      // ═══ ÉTAPE 2 : vérifier en parallèle ce qui existe vraiment ═══
+      // ═══ ÉTAPE 3 : vérifier ce qui existe ═══
       showToast('🔍 Vérification des fichiers...', 'info');
 
-      const candidates = Array.from(candidateFiles);
+      const allCandidates = [
+        ...appPages,
+        ...Array.from(candidateFiles)
+      ];
+
       const existingFiles = [];
       const BATCH = 25;
 
-      for (let i = 0; i < candidates.length; i += BATCH) {
-        const batch = candidates.slice(i, i + BATCH);
+      for (let i = 0; i < allCandidates.length; i += BATCH) {
+        const batch = allCandidates.slice(i, i + BATCH);
         const results = await Promise.allSettled(
           batch.map(async (file) => {
             try {
@@ -221,13 +249,12 @@
         });
       }
 
-      // ═══ ÉTAPE 3 : si rien n'existe → message et stop ═══
       if (existingFiles.length === 0) {
         showToast('ℹ️ Aucun fichier disponible pour le moment', 'info');
         return;
       }
 
-      // ═══ ÉTAPE 4 : télécharger UNIQUEMENT les fichiers existants ═══
+      // ═══ ÉTAPE 4 : télécharger ═══
       const allFiles = [...validJsonFiles, ...existingFiles];
 
       openDownloadModal(allFiles.length);
@@ -238,7 +265,6 @@
         if (data.type === 'DOWNLOAD_PROGRESS') {
           updateDownloadProgress(data);
         } else if (data.type === 'DOWNLOAD_COMPLETE') {
-          // ✅ Afficher UNIQUEMENT les succès
           completeDownload({
             done: data.done,
             failed: 0,
@@ -311,7 +337,6 @@
     if (total) total.textContent = data.total;
     if (percent) percent.textContent = data.percent + '%';
     if (info) {
-      // ✅ Afficher UNIQUEMENT les succès
       info.textContent = `${data.done} fichier${data.done > 1 ? 's' : ''} téléchargé${data.done > 1 ? 's' : ''}`;
     }
   }
@@ -320,7 +345,6 @@
     const info = document.getElementById('arvexaDlInfo');
     const close = document.getElementById('arvexaDlClose');
 
-    // ✅ Afficher UNIQUEMENT les succès, JAMAIS les échecs
     if (info) {
       info.innerHTML = `✅ <strong>${data.done}</strong> fichier${data.done > 1 ? 's' : ''} prêt${data.done > 1 ? 's' : ''} hors ligne`;
     }
@@ -618,5 +642,5 @@
 
   init();
 
-  console.log('✅ ARVEXA — Mode hors ligne v5.0 (intelligent) prêt');
+  console.log('✅ ARVEXA — Mode hors ligne v6.0 (offline complet) prêt');
 })();
