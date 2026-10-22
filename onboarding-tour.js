@@ -1,7 +1,6 @@
 // ================================================================
 // ONBOARDING TOUR — ARVEXA School
-// Tutoriel interactif avec flèches sur les éléments réels
-// Driver.js chargé depuis CDN avec fallback
+// Version : v3.0 — Réduit à 7 étapes, mise en avant des outils
 // ================================================================
 
 (function () {
@@ -12,23 +11,21 @@
 
   const TOUR_KEY = 'arvexa_tour_completed_v1';
 
-  // ═══ Vérifier si le tour a déjà été fait ═══
   try {
     if (localStorage.getItem(TOUR_KEY) === '1') {
-      console.log('[Tour] Déjà effectué, on ne fait rien');
+      console.log('[Tour] Déjà effectué');
       return;
     }
   } catch (e) {
-    console.warn('[Tour] localStorage inaccessible:', e.message);
     return;
   }
 
-  console.log('[Tour] Script exécuté, préparation...');
+  console.log('[Tour] Préparation...');
 
   // ═══ Charger Driver.js depuis CDN ═══
   function loadDriver() {
     return new Promise((resolve, reject) => {
-      if (window.driver && window.driver.js) {
+      if (window.driver && window.driver.js && window.driver.js.driver) {
         resolve(window.driver);
         return;
       }
@@ -43,19 +40,13 @@
 
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js';
-      script.onload = () => {
-        console.log('[Tour] Driver.js CDN chargé');
-        resolve(window.driver);
-      };
-      script.onerror = () => {
-        console.error('[Tour] Impossible de charger Driver.js CDN');
-        reject(new Error('Driver.js CDN inaccessible'));
-      };
+      script.onload = () => resolve(window.driver);
+      script.onerror = () => reject(new Error('CDN inaccessible'));
       document.head.appendChild(script);
     });
   }
 
-  // ═══ Attendre qu'un sélecteur existe dans le DOM ═══
+  // ═══ Attendre qu'un sélecteur existe ═══
   function waitForSelector(selector, timeout) {
     timeout = timeout || 3000;
     return new Promise((resolve) => {
@@ -70,33 +61,30 @@
     });
   }
 
-  // ═══ Construire les étapes ═══
+  // ═══ Étapes du tutoriel — 7 étapes essentielles ═══
   function buildSteps() {
     return [
+      // 1. Bienvenue
+      {
+        element: 'body',
+        popover: {
+          title: '🎓 Bienvenue sur ARVEXA !',
+          description: 'Faisons un tour rapide en 1 minute pour découvrir l\'essentiel.',
+          side: 'bottom', align: 'center'
+        }
+      },
+
+      // 2. Profil + Notifications (groupés visuellement)
       {
         element: '#profileBtn',
         popover: {
           title: '👤 Ton profil',
-          description: 'Clique ici pour accéder à ton profil, ton abonnement et tes préférences.',
+          description: 'Ton profil, ton abonnement et toutes tes préférences ici. La cloche 🔔 à côté, ce sont tes notifications.',
           side: 'bottom', align: 'end'
         }
       },
-      {
-        element: '#notifBtn',
-        popover: {
-          title: '🔔 Tes notifications',
-          description: 'Tu recevras ici les annonces, les nouveaux cours et les rappels importants.',
-          side: 'bottom', align: 'end'
-        }
-      },
-      {
-        element: '#refreshBtn',
-        popover: {
-          title: '🔄 Actualiser',
-          description: 'Ce bouton recharge tes données en cas de doute ou après une pause.',
-          side: 'bottom', align: 'end'
-        }
-      },
+
+      // 3. Compte à rebours
       {
         element: '#countdownTitle',
         popover: {
@@ -105,69 +93,57 @@
           side: 'bottom', align: 'start'
         }
       },
+
+      // 4. Matières
       {
         element: '.subjects-grid',
         popover: {
-          title: '📚 Toutes tes matières',
-          description: 'Maths, Physique, Chimie et SVT. Chaque matière contient des chapitres complets, des exercices corrigés et des corrections détaillées.',
+          title: '📚 Tes matières',
+          description: 'Maths, Physique, Chimie, SVT. Clique sur une matière pour accéder à ses chapitres, cours, exercices et corrections.',
           side: 'bottom', align: 'center'
         }
       },
-      {
-        element: '.subjects-grid a[href*="mathematiques"]',
-        popover: {
-          title: '📐 Mathématiques',
-          description: 'Clique sur cette matière pour accéder à ses chapitres, cours, exercices et corrections.',
-          side: 'bottom', align: 'start'
-        }
-      },
+
+      // 5. Outils — MISE EN AVANT des essentiels
       {
         element: '.tools-grid',
         popover: {
-          title: '🛠️ Tes outils',
-          description: 'Calculatrice scientifique, formulaires, tableau périodique. Tous accessibles hors ligne après une première visite.',
+          title: '🛠️ Tes outils essentiels',
+          description: 'ARV-PROGRESS (suivi de tes cours), Mode Examen (examens IA corrigés), ARV-Assistant (tuteur IA), et tous les outils scientifiques (calculatrice, formulaires, tableau périodique).',
           side: 'bottom', align: 'center'
         }
       },
+
+      // 6. ARV-PROGRESS + Mode Examen (les 2 plus importants)
       {
-        element: '.tools-grid a[href*="calculatrice"]',
+        element: '.tools-grid a[href*="arv-progress"]',
         popover: {
-          title: '🧮 Calculatrice',
-          description: 'Trigonométrie, logarithmes, puissances, constantes, conversions. Fonctionne hors ligne.',
+          title: '📊 ARV-PROGRESS & Mode Examen',
+          description: 'ARV-PROGRESS analyse tes cours et te dit quoi réviser. Le Mode Examen génère des sujets complets avec correction détaillée. Les deux sont tes meilleurs alliés pour le BAC.',
           side: 'bottom', align: 'start'
         }
       },
-      {
-        element: '.tools-grid a[href*="exam.html"]',
-        popover: {
-          title: '📝 Mode Examen',
-          description: 'Génère un examen complet avec correction détaillée question par question. Le meilleur moyen de te préparer au BAC.',
-          side: 'bottom', align: 'start'
-        }
-      },
+
+      // 7. Fin
       {
         element: 'body',
         popover: {
-          title: '🎓 Bienvenue sur ARVEXA !',
-          description: 'Tu as fait le tour de l\'essentiel. Commence par explorer tes matières et lance ton premier examen. Bonne réussite pour ton BAC !',
+          title: '✨ Tu es prêt !',
+          description: 'Tu connais maintenant l\'essentiel. Explore tes matières, lance ton premier examen et bonne réussite pour ton BAC !',
           side: 'bottom', align: 'center'
         }
       }
     ];
   }
 
-   // ═══ Lancer le tour ═══
+  // ═══ Lancer le tour ═══
   async function launchTour() {
     try {
-      console.log('[Tour] Lancement...');
-
       const driverModule = await loadDriver();
-      
-      // ✅ CORRECTION : le constructeur est dans driverModule.js.driver
       const driver = driverModule.js.driver;
-      
+
       if (typeof driver !== 'function') {
-        console.error('[Tour] driverModule.js.driver n\'est pas une fonction:', driverModule);
+        console.error('[Tour] driverModule.js.driver n\'est pas une fonction');
         markTourDone();
         return;
       }
@@ -175,42 +151,42 @@
       const allSteps = buildSteps();
       const validSteps = [];
 
-      // ... reste du code inchangé
-
       for (const step of allSteps) {
         if (step.element === 'body') {
           validSteps.push(step);
           continue;
         }
         const el = await waitForSelector(step.element, 1500);
-        if (el) {
-          validSteps.push(step);
-        } else {
-          console.warn('[Tour] Élément introuvable, étape ignorée :', step.element);
-        }
+        if (el) validSteps.push(step);
+        else console.warn('[Tour] Élément introuvable :', step.element);
       }
 
       if (validSteps.length === 0) {
-        console.warn('[Tour] Aucune étape valide, abandon');
         markTourDone();
         return;
       }
 
-      console.log('[Tour] ' + validSteps.length + ' étapes valides, démarrage');
+      console.log('[Tour] ' + validSteps.length + ' étapes, démarrage');
 
       const tour = driver({
         showProgress: true,
-        progressText: '{{current}} sur {{total}}',
+        progressText: '{{current}} / {{total}}',
         nextBtnText: 'Suivant →',
         prevBtnText: '← Précédent',
-        doneBtnText: 'Terminer',
+        doneBtnText: '✨ Terminer',
         allowClose: true,
-        overlayColor: 'rgba(0, 0, 0, 0.85)',
-        stagePadding: 8,
-        stageRadius: 12,
+        overlayClickNext: false,
+        overlayColor: 'rgba(0, 0, 0, 0.88)',
+        stagePadding: 10,
+        stageRadius: 14,
         popoverClass: 'arvexa-tour-popover',
+        smoothScroll: true,
+        onDestroyStarted: () => {
+          if (!tour.hasNextStep() || confirm('Quitter le tutoriel ?')) {
+            tour.destroy();
+          }
+        },
         onDestroyed: () => {
-          console.log('[Tour] Terminé');
           markTourDone();
           showPremiumPopup();
         },
@@ -228,7 +204,6 @@
   function markTourDone() {
     try {
       localStorage.setItem(TOUR_KEY, '1');
-      console.log('[Tour] Marquage "terminé"');
     } catch (e) {}
   }
 
@@ -278,11 +253,9 @@
     }, { once: true });
   }
 
-  // ═══ Lancement au chargement ═══
+  // ═══ Lancement ═══
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(launchTour, 1500);
-    });
+    document.addEventListener('DOMContentLoaded', () => setTimeout(launchTour, 1500));
   } else {
     setTimeout(launchTour, 1500);
   }
