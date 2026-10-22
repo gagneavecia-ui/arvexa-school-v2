@@ -1,6 +1,6 @@
 /* ================================================================
-   TOUR STYLES — ARVEXA School v3.1
-   Correction : styles explicites pour les boutons Driver.js
+   TOUR STYLES — ARVEXA School v4.0
+   Version minimale : ne casse rien
    ================================================================ */
 
 /* ═══ Pop-up Premium ═══ */
@@ -16,7 +16,7 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   opacity: 0;
-  transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: opacity 0.3s ease;
   overflow-y: auto;
 }
 .arvexa-premium-overlay.show { opacity: 1; }
@@ -26,30 +26,18 @@
   width: 100%;
   max-width: 440px;
   padding: 32px 26px 24px;
-  background:
-    radial-gradient(ellipse 120% 70% at 50% -10%, rgba(224, 184, 74, 0.10) 0%, transparent 65%),
-    linear-gradient(165deg, #171717 0%, #0b0b0b 100%);
+  background: linear-gradient(165deg, #171717 0%, #0b0b0b 100%);
   border: 1px solid rgba(224, 184, 74, 0.25);
   border-radius: 22px;
-  box-shadow:
-    0 0 60px rgba(224, 184, 74, 0.10),
-    0 24px 60px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
   text-align: center;
   transform: scale(0.94) translateY(20px);
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  overflow: hidden;
 }
 .arvexa-premium-overlay.show .arvexa-premium-modal {
   transform: scale(1) translateY(0);
 }
-.arvexa-premium-modal::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 20%; right: 20%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #E0B84A, transparent);
-  border-radius: 0 0 4px 4px;
-}
+
 .arvexa-premium-close {
   position: absolute;
   top: 13px; right: 13px;
@@ -62,28 +50,22 @@
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.25s ease;
-  z-index: 2;
 }
 .arvexa-premium-close:hover {
   background: rgba(224, 184, 74, 0.12);
   color: #E0B84A;
-  transform: rotate(90deg);
 }
+
 .arvexa-premium-icon {
-  display: inline-flex;
-  align-items: center; justify-content: center;
   width: 64px; height: 64px;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
   border: 1px solid rgba(224, 184, 74, 0.3);
   font-size: 30px;
+  display: flex; align-items: center; justify-content: center;
   margin: 0 auto 16px;
-  animation: crownPulse 3s ease-in-out infinite;
 }
-@keyframes crownPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(224, 184, 74, 0.15); }
-  50% { transform: scale(1.05); box-shadow: 0 0 34px rgba(224, 184, 74, 0.32); }
-}
+
 .arvexa-premium-title {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 24px;
@@ -93,6 +75,7 @@
   margin: 0 0 10px;
 }
 .arvexa-premium-title em { color: #E0B84A; font-style: italic; }
+
 .arvexa-premium-sub {
   font-size: 13.5px;
   color: #8A8A7A;
@@ -100,6 +83,7 @@
   margin: 0 auto 22px;
   max-width: 320px;
 }
+
 .arvexa-premium-benefits {
   display: flex; flex-direction: column; gap: 10px;
   margin-bottom: 22px;
@@ -122,6 +106,7 @@
   width: 18px;
   text-align: center;
 }
+
 .arvexa-premium-actions {
   display: flex; flex-direction: column; gap: 8px;
 }
@@ -134,17 +119,16 @@
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: all 0.25s ease;
   text-decoration: none;
 }
 .arvexa-premium-btn.primary {
   background: linear-gradient(135deg, #E0B84A, #B8860B);
   color: #0A0A0A;
-  box-shadow: 0 4px 16px rgba(224, 184, 74, 0.28);
 }
 .arvexa-premium-btn.primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
+  box-shadow: 0 8px 26px rgba(224, 184, 74, 0.4);
 }
 .arvexa-premium-btn.secondary {
   background: transparent;
@@ -157,208 +141,95 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   DRIVER.JS — STYLES EXPLICITES POUR TOUS LES BOUTONS
+   DRIVER.JS — restylage MINIMAL du popover
+   On ne touche QUE le fond, la bordure et les boutons.
    ═══════════════════════════════════════════════════════════════ */
 
-/* Popover global */
-.driver-popover.arvexa-tour-popover,
-div.arvexa-tour-popover {
-  background: linear-gradient(165deg, #171717 0%, #0b0b0b 100%) !important;
-  border: 1px solid rgba(224, 184, 74, 0.35) !important;
-  border-radius: 18px !important;
-  color: #F5F0E8 !important;
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(224, 184, 74, 0.05),
-    0 0 30px rgba(224, 184, 74, 0.08) !important;
-  max-width: 340px !important;
-  padding: 18px 20px 14px !important;
-  font-family: 'Inter', sans-serif !important;
+/* Popover principal */
+div.driver-popover.arvexa-tour-popover {
+  background: #171717;
+  border: 1px solid rgba(224, 184, 74, 0.35);
+  border-radius: 16px;
+  color: #F5F0E8;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  max-width: 340px;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Titre */
-.driver-popover.arvexa-tour-popover .driver-popover-title,
-div.arvexa-tour-popover .driver-popover-title {
-  font-family: 'Playfair Display', Georgia, serif !important;
-  font-size: 17px !important;
-  font-weight: 700 !important;
-  color: #F5F0E8 !important;
-  margin-bottom: 8px !important;
-  line-height: 1.3 !important;
-  display: block !important;
+div.driver-popover.arvexa-tour-popover .driver-popover-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #F5F0E8;
+  line-height: 1.3;
 }
 
 /* Description */
-.driver-popover.arvexa-tour-popover .driver-popover-description,
-div.arvexa-tour-popover .driver-popover-description {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 13.5px !important;
-  color: #cfd0cc !important;
-  line-height: 1.65 !important;
-  display: block !important;
+div.driver-popover.arvexa-tour-popover .driver-popover-description {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  color: #cfd0cc;
+  line-height: 1.6;
 }
 
-/* Footer (zone des boutons) */
-.driver-popover.arvexa-tour-popover .driver-popover-footer,
-div.arvexa-tour-popover .driver-popover-footer {
-  margin-top: 16px !important;
-  padding-top: 12px !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  flex-wrap: wrap !important;
+/* Bouton SUIVANT / TERMINER */
+div.driver-popover.arvexa-tour-popover .driver-popover-next-btn {
+  background: #E0B84A;
+  color: #0A0A0A;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 13px;
+  text-shadow: none;
 }
 
-/* ═══ BOUTON GÉNÉRIQUE (Précédent, Suivant, Terminer) ═══ */
-.driver-popover.arvexa-tour-popover .driver-popover-btn,
-div.arvexa-tour-popover .driver-popover-btn,
-.driver-popover.arvexa-tour-popover button.driver-popover-btn,
-div.arvexa-tour-popover button.driver-popover-btn {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 9px 18px !important;
-  min-height: 36px !important;
-  border-radius: 20px !important;
-  font-family: 'Inter', sans-serif !important;
-  font-size: 13px !important;
-  font-weight: 700 !important;
-  line-height: 1 !important;
-  letter-spacing: 0.2px !important;
-  cursor: pointer !important;
-  text-decoration: none !important;
-  text-shadow: none !important;
-  transition: all 0.2s ease !important;
-  border: 1px solid transparent !important;
-  background: transparent !important;
-  color: #F5F0E8 !important;
-  opacity: 1 !important;
+div.driver-popover.arvexa-tour-popover .driver-popover-next-btn:hover {
+  background: #F0CC65;
+  transform: translateY(-1px);
 }
 
-/* ═══ BOUTON SUIVANT / TERMINER ═══ */
-.driver-popover.arvexa-tour-popover .driver-popover-btn.driver-popover-next-btn,
-div.arvexa-tour-popover .driver-popover-btn.driver-popover-next-btn {
-  background: linear-gradient(135deg, #E0B84A, #B8860B) !important;
-  color: #0A0A0A !important;
-  border: none !important;
-  box-shadow: 0 2px 10px rgba(224, 184, 74, 0.25) !important;
-  margin-left: auto !important;
+/* Bouton PRÉCÉDENT */
+div.driver-popover.arvexa-tour-popover .driver-popover-prev-btn {
+  background: transparent;
+  color: #8A8A7A;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 13px;
+  text-shadow: none;
 }
 
-.driver-popover.arvexa-tour-popover .driver-popover-btn.driver-popover-next-btn:hover,
-div.arvexa-tour-popover .driver-popover-btn.driver-popover-next-btn:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 14px rgba(224, 184, 74, 0.4) !important;
+div.driver-popover.arvexa-tour-popover .driver-popover-prev-btn:hover {
+  color: #F5F0E8;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.driver-popover.arvexa-tour-popover .driver-popover-btn.driver-popover-next-btn:active,
-div.arvexa-tour-popover .driver-popover-btn.driver-popover-next-btn:active {
-  transform: scale(0.97) !important;
+/* Texte de progression */
+div.driver-popover.arvexa-tour-popover .driver-popover-progress-text {
+  color: #E0B84A;
+  font-size: 11px;
+  font-weight: 700;
 }
 
-/* ═══ BOUTON PRÉCÉDENT ═══ */
-.driver-popover.arvexa-tour-popover .driver-popover-btn.driver-popover-prev-btn,
-div.arvexa-tour-popover .driver-popover-btn.driver-popover-prev-btn {
-  background: transparent !important;
-  color: #8A8A7A !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+/* Bouton fermer (croix) */
+div.driver-popover.arvexa-tour-popover .driver-popover-close-btn {
+  color: #8A8A7A;
+  font-size: 18px;
 }
 
-.driver-popover.arvexa-tour-popover .driver-popover-btn.driver-popover-prev-btn:hover,
-div.arvexa-tour-popover .driver-popover-btn.driver-popover-prev-btn:hover {
-  color: #F5F0E8 !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  background: rgba(255, 255, 255, 0.03) !important;
+div.driver-popover.arvexa-tour-popover .driver-popover-close-btn:hover {
+  color: #E0B84A;
 }
 
-/* ═══ TEXTE DE PROGRESSION (1/7) ═══ */
-.driver-popover.arvexa-tour-popover .driver-popover-progress-text,
-div.arvexa-tour-popover .driver-popover-progress-text {
-  font-family: 'Inter', sans-serif !important;
-  font-size: 11px !important;
-  color: #E0B84A !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.5px !important;
-  margin: 0 !important;
-}
-
-/* ═══ BOUTON FERMER (croix) ═══ */
-.driver-popover.arvexa-tour-popover .driver-popover-close-btn,
-div.arvexa-tour-popover .driver-popover-close-btn {
-  color: #8A8A7A !important;
-  font-size: 18px !important;
-  top: 10px !important;
-  right: 12px !important;
-  padding: 4px 8px !important;
-  border-radius: 6px !important;
-  transition: all 0.2s ease !important;
-  line-height: 1 !important;
-}
-
-.driver-popover.arvexa-tour-popover .driver-popover-close-btn:hover,
-div.arvexa-tour-popover .driver-popover-close-btn:hover {
-  color: #E0B84A !important;
-  background: rgba(224, 184, 74, 0.08) !important;
-}
-
-/* ═══ FLÈCHE ═══ */
-.driver-popover.arvexa-tour-popover .driver-popover-arrow,
-div.arvexa-tour-popover .driver-popover-arrow {
-  color: rgba(224, 184, 74, 0.35) !important;
-}
-
-/* ═══ OVERLAY ═══ */
-.driver-overlay {
-  background-color: rgba(0, 0, 0, 0.88) !important;
-}
-
-/* ═══ ÉTAPE ACTIVE (halo) ═══ */
-.driver-active-element {
-  outline: 2px solid #E0B84A !important;
-  outline-offset: 4px !important;
-}
-
-/* ═══ Fallback : si driver.css n'est pas chargé, on force les styles de base ═══ */
-.driver-popover {
-  font-family: 'Inter', sans-serif !important;
-  z-index: 100000 !important;
-}
-
-.driver-popover * {
-  box-sizing: border-box !important;
-}
-
-.driver-popover button {
-  font-family: inherit !important;
-  cursor: pointer !important;
-}
-
-/* ═══ Responsive ═══ */
+/* Responsive */
 @media (max-width: 480px) {
-  .arvexa-premium-modal { padding: 26px 20px 20px; border-radius: 20px; }
-  .arvexa-premium-icon { width: 56px; height: 56px; font-size: 26px; }
+  .arvexa-premium-modal { padding: 26px 20px 20px; }
   .arvexa-premium-title { font-size: 21px; }
   .arvexa-premium-benefit { font-size: 12.5px; padding: 10px 12px; }
-  .arvexa-premium-btn { padding: 12px 18px; font-size: 13px; }
-
-  .driver-popover.arvexa-tour-popover,
-  div.arvexa-tour-popover {
-    max-width: calc(100vw - 32px) !important;
-    padding: 16px 16px 12px !important;
-  }
-  .driver-popover.arvexa-tour-popover .driver-popover-title,
-  div.arvexa-tour-popover .driver-popover-title {
-    font-size: 15px !important;
-  }
-  .driver-popover.arvexa-tour-popover .driver-popover-description,
-  div.arvexa-tour-popover .driver-popover-description {
-    font-size: 13px !important;
-  }
-  .driver-popover.arvexa-tour-popover .driver-popover-btn,
-  div.arvexa-tour-popover .driver-popover-btn {
-    padding: 8px 14px !important;
-    font-size: 12.5px !important;
-    min-height: 34px !important;
+  div.driver-popover.arvexa-tour-popover {
+    max-width: calc(100vw - 32px);
   }
 }
