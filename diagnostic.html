@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARVEXA — Diagnostic</title>
+  <style>
+    body {
+      background: #0A0A0A;
+      color: #F5F0E8;
+      font-family: -apple-system, BlinkMacSystemFont, monospace;
+      padding: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    h1 { color: #E0B84A; font-size: 18px; margin-bottom: 16px; }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.03);
+      margin-bottom: 6px;
+      border-left: 3px solid #666;
+    }
+    .item.ok { border-left-color: #3AB67E; }
+    .item.ko { border-left-color: #E74C3C; }
+    .item .label { color: #8A8A7A; font-size: 13px; }
+    .item .value {
+      font-weight: 700;
+      font-family: monospace;
+    }
+    .item.ok .value { color: #7ce0aa; }
+    .item.ko .value { color: #ff9a84; }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border-radius: 30px;
+      border: none;
+      background: linear-gradient(135deg, #E0B84A, #B8860B);
+      color: #0A0A0A;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn.secondary {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #8A8A7A;
+    }
+    .section {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .section h2 {
+      color: #E0B84A;
+      font-size: 14px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .info-box {
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(184,134,11,0.08);
+      border: 1px solid rgba(184,134,11,0.15);
+      font-size: 12px;
+      color: #8A8A7A;
+      margin-bottom: 12px;
+    }
+    .result {
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.5);
+      font-family: monospace;
+      font-size: 12px;
+      color: #7ce0aa;
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin-top: 10px;
+      display: none;
+    }
+    .result.show { display: block; }
+  </style>
+</head>
+<body>
+
+<h1>🔍 Diagnostic ARVEXA</h1>
+
+<div class="info-box">
+  Cette page teste si le tutoriel est correctement installé.
+  Ouvre-la sur ton téléphone, puis fais une capture d'écran ou copie les résultats.
+</div>
+
+<div id="results"></div>
+
+<div class="section">
+  <h2>Actions</h2>
+  <button class="btn" onclick="resetAndReload()">
+    🔄 Réinitialiser et relancer le tutoriel
+  </button>
+  <button class="btn secondary" onclick="location.reload()">
+    ⏱️ Relancer le test
+  </button>
+  <button class="btn secondary" onclick="location.href='index.html'">
+    🏠 Retour à l'accueil
+  </button>
+</div>
+
+<div class="result" id="networkResult"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  const results = [];
+
+  function addItem(label, value, ok) {
+    results.push({ label, value, ok });
+  }
+
+  function render() {
+    const container = document.getElementById('results');
+    container.innerHTML = results.map(r => `
+      <div class="item ${r.ok ? 'ok' : 'ko'}">
+        <span class="label">${r.label}</span>
+        <span class="value">${r.value}</span>
+      </div>
+    `).join('');
+  }
+
+  // ═══ Test 1 : localStorage ═══
+  try {
+    const tourDone = localStorage.getItem('arvexa_tour_completed_v1');
+    addItem(
+      '1. localStorage "arvexa_tour_completed_v1"',
+      tourDone === null ? 'absent (OK)' : tourDone,
+      tourDone === null
+    );
+  } catch (e) {
+    addItem('1. localStorage', 'ERREUR', false);
+  }
+
+  // ═══ Test 2 : Script injecté ═══
+  const scriptInjected = !!document.getElementById('arvexaTourScript');
+  addItem(
+    '2. Script onboarding-tour.js injecté',
+    scriptInjected ? 'OUI' : 'NON',
+    scriptInjected
+  );
+
+  // ═══ Test 3 : Driver.js chargé ═══
+  const driverLoaded = !!window.driver;
+  addItem(
+    '3. Driver.js chargé',
+    driverLoaded ? 'OUI' : 'NON',
+    driverLoaded
+  );
+
+  // ═══ Test 4 : CSS tour chargé ═══
+  const cssLoaded = !!document.querySelector('link[data-arvexa-tour-css]');
+  addItem(
+    '4. CSS tour-styles.css chargé',
+    cssLoaded ? 'OUI' : 'NON',
+    cssLoaded
+  );
+
+  // ═══ Test 5 : Éléments HTML présents ═══
+  const profileBtn = !!document.querySelector('#profileBtn');
+  addItem(
+    '5. Bouton #profileBtn existe',
+    profileBtn ? 'OUI' : 'NON',
+    profileBtn
+  );
+
+  const notifBtn = !!document.querySelector('#notifBtn');
+  addItem(
+    '6. Bouton #notifBtn existe',
+    notifBtn ? 'OUI' : 'NON',
+    notifBtn
+  );
+
+  const subjectsGrid = !!document.querySelector('.subjects-grid');
+  addItem(
+    '7. .subjects-grid existe',
+    subjectsGrid ? 'OUI' : 'NON',
+    subjectsGrid
+  );
+
+  const toolsGrid = !!document.querySelector('.tools-grid');
+  addItem(
+    '8. .tools-grid existe',
+    toolsGrid ? 'OUI' : 'NON',
+    toolsGrid
+  );
+
+  render();
+
+  // ═══ Test 9 : Réseau (async) ═══
+  const files = ['onboarding-tour.js', 'tour-styles.css', 'register-sw.js'];
+  const networkResults = [];
+
+  Promise.all(files.map(async (file) => {
+    try {
+      const r = await fetch(file, { method: 'HEAD' });
+      networkResults.push({
+        file,
+        status: r.status,
+        ok: r.ok
+      });
+    } catch (e) {
+      networkResults.push({
+        file,
+        status: 'ERREUR',
+        ok: false
+      });
+    }
+  })).then(() => {
+    const resultEl = document.getElementById('networkResult');
+    resultEl.classList.add('show');
+    resultEl.textContent = '=== FICHIERS RÉSEAU ===\n' +
+      networkResults.map(r => `${r.ok ? '✅' : '❌'} ${r.file} : ${r.status}`).join('\n');
+  });
+
+  // ═══ Reset et relance ═══
+  window.resetAndReload = function() {
+    try {
+      localStorage.removeItem('arvexa_tour_completed_v1');
+    } catch (e) {}
+    location.href = 'index.html';
+  };
+
+})();
+</script>
+
+</body>
+</html>
