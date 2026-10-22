@@ -3,7 +3,7 @@
 // Version : OFFLINE v1.1 — Mode hors ligne complet
 // ================================================================
 
-const SW_VERSION = 'arvexa-offline-v1.1';
+const SW_VERSION = 'arvexa-offline-v2.1';
 const CACHE_STATIC = `${SW_VERSION}-static`;
 const CACHE_HTML = `${SW_VERSION}-html`;
 
