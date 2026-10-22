@@ -156,16 +156,26 @@
     ];
   }
 
-  // ═══ Lancer le tour ═══
+   // ═══ Lancer le tour ═══
   async function launchTour() {
     try {
       console.log('[Tour] Lancement...');
 
       const driverModule = await loadDriver();
-      const driver = driverModule.driver;
+      
+      // ✅ CORRECTION : le constructeur est dans driverModule.js.driver
+      const driver = driverModule.js.driver;
+      
+      if (typeof driver !== 'function') {
+        console.error('[Tour] driverModule.js.driver n\'est pas une fonction:', driverModule);
+        markTourDone();
+        return;
+      }
 
       const allSteps = buildSteps();
       const validSteps = [];
+
+      // ... reste du code inchangé
 
       for (const step of allSteps) {
         if (step.element === 'body') {
