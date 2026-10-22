@@ -962,6 +962,46 @@
       .profile-actions { padding: 0 16px 18px; gap: 8px; }
       .btn-profile { padding: 12px 18px; font-size: 13px; }
 
+      /* ✅ Bouton téléchargement hors ligne */
+#downloadOfflineBtn {
+  position: relative;
+}
+
+#downloadOfflineBtn.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+#downloadOfflineBtn.loading #downloadOfflineText {
+  display: none;
+}
+
+.download-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(184, 134, 11, 0.2);
+  border-top-color: var(--accent-bright);
+  border-radius: 50%;
+  animation: downloadSpin 0.8s linear infinite;
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+@keyframes downloadSpin {
+  to { transform: rotate(360deg); }
+}
+
+#downloadOfflineBtn.done {
+  background: rgba(45, 125, 90, 0.15);
+  color: var(--success-light);
+  border-color: rgba(45, 125, 90, 0.3);
+}
+
+#downloadOfflineBtn.done i {
+  color: var(--success-light);
+}
+
       .arvexa-confirm-modal { padding: 26px 22px 20px; max-width: 360px; }
       .arvexa-confirm-icon-box { width: 56px; height: 56px; font-size: 24px; }
       .arvexa-confirm-title { font-size: 19px; }
@@ -1199,20 +1239,27 @@
           </div>
 
           <!-- ACTIONS -->
-          <div class="profile-actions">
-            <a href="abonnement.html" class="btn-profile primary" id="premiumBtn">
-              <i class="fas fa-crown"></i> Voir les offres Premium
-            </a>
+<div class="profile-actions">
+  <a href="abonnement.html" class="btn-profile primary" id="premiumBtn">
+    <i class="fas fa-crown"></i> Voir les offres Premium
+  </a>
 
-            <a href="index.html" class="btn-profile secondary">
-              <i class="fas fa-home"></i> Retour à l'accueil
-            </a>
+  <!-- ✅ NOUVEAU : Bouton téléchargement hors ligne -->
+  <button class="btn-profile secondary" id="downloadOfflineBtn">
+    <i class="fas fa-cloud-arrow-down"></i>
+    <span id="downloadOfflineText">Télécharger tout hors ligne</span>
+    <span class="download-spinner" id="downloadSpinner" style="display:none"></span>
+  </button>
 
-            <button class="btn-profile danger" id="logoutProfileBtn">
-              <i class="fas fa-sign-out-alt"></i> Se déconnecter
-            </button>
-          </div>
+  <a href="index.html" class="btn-profile secondary">
+    <i class="fas fa-home"></i> Retour à l'accueil
+  </a>
 
+  <button class="btn-profile danger" id="logoutProfileBtn">
+    <i class="fas fa-sign-out-alt"></i> Se déconnecter
+  </button>
+</div>
+          
         </div>
       </div>
     </div>
