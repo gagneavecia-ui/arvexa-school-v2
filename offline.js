@@ -1,6 +1,6 @@
 // ================================================================
 // OFFLINE.JS — ARVEXA School
-// Version : 3.0.0 — Bannière + indicateur + download complet
+// Version : v4.0 — Compatible avec service-worker v1.1
 // ================================================================
 
 (function () {
@@ -10,17 +10,13 @@
   window.__arvexaOfflineInit = true;
 
   const STORAGE_KEY = 'arvexa_pending_sync';
-  const DOWNLOAD_STATE_KEY = 'arvexa_download_state';
 
   let isOnline = navigator.onLine;
   let pendingSync = [];
   let bannerEl = null;
-  let indicatorEl = null;
-  let swRegistration = null;
+  let modalEl = null;
 
-  // ================================================================
-  // DONNÉES EN ATTENTE
-  // ================================================================
+  // ═══ DONNÉES EN ATTENTE ═══
   function loadPendingData() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
@@ -36,25 +32,7 @@
     } catch (e) {}
   }
 
-  // ================================================================
-  // SERVICE WORKER REGISTRATION
-  // ================================================================
-  function waitForSW() {
-    return new Promise((resolve) => {
-      if (!('serviceWorker' in navigator)) {
-        resolve(null);
-        return;
-      }
-      navigator.serviceWorker.ready.then((reg) => {
-        swRegistration = reg;
-        resolve(reg);
-      }).catch(() => resolve(null));
-    });
-  }
-
-  // ================================================================
-  // BANNIÈRE
-  // ================================================================
+  // ═══ BANNIÈRE ═══
   function createBanner() {
     if (bannerEl) return bannerEl;
 
@@ -84,62 +62,38 @@
     return bannerEl;
   }
 
-  // ================================================================
-  // INDICATEUR
-  // ================================================================
-  function createIndicator() {
-  // ⚡ Indicateur Wi-Fi désactivé (demande client)
-  return null;
-  }
-
-  // ================================================================
-  // MISE À JOUR UI
-  // ================================================================
+  // ═══ UI ═══
   function updateUI() {
     if (bannerEl) {
       bannerEl.classList.toggle('show', !isOnline);
     }
-
-    if (indicatorEl) {
-      indicatorEl.classList.toggle('online', isOnline);
-      indicatorEl.classList.toggle('offline', !isOnline);
-      indicatorEl.innerHTML = isOnline
-        ? '<i class="fas fa-wifi"></i>'
-        : '<i class="fas fa-wifi-slash"></i>';
-    }
-
     document.documentElement.setAttribute(
       'data-online',
       isOnline ? 'true' : 'false'
     );
   }
 
-  // ================================================================
-  // TOAST
-  // ================================================================
+  // ═══ TOAST ═══
   function showToast(message, type = 'info') {
-  if (typeof window.arvexaShowToast === 'function') {
-    window.arvexaShowToast(message, type);
-    return;
+    if (typeof window.arvexaShowToast === 'function') {
+      window.arvexaShowToast(message, type);
+      return;
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `arvexa-offline-toast ${type} show`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 2500);
   }
 
-  // ⚡ Chaque toast est un élément indépendant (empilement possible)
-  const toast = document.createElement('div');
-  toast.className = `arvexa-offline-toast ${type} show`;
-  toast.textContent = message;
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.remove('show');
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(-10px)';
-    setTimeout(() => toast.remove(), 300);
-  }, 2500);
-  }
-
-  // ================================================================
-  // ÉVÉNEMENTS RÉSEAU
-  // ================================================================
+  // ═══ ÉVÉNEMENTS RÉSEAU ═══
   function bindNetworkEvents() {
     window.addEventListener('online', () => {
       isOnline = true;
@@ -155,9 +109,7 @@
     });
   }
 
-  // ================================================================
-  // SYNCHRONISATION
-  // ================================================================
+  // ═══ SYNCHRONISATION ═══
   async function syncPendingData() {
     loadPendingData();
     if (pendingSync.length === 0) return;
@@ -195,9 +147,7 @@
     }
   }
 
-  // ================================================================
-  // TÉLÉCHARGEMENT COMPLET POUR HORS LIGNE
-  // ================================================================
+  // ═══ TÉLÉCHARGEMENT COMPLET ═══
   async function downloadAllForOffline() {
     if (!isOnline) {
       showToast('📶 Connecte-toi pour télécharger', 'error');
@@ -211,48 +161,43 @@
 
     showToast('⬇️ Récupération de la liste...', 'info');
 
-   try {
-  // ⚡ Étape 1 : charger les 4 fichiers JSON des matières
-  const subjectFiles = [
-    'cours/mathematiques.json',
-    'cours/physique.json',
-    'cours/chimie.json',
-    'cours/svt.json'
-  ];
-
-  // ⚡ Étape 2 : pour chaque matière, extraire tous les HTML référencés
-  const htmlFiles = new Set();
-
-  for (const jsonFile of subjectFiles) {
     try {
-      const res = await fetch(jsonFile);
-      if (!res.ok) continue;
-      const data = await res.json();
+      const subjectFiles = [
+        'cours/mathematiques.json',
+        'cours/physique.json',
+        'cours/chimie.json',
+        'cours/svt.json'
+      ];
 
-      (data.chapters || []).forEach((ch) => {
-        ['cours', 'exercices', 'corrections'].forEach((section) => {
-          (ch[section] || []).forEach((part) => {
-            if (part.file) htmlFiles.add(part.file);
+      const htmlFiles = new Set();
+
+      for (const jsonFile of subjectFiles) {
+        try {
+          const res = await fetch(jsonFile);
+          if (!res.ok) continue;
+          const data = await res.json();
+
+          (data.chapters || []).forEach((ch) => {
+            ['cours', 'exercices', 'corrections'].forEach((section) => {
+              (ch[section] || []).forEach((part) => {
+                if (part.file) htmlFiles.add(part.file);
+              });
+            });
           });
-        });
-      });
-    } catch (e) {
-      // Ignorer les matières absentes
-    }
-  }
+        } catch (e) {
+          // Ignorer les matières absentes
+        }
+      }
 
-  // ⚡ Étape 3 : compiler la liste finale (JSON + HTML)
-  const files = [...subjectFiles, ...Array.from(htmlFiles)];
+      const files = [...subjectFiles, ...Array.from(htmlFiles)];
 
-  if (files.length === 0) {
-    showToast('ℹ️ Aucun fichier à télécharger', 'info');
-    return;
-  }
+      if (files.length === 0) {
+        showToast('ℹ️ Aucun fichier à télécharger', 'info');
+        return;
+      }
 
-      // Créer la modale de progression
       openDownloadModal(files.length);
 
-      // Envoyer au Service Worker
       const channel = new MessageChannel();
       channel.port1.onmessage = (event) => {
         const data = event.data;
@@ -275,11 +220,7 @@
     }
   }
 
-  // ================================================================
-  // MODALE DE PROGRESSION
-  // ================================================================
-  let modalEl = null;
-
+  // ═══ MODALE DE PROGRESSION ═══
   function openDownloadModal(total) {
     if (modalEl) return;
 
@@ -316,8 +257,6 @@
     `;
 
     document.body.appendChild(modalEl);
-
-    // Bouton fermer
     document.getElementById('arvexaDlClose').addEventListener('click', closeDownloadModal);
   }
 
@@ -349,7 +288,6 @@
 
     showToast(`✅ ${data.done} fichiers prêts pour hors ligne`, 'success');
 
-    // Auto-fermeture après 2 secondes si tout est bon
     if (data.failed === 0) {
       setTimeout(() => closeDownloadModal(), 2000);
     }
@@ -367,16 +305,13 @@
     }
   }
 
-  // ================================================================
-  // STYLES
-  // ================================================================
+  // ═══ STYLES ═══
   function injectStyles() {
     if (document.getElementById('arvexaOfflineStyles')) return;
 
     const style = document.createElement('style');
     style.id = 'arvexaOfflineStyles';
     style.textContent = `
-      /* === BANNIÈRE === */
       .arvexa-offline-banner {
         display: none;
         position: sticky;
@@ -419,34 +354,6 @@
         border-color: rgba(255,184,160,.5);
       }
 
-      /* === INDICATEUR === */
-      .arvexa-offline-indicator {
-        width: 36px; height: 36px; border-radius: 50%;
-        border: none; background: rgba(255,255,255,.04);
-        color: #8A8A7A; cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 14px; transition: all 0.25s ease;
-        flex-shrink: 0; position: relative;
-      }
-      .arvexa-offline-indicator.online { color: #3AB67E; }
-      .arvexa-offline-indicator.offline {
-        color: #E74C3C;
-        animation: arvexaPulseIndicator 2s ease-in-out infinite;
-      }
-      .arvexa-offline-indicator:hover { background: rgba(255,255,255,.08); }
-      .arvexa-offline-indicator::after {
-        content: ''; position: absolute; top: 6px; right: 6px;
-        width: 6px; height: 6px; border-radius: 50%;
-        background: transparent; transition: background 0.3s ease;
-      }
-      .arvexa-offline-indicator.online::after {
-        background: #3AB67E; box-shadow: 0 0 6px #3AB67E;
-      }
-      .arvexa-offline-indicator.offline::after {
-        background: #E74C3C; box-shadow: 0 0 6px #E74C3C;
-      }
-
-      /* === TOAST === */
       .arvexa-offline-toast {
         position: fixed; top: 20px; left: 50%;
         transform: translateX(-50%) translateY(-80px);
@@ -471,7 +378,6 @@
       .arvexa-offline-toast.success { border-color: rgba(58,182,126,.5); }
       .arvexa-offline-toast.error { border-color: rgba(231,76,60,.5); }
 
-      /* === MODALE DOWNLOAD === */
       .arvexa-download-overlay {
         position: fixed; inset: 0;
         background: rgba(0,0,0,.85);
@@ -545,7 +451,6 @@
         box-shadow: 0 6px 20px rgba(184,134,11,.3);
       }
 
-      /* === ANIMATIONS === */
       @keyframes arvexaBannerIn {
         from { opacity: 0; transform: translateY(-100%); }
         to { opacity: 1; transform: translateY(0); }
@@ -553,10 +458,6 @@
       @keyframes arvexaPulseDot {
         0%, 100% { opacity: 1; transform: scale(1); }
         50% { opacity: 0.5; transform: scale(1.3); }
-      }
-      @keyframes arvexaPulseIndicator {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.6; }
       }
       @keyframes arvexaFadeIn {
         from { opacity: 0; } to { opacity: 1; }
@@ -573,7 +474,6 @@
       @media (prefers-reduced-motion: reduce) {
         .arvexa-offline-banner,
         .arvexa-offline-dot,
-        .arvexa-offline-indicator,
         .arvexa-offline-toast,
         .arvexa-download-modal,
         .arvexa-download-icon {
@@ -584,7 +484,6 @@
 
       @media (max-width: 480px) {
         .arvexa-offline-banner { font-size: 11.5px; padding: 7px 10px; }
-        .arvexa-offline-indicator { width: 32px; height: 32px; font-size: 13px; }
         .arvexa-download-modal { padding: 22px 18px 18px; }
         .arvexa-download-title { font-size: 18px; }
       }
@@ -592,19 +491,15 @@
     document.head.appendChild(style);
   }
 
-  // ================================================================
-  // INIT
-  // ================================================================
+  // ═══ INIT ═══
   function init() {
     injectStyles();
     loadPendingData();
 
-    const boot = async () => {
+    const boot = () => {
       createBanner();
-      createIndicator();
       bindNetworkEvents();
       updateUI();
-      await waitForSW();
 
       if (isOnline && pendingSync.length > 0) {
         setTimeout(syncPendingData, 1500);
@@ -618,9 +513,7 @@
     }
   }
 
-  // ================================================================
-  // API PUBLIQUE
-  // ================================================================
+  // ═══ API PUBLIQUE ═══
   window.arvexaOffline = {
     isOnline: () => isOnline,
 
@@ -653,10 +546,8 @@
       window.__arvexaSync = fn;
     },
 
-    // ⭐ NOUVEAU : télécharger tout le contenu pour hors ligne
     downloadAll: downloadAllForOffline,
 
-    // Cacher une URL unique
     cacheUrl: function (url) {
       if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
       navigator.serviceWorker.controller.postMessage({
@@ -665,11 +556,10 @@
       });
     },
 
-    // Récupérer les stats
     getStats: function () {
       return new Promise((resolve) => {
         if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
-          resolve({ shell: 0, cours: 0, manifests: 0, images: 0 });
+          resolve({});
           return;
         }
         const channel = new MessageChannel();
@@ -680,7 +570,7 @@
           { type: 'STATS' },
           [channel.port2]
         );
-        setTimeout(() => resolve({ shell: 0, cours: 0, manifests: 0, images: 0 }), 2000);
+        setTimeout(() => resolve({}), 2000);
       });
     },
 
@@ -689,5 +579,5 @@
 
   init();
 
-  console.log('✅ ARVEXA — Mode hors ligne v3 prêt');
+  console.log('✅ ARVEXA — Mode hors ligne v4.0 prêt');
 })();
