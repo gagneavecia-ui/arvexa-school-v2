@@ -1,6 +1,6 @@
 // ================================================================
 // OFFLINE.JS — ARVEXA School
-// Version : v4.0 — Compatible avec service-worker v1.1
+// Version : v5.0 — Téléchargement intelligent (ignore les absents)
 // ================================================================
 
 (function () {
@@ -147,7 +147,7 @@
     }
   }
 
-  // ═══ TÉLÉCHARGEMENT COMPLET ═══
+  // ═══ TÉLÉCHARGEMENT INTELLIGENT ═══
   async function downloadAllForOffline() {
     if (!isOnline) {
       showToast('📶 Connecte-toi pour télécharger', 'error');
@@ -159,7 +159,7 @@
       return;
     }
 
-    showToast('⬇️ Récupération de la liste...', 'info');
+    showToast('🔍 Recherche du contenu disponible...', 'info');
 
     try {
       const subjectFiles = [
@@ -169,34 +169,68 @@
         'cours/svt.json'
       ];
 
-      const htmlFiles = new Set();
+      const candidateFiles = new Set();
+      const validJsonFiles = [];
 
+      // ═══ ÉTAPE 1 : lire les JSON et collecter les fichiers candidats ═══
       for (const jsonFile of subjectFiles) {
         try {
           const res = await fetch(jsonFile);
           if (!res.ok) continue;
-          const data = await res.json();
+          validJsonFiles.push(jsonFile);
 
+          const data = await res.json();
           (data.chapters || []).forEach((ch) => {
             ['cours', 'exercices', 'corrections'].forEach((section) => {
               (ch[section] || []).forEach((part) => {
-                if (part.file) htmlFiles.add(part.file);
+                if (part.file) candidateFiles.add(part.file);
               });
             });
           });
         } catch (e) {
-          // Ignorer les matières absentes
+          // Matière absente → ignorer silencieusement
         }
       }
 
-      const files = [...subjectFiles, ...Array.from(htmlFiles)];
-
-      if (files.length === 0) {
-        showToast('ℹ️ Aucun fichier à télécharger', 'info');
+      if (candidateFiles.size === 0) {
+        showToast('ℹ️ Aucun contenu disponible pour le moment', 'info');
         return;
       }
 
-      openDownloadModal(files.length);
+      // ═══ ÉTAPE 2 : vérifier en parallèle ce qui existe vraiment ═══
+      showToast('🔍 Vérification des fichiers...', 'info');
+
+      const candidates = Array.from(candidateFiles);
+      const existingFiles = [];
+      const BATCH = 25;
+
+      for (let i = 0; i < candidates.length; i += BATCH) {
+        const batch = candidates.slice(i, i + BATCH);
+        const results = await Promise.allSettled(
+          batch.map(async (file) => {
+            try {
+              const check = await fetch(file, { method: 'HEAD' });
+              return check.ok ? file : null;
+            } catch (e) {
+              return null;
+            }
+          })
+        );
+        results.forEach((r) => {
+          if (r.status === 'fulfilled' && r.value) existingFiles.push(r.value);
+        });
+      }
+
+      // ═══ ÉTAPE 3 : si rien n'existe → message et stop ═══
+      if (existingFiles.length === 0) {
+        showToast('ℹ️ Aucun fichier disponible pour le moment', 'info');
+        return;
+      }
+
+      // ═══ ÉTAPE 4 : télécharger UNIQUEMENT les fichiers existants ═══
+      const allFiles = [...validJsonFiles, ...existingFiles];
+
+      openDownloadModal(allFiles.length);
 
       const channel = new MessageChannel();
       channel.port1.onmessage = (event) => {
@@ -204,12 +238,17 @@
         if (data.type === 'DOWNLOAD_PROGRESS') {
           updateDownloadProgress(data);
         } else if (data.type === 'DOWNLOAD_COMPLETE') {
-          completeDownload(data);
+          // ✅ Afficher UNIQUEMENT les succès
+          completeDownload({
+            done: data.done,
+            failed: 0,
+            total: data.done
+          });
         }
       };
 
       navigator.serviceWorker.controller.postMessage(
-        { type: 'DOWNLOAD_ALL', files },
+        { type: 'DOWNLOAD_ALL', files: allFiles },
         [channel.port2]
       );
 
@@ -268,11 +307,12 @@
     const info = document.getElementById('arvexaDlInfo');
 
     if (fill) fill.style.width = data.percent + '%';
-    if (done) done.textContent = data.done + data.failed;
+    if (done) done.textContent = data.done;
     if (total) total.textContent = data.total;
     if (percent) percent.textContent = data.percent + '%';
     if (info) {
-      info.textContent = `${data.done} fichiers téléchargés${data.failed > 0 ? `, ${data.failed} échecs` : ''}`;
+      // ✅ Afficher UNIQUEMENT les succès
+      info.textContent = `${data.done} fichier${data.done > 1 ? 's' : ''} téléchargé${data.done > 1 ? 's' : ''}`;
     }
   }
 
@@ -280,17 +320,16 @@
     const info = document.getElementById('arvexaDlInfo');
     const close = document.getElementById('arvexaDlClose');
 
+    // ✅ Afficher UNIQUEMENT les succès, JAMAIS les échecs
     if (info) {
-      info.innerHTML = `✅ <strong>${data.done}</strong> fichiers prêts hors ligne${data.failed > 0 ? ` · ${data.failed} échecs` : ''}`;
+      info.innerHTML = `✅ <strong>${data.done}</strong> fichier${data.done > 1 ? 's' : ''} prêt${data.done > 1 ? 's' : ''} hors ligne`;
     }
 
     if (close) close.style.display = 'block';
 
-    showToast(`✅ ${data.done} fichiers prêts pour hors ligne`, 'success');
+    showToast(`✅ ${data.done} fichier${data.done > 1 ? 's' : ''} prêt${data.done > 1 ? 's' : ''} pour hors ligne`, 'success');
 
-    if (data.failed === 0) {
-      setTimeout(() => closeDownloadModal(), 2000);
-    }
+    setTimeout(() => closeDownloadModal(), 2500);
   }
 
   function closeDownloadModal() {
@@ -579,5 +618,5 @@
 
   init();
 
-  console.log('✅ ARVEXA — Mode hors ligne v4.0 prêt');
+  console.log('✅ ARVEXA — Mode hors ligne v5.0 (intelligent) prêt');
 })();
