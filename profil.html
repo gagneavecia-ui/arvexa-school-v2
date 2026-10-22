@@ -2032,9 +2032,67 @@
     window.location.href = 'notifications.html';
   });
 
-  // ⚡ SUPPRESSION du code mort (offlineManagerBtn / offlineBadge / refreshOfflineBadge)
-  // Ces éléments n'existent pas dans le HTML de profil.html.
+    // ═══════════════════════════════════════════════════════════════
+// ✅ BOUTON TÉLÉCHARGEMENT HORS LIGNE
+// ═══════════════════════════════════════════════════════════════
+const downloadBtn = document.getElementById('downloadOfflineBtn');
+const downloadText = document.getElementById('downloadOfflineText');
+const downloadSpinner = document.getElementById('downloadSpinner');
 
+if (downloadBtn) {
+  downloadBtn.addEventListener('click', async () => {
+    // Vérifier que offline.js est chargé
+    if (typeof window.arvexaOffline === 'undefined' || typeof window.arvexaOffline.downloadAll !== 'function') {
+      showToast('Le module hors ligne n\'est pas encore chargé. Recharge la page.', 'error');
+      return;
+    }
+
+    // Vérifier la connexion
+    if (!navigator.onLine) {
+      showToast('Connecte-toi à Internet pour télécharger le contenu', 'error');
+      return;
+    }
+
+    // Vérifier le Service Worker
+    if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
+      showToast('Service Worker en préparation. Attends 3 secondes et réessaie.', 'error');
+      return;
+    }
+
+    // Lancer le téléchargement
+    downloadBtn.classList.add('loading');
+    downloadBtn.disabled = true;
+    if (downloadSpinner) downloadSpinner.style.display = 'inline-block';
+
+    try {
+      await window.arvexaOffline.downloadAll();
+
+      // Le succès est géré par la modale de offline.js
+      // On remet le bouton à son état normal après un délai
+      setTimeout(() => {
+        downloadBtn.classList.remove('loading');
+        downloadBtn.classList.add('done');
+        downloadBtn.disabled = false;
+        if (downloadSpinner) downloadSpinner.style.display = 'none';
+        if (downloadText) downloadText.textContent = 'Contenu téléchargé ✅';
+
+        // Revenir à l'état initial après 5 secondes
+        setTimeout(() => {
+          downloadBtn.classList.remove('done');
+          if (downloadText) downloadText.textContent = 'Télécharger tout hors ligne';
+        }, 5000);
+      }, 1000);
+
+    } catch (error) {
+      console.error('[Download] Erreur:', error);
+      showToast('Erreur lors du téléchargement. Réessaie.', 'error');
+      downloadBtn.classList.remove('loading');
+      downloadBtn.disabled = false;
+      if (downloadSpinner) downloadSpinner.style.display = 'none';
+    }
+  });
+}
+    
   console.log('🚀 ARVEXA — Profil (version nettoyée)');
   </script>
 </body>
