@@ -2125,12 +2125,13 @@
   // ═══════════════════════════════════════════════════════════════
 
   import { initializeApp } from 'firebase/app';
-  import { getAuth, onAuthStateChanged, getIdToken } from 'firebase/auth';
+  import { getAuth, getIdToken } from 'firebase/auth';
   import {
     getFirestore,
     doc, getDoc, setDoc, deleteDoc, serverTimestamp
   } from 'firebase/firestore';
-
+  import { requireAuth } from './auth-guard.js';
+    
   var firebaseConfig = {
     apiKey: 'AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE',
     authDomain: 'arvexa-fbf10.firebaseapp.com',
@@ -3392,16 +3393,18 @@
     }
   });
 
-  onAuthStateChanged(auth, async function (user) {
-    if (!user) {
+   // ✅ Guard sécurisé : attend la confirmation de Firebase
+  requireAuth({
+    onUser: async function (user) {
+      state.user = user;
+      $('connectionState').textContent = 'connecté';
+      $('connectionState').classList.add('online');
+      prefillFromUrl();
+      await checkActiveSession();
+    },
+    onNoUser: () => {
       window.location.replace('auth-choice.html');
-      return;
     }
-    state.user = user;
-    $('connectionState').textContent = 'connecté';
-    $('connectionState').classList.add('online');
-    prefillFromUrl();
-    await checkActiveSession();
   });
 
   initSelects();
