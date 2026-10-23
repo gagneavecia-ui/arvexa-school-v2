@@ -1500,14 +1500,15 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import {
-  getAuth, onAuthStateChanged, setPersistence,
+  getAuth, setPersistence,
   browserLocalPersistence, getIdToken
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 import {
   initializeFirestore, persistentLocalCache, persistentSingleTabManager,
   doc, getDoc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-
+  import { requireAuth } from './auth-guard.js';
+  
 // ────────────────────────────────────────────────────────────────
 // CONFIG
 // ────────────────────────────────────────────────────────────────
@@ -2262,43 +2263,43 @@ function isUserPremium(data) {
   return !end || end.getTime() > Date.now();
 }
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.replace('login.html');
-    return;
-  }
+  // ✅ Guard sécurisé : attend la confirmation de Firebase
+  requireAuth({
+    onUser: async (user) => {
+      state.user = user;
 
-  state.user = user;
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          state.userData = snap.data();
+          state.isPremium = isUserPremium(state.userData);
+          renderUser(state.userData);
+        }
+      } catch (_) {}
 
-  try {
-    const snap = await getDoc(doc(db, 'users', user.uid));
-    if (snap.exists()) {
-      state.userData = snap.data();
-      state.isPremium = isUserPremium(state.userData);
-      renderUser(state.userData);
+      await fetchQuota();
+      await loadConversations();
+      renderChat();
+
+      function updateStatus() {
+        if (navigator.onLine) {
+          statusDot.classList.remove('offline');
+          statusText.textContent = 'Prêt à t\'aider';
+        } else {
+          statusDot.classList.add('offline');
+          statusText.textContent = 'Hors ligne';
+        }
+      }
+      updateStatus();
+      window.addEventListener('online', updateStatus);
+      window.addEventListener('offline', updateStatus);
+
+      chatInput.focus();
+    },
+    onNoUser: () => {
+      window.location.replace('auth-choice.html');
     }
-  } catch (_) {}
-
-  await fetchQuota();
-  await loadConversations();
-  renderChat();
-
-  // Online/offline
-  function updateStatus() {
-    if (navigator.onLine) {
-      statusDot.classList.remove('offline');
-      statusText.textContent = 'Prêt à t\'aider';
-    } else {
-      statusDot.classList.add('offline');
-      statusText.textContent = 'Hors ligne';
-    }
-  }
-  updateStatus();
-  window.addEventListener('online', updateStatus);
-  window.addEventListener('offline', updateStatus);
-
-  chatInput.focus();
-});
+  });
 
 // ────────────────────────────────────────────────────────────────
 // INIT
