@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARVEXA School — Nombres complexes · Partie 1 — Corrigé des 50 exercices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --bg-soft:rgba(255,255,255,0.03); --panel:#111511;
+    --green-deep:#1A3A2A; --gold:#B8860B; --gold-bright:#E0B84A;
+    --text:#F5F0E8; --text-dim:#8a8a7a; --text-light:#d8d8c8;
+    --blue:#60a5fa; --green-ok:#4ade80;
+    --border:rgba(224,184,74,0.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Inter',-apple-system,'Segoe UI',sans-serif;
+    line-height:1.7; font-size:16px; padding:24px 16px 64px;
+  }
+  .wrap{max-width:900px;margin:0 auto}
+  .head{
+    border:1px solid var(--border); border-radius:18px;
+    background:linear-gradient(135deg,rgba(26,58,42,0.55),rgba(10,10,10,0.2));
+    padding:28px 26px; margin-bottom:16px;
+  }
+  .head .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:.72em; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+    color:var(--gold-bright); border:1px solid rgba(224,184,74,0.35);
+    border-radius:999px; padding:5px 14px; margin-bottom:14px;
+  }
+  .head h1{
+    font-family:'Playfair Display',Georgia,serif;
+    font-size:1.75em; line-height:1.25; margin-bottom:8px;
+  }
+  .head .sub{color:var(--text-dim);font-size:.95em}
+  .head .rule{height:2px;width:72px;margin-top:16px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:2px}
+  .notice{
+    border:1px solid rgba(96,165,250,0.3); border-radius:14px;
+    background:rgba(96,165,250,0.06); padding:14px 18px;
+    color:var(--text-light); font-size:.92em; margin-bottom:26px;
+  }
+  .notice strong{color:var(--blue)}
+  .band{
+    display:flex; align-items:baseline; gap:12px;
+    margin:34px 0 6px; padding-bottom:10px;
+    border-bottom:1px solid rgba(224,184,74,0.25);
+  }
+  .band .num{
+    font-family:'Playfair Display',Georgia,serif;
+    font-size:1.9em; font-weight:700; color:var(--gold-bright); line-height:1;
+  }
+  .band h2{font-size:1.12em;font-weight:700}
+  .band .range{color:var(--text-dim);font-size:.82em;margin-left:auto;white-space:nowrap}
+  .theme-intro{color:var(--text-dim);font-size:.9em;margin:6px 0 14px}
+  .exo{
+    background:var(--bg-soft); border:1px solid rgba(96,165,250,0.22);
+    border-radius:14px; padding:18px 20px; margin:14px 0;
+  }
+  .exo .label{
+    display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+    font-size:.72em; font-weight:700; letter-spacing:1.5px;
+    text-transform:uppercase; color:var(--blue); margin-bottom:8px;
+  }
+  .exo .label .no{
+    color:var(--gold-bright); border:1px solid rgba(224,184,74,0.4);
+    border-radius:8px; padding:1px 8px; letter-spacing:1px;
+  }
+  .exo .stars{color:var(--gold-bright);letter-spacing:2px}
+  .exo p{margin:6px 0}
+  .exo details{margin-top:10px}
+  .exo summary{
+    cursor:pointer; color:var(--gold-bright); font-weight:600;
+    font-size:.9em; user-select:none;
+  }
+  .solu{
+    margin-top:10px; background:rgba(74,222,128,0.06);
+    border-left:3px solid var(--green-ok); padding:12px 16px;
+    border-radius:0 8px 8px 0; color:var(--text-light); font-size:.95em;
+  }
+  .solu p{margin:5px 0}
+  .solu .lbl{color:var(--gold-bright);font-weight:600}
+  .solu .fin{color:var(--green-ok);font-weight:700}
+  .math{
+    font-family:'Cambria Math','STIX Two Math',Georgia,serif;
+    font-style:normal; color:var(--gold-bright); white-space:nowrap;
+  }
+  .foot{
+    margin-top:36px; padding:20px 22px; border-radius:14px;
+    border:1px solid var(--border); background:rgba(26,58,42,0.35);
+    color:var(--text-dim); font-size:.9em;
+  }
+  .foot strong{color:var(--gold-bright)}
+  @media (max-width:560px){
+    .band .range{display:none}
+    .head h1{font-size:1.4em}
+    .exo{padding:16px}
+  }
+  @media print{
+    body{background:#fff;color:#111}
+    .head,.band .num{color:#111}
+    .math{color:#7a5c00}
+    .solu{background:#f3faf3;color:#222}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <span class="badge">📘 ARVEXA School · Terminale D · Nombres complexes</span>
+    <h1>Partie 1 — Corrigé des 50 nouveaux exercices</h1>
+    <p class="sub">Corrections détaillées des 50 exercices de <strong>exo_p1.html</strong> — méthode du cours : poser, développer, identifier, vérifier. Chaque correction rappelle l'énoncé. À consulter seulement après avoir cherché.</p>
+    <div class="rule"></div>
+  </header>
+
+  <div class="notice">
+    <strong>⚠️ Ce fichier contient toutes les solutions.</strong> Pour progresser, cherche d'abord chaque exercice dans <strong>exo_p1.html</strong>. En séance avec ton professeur, on les construit ensemble, une question à la fois — la correction sert à vérifier ta démarche, pas à la remplacer.
+  </div>
+
+  <!-- ============ THÈME 01 ============ -->
+  <div class="band"><span class="num">01</span><h2>Forme algébrique : lire et écrire</h2><span class="range">N° 1 → 5</span></div>
+  <p class="theme-intro">Reconnaître Re(z) et Im(z) après (et seulement après) simplification — le réflexe n° 0 du chapitre.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 1</span><span class="stars">★</span></div>
+    <p>Donner la partie réelle et la partie imaginaire de : <span class="math">z₁ = 12 − 5i</span> · <span class="math">z₂ = −(2/3)i</span> · <span class="math">z₃ = √2</span> · <span class="math">z₄ = −7 + i</span></p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> on lit directement sur la forme <span class="math">a + ib</span> : <span class="math">z₁ = 12 + (−5)i</span> → Re = 12, Im = −5.</p>
+      <p><span class="math">z₂ = 0 + (−2/3)i</span> → Re = 0, Im = −2/3. <span class="math">z₃ = √2 + 0i</span> → Re = √2, Im = 0. <span class="math">z₄ = −7 + 1i</span> → Re = −7, Im = 1.</p>
+      <p class="fin">✅ Re(z₁) = 12, Im(z₁) = −5 ; Re(z₂) = 0, Im(z₂) = −2/3 ; Re(z₃) = √2, Im(z₃) = 0 ; Re(z₄) = −7, Im(z₄) = 1.</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 2</span><span class="stars">★</span></div>
+    <p>Écrire sous forme algébrique : a) <span class="math">(3 + 2i) + (5 − 7i)</span> &nbsp;&nbsp; b) <span class="math">(4 − i) − (6 + 3i)</span> &nbsp;&nbsp; c) <span class="math">2(1 + i) − 3(2 − i)</span></p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> on regroupe les parties réelles entre elles et les parties imaginaires entre elles.</p>
+      <p><span class="lbl">Calcul détaillé :</span> a) <span class="math">(3 + 5) + (2 − 7)i = 8 − 5i</span></p>
+      <p>b) <span class="math">(4 − 6) + (−1 − 3)i = −2 − 4i</span></p>
+      <p>c) <span class="math">2 + 2i − 6 + 3i = (2 − 6) + (2 + 3)i = −4 + 5i</span></p>
+      <p class="fin">✅ a) 8 − 5i &nbsp; b) −2 − 4i &nbsp; c) −4 + 5i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 3</span><span class="stars">★</span></div>
+    <p>Écrire sous forme algébrique : a) <span class="math">i(4 + 9i)</span> &nbsp;&nbsp; b) <span class="math">−i(6 − 5i)</span> &nbsp;&nbsp; c) <span class="math">(1 + i)(1 − i) + 2i</span></p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> développer puis remplacer chaque <span class="math">i²</span> par <span class="math">−1</span>.</p>
+      <p><span class="lbl">Calcul détaillé :</span> a) <span class="math">i(4 + 9i) = 4i + 9i² = −9 + 4i</span></p>
+      <p>b) <span class="math">−i(6 − 5i) = −6i + 5i² = −5 − 6i</span></p>
+      <p>c) <span class="math">(1 + i)(1 − i) = 1 − i² = 2</span>, donc <span class="math">2 + 2i</span></p>
+      <p class="fin">✅ a) −9 + 4i &nbsp; b) −5 − 6i &nbsp; c) 2 + 2i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 4</span><span class="stars">★★</span></div>
+    <p>Simplifier d'abord, puis donner Re et Im : <span class="math">z₁ = 3i² + 5</span> · <span class="math">z₂ = i³ + i</span> · <span class="math">z₃ = 2i⁴ − 1</span> · <span class="math">z₄ = i⁵ − i</span></p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> règle d'or du cours — on ne lit Re et Im qu'après avoir tout simplifié.</p>
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">z₁ = −3 + 5 = 2</span> ; <span class="math">z₂ = −i + i = 0</span> ; <span class="math">z₃ = 2 − 1 = 1</span> ; <span class="math">z₄ = i − i = 0</span>.</p>
+      <p><span class="lbl">Conclusion :</span> Re(z₁) = 2, Im(z₁) = 0 (réel pur) ; z₂ = 0 ; z₃ = 1 ; z₄ = 0.</p>
+      <p class="fin">✅ Piège réussi : les quatre nombres sont en réalité des réels !</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 5</span><span class="stars">★★</span></div>
+    <p>Soit <span class="math">z = (2 + 3i) + (a − i)</span> où <span class="math">a</span> est un réel. On sait que <span class="math">Re(z) = 5</span>. Déterminer <span class="math">a</span>, puis donner <span class="math">Im(z)</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Données :</span> z = (2 + 3i) + (a − i), a réel, Re(z) = 5. <span class="lbl">Objectif :</span> trouver a puis Im(z).</p>
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">z = (2 + a) + (3 − 1)i = (2 + a) + 2i</span>. Donc <span class="math">Re(z) = 2 + a = 5</span> → <span class="math">a = 3</span>.</p>
+      <p class="fin">✅ a = 3 et Im(z) = 2 (la partie imaginaire ne dépend pas de a).</p>
+    </div>
+  </div>
+
+  <!-- ============ THÈME 02 ============ -->
+  <div class="band"><span class="num">02</span><h2>Puissances de i</h2><span class="range">N° 6 → 10</span></div>
+  <p class="theme-intro">Cycle de période 4 : i, −1, −i, 1 — on réduit l'exposant avec le reste de la division euclidienne par 4.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 6</span><span class="stars">★</span></div>
+    <p>Calculer : <span class="math">i²³</span> · <span class="math">i⁵⁰</span> · <span class="math">i⁷⁵</span> · <span class="math">i¹⁰¹</span></p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> <span class="math">iⁿ = i</span>^(reste de n par 4).</p>
+      <p><span class="lbl">Calcul détaillé :</span> 23 = 4×5 + 3 → <span class="math">i²³ = i³ = −i</span> ; 50 = 4×12 + 2 → <span class="math">i⁵⁰ = i² = −1</span> ; 75 = 4×18 + 3 → <span class="math">i⁷⁵ = −i</span> ; 101 = 4×25 + 1 → <span class="math">i¹⁰¹ = i</span>.</p>
+      <p class="fin">✅ i²³ = −i ; i⁵⁰ = −1 ; i⁷⁵ = −i ; i¹⁰¹ = i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 7</span><span class="stars">★</span></div>
+    <p>Calculer : <span class="math">(5i)²</span> · <span class="math">(−2i)⁴</span> · <span class="math">(−i)³</span></p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> on sépare le coefficient et le i : <span class="math">(ki)ⁿ = kⁿ iⁿ</span>.</p>
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(5i)² = 25i² = −25</span> ; <span class="math">(−2i)⁴ = 16i⁴ = 16</span> ; <span class="math">(−i)³ = (−i)² × (−i) = (−1)(−i) = i</span> car <span class="math">(−i)² = i² = −1</span>.</p>
+      <p class="fin">✅ −25 ; 16 ; i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 8</span><span class="stars">★</span></div>
+    <p>Calculer : <span class="math">i¹⁸ + i¹⁹ + i²⁰ + i²¹</span> &nbsp;&nbsp;puis&nbsp;&nbsp; <span class="math">i³² − i³⁰</span></p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> somme de 4 puissances consécutives de i = 0 (propriété du cours).</p>
+      <p><span class="lbl">Calcul détaillé :</span> 18, 19, 20, 21 sont consécutifs → la somme vaut 0 directement.</p>
+      <p><span class="math">i³² = (i⁴)⁸ = 1</span> et <span class="math">i³⁰ = i²⁸ × i² = −1</span>, donc <span class="math">i³² − i³⁰ = 1 − (−1) = 2</span>.</p>
+      <p class="fin">✅ 0 et 2</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 9</span><span class="stars">★★</span></div>
+    <p>Calculer <span class="math">S = i + i² + i³ + … + i⁶⁰</span>, puis <span class="math">S' = 1 + i + i² + … + i⁵⁰</span></p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> regrouper les termes par paquets de 4 consécutifs (chacun vaut 0).</p>
+      <p><span class="lbl">Calcul détaillé :</span> S : 60 = 4×15 termes → 15 paquets complets → <span class="math">S = 0</span>.</p>
+      <p>S' : 51 termes. Les 48 premiers (i¹ → i⁴⁸) forment 12 paquets complets = 0. Il reste <span class="math">1 + i⁴⁹ + i⁵⁰ = 1 + i + i² = 1 + i − 1 = i</span>.</p>
+      <p class="fin">✅ S = 0 et S' = i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 10</span><span class="stars">★★</span></div>
+    <p>Trouver tous les entiers <span class="math">n</span> avec <span class="math">0 ≤ n ≤ 12</span> tels que <span class="math">iⁿ</span> soit un nombre réel.</p>
+    <div class="solu">
+      <p><span class="lbl">Objectif :</span> iⁿ réel ⟺ iⁿ vaut 1 ou −1 (jamais ±i).</p>
+      <p><span class="lbl">Calcul détaillé :</span> on teste les restes : reste 0 → 1 (réel) ; reste 1 → i (non) ; reste 2 → −1 (réel) ; reste 3 → −i (non). Donc iⁿ réel ⟺ n pair.</p>
+      <p class="fin">✅ n ∈ {0 ; 2 ; 4 ; 6 ; 8 ; 10 ; 12} — et iⁿ vaut 1 quand n est multiple de 4, −1 sinon.</p>
+    </div>
+  </div>
+
+  <!-- ============ THÈME 03 ============ -->
+  <div class="band"><span class="num">03</span><h2>Réel pur, imaginaire pur</h2><span class="range">N° 11 → 15</span></div>
+  <p class="theme-intro">Réel pur ⟺ Im(z) = 0 · Imaginaire pur ⟺ Re(z) = 0 · 0 est les deux à la fois.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 11</span><span class="stars">★</span></div>
+    <p>Classer chaque nombre : réel pur, imaginaire pur, ou ni l'un ni l'autre : <span class="math">z₁ = √5</span> · <span class="math">z₂ = √5 i</span> · <span class="math">z₃ = 1 + √2 i</span> · <span class="math">z₄ = i⁶</span> · <span class="math">z₅ = (1 + i)(1 − i)</span></p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> z₁ = √5 + 0i → <strong>réel pur</strong> ; z₂ = 0 + √5 i → <strong>imaginaire pur</strong> ; z₃ : les deux parties non nulles → <strong>ni l'un ni l'autre</strong>.</p>
+      <p>z₄ : <span class="math">i⁶ = i⁴ × i² = −1</span> → <strong>réel pur</strong> (simplifier d'abord !). z₅ : <span class="math">1 − i² = 2</span> → <strong>réel pur</strong>.</p>
+      <p class="fin">✅ Réels purs : z₁, z₄, z₅ — imaginaire pur : z₂ — ni l'un ni l'autre : z₃.</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 12</span><span class="stars">★</span></div>
+    <p>Soit <span class="math">z = (x² + 1) + (x − 2)i</span> avec <span class="math">x</span> réel. Montrer que <span class="math">z</span> n'est <strong>jamais</strong> imaginaire pur.</p>
+    <div class="solu">
+      <p><span class="lbl">Objectif :</span> montrer que Re(z) ne peut pas s'annuler.</p>
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">Re(z) = x² + 1</span>. Or pour tout réel x, <span class="math">x² ≥ 0</span>, donc <span class="math">x² + 1 ≥ 1 &gt; 0</span> : la partie réelle est toujours strictement positive, jamais nulle.</p>
+      <p class="fin">✅ Conclusion : z n'est jamais imaginaire pur (quelle que soit la valeur de x).</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 13</span><span class="stars">★★</span></div>
+    <p>Déterminer <span class="math">x</span> réel pour que <span class="math">z = x + (x² − 9)i</span> soit : a) réel pur ; b) imaginaire pur. Donner z dans chaque cas.</p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> réel pur ⟺ Im(z) = 0 ; imaginaire pur ⟺ Re(z) = 0.</p>
+      <p><span class="lbl">Calcul détaillé :</span> a) <span class="math">x² − 9 = 0 ⟺ x = 3</span> ou <span class="math">x = −3</span> → z = 3 ou z = −3.</p>
+      <p>b) <span class="math">x = 0</span> → <span class="math">z = 0 + (0 − 9)i = −9i</span>.</p>
+      <p class="fin">✅ Réel pur pour x = ±3 (z = ±3) ; imaginaire pur pour x = 0 (z = −9i).</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 14</span><span class="stars">★★</span></div>
+    <p>Soit <span class="math">z = (m + 1) + (m² − 1)i</span>, m réel. a) Pour quel m est-il réel pur ? b) imaginaire pur ? c) Pour quel m a-t-on <span class="math">z = 0</span> ?</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> a) réel pur ⟺ <span class="math">m² − 1 = 0 ⟺ m = 1</span> ou <span class="math">m = −1</span>.</p>
+      <p>b) imaginaire pur ⟺ <span class="math">m + 1 = 0 ⟺ m = −1</span>.</p>
+      <p>c) z = 0 ⟺ les DEUX conditions ⟺ m = −1 (on vérifie : z = 0 + 0i = 0 ✔).</p>
+      <p class="fin">✅ Réel pur : m = ±1 ; imaginaire pur : m = −1 ; z = 0 uniquement pour m = −1.</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 15</span><span class="stars">★★</span></div>
+    <p>Vrai ou faux ? Justifier chaque réponse. a) <span class="math">Im(3 + 5i) = 5i</span> &nbsp; b) 0 est à la fois réel pur et imaginaire pur &nbsp; c) Si z est à la fois réel pur et imaginaire pur, alors <span class="math">z = 0</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Réponses argumentées :</span> a) <strong>FAUX</strong> — Im(z) est un <em>réel</em> : Im(3 + 5i) = 5, pas 5i (piège classique du cours !).</p>
+      <p>b) <strong>VRAI</strong> — 0 vérifie Re(0) = 0 et Im(0) = 0 : il coche les deux définitions à la fois.</p>
+      <p>c) <strong>VRAI</strong> — réel pur donne Im(z) = 0 ; imaginaire pur donne Re(z) = 0 ; donc z = 0 + 0i = 0.</p>
+      <p class="fin">✅ a) Faux — b) Vrai — c) Vrai.</p>
+    </div>
+  </div>
+
+  <!-- ============ THÈME 04 ============ -->
+  <div class="band"><span class="num">04</span><h2>Premiers calculs : sommes et produits</h2><span class="range">N° 16 → 20</span></div>
+  <p class="theme-intro">Développer, remplacer chaque i² par −1, regrouper — et repérer le schéma précieux (a + ib)(a − ib) = a² + b².</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 16</span><span class="stars">★</span></div>
+    <p>Calculer : a) <span class="math">(1 + i)(2 + 3i)</span> &nbsp;&nbsp; b) <span class="math">(3 − 2i)(3 + 2i)</span> &nbsp;&nbsp; c) <span class="math">(2 − i)(1 + 3i)</span></p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> a) <span class="math">2 + 3i + 2i + 3i² = 2 + 5i − 3 = −1 + 5i</span></p>
+      <p>b) schéma (a − ib)(a + ib) : <span class="math">3² + 2² = 13</span></p>
+      <p>c) <span class="math">2 + 6i − i − 3i² = 2 + 5i + 3 = 5 + 5i</span></p>
+      <p class="fin">✅ a) −1 + 5i &nbsp; b) 13 (réel !) &nbsp; c) 5 + 5i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 17</span><span class="stars">★</span></div>
+    <p>Calculer <span class="math">(2 + i)³</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> passer par le carré : (2 + i)³ = (2 + i)² × (2 + i).</p>
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(2 + i)² = 4 + 4i + i² = 3 + 4i</span>. Puis <span class="math">(3 + 4i)(2 + i) = 6 + 3i + 8i + 4i² = 6 + 11i − 4 = 2 + 11i</span>.</p>
+      <p class="fin">✅ (2 + i)³ = 2 + 11i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 18</span><span class="stars">★</span></div>
+    <p>Développer et réduire <span class="math">(x + iy)(3 + 2i)</span> pour x, y réels.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">3x + 2ix + 3iy + 2i²y = 3x + 2xi + 3yi − 2y</span>.</p>
+      <p>On regroupe : partie réelle <span class="math">3x − 2y</span>, partie imaginaire <span class="math">2x + 3y</span>.</p>
+      <p class="fin">✅ (x + iy)(3 + 2i) = (3x − 2y) + i(2x + 3y)</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 19</span><span class="stars">★★</span></div>
+    <p>Calculer <span class="math">(1 + i)⁴</span>, puis en déduire <span class="math">(1 + i)⁸</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(1 + i)² = 1 + 2i + i² = 2i</span>. Donc <span class="math">(1 + i)⁴ = (2i)² = 4i² = −4</span>.</p>
+      <p>Et <span class="math">(1 + i)⁸ = [(1 + i)⁴]² = (−4)² = 16</span>.</p>
+      <p class="fin">✅ (1 + i)⁴ = −4 et (1 + i)⁸ = 16</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 20</span><span class="stars">★★</span></div>
+    <p>Montrer que pour tous réels a, b : <span class="math">(a + ib)(a − ib) = a² + b²</span>, puis appliquer ce schéma pour calculer <span class="math">(2√2 − i√3)(2√2 + i√3)</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(a + ib)(a − ib) = a² − abi + abi − i²b² = a² − i²b² = a² + b²</span>.</p>
+      <p>Application : a = 2√2, b = √3 → <span class="math">(2√2)² + (√3)² = 8 + 3 = 11</span>.</p>
+      <p class="fin">✅ Le produit vaut 11 : un réel strictement positif, comme toujours avec ce schéma.</p>
+    </div>
+  </div>
+
+  <!-- ============ THÈME 05 ============ -->
+  <div class="band"><span class="num">05</span><h2>Identités remarquables revisitées</h2><span class="range">N° 21 → 25</span></div>
+  <p class="theme-intro">(a + ib)² = (a² − b²) + 2iab — développer d'abord, remplacer chaque i² ensuite.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 21</span><span class="stars">★</span></div>
+    <p>Développer avec l'identité du cours : <span class="math">(3 + 2i)²</span> · <span class="math">(1 − 4i)²</span> · <span class="math">(−2 + i)²</span></p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(3 + 2i)² = 9 + 12i + 4i² = 5 + 12i</span></p>
+      <p><span class="math">(1 − 4i)² = 1 − 8i + 16i² = −15 − 8i</span></p>
+      <p><span class="math">(−2 + i)² = 4 − 4i + i² = 3 − 4i</span></p>
+      <p class="fin">✅ 5 + 12i ; −15 − 8i ; 3 − 4i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 22</span><span class="stars">★</span></div>
+    <p>Écrire sous forme algébrique : <span class="math">(1 + i)² + (1 − i)²</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(1 + i)² = 2i</span> et <span class="math">(1 − i)² = −2i</span>.</p>
+      <p>Somme : <span class="math">2i + (−2i) = 0</span>.</p>
+      <p class="fin">✅ Le résultat est 0 — la somme des deux carrés est réelle (nulle ici).</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 23</span><span class="stars">★★</span></div>
+    <p>Calculer <span class="math">z = (2 + i)² − (2 − i)²</span>. Que remarque-t-on ? Vérifier la remarque sur <span class="math">(1 + 3i)² − (1 − 3i)²</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(2 + i)² = 3 + 4i</span> et <span class="math">(2 − i)² = 3 − 4i</span>, donc z = <span class="math">(3 + 4i) − (3 − 4i) = 8i</span>.</p>
+      <p><span class="lbl">Remarque :</span> z est <strong>imaginaire pur</strong>. Vérification : <span class="math">(1 + 3i)² − (1 − 3i)² = (−8 + 6i) − (−8 − 6i) = 12i</span> — encore imaginaire pur ✔.</p>
+      <p><span class="lbl">Pourquoi :</span> <span class="math">(a + ib)² − (a − ib)² = 4abi</span> — toujours imaginaire pur.</p>
+      <p class="fin">✅ z = 8i, et la différence des deux carrés est toujours imaginaire pure.</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 24</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">z² = 3 + 4i</span>. <em>(Indice : cherche un nombre de la forme a + ib dont le carré redonne exactement 3 + 4i.)</em></p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> on cherche a, b réels avec <span class="math">a² − b² = 3</span> et <span class="math">2ab = 4</span>, c'est-à-dire ab = 2.</p>
+      <p><span class="lbl">Calcul détaillé :</span> on essaie (a, b) = (2, 1) : ab = 2 ✔ et <span class="math">a² − b² = 4 − 1 = 3</span> ✔. Donc <span class="math">(2 + i)² = 3 + 4i</span>.</p>
+      <p>Un carré a toujours DEUX solutions opposées : <span class="math">z = 2 + i</span> ou <span class="math">z = −(2 + i) = −2 − i</span>.</p>
+      <p class="fin">✅ z = 2 + i ou z = −2 − i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 25</span><span class="stars">★★</span></div>
+    <p>Pour quels réels a et b le nombre <span class="math">(a + ib)²</span> est-il réel pur ? Interpréter géométriquement les deux cas.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(a + ib)² = (a² − b²) + 2abi</span>. Réel pur ⟺ <span class="math">2ab = 0 ⟺ a = 0</span> ou <span class="math">b = 0</span>.</p>
+      <p><span class="lbl">Interprétation :</span> si b = 0, z était déjà réel (z² = a² ≥ 0). Si a = 0, z = ib est imaginaire pur et <span class="math">z² = −b² ≤ 0</span> : le carré d'un imaginaire pur est un réel négatif ou nul.</p>
+      <p class="fin">✅ (a + ib)² réel pur ⟺ a = 0 ou b = 0 — et dans le cas a = 0, le carré est ≤ 0.</p>
+    </div>
+  </div>
+
+  <!-- ============ THÈME 06 ============ -->
+  <div class="band"><span class="num">06</span><h2>Égalité : identification directe</h2><span class="range">N° 26 → 30</span></div>
+  <p class="theme-intro">a + ib = a' + ib' ⟺ a = a' ET b = b' — une équation complexe donne DEUX équations réelles.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 26</span><span class="stars">★</span></div>
+    <p>Déterminer les réels x et y tels que <span class="math">(2x + 5) + (3y − 1)i = 11 + 8i</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> réel = réel ET imaginaire = imaginaire.</p>
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">2x + 5 = 11 → 2x = 6 → x = 3</span> ; <span class="math">3y − 1 = 8 → 3y = 9 → y = 3</span>.</p>
+      <p><span class="lbl">Vérification :</span> (2×3 + 5) + (3×3 − 1)i = 11 + 8i ✔</p>
+      <p class="fin">✅ x = 3 et y = 3</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 27</span><span class="stars">★</span></div>
+    <p>Déterminer les réels x et y tels que <span class="math">(x² + 3) + (2y + 1)i = 12 + 7i</span>. Combien de couples trouves-tu ?</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">x² + 3 = 12 → x² = 9 → x = 3</span> ou <span class="math">x = −3</span> ; <span class="math">2y + 1 = 7 → y = 3</span>.</p>
+      <p><span class="lbl">Conclusion :</span> deux couples possibles, car la première équation est du second degré.</p>
+      <p class="fin">✅ (x, y) = (3 ; 3) ou (−3 ; 3)</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 28</span><span class="stars">★★</span></div>
+    <p>Déterminer les réels x et y tels que <span class="math">(x + y) + (x − y)i = 4 + 2i</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">x + y = 4</span> et <span class="math">x − y = 2</span>. On additionne : <span class="math">2x = 6 → x = 3</span>, puis <span class="math">y = 4 − 3 = 1</span>.</p>
+      <p><span class="lbl">Vérification :</span> (3 + 1) + (3 − 1)i = 4 + 2i ✔</p>
+      <p class="fin">✅ x = 3 et y = 1</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 29</span><span class="stars">★★</span></div>
+    <p>Déterminer les réels x et y tels que <span class="math">(2x − y) + (x + 2y)i = −1 + 5i</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">2x − y = −1</span> et <span class="math">x + 2y = 5</span>. De la première : <span class="math">y = 2x + 1</span>.</p>
+      <p>Dans la seconde : <span class="math">x + 4x + 2 = 5 → 5x = 3 → x = 3/5</span>, puis <span class="math">y = 6/5 + 1 = 11/5</span>.</p>
+      <p><span class="lbl">Vérification :</span> 2(3/5) − 11/5 = −1 ✔ et 3/5 + 2(11/5) = 25/5 = 5 ✔</p>
+      <p class="fin">✅ x = 3/5 et y = 11/5</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 30</span><span class="stars">★★</span></div>
+    <p>Trouver tous les couples (x, y) tels que <span class="math">(x + y) + (x − y)i = 0</span>. Quelle propriété du cours retrouve-t-on ici ?</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">x + y = 0</span> et <span class="math">x − y = 0</span>. En additionnant : 2x = 0 → x = 0, puis y = 0.</p>
+      <p><span class="lbl">Propriété :</span> z = 0 ⟺ Re(z) = 0 ET Im(z) = 0 — les deux conditions à la fois.</p>
+      <p class="fin">✅ Seul le couple (0 ; 0) convient.</p>
+    </div>
+  </div>
+
+  <!-- ============ THÈME 07 ============ -->
+  <div class="band"><span class="num">07</span><h2>Équations (α + iβ) z = γ + iδ</h2><span class="range">N° 31 → 35</span></div>
+  <p class="theme-intro">Le réflexe n° 1 du chapitre : poser z = x + iy, développer, identifier, résoudre le système 2 × 2, vérifier.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 31</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">(2 + i)z = 7 + i</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> on pose z = x + iy : <span class="math">(2 + i)(x + iy) = (2x − y) + i(x + 2y) = 7 + i</span>.</p>
+      <p><span class="lbl">Système :</span> <span class="math">2x − y = 7</span> et <span class="math">x + 2y = 1</span>. De la première : y = 2x − 7. Report : <span class="math">x + 4x − 14 = 1 → 5x = 15 → x = 3</span>, puis y = −1.</p>
+      <p><span class="lbl">Vérification :</span> (2 + i)(3 − i) = 6 − 2i + 3i − i² = 7 + i ✔</p>
+      <p class="fin">✅ z = 3 − i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 32</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">(1 + 2i)z = 5</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Attention :</span> 5 = 5 + 0i — la partie imaginaire de droite est nulle !</p>
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(1 + 2i)(x + iy) = (x − 2y) + i(2x + y)</span>. Système : <span class="math">x − 2y = 5</span> et <span class="math">2x + y = 0</span>.</p>
+      <p>De la seconde : y = −2x. Report : <span class="math">x + 4x = 5 → x = 1</span>, puis y = −2.</p>
+      <p><span class="lbl">Vérification :</span> (1 + 2i)(1 − 2i) = 1 + 4 = 5 ✔ (schéma a² + b² !)</p>
+      <p class="fin">✅ z = 1 − 2i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 33</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">(3 − i)z = 10 − 5i</span>. (Les fractions sont autorisées !)</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(3 − i)(x + iy) = (3x + y) + i(3y − x)</span>. Système : <span class="math">3x + y = 10</span> et <span class="math">3y − x = −5</span>.</p>
+      <p>De la première : y = 10 − 3x. Report : <span class="math">30 − 9x − x = −5 → −10x = −35 → x = 7/2</span>, puis <span class="math">y = 10 − 21/2 = −1/2</span>.</p>
+      <p><span class="lbl">Vérification :</span> (3 − i)(7/2 − i/2) = 21/2 − 3i/2 − 7i/2 + i²/2 = 10 − 5i ✔</p>
+      <p class="fin">✅ z = 7/2 − (1/2)i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 34</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">(2 + 3i)z = 5 + 14i</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(2 + 3i)(x + iy) = (2x − 3y) + i(3x + 2y)</span>. Système : <span class="math">2x − 3y = 5</span> et <span class="math">3x + 2y = 14</span>.</p>
+      <p>On combine : 2×(1re) → <span class="math">4x − 6y = 10</span> ; 3×(2e) → <span class="math">9x + 6y = 42</span>. Addition : <span class="math">13x = 52 → x = 4</span>, puis <span class="math">2y = 14 − 12 = 2 → y = 1</span>.</p>
+      <p><span class="lbl">Vérification :</span> (2 + 3i)(4 + i) = 8 + 2i + 12i + 3i² = 5 + 14i ✔</p>
+      <p class="fin">✅ z = 4 + i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 35</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">iz = 3 − 4i</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> même réflexe, avec α = 0, β = 1 : poser z = x + iy.</p>
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">i(x + iy) = ix + i²y = −y + ix = 3 − 4i</span>. Donc <span class="math">−y = 3 → y = −3</span> et <span class="math">x = −4</span>.</p>
+      <p><span class="lbl">Vérification :</span> i(−4 − 3i) = −4i − 3i² = 3 − 4i ✔</p>
+      <p class="fin">✅ z = −4 − 3i</p>
+    </div>
+  </div>
+
+  <!-- ============ THÈME 08 ============ -->
+  <div class="band"><span class="num">08</span><h2>Carrés z² = k et analyse de systèmes</h2><span class="range">N° 36 → 40</span></div>
+  <p class="theme-intro">L'identification complète : poser z = x + iy, développer z², identifier — et savoir lire l'issue du système.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 36</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">z² = −9</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">z² = (x² − y²) + 2xyi = −9 + 0i</span> → <span class="math">x² − y² = −9</span> et <span class="math">2xy = 0</span>.</p>
+      <p>Si y = 0 : <span class="math">x² = −9</span> impossible dans ℝ. Donc x = 0 : <span class="math">−y² = −9 → y² = 9 → y = ±3</span>.</p>
+      <p><span class="lbl">Vérification :</span> (3i)² = −9 ✔ et (−3i)² = −9 ✔</p>
+      <p class="fin">✅ z = 3i ou z = −3i — deux solutions opposées, comme pour tout x² = k négatif.</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 37</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">z² = 8i</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">x² − y² = 0</span> et <span class="math">2xy = 8</span>, soit <span class="math">xy = 4 &gt; 0</span> : x et y de même signe → <span class="math">y = x</span>.</p>
+      <p>Alors <span class="math">2x² = 8 → x² = 4 → x = ±2</span>, et y = x.</p>
+      <p><span class="lbl">Vérification :</span> (2 + 2i)² = 4 + 8i + 4i² = 8i ✔</p>
+      <p class="fin">✅ z = 2 + 2i ou z = −2 − 2i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 38</span><span class="stars">★★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">z² = −5i</span>. (Les racines carrées sont autorisées dans la réponse finale.)</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">x² − y² = 0</span> et <span class="math">2xy = −5</span>, soit <span class="math">xy = −5/2 &lt; 0</span> : x et y de signes opposés → <span class="math">y = −x</span>.</p>
+      <p>Alors <span class="math">2x(−x) = −5 → −2x² = −5 → x² = 5/2</span>, donc <span class="math">x = ±√(5/2) = ±√10/2</span>, et y = −x.</p>
+      <p><span class="lbl">Vérification :</span> <span class="math">[(√10/2)(1 − i)]² = (10/4)(1 − 2i + i²) = (5/2)(−2i) = −5i</span> ✔</p>
+      <p class="fin">✅ z = (√10/2)(1 − i) ou z = −(√10/2)(1 − i)</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 39</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">(1 − i)z = 8 + 4i</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(1 − i)(x + iy) = x + iy − ix − i²y = (x + y) + i(y − x)</span>. Système : <span class="math">x + y = 8</span> et <span class="math">y − x = 4</span>.</p>
+      <p>Addition : <span class="math">2y = 12 → y = 6</span>, puis <span class="math">x = 2</span>.</p>
+      <p><span class="lbl">Vérification :</span> (1 − i)(2 + 6i) = 2 + 6i − 2i − 6i² = 8 + 4i ✔</p>
+      <p class="fin">✅ z = 2 + 6i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 40</span><span class="stars">★★</span></div>
+    <p>Analyse : on cherche (x, y) vérifiant à la fois <span class="math">x − y = 2</span> et <span class="math">2x − 2y = 5</span>. Montrer qu'aucun couple ne convient, et expliquer ce que cela signifierait pour une équation complexe qui produirait ce système.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> en multipliant la première par 2 : <span class="math">2x − 2y = 4</span>. Mais la seconde exige <span class="math">2x − 2y = 5</span> : contradiction (4 ≠ 5).</p>
+      <p><span class="lbl">Interprétation :</span> les deux droites sont strictement parallèles — aucun point d'intersection. Une équation complexe dont l'identification mène à ce système n'a donc <strong>aucune solution</strong>.</p>
+      <p class="fin">✅ Aucune solution — le système 2 × 2 peut être impossible, comme annoncé dans le cours.</p>
+    </div>
+  </div>
+
+  <!-- ============ THÈME 09 ============ -->
+  <div class="band"><span class="num">09</span><h2>Paramètre m : classification et égalité</h2><span class="range">N° 41 → 45</span></div>
+  <p class="theme-intro">Quand les parties dépendent d'un réel m, chaque condition (réel pur, imaginaire pur, égalité) devient une équation en m.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 41</span><span class="stars">★★</span></div>
+    <p>Soit <span class="math">z = (m − 3) + (2m + 1)i</span>, m réel. a) Pour quel m est-il réel pur ? b) imaginaire pur ? c) Calculer z pour m = 3.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> a) réel pur ⟺ <span class="math">2m + 1 = 0 ⟺ m = −1/2</span> (on obtient alors z = −7/2).</p>
+      <p>b) imaginaire pur ⟺ <span class="math">m − 3 = 0 ⟺ m = 3</span>. c) pour m = 3 : <span class="math">z = 0 + 7i = 7i</span> ✔</p>
+      <p class="fin">✅ Réel pur : m = −1/2 ; imaginaire pur : m = 3 ; z(3) = 7i.</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 42</span><span class="stars">★★</span></div>
+    <p>Soit <span class="math">z = (m² − 1) + (m + 1)i</span>, m réel. a) Pour quel m est-il réel pur ? b) imaginaire pur ? c) Que vaut z dans le cas particulier où il est les deux à la fois ?</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> a) réel pur ⟺ <span class="math">m + 1 = 0 ⟺ m = −1</span>.</p>
+      <p>b) imaginaire pur ⟺ <span class="math">m² − 1 = 0 ⟺ m = 1</span> ou <span class="math">m = −1</span>.</p>
+      <p>c) les deux à la fois ⟺ m = −1, et alors <span class="math">z = (1 − 1) + 0i = 0</span> — le célèbre cas de 0, seul nombre classé des deux côtés !</p>
+      <p class="fin">✅ Réel pur : m = −1 ; imaginaire pur : m = ±1 ; les deux à la fois : m = −1, avec z = 0.</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 43</span><span class="stars">★★</span></div>
+    <p>Existe-t-il un réel m tel que <span class="math">(2m + 1) + (3m − 2)i = 5 − i</span> ? Justifier soigneusement.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> partie réelle : <span class="math">2m + 1 = 5 → m = 2</span>. Partie imaginaire : <span class="math">3m − 2 = −1 → 3m = 1 → m = 1/3</span>.</p>
+      <p>Il faudrait m = 2 ET m = 1/3 en même temps : impossible. Un seul paramètre ne peut pas satisfaire deux exigences contradictoires.</p>
+      <p class="fin">✅ Aucun m ne convient — l'égalité est impossible pour tout m.</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 44</span><span class="stars">★★★</span></div>
+    <p>Soit <span class="math">z = (m² − 2m + 1) + (m² + m − 2)i</span>. a) Factoriser les deux coefficients. b) Pour quels m est-il réel pur ? c) imaginaire pur ? d) Que se passe-t-il pour m = 1 ?</p>
+    <div class="solu">
+      <p><span class="lbl">Factorisation :</span> <span class="math">m² − 2m + 1 = (m − 1)²</span> et <span class="math">m² + m − 2 = (m + 2)(m − 1)</span>, donc <span class="math">z = (m − 1)² + (m + 2)(m − 1)i</span>.</p>
+      <p><span class="lbl">Calcul détaillé :</span> b) réel pur ⟺ <span class="math">(m + 2)(m − 1) = 0 ⟺ m = −2</span> ou <span class="math">m = 1</span>.</p>
+      <p>c) imaginaire pur ⟺ <span class="math">(m − 1)² = 0 ⟺ m = 1</span>.</p>
+      <p>d) pour m = 1 : z = 0 + 0i = 0 — à la fois réel pur et imaginaire pur. Pour m = −2 : z = 9 + 0i = 9, réel pur <em>non nul</em>.</p>
+      <p class="fin">✅ Réel pur : m ∈ {−2 ; 1} ; imaginaire pur : m = 1 ; m = 1 donne z = 0.</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 45</span><span class="stars">★★</span></div>
+    <p>Soit <span class="math">z = (2m − 1) + (m + 2)i</span> et <span class="math">w = (m + 4) + (2m − 3)i</span>, m réel. Déterminer m pour que <span class="math">z = w</span>, puis vérifier.</p>
+    <div class="solu">
+      <p><span class="lbl">Calcul détaillé :</span> égalité des parties réelles : <span class="math">2m − 1 = m + 4 → m = 5</span>.</p>
+      <p>Égalité des parties imaginaires : <span class="math">m + 2 = 2m − 3 → m = 5</span>. Les deux conditions donnent la MÊME valeur : c'est compatible !</p>
+      <p><span class="lbl">Vérification :</span> pour m = 5 : z = 9 + 7i et w = 9 + 7i ✔</p>
+      <p class="fin">✅ z = w pour m = 5 (les deux équations « votent » pour la même valeur).</p>
+    </div>
+  </div>
+
+  <!-- ============ THÈME 10 ============ -->
+  <div class="band"><span class="num">10</span><h2>Vrai/Faux et défis de synthèse</h2><span class="range">N° 46 → 50</span></div>
+  <p class="theme-intro">Pour finir : juger sans calculer inutilement, et combiner toutes les notions — le niveau du contrôle.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 46</span><span class="stars">★★</span></div>
+    <p>Vrai ou faux ? Justifier chaque affirmation. a) <span class="math">i⁴⁸ + i⁴⁹ = 1 + i</span> &nbsp; b) <span class="math">Im(7 − 3i) = −3i</span> &nbsp; c) <span class="math">(1 + i)²</span> est imaginaire pur &nbsp; d) Si z est imaginaire pur, alors z² est réel &nbsp; e) <span class="math">2 + 3i = 3 + 2i</span></p>
+    <div class="solu">
+      <p><span class="lbl">Réponses argumentées :</span> a) <strong>VRAI</strong> — i⁴⁸ = (i⁴)¹² = 1 et i⁴⁹ = i.</p>
+      <p>b) <strong>FAUX</strong> — Im(7 − 3i) = −3, un réel (jamais de i dans une partie imaginaire !).</p>
+      <p>c) <strong>VRAI</strong> — (1 + i)² = 2i, et Re(2i) = 0.</p>
+      <p>d) <strong>VRAI</strong> — si z = ib, alors z² = i²b² = −b², réel (négatif ou nul).</p>
+      <p>e) <strong>FAUX</strong> — 2 ≠ 3 : une seule partie diffère, et cela suffit pour z ≠ z'.</p>
+      <p class="fin">✅ a) Vrai — b) Faux — c) Vrai — d) Vrai — e) Faux.</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 47</span><span class="stars">★★★</span></div>
+    <p>Défi — Calculer <span class="math">(1 + i)⁴⁴</span> en s'appuyant sur <span class="math">(1 + i)² = 2i</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> écrire la puissance en fonction de carrés successifs.</p>
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(1 + i)⁴⁴ = [(1 + i)²]²² = (2i)²² = 2²² × i²²</span>.</p>
+      <p>Or <span class="math">i²² = i²⁰ × i² = 1 × (−1) = −1</span>. Donc <span class="math">(1 + i)⁴⁴ = −2²²</span>.</p>
+      <p class="fin">✅ (1 + i)⁴⁴ = −2²² = −4 194 304 — un réel strictement négatif, logique : (1 + i)² = 2i est imaginaire pur, et le carré d'un imaginaire pur est réel négatif (N° 46-d) !</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 48</span><span class="stars">★★★</span></div>
+    <p>Défi — Sans tout développer, montrer que <span class="math">A = (2 + i)(2 − i)(3 + i)(3 − i)</span> est un entier, puis calculer A.</p>
+    <div class="solu">
+      <p><span class="lbl">Méthode :</span> regrouper par paires (a + ib)(a − ib) = a² + b².</p>
+      <p><span class="lbl">Calcul détaillé :</span> <span class="math">(2 + i)(2 − i) = 2² + 1² = 5</span> et <span class="math">(3 + i)(3 − i) = 3² + 1² = 10</span>.</p>
+      <p>Donc <span class="math">A = 5 × 10 = 50</span>.</p>
+      <p class="fin">✅ A = 50 — le schéma précieux transforme le produit en entiers avant même de développer !</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 49</span><span class="stars">★★★</span></div>
+    <p>Défi — Résoudre dans ℂ : <span class="math">(x + iy)(1 − i) = (1 + i)(2 + 3i)</span>.</p>
+    <div class="solu">
+      <p><span class="lbl">Étape 1 — Simplifier la droite :</span> <span class="math">(1 + i)(2 + 3i) = 2 + 3i + 2i + 3i² = −1 + 5i</span>.</p>
+      <p><span class="lbl">Étape 2 — Développer la gauche :</span> <span class="math">(x + iy)(1 − i) = x − ix + iy − i²y = (x + y) + i(y − x)</span>.</p>
+      <p><span class="lbl">Étape 3 — Identifier :</span> <span class="math">x + y = −1</span> et <span class="math">y − x = 5</span>. Addition : <span class="math">2y = 4 → y = 2</span>, puis <span class="math">x = −3</span>.</p>
+      <p><span class="lbl">Vérification :</span> (−3 + 2i)(1 − i) = −3 + 3i + 2i − 2i² = −1 + 5i ✔</p>
+      <p class="fin">✅ z = −3 + 2i</p>
+    </div>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 50</span><span class="stars">★★★</span></div>
+    <p>Grand défi final — Soit <span class="math">z = x + iy</span> (x, y réels) et <span class="math">w = z² + 2z</span>. a) Montrer que <span class="math">Re(w) = x² − y² + 2x</span> et <span class="math">Im(w) = 2xy + 2y</span>. b) Déterminer tous les z pour lesquels <span class="math">w</span> est réel pur.</p>
+    <div class="solu">
+      <p><span class="lbl">a) Calcul détaillé :</span> <span class="math">z² = (x² − y²) + 2xyi</span> et <span class="math">2z = 2x + 2yi</span>, donc <span class="math">w = (x² − y² + 2x) + i(2xy + 2y)</span> ✔</p>
+      <p><span class="lbl">b) Calcul détaillé :</span> w réel pur ⟺ Im(w) = 0 ⟺ <span class="math">2xy + 2y = 0 ⟺ 2y(x + 1) = 0 ⟺ y = 0</span> ou <span class="math">x = −1</span>.</p>
+      <p><span class="lbl">Interprétation :</span> y = 0 → z est un réel quelconque ; x = −1 → z = −1 + iy, tous les nombres d'abscisse −1.</p>
+      <p class="fin">✅ w est réel pur ⟺ y = 0 (z réel) ou x = −1 (z = −1 + iy).</p>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <strong>Bilan du parcours :</strong> 50 énoncés inédits, 10 thèmes, 3 niveaux — tous bâtis sur les deux seules notions de la Partie 1 (forme algébrique et égalité). En séance : un exercice à la fois, une question à la fois, compare ta démarche (et pas seulement le résultat) avec le corrigé, exercice par exercice.
+  </footer>
+
+</div>
+</body>
+</html>

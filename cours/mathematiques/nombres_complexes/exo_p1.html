@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARVEXA School — Nombres complexes · Partie 1 — 50 nouveaux exercices (énoncés)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --bg-soft:rgba(255,255,255,0.03); --panel:#111511;
+    --green-deep:#1A3A2A; --gold:#B8860B; --gold-bright:#E0B84A;
+    --text:#F5F0E8; --text-dim:#8a8a7a; --text-light:#d8d8c8;
+    --blue:#60a5fa; --green-ok:#4ade80;
+    --border:rgba(224,184,74,0.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Inter',-apple-system,'Segoe UI',sans-serif;
+    line-height:1.7; font-size:16px; padding:24px 16px 64px;
+  }
+  .wrap{max-width:900px;margin:0 auto}
+  .head{
+    border:1px solid var(--border); border-radius:18px;
+    background:linear-gradient(135deg,rgba(26,58,42,0.55),rgba(10,10,10,0.2));
+    padding:28px 26px; margin-bottom:16px;
+  }
+  .head .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:.72em; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+    color:var(--gold-bright); border:1px solid rgba(224,184,74,0.35);
+    border-radius:999px; padding:5px 14px; margin-bottom:14px;
+  }
+  .head h1{
+    font-family:'Playfair Display',Georgia,serif;
+    font-size:1.75em; line-height:1.25; margin-bottom:8px;
+  }
+  .head .sub{color:var(--text-dim);font-size:.95em}
+  .head .rule{height:2px;width:72px;margin-top:16px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:2px}
+  .notice{
+    border:1px solid rgba(96,165,250,0.3); border-radius:14px;
+    background:rgba(96,165,250,0.06); padding:14px 18px;
+    color:var(--text-light); font-size:.92em; margin-bottom:26px;
+  }
+  .notice strong{color:var(--blue)}
+  .band{
+    display:flex; align-items:baseline; gap:12px;
+    margin:34px 0 6px; padding-bottom:10px;
+    border-bottom:1px solid rgba(224,184,74,0.25);
+  }
+  .band .num{
+    font-family:'Playfair Display',Georgia,serif;
+    font-size:1.9em; font-weight:700; color:var(--gold-bright); line-height:1;
+  }
+  .band h2{font-size:1.12em;font-weight:700}
+  .band .range{color:var(--text-dim);font-size:.82em;margin-left:auto;white-space:nowrap}
+  .theme-intro{color:var(--text-dim);font-size:.9em;margin:6px 0 14px}
+  .exo{
+    background:var(--bg-soft); border:1px solid rgba(96,165,250,0.22);
+    border-radius:14px; padding:18px 20px; margin:14px 0;
+  }
+  .exo .label{
+    display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+    font-size:.72em; font-weight:700; letter-spacing:1.5px;
+    text-transform:uppercase; color:var(--blue); margin-bottom:8px;
+  }
+  .exo .label .no{
+    color:var(--gold-bright); border:1px solid rgba(224,184,74,0.4);
+    border-radius:8px; padding:1px 8px; letter-spacing:1px;
+  }
+  .exo .stars{color:var(--gold-bright);letter-spacing:2px}
+  .exo p{margin:6px 0}
+  .exo details{margin-top:10px}
+  .exo summary{
+    cursor:pointer; color:var(--gold-bright); font-weight:600;
+    font-size:.9em; user-select:none;
+  }
+  .solu{
+    margin-top:10px; background:rgba(74,222,128,0.06);
+    border-left:3px solid var(--green-ok); padding:12px 16px;
+    border-radius:0 8px 8px 0; color:var(--text-light); font-size:.95em;
+  }
+  .solu p{margin:5px 0}
+  .solu .lbl{color:var(--gold-bright);font-weight:600}
+  .solu .fin{color:var(--green-ok);font-weight:700}
+  .math{
+    font-family:'Cambria Math','STIX Two Math',Georgia,serif;
+    font-style:normal; color:var(--gold-bright); white-space:nowrap;
+  }
+  .foot{
+    margin-top:36px; padding:20px 22px; border-radius:14px;
+    border:1px solid var(--border); background:rgba(26,58,42,0.35);
+    color:var(--text-dim); font-size:.9em;
+  }
+  .foot strong{color:var(--gold-bright)}
+  @media (max-width:560px){
+    .band .range{display:none}
+    .head h1{font-size:1.4em}
+    .exo{padding:16px}
+  }
+  @media print{
+    body{background:#fff;color:#111}
+    .head,.band .num{color:#111}
+    .math{color:#7a5c00}
+    .solu{background:#f3faf3;color:#222}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <span class="badge">📘 ARVEXA School · Terminale D · Nombres complexes</span>
+    <h1>Partie 1 — 50 nouveaux exercices d'entraînement (énoncés)</h1>
+    <p class="sub">Créés hors manuel pour renforcer les Notions 1 (forme algébrique) et 2 (égalité de deux complexes) du fichier de cours. Aucun de ces énoncés ne figure dans « p1.html » : ni les exercices d'application, ni le QCM, ni les 10 exercices d'entraînement.</p>
+    <div class="rule"></div>
+  </header>
+
+  <div class="notice">
+    <strong>Mode d'emploi :</strong> 10 thèmes × 5 exercices, numérotés de 1 à 50, du plus facile (★) au plus corsé (★★★). <strong>Aucune correction dans cette page</strong> : elles sont toutes dans le fichier séparé <strong>corr_p1.html</strong> — ouvre-le seulement après avoir cherché. En séance, on les résout ensemble, étape par étape.
+  </div>
+
+  <!-- ============ THÈME 01 ============ -->
+  <div class="band"><span class="num">01</span><h2>Forme algébrique : lire et écrire</h2><span class="range">N° 1 → 5</span></div>
+  <p class="theme-intro">Reconnaître Re(z) et Im(z) après (et seulement après) simplification — le réflexe n° 0 du chapitre.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 1</span><span class="stars">★</span></div>
+    <p>Donner la partie réelle et la partie imaginaire de : <span class="math">z₁ = 12 − 5i</span> · <span class="math">z₂ = −(2/3)i</span> · <span class="math">z₃ = √2</span> · <span class="math">z₄ = −7 + i</span></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 2</span><span class="stars">★</span></div>
+    <p>Écrire sous forme algébrique : a) <span class="math">(3 + 2i) + (5 − 7i)</span> &nbsp;&nbsp; b) <span class="math">(4 − i) − (6 + 3i)</span> &nbsp;&nbsp; c) <span class="math">2(1 + i) − 3(2 − i)</span></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 3</span><span class="stars">★</span></div>
+    <p>Écrire sous forme algébrique : a) <span class="math">i(4 + 9i)</span> &nbsp;&nbsp; b) <span class="math">−i(6 − 5i)</span> &nbsp;&nbsp; c) <span class="math">(1 + i)(1 − i) + 2i</span></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 4</span><span class="stars">★★</span></div>
+    <p>Simplifier d'abord, puis donner Re et Im : <span class="math">z₁ = 3i² + 5</span> · <span class="math">z₂ = i³ + i</span> · <span class="math">z₃ = 2i⁴ − 1</span> · <span class="math">z₄ = i⁵ − i</span></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 5</span><span class="stars">★★</span></div>
+    <p>Soit <span class="math">z = (2 + 3i) + (a − i)</span> où <span class="math">a</span> est un réel. On sait que <span class="math">Re(z) = 5</span>. Déterminer <span class="math">a</span>, puis donner <span class="math">Im(z)</span>.</p>
+  </div>
+
+  <!-- ============ THÈME 02 ============ -->
+  <div class="band"><span class="num">02</span><h2>Puissances de i</h2><span class="range">N° 6 → 10</span></div>
+  <p class="theme-intro">Cycle de période 4 : i, −1, −i, 1 — on réduit l'exposant avec le reste de la division euclidienne par 4.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 6</span><span class="stars">★</span></div>
+    <p>Calculer : <span class="math">i²³</span> · <span class="math">i⁵⁰</span> · <span class="math">i⁷⁵</span> · <span class="math">i¹⁰¹</span></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 7</span><span class="stars">★</span></div>
+    <p>Calculer : <span class="math">(5i)²</span> · <span class="math">(−2i)⁴</span> · <span class="math">(−i)³</span></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 8</span><span class="stars">★</span></div>
+    <p>Calculer : <span class="math">i¹⁸ + i¹⁹ + i²⁰ + i²¹</span> &nbsp;&nbsp;puis&nbsp;&nbsp; <span class="math">i³² − i³⁰</span></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 9</span><span class="stars">★★</span></div>
+    <p>Calculer <span class="math">S = i + i² + i³ + … + i⁶⁰</span>, puis <span class="math">S' = 1 + i + i² + … + i⁵⁰</span></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 10</span><span class="stars">★★</span></div>
+    <p>Trouver tous les entiers <span class="math">n</span> avec <span class="math">0 ≤ n ≤ 12</span> tels que <span class="math">iⁿ</span> soit un nombre réel.</p>
+  </div>
+
+  <!-- ============ THÈME 03 ============ -->
+  <div class="band"><span class="num">03</span><h2>Réel pur, imaginaire pur</h2><span class="range">N° 11 → 15</span></div>
+  <p class="theme-intro">Réel pur ⟺ Im(z) = 0 · Imaginaire pur ⟺ Re(z) = 0 · 0 est les deux à la fois.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 11</span><span class="stars">★</span></div>
+    <p>Classer chaque nombre : réel pur, imaginaire pur, ou ni l'un ni l'autre : <span class="math">z₁ = √5</span> · <span class="math">z₂ = √5 i</span> · <span class="math">z₃ = 1 + √2 i</span> · <span class="math">z₄ = i⁶</span> · <span class="math">z₅ = (1 + i)(1 − i)</span></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 12</span><span class="stars">★</span></div>
+    <p>Soit <span class="math">z = (x² + 1) + (x − 2)i</span> avec <span class="math">x</span> réel. Montrer que <span class="math">z</span> n'est <strong>jamais</strong> imaginaire pur.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 13</span><span class="stars">★★</span></div>
+    <p>Déterminer <span class="math">x</span> réel pour que <span class="math">z = x + (x² − 9)i</span> soit : a) réel pur ; b) imaginaire pur. Donner z dans chaque cas.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 14</span><span class="stars">★★</span></div>
+    <p>Soit <span class="math">z = (m + 1) + (m² − 1)i</span>, m réel. a) Pour quel m est-il réel pur ? b) imaginaire pur ? c) Pour quel m a-t-on <span class="math">z = 0</span> ?</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 15</span><span class="stars">★★</span></div>
+    <p>Vrai ou faux ? Justifier chaque réponse. a) <span class="math">Im(3 + 5i) = 5i</span> &nbsp; b) 0 est à la fois réel pur et imaginaire pur &nbsp; c) Si z est à la fois réel pur et imaginaire pur, alors <span class="math">z = 0</span>.</p>
+  </div>
+
+  <!-- ============ THÈME 04 ============ -->
+  <div class="band"><span class="num">04</span><h2>Premiers calculs : sommes et produits</h2><span class="range">N° 16 → 20</span></div>
+  <p class="theme-intro">Développer, remplacer chaque i² par −1, regrouper — et repérer le schéma précieux (a + ib)(a − ib) = a² + b².</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 16</span><span class="stars">★</span></div>
+    <p>Calculer : a) <span class="math">(1 + i)(2 + 3i)</span> &nbsp;&nbsp; b) <span class="math">(3 − 2i)(3 + 2i)</span> &nbsp;&nbsp; c) <span class="math">(2 − i)(1 + 3i)</span></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 17</span><span class="stars">★</span></div>
+    <p>Calculer <span class="math">(2 + i)³</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 18</span><span class="stars">★</span></div>
+    <p>Développer et réduire <span class="math">(x + iy)(3 + 2i)</span> pour x, y réels.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 19</span><span class="stars">★★</span></div>
+    <p>Calculer <span class="math">(1 + i)⁴</span>, puis en déduire <span class="math">(1 + i)⁸</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 20</span><span class="stars">★★</span></div>
+    <p>Montrer que pour tous réels a, b : <span class="math">(a + ib)(a − ib) = a² + b²</span>, puis appliquer ce schéma pour calculer <span class="math">(2√2 − i√3)(2√2 + i√3)</span>.</p>
+  </div>
+
+  <!-- ============ THÈME 05 ============ -->
+  <div class="band"><span class="num">05</span><h2>Identités remarquables revisitées</h2><span class="range">N° 21 → 25</span></div>
+  <p class="theme-intro">(a + ib)² = (a² − b²) + 2iab — développer d'abord, remplacer chaque i² ensuite.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 21</span><span class="stars">★</span></div>
+    <p>Développer avec l'identité du cours : <span class="math">(3 + 2i)²</span> · <span class="math">(1 − 4i)²</span> · <span class="math">(−2 + i)²</span></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 22</span><span class="stars">★</span></div>
+    <p>Écrire sous forme algébrique : <span class="math">(1 + i)² + (1 − i)²</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 23</span><span class="stars">★★</span></div>
+    <p>Calculer <span class="math">z = (2 + i)² − (2 − i)²</span>. Que remarque-t-on ? Vérifier la remarque sur <span class="math">(1 + 3i)² − (1 − 3i)²</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 24</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">z² = 3 + 4i</span>. <em>(Indice : cherche un nombre de la forme a + ib dont le carré redonne exactement 3 + 4i.)</em></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 25</span><span class="stars">★★</span></div>
+    <p>Pour quels réels a et b le nombre <span class="math">(a + ib)²</span> est-il réel pur ? Interpréter géométriquement les deux cas.</p>
+  </div>
+
+  <!-- ============ THÈME 06 ============ -->
+  <div class="band"><span class="num">06</span><h2>Égalité : identification directe</h2><span class="range">N° 26 → 30</span></div>
+  <p class="theme-intro">a + ib = a' + ib' ⟺ a = a' ET b = b' — une équation complexe donne DEUX équations réelles.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 26</span><span class="stars">★</span></div>
+    <p>Déterminer les réels x et y tels que <span class="math">(2x + 5) + (3y − 1)i = 11 + 8i</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 27</span><span class="stars">★</span></div>
+    <p>Déterminer les réels x et y tels que <span class="math">(x² + 3) + (2y + 1)i = 12 + 7i</span>. Combien de couples trouves-tu ?</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 28</span><span class="stars">★★</span></div>
+    <p>Déterminer les réels x et y tels que <span class="math">(x + y) + (x − y)i = 4 + 2i</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 29</span><span class="stars">★★</span></div>
+    <p>Déterminer les réels x et y tels que <span class="math">(2x − y) + (x + 2y)i = −1 + 5i</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 30</span><span class="stars">★★</span></div>
+    <p>Trouver tous les couples (x, y) tels que <span class="math">(x + y) + (x − y)i = 0</span>. Quelle propriété du cours retrouve-t-on ici ?</p>
+  </div>
+
+  <!-- ============ THÈME 07 ============ -->
+  <div class="band"><span class="num">07</span><h2>Équations (α + iβ) z = γ + iδ</h2><span class="range">N° 31 → 35</span></div>
+  <p class="theme-intro">Le réflexe n° 1 du chapitre : poser z = x + iy, développer, identifier, résoudre le système 2 × 2, vérifier.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 31</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">(2 + i)z = 7 + i</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 32</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">(1 + 2i)z = 5</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 33</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">(3 − i)z = 10 − 5i</span>. (Les fractions sont autorisées !)</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 34</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">(2 + 3i)z = 5 + 14i</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 35</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">iz = 3 − 4i</span>.</p>
+  </div>
+
+  <!-- ============ THÈME 08 ============ -->
+  <div class="band"><span class="num">08</span><h2>Carrés z² = k et analyse de systèmes</h2><span class="range">N° 36 → 40</span></div>
+  <p class="theme-intro">L'identification complète : poser z = x + iy, développer z², identifier — et savoir lire l'issue du système.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 36</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">z² = −9</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 37</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">z² = 8i</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 38</span><span class="stars">★★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">z² = −5i</span>. (Les racines carrées sont autorisées dans la réponse finale.)</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 39</span><span class="stars">★★</span></div>
+    <p>Résoudre dans ℂ : <span class="math">(1 − i)z = 8 + 4i</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 40</span><span class="stars">★★</span></div>
+    <p>Analyse : on cherche (x, y) vérifiant à la fois <span class="math">x − y = 2</span> et <span class="math">2x − 2y = 5</span>. Montrer qu'aucun couple ne convient, et expliquer ce que cela signifierait pour une équation complexe qui produirait ce système.</p>
+  </div>
+
+  <!-- ============ THÈME 09 ============ -->
+  <div class="band"><span class="num">09</span><h2>Paramètre m : classification et égalité</h2><span class="range">N° 41 → 45</span></div>
+  <p class="theme-intro">Quand les parties dépendent d'un réel m, chaque condition (réel pur, imaginaire pur, égalité) devient une équation en m.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 41</span><span class="stars">★★</span></div>
+    <p>Soit <span class="math">z = (m − 3) + (2m + 1)i</span>, m réel. a) Pour quel m est-il réel pur ? b) imaginaire pur ? c) Calculer z pour m = 3.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 42</span><span class="stars">★★</span></div>
+    <p>Soit <span class="math">z = (m² − 1) + (m + 1)i</span>, m réel. a) Pour quel m est-il réel pur ? b) imaginaire pur ? c) Que vaut z dans le cas particulier où il est les deux à la fois ?</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 43</span><span class="stars">★★</span></div>
+    <p>Existe-t-il un réel m tel que <span class="math">(2m + 1) + (3m − 2)i = 5 − i</span> ? Justifier soigneusement.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 44</span><span class="stars">★★★</span></div>
+    <p>Soit <span class="math">z = (m² − 2m + 1) + (m² + m − 2)i</span>. a) Factoriser les deux coefficients. b) Pour quels m est-il réel pur ? c) imaginaire pur ? d) Que se passe-t-il pour m = 1 ?</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 45</span><span class="stars">★★</span></div>
+    <p>Soit <span class="math">z = (2m − 1) + (m + 2)i</span> et <span class="math">w = (m + 4) + (2m − 3)i</span>, m réel. Déterminer m pour que <span class="math">z = w</span>, puis vérifier.</p>
+  </div>
+
+  <!-- ============ THÈME 10 ============ -->
+  <div class="band"><span class="num">10</span><h2>Vrai/Faux et défis de synthèse</h2><span class="range">N° 46 → 50</span></div>
+  <p class="theme-intro">Pour finir : juger sans calculer inutilement, et combiner toutes les notions — le niveau du contrôle.</p>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 46</span><span class="stars">★★</span></div>
+    <p>Vrai ou faux ? Justifier chaque affirmation. a) <span class="math">i⁴⁸ + i⁴⁹ = 1 + i</span> &nbsp; b) <span class="math">Im(7 − 3i) = −3i</span> &nbsp; c) <span class="math">(1 + i)²</span> est imaginaire pur &nbsp; d) Si z est imaginaire pur, alors z² est réel &nbsp; e) <span class="math">2 + 3i = 3 + 2i</span></p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 47</span><span class="stars">★★★</span></div>
+    <p>Défi — Calculer <span class="math">(1 + i)⁴⁴</span> en s'appuyant sur <span class="math">(1 + i)² = 2i</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 48</span><span class="stars">★★★</span></div>
+    <p>Défi — Sans tout développer, montrer que <span class="math">A = (2 + i)(2 − i)(3 + i)(3 − i)</span> est un entier, puis calculer A.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 49</span><span class="stars">★★★</span></div>
+    <p>Défi — Résoudre dans ℂ : <span class="math">(x + iy)(1 − i) = (1 + i)(2 + 3i)</span>.</p>
+  </div>
+
+  <div class="exo">
+    <div class="label"><span class="no">N° 50</span><span class="stars">★★★</span></div>
+    <p>Grand défi final — Soit <span class="math">z = x + iy</span> (x, y réels) et <span class="math">w = z² + 2z</span>. a) Montrer que <span class="math">Re(w) = x² − y² + 2x</span> et <span class="math">Im(w) = 2xy + 2y</span>. b) Déterminer tous les z pour lesquels <span class="math">w</span> est réel pur.</p>
+  </div>
+
+  <footer class="foot">
+    <strong>Bilan du parcours :</strong> 50 énoncés inédits, 10 thèmes, 3 niveaux — tous bâtis sur les deux seules notions de la Partie 1 (forme algébrique et égalité). En séance : un exercice à la fois, une question à la fois, tu proposes, je corrige. Corrections : corr_p1.html — à ouvrir seulement après ta recherche.
+  </footer>
+
+</div>
+</body>
+</html>
