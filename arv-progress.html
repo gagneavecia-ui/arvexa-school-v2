@@ -1510,9 +1510,10 @@ textarea:focus-visible {
 
   <script type="module">
   import { initializeApp } from "firebase/app";
-  import { getAuth, onAuthStateChanged, getIdToken } from "firebase/auth";
+  import { getAuth, getIdToken } from "firebase/auth";
   import { getFirestore, doc, getDoc } from "firebase/firestore";
-
+  import { requireAuth } from './auth-guard.js';
+    
   // ═══════════════════════════════════════════════════════════════
   // CONFIG
   // ═══════════════════════════════════════════════════════════════
@@ -3259,31 +3260,32 @@ body.addEventListener('input', () => {
   // ═══════════════════════════════════════════════════════════════
   // AUTH
   // ═══════════════════════════════════════════════════════════════
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      window.location.replace('auth-choice.html');
-      return;
-    }
-    state.user = user;
+  requireAuth({
+    onUser: async (user) => {
+      state.user = user;
 
-    try {
-      const snap = await getDoc(doc(db, 'users', user.uid));
-      if (snap.exists()) {
-        state.userData = snap.data();
-        state.isPremium = isPremiumUser(state.userData);
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          state.userData = snap.data();
+          state.isPremium = isPremiumUser(state.userData);
+        }
+      } catch (_) {}
+
+      updatePremiumBadge();
+      applyRoute(routeFromHash());
+
+      if (!window.location.hash) {
+        window.history.replaceState(null, '', '#/notebooks');
       }
-    } catch (_) {}
 
-    updatePremiumBadge();
-    applyRoute(routeFromHash());
-
-    if (!window.location.hash) {
-      window.history.replaceState(null, '', '#/notebooks');
+      cacheToken();
+    },
+    onNoUser: () => {
+      window.location.replace('auth-choice.html');
     }
-
-    cacheToken();
   });
-
+    
   function isPremiumUser(data) {
     if (!data) return false;
     const status = data.subscriptionStatus || 'none';
