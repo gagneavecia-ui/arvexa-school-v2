@@ -88,33 +88,33 @@
       <!-- SVG : droite des réels trouée -->
       <figure class="lecture-figure">
         <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="La droite des réels et les solutions manquantes de x carré égale moins un">
-          <text x="250" y="24" fill="#E0B84A" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">LA DROITE DES RÉELS NE SUFFIT PLUS</text>
+          <text x="250" y="24" style="fill:var(--accent-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">LA DROITE DES RÉELS NE SUFFIT PLUS</text>
 
-          <line x1="30" y1="120" x2="470" y2="120" stroke="#E0B84A" stroke-width="2"/>
-          <polygon points="470,120 460,115 460,125" fill="#E0B84A"/>
-          <text x="478" y="124" fill="#8a8a7a" font-size="12" font-family="Inter">ℝ</text>
+          <line x1="30" y1="120" x2="470" y2="120" style="stroke:var(--accent-bright)" stroke-width="2"/>
+          <polygon points="470,120 460,115 460,125" style="fill:var(--accent-bright)"/>
+          <text x="478" y="124" style="fill:var(--text-dim)" font-size="12" font-family="Inter">ℝ</text>
 
-          <g stroke="#E0B84A" stroke-width="1.5">
+          <g style="stroke:var(--accent-bright)" stroke-width="1.5">
             <line x1="150" y1="114" x2="150" y2="126"/>
             <line x1="250" y1="114" x2="250" y2="126"/>
             <line x1="350" y1="114" x2="350" y2="126"/>
           </g>
-          <text x="150" y="145" fill="#8a8a7a" font-size="12" font-family="Inter" text-anchor="middle">−1</text>
-          <text x="250" y="145" fill="#8a8a7a" font-size="12" font-family="Inter" text-anchor="middle">0</text>
-          <text x="350" y="145" fill="#8a8a7a" font-size="12" font-family="Inter" text-anchor="middle">1</text>
+          <text x="150" y="145" style="fill:var(--text-dim)" font-size="12" font-family="Inter" text-anchor="middle">−1</text>
+          <text x="250" y="145" style="fill:var(--text-dim)" font-size="12" font-family="Inter" text-anchor="middle">0</text>
+          <text x="350" y="145" style="fill:var(--text-dim)" font-size="12" font-family="Inter" text-anchor="middle">1</text>
 
-          <circle cx="100" cy="120" r="7" fill="#4ade80"/>
-          <circle cx="400" cy="120" r="7" fill="#4ade80"/>
-          <text x="100" y="100" fill="#4ade80" font-size="11" font-family="Inter" text-anchor="middle">−2 ✔</text>
-          <text x="400" y="100" fill="#4ade80" font-size="11" font-family="Inter" text-anchor="middle">2 ✔</text>
-          <text x="250" y="72" fill="#4ade80" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">x² = 4 : deux solutions sur la droite</text>
+          <circle cx="100" cy="120" r="7" style="fill:var(--green-bright)"/>
+          <circle cx="400" cy="120" r="7" style="fill:var(--green-bright)"/>
+          <text x="100" y="100" style="fill:var(--green-bright)" font-size="11" font-family="Inter" text-anchor="middle">−2 ✔</text>
+          <text x="400" y="100" style="fill:var(--green-bright)" font-size="11" font-family="Inter" text-anchor="middle">2 ✔</text>
+          <text x="250" y="72" style="fill:var(--green-bright)" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">x² = 4 : deux solutions sur la droite</text>
 
           <g>
-            <circle cx="150" cy="120" r="10" fill="none" stroke="#f87171" stroke-width="1.5" stroke-dasharray="3 3"/>
-            <line x1="143" y1="113" x2="157" y2="127" stroke="#f87171" stroke-width="1.5"/>
-            <line x1="143" y1="127" x2="157" y2="113" stroke="#f87171" stroke-width="1.5"/>
+            <circle cx="150" cy="120" r="10" fill="none" style="stroke:var(--danger-light)" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <line x1="143" y1="113" x2="157" y2="127" style="stroke:var(--danger-light)" stroke-width="1.5"/>
+            <line x1="143" y1="127" x2="157" y2="113" style="stroke:var(--danger-light)" stroke-width="1.5"/>
           </g>
-          <text x="250" y="180" fill="#f87171" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">x² = −1 : AUCUNE solution — la droite est « trouée » ici</text>
+          <text x="250" y="180" style="fill:var(--danger-light)" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">x² = −1 : AUCUNE solution — la droite est « trouée » ici</text>
         </svg>
         <figcaption class="lecture-figure-caption">x² = 4 a ses deux solutions sur la droite des réels. Celles de x² = −1 n'y figurent nulle part : il faut aller « ailleurs ».</figcaption>
       </figure>
@@ -122,6 +122,38 @@
       <p class="lecture-text">
         Face à ce mur, deux options : <strong>renoncer</strong>, ou <strong>inventer</strong>. L'histoire a choisi d'inventer — et ce n'est pas la première fois ! Les nombres négatifs ont longtemps paru absurdes (« comment avoir −3 moutons ? »). Les irrationnels comme <span class="math">√2</span> ont scandalisé les Grecs. À chaque fois, élargir la notion de nombre a résolu des problèmes jusque-là insolubles.
       </p>
+
+      <!-- SVG : l'escalier des ensembles de nombres -->
+      <figure class="lecture-figure">
+        <svg viewBox="0 0 520 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Emboîtement des ensembles de nombres : N dans Z dans Q dans R dans C">
+          <text x="260" y="22" style="fill:var(--accent-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">L'ESCALIER DES ENSEMBLES DE NOMBRES</text>
+
+          <!-- C -->
+          <rect x="10" y="42" width="500" height="268" rx="10" fill="rgba(224,184,74,0.04)" style="stroke:var(--accent-bright)" stroke-width="1.5"/>
+          <text x="26" y="66" style="fill:var(--accent-bright)" font-size="14" font-weight="700" font-family="Playfair Display, serif">ℂ — les complexes</text>
+          <text x="494" y="66" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter" text-anchor="end">nouvelle marche : + i → x² = −1 devient soluble</text>
+
+          <!-- R -->
+          <rect x="28" y="92" width="464" height="202" rx="9" fill="rgba(255,255,255,0.015)" style="stroke:var(--border-soft)"/>
+          <text x="44" y="114" style="fill:var(--text-light)" font-size="13" font-weight="700" font-family="Playfair Display, serif">ℝ — les réels</text>
+          <text x="476" y="114" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter" text-anchor="end">+ les irrationnels (√2, π…)</text>
+
+          <!-- Q -->
+          <rect x="46" y="140" width="428" height="138" rx="8" fill="rgba(255,255,255,0.012)" style="stroke:var(--border-soft)"/>
+          <text x="62" y="160" style="fill:var(--text-light)" font-size="13" font-weight="700" font-family="Playfair Display, serif">ℚ — les quotients</text>
+          <text x="458" y="160" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter" text-anchor="end">+ les fractions (2x = 1)</text>
+
+          <!-- Z -->
+          <rect x="64" y="186" width="392" height="76" rx="8" fill="rgba(255,255,255,0.012)" style="stroke:var(--border-soft)"/>
+          <text x="80" y="206" style="fill:var(--text-light)" font-size="13" font-weight="700" font-family="Playfair Display, serif">ℤ — les entiers</text>
+          <text x="440" y="206" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter" text-anchor="end">+ les négatifs (x + 3 = 0)</text>
+
+          <!-- N -->
+          <text x="260" y="242" style="fill:var(--green-bright)" font-size="13" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">ℕ — 0, 1, 2, 3, …</text>
+          <text x="260" y="258" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">les premiers nombres, nés du comptage</text>
+        </svg>
+        <figcaption class="lecture-figure-caption">Chaque crise a forcé un élargissement : ℕ → ℤ (les négatifs), → ℚ (les fractions), → ℝ (√2, π), → ℂ (i). La marche du jour : franchir ℝ vers ℂ.</figcaption>
+      </figure>
 
       <div class="lecture-callout lecture-callout-gold">
         <div class="lecture-callout-body">
@@ -135,6 +167,15 @@
       <p class="lecture-text">
         Conséquence immédiate : <span class="math">x² = −1</span> possède désormais <strong>deux solutions</strong>, <span class="math">x = i</span> et <span class="math">x = −i</span> (vérifie : <span class="math">(−i)² = i² = −1</span> ✔). Et mieux : on montrera plus loin que <em>toute</em> équation polynomiale devient résoluble — c'est le <strong>théorème fondamental de l'algèbre</strong>.
       </p>
+
+      <div class="lecture-callout lecture-callout-warning">
+        <div class="lecture-callout-body">
+          <div class="lecture-callout-title">⚠️ Bien placer i dans sa tête</div>
+          <p><span class="math">i</span> n'est <strong>pas une variable</strong> : c'est une <strong>constante</strong>, exactement comme <span class="math">π</span>. On ne cherche pas « la valeur de i » — elle est fixée une fois pour toutes : <span class="math">i² = −1</span>, c'est tout.</p>
+          <p><span class="math">i</span> n'est <strong>ni positif ni négatif</strong> : la comparaison « plus grand / plus petit » n'a pas de sens entre complexes. Évite donc d'écrire <span class="math">i &gt; 0</span> — c'est sans objet.</p>
+          <p>Enfin, on écrit <span class="math">2i</span>, <span class="math">−i</span> ou <span class="math">i/2</span> comme on écrit <span class="math">2π</span> : le <span class="math">i</span> se colle au coefficient, sans point de multiplication.</p>
+        </div>
+      </div>
 
       <div class="lecture-callout lecture-callout-key">
         <div class="lecture-callout-body">
@@ -203,12 +244,32 @@
         </div>
       </div>
 
+      <!-- Les 4 valeurs fondamentales, en 4 cases -->
+      <div class="lecture-powers-cycle">
+        <div class="power-box">
+          <div class="power-expo">i¹</div>
+          <div class="power-value">i</div>
+        </div>
+        <div class="power-box">
+          <div class="power-expo">i²</div>
+          <div class="power-value">−1</div>
+        </div>
+        <div class="power-box">
+          <div class="power-expo">i³</div>
+          <div class="power-value">−i</div>
+        </div>
+        <div class="power-box">
+          <div class="power-expo">i⁴</div>
+          <div class="power-value">1</div>
+        </div>
+      </div>
+
       <!-- SVG : roue des puissances de i -->
       <figure class="lecture-figure">
         <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Roue des puissances de i">
           <defs>
             <marker id="arrowGoldN1" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
-              <path d="M0,0 L7,3.5 L0,7" fill="none" stroke="#E0B84A" stroke-width="1.3"/>
+              <path d="M0,0 L7,3.5 L0,7" fill="none" style="stroke:var(--accent-bright)" stroke-width="1.3"/>
             </marker>
           </defs>
 
@@ -217,37 +278,50 @@
 
           <line x1="60" y1="200" x2="340" y2="200" stroke="rgba(224,184,74,0.3)" stroke-width="1"/>
           <line x1="200" y1="60" x2="200" y2="340" stroke="rgba(224,184,74,0.3)" stroke-width="1"/>
-          <text x="345" y="205" fill="#8a8a7a" font-size="11" font-family="Inter">Réels</text>
-          <text x="205" y="55" fill="#8a8a7a" font-size="11" font-family="Inter">Imaginaires</text>
+          <text x="345" y="205" style="fill:var(--text-dim)" font-size="11" font-family="Inter">Réels</text>
+          <text x="205" y="55" style="fill:var(--text-dim)" font-size="11" font-family="Inter">Imaginaires</text>
 
-          <circle cx="200" cy="100" r="24" fill="rgba(224,184,74,0.1)" stroke="#E0B84A" stroke-width="2"/>
-          <text x="200" y="97" fill="#E0B84A" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">i¹</text>
-          <text x="200" y="113" fill="#F5F0E8" font-size="11" font-family="Inter" text-anchor="middle">i</text>
+          <circle cx="200" cy="100" r="24" fill="rgba(224,184,74,0.1)" style="stroke:var(--accent-bright)" stroke-width="2"/>
+          <text x="200" y="97" style="fill:var(--accent-bright)" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">i¹</text>
+          <text x="200" y="113" style="fill:var(--text-light)" font-size="11" font-family="Inter" text-anchor="middle">i</text>
 
-          <circle cx="100" cy="200" r="24" fill="rgba(74,222,128,0.1)" stroke="#4ade80" stroke-width="2"/>
-          <text x="100" y="197" fill="#4ade80" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">i²</text>
-          <text x="100" y="213" fill="#F5F0E8" font-size="11" font-family="Inter" text-anchor="middle">−1</text>
+          <circle cx="100" cy="200" r="24" fill="rgba(74,222,128,0.1)" style="stroke:var(--green-bright)" stroke-width="2"/>
+          <text x="100" y="197" style="fill:var(--green-bright)" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">i²</text>
+          <text x="100" y="213" style="fill:var(--text-light)" font-size="11" font-family="Inter" text-anchor="middle">−1</text>
 
-          <circle cx="200" cy="300" r="24" fill="rgba(96,165,250,0.1)" stroke="#60a5fa" stroke-width="2"/>
-          <text x="200" y="297" fill="#60a5fa" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">i³</text>
-          <text x="200" y="313" fill="#F5F0E8" font-size="11" font-family="Inter" text-anchor="middle">−i</text>
+          <circle cx="200" cy="300" r="24" fill="rgba(96,165,250,0.1)" style="stroke:var(--blue)" stroke-width="2"/>
+          <text x="200" y="297" style="fill:var(--blue)" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">i³</text>
+          <text x="200" y="313" style="fill:var(--text-light)" font-size="11" font-family="Inter" text-anchor="middle">−i</text>
 
-          <circle cx="300" cy="200" r="24" fill="rgba(224,184,74,0.1)" stroke="#E0B84A" stroke-width="2"/>
-          <text x="300" y="197" fill="#E0B84A" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">i⁴</text>
-          <text x="300" y="213" fill="#F5F0E8" font-size="11" font-family="Inter" text-anchor="middle">1</text>
+          <circle cx="300" cy="200" r="24" fill="rgba(224,184,74,0.1)" style="stroke:var(--accent-bright)" stroke-width="2"/>
+          <text x="300" y="197" style="fill:var(--accent-bright)" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">i⁴</text>
+          <text x="300" y="213" style="fill:var(--text-light)" font-size="11" font-family="Inter" text-anchor="middle">1</text>
 
-          <path d="M 178 106 Q 120 122 104 172" fill="none" stroke="#E0B84A" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#arrowGoldN1)"/>
-          <path d="M 104 228 Q 120 278 174 296" fill="none" stroke="#E0B84A" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#arrowGoldN1)"/>
-          <path d="M 226 296 Q 280 278 296 228" fill="none" stroke="#E0B84A" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#arrowGoldN1)"/>
-          <path d="M 296 172 Q 280 122 224 106" fill="none" stroke="#E0B84A" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#arrowGoldN1)"/>
+          <path d="M 178 106 Q 120 122 104 172" fill="none" style="stroke:var(--accent-bright)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#arrowGoldN1)"/>
+          <path d="M 104 228 Q 120 278 174 296" fill="none" style="stroke:var(--accent-bright)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#arrowGoldN1)"/>
+          <path d="M 226 296 Q 280 278 296 228" fill="none" style="stroke:var(--accent-bright)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#arrowGoldN1)"/>
+          <path d="M 296 172 Q 280 122 224 106" fill="none" style="stroke:var(--accent-bright)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#arrowGoldN1)"/>
 
-          <text x="200" y="205" fill="#8a8a7a" font-size="13" font-family="Playfair Display, serif" text-anchor="middle" font-style="italic">cycle</text>
-          <text x="200" y="222" fill="#8a8a7a" font-size="11" font-family="Inter" text-anchor="middle">période 4</text>
+          <text x="200" y="205" style="fill:var(--text-dim)" font-size="13" font-family="Playfair Display, serif" text-anchor="middle" font-style="italic">cycle</text>
+          <text x="200" y="222" style="fill:var(--text-dim)" font-size="11" font-family="Inter" text-anchor="middle">période 4</text>
 
-          <text x="200" y="30" fill="#E0B84A" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">LA ROUE DES PUISSANCES DE i</text>
+          <text x="200" y="30" style="fill:var(--accent-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">LA ROUE DES PUISSANCES DE i</text>
         </svg>
         <figcaption class="lecture-figure-caption">Les quatre puissances de base à connaître par cœur : i, −1, −i, 1. Toutes les autres s'y ramènent.</figcaption>
       </figure>
+
+      <!-- Le cycle se répète : les puissances suivantes -->
+      <div class="lecture-chain">
+        <span class="chain-item active">i⁵ = i</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-item">i⁶ = −1</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-item">i⁷ = −i</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-item">i⁸ = 1</span>
+        <span class="chain-arrow">→</span>
+        <span class="chain-item active">i⁹ = i</span>
+      </div>
 
       <div class="lecture-section-sub">
         <h3 class="lecture-subtitle">Calculer iⁿ pour n'importe quel n : la méthode du reste</h3>
@@ -267,6 +341,22 @@
           <li>Si <span class="math">n ≡ 2 (mod 4)</span> → <span class="math">iⁿ = −1</span></li>
           <li>Si <span class="math">n ≡ 3 (mod 4)</span> → <span class="math">iⁿ = −i</span></li>
         </ul>
+
+        <p class="lecture-text">
+          Le tableau confirme la règle sur les douze premières puissances — observe les colonnes : le motif de période 4 se répète à l'identique, aussi loin que l'on veut.
+        </p>
+
+        <table>
+          <thead>
+            <tr><th>n</th><th>reste de n ÷ 4</th><th>iⁿ</th><th>n</th><th>reste de n ÷ 4</th><th>iⁿ</th><th>n</th><th>reste de n ÷ 4</th><th>iⁿ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>1</td><td>i</td><td>5</td><td>1</td><td>i</td><td>9</td><td>1</td><td>i</td></tr>
+            <tr><td>2</td><td>2</td><td>−1</td><td>6</td><td>2</td><td>−1</td><td>10</td><td>2</td><td>−1</td></tr>
+            <tr><td>3</td><td>3</td><td>−i</td><td>7</td><td>3</td><td>−i</td><td>11</td><td>3</td><td>−i</td></tr>
+            <tr><td>4</td><td>0</td><td>1</td><td>8</td><td>0</td><td>1</td><td>12</td><td>0</td><td>1</td></tr>
+          </tbody>
+        </table>
 
         <div class="lecture-callout lecture-callout-gold">
           <div class="lecture-callout-body">
@@ -296,7 +386,7 @@
               <p><strong>i⁴⁸ :</strong> <span class="math">48 = 4 × 12 + 0</span> → reste 0 → <span class="math">i⁴⁸ = 1</span></p>
               <p><strong>(2i)³ :</strong> on sépare le nombre et le i : <span class="math">(2i)³ = 2³ × i³ = 8 × (−i) = −8i</span></p>
               <p><strong>S :</strong> il y a <span class="math">2025 = 4 × 506 + 1</span> termes. On regroupe <span class="math">506</span> paquets de 4 termes consécutifs — chacun vaut 0 (somme magique !) — et il reste le dernier terme <span class="math">i²⁰²⁵ = i</span> (reste 1).</p>
-              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Conclusion :</strong> <span class="math">i³⁷ = i</span>, <span class="math">i⁴⁸ = 1</span>, <span class="math">(2i)³ = −8i</span>, <span class="math">S = i</span></p>
+              <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Conclusion :</strong> <span class="math">i³⁷ = i</span>, <span class="math">i⁴⁸ = 1</span>, <span class="math">(2i)³ = −8i</span>, <span class="math">S = i</span></p>
             </div>
           </details>
         </div>
@@ -329,27 +419,27 @@
 
       <!-- SVG : anatomie de z = a + ib -->
       <figure class="lecture-figure">
-        <svg viewBox="0 0 520 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Anatomie de l'écriture z égale a plus i b">
-          <text x="260" y="24" fill="#E0B84A" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">ANATOMIE DE L'ÉCRITURE z = a + ib</text>
+        <svg viewBox="0 0 520 222" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Anatomie de l'écriture z égale a plus i b">
+          <text x="260" y="24" style="fill:var(--accent-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">ANATOMIE DE L'ÉCRITURE z = a + ib</text>
 
-          <text x="260" y="78" fill="#F5F0E8" font-size="30" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">z = a + i b</text>
+          <text x="260" y="78" style="fill:var(--text-light)" font-size="30" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">z = a + i b</text>
 
-          <line x1="208" y1="90" x2="185" y2="125" stroke="#E0B84A" stroke-width="1.2"/>
-          <text x="170" y="140" fill="#E0B84A" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">a : partie réelle</text>
-          <text x="170" y="156" fill="#8a8a7a" font-size="10" font-family="Inter" text-anchor="middle">un réel quelconque</text>
+          <line x1="208" y1="90" x2="122" y2="122" style="stroke:var(--accent-bright)" stroke-width="1.2"/>
+          <text x="118" y="142" style="fill:var(--accent-bright)" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">a : partie réelle</text>
+          <text x="118" y="158" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">un réel quelconque</text>
 
-          <line x1="243" y1="86" x2="243" y2="125" stroke="#8a8a7a" stroke-width="1" stroke-dasharray="3 3"/>
-          <text x="243" y="140" fill="#8a8a7a" font-size="11" font-family="Inter" text-anchor="middle">le signe qui relie</text>
+          <line x1="243" y1="86" x2="243" y2="112" style="stroke:var(--text-dim)" stroke-width="1" stroke-dasharray="3 3"/>
+          <text x="243" y="126" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter" text-anchor="middle">le signe qui relie</text>
 
-          <line x1="273" y1="90" x2="285" y2="125" stroke="#60a5fa" stroke-width="1.2"/>
-          <text x="295" y="140" fill="#60a5fa" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">i : l'unité imaginaire</text>
-          <text x="295" y="156" fill="#8a8a7a" font-size="10" font-family="Inter" text-anchor="middle">i² = −1</text>
+          <line x1="273" y1="90" x2="290" y2="148" style="stroke:var(--blue)" stroke-width="1.2"/>
+          <text x="295" y="168" style="fill:var(--blue)" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">i : l'unité imaginaire</text>
+          <text x="295" y="184" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">i² = −1</text>
 
-          <line x1="300" y1="86" x2="360" y2="125" stroke="#4ade80" stroke-width="1.2"/>
-          <text x="400" y="140" fill="#4ade80" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">b : partie imaginaire</text>
-          <text x="400" y="156" fill="#8a8a7a" font-size="10" font-family="Inter" text-anchor="middle">un RÉEL (coefficient de i)</text>
+          <line x1="300" y1="86" x2="420" y2="122" style="stroke:var(--green-bright)" stroke-width="1.2"/>
+          <text x="424" y="142" style="fill:var(--green-bright)" font-size="12" font-weight="700" font-family="Inter" text-anchor="middle">b : partie imaginaire</text>
+          <text x="424" y="158" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">un RÉEL (coefficient de i)</text>
 
-          <text x="260" y="180" fill="#8a8a7a" font-size="10" font-family="Inter" text-anchor="middle" font-style="italic">a et b sont toujours des réels — i n'est « collé » qu'à b</text>
+          <text x="260" y="212" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle" font-style="italic">a et b sont toujours des réels — i n'est « collé » qu'à b</text>
         </svg>
         <figcaption class="lecture-figure-caption">Un complexe = un réel (a) + un multiple de i (ib). Les deux « ingrédients » a et b sont toujours des nombres réels.</figcaption>
       </figure>
@@ -410,6 +500,50 @@
           <div class="lecture-formula-main">z = Re(z) + i·Im(z)</div>
           <div class="lecture-formula-desc">Identité à connaître : un complexe se reconstitue à partir de ses deux parties.</div>
         </div>
+
+        <!-- SVG : aperçu du plan complexe -->
+        <figure class="lecture-figure">
+          <svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Aperçu du plan complexe : chaque nombre se place grâce à sa partie réelle et sa partie imaginaire">
+            <text x="260" y="22" style="fill:var(--accent-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">APERÇU — LES DEUX INGRÉDIENTS SUR UN DESSIN</text>
+
+            <!-- Axes -->
+            <line x1="40" y1="180" x2="480" y2="180" style="stroke:var(--accent-bright)" stroke-width="1.6"/>
+            <polygon points="490,180 478,175 478,185" style="fill:var(--accent-bright)"/>
+            <line x1="250" y1="310" x2="250" y2="40" style="stroke:var(--accent-bright)" stroke-width="1.6"/>
+            <polygon points="250,30 245,42 255,42" style="fill:var(--accent-bright)"/>
+            <text x="470" y="200" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter" text-anchor="end">Re — axe des réels</text>
+            <text x="258" y="48" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter">Im — axe des imaginaires</text>
+            <text x="240" y="196" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter" text-anchor="end">0</text>
+
+            <!-- Projections de 2 + 2i -->
+            <line x1="286" y1="144" x2="286" y2="180" style="stroke:var(--blue)" stroke-width="1" stroke-dasharray="3 3" opacity="0.7"/>
+            <line x1="286" y1="144" x2="250" y2="144" style="stroke:var(--blue)" stroke-width="1" stroke-dasharray="3 3" opacity="0.7"/>
+            <text x="286" y="198" style="fill:var(--blue)" font-size="10" font-family="Inter" text-anchor="middle">Re(z) = 2</text>
+            <text x="242" y="148" style="fill:var(--blue)" font-size="10" font-family="Inter" text-anchor="end">Im(z) = 2</text>
+
+            <!-- Points -->
+            <circle cx="340" cy="180" r="5.5" style="fill:var(--green-bright)"/>
+            <text x="340" y="200" style="fill:var(--green-bright)" font-size="12" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">5</text>
+
+            <circle cx="250" cy="54" r="5.5" style="fill:var(--blue)"/>
+            <text x="264" y="58" style="fill:var(--blue)" font-size="12" font-weight="700" font-family="Playfair Display, serif">−7i</text>
+
+            <circle cx="286" cy="144" r="5.5" style="fill:var(--accent-bright)"/>
+            <text x="296" y="136" style="fill:var(--accent-bright)" font-size="12" font-weight="700" font-family="Playfair Display, serif">2 + 2i</text>
+
+            <circle cx="304" cy="216" r="5.5" style="fill:var(--accent-bright)"/>
+            <text x="314" y="224" style="fill:var(--accent-bright)" font-size="12" font-weight="700" font-family="Playfair Display, serif">3 − 2i</text>
+
+            <!-- Légende -->
+            <circle cx="118" cy="296" r="4.5" style="fill:var(--green-bright)"/>
+            <text x="128" y="300" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter">réel pur</text>
+            <circle cx="216" cy="296" r="4.5" style="fill:var(--blue)"/>
+            <text x="226" y="300" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter">imaginaire pur</text>
+            <circle cx="348" cy="296" r="4.5" style="fill:var(--accent-bright)"/>
+            <text x="358" y="300" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter">ni l'un ni l'autre</text>
+          </svg>
+          <figcaption class="lecture-figure-caption">Chaque complexe se place grâce à ses deux ingrédients : a sur l'axe des réels, b sur l'axe des imaginaires. (Ce plan sera officialisé dans une prochaine partie — ici, c'est un aperçu.)</figcaption>
+        </figure>
       </div>
 
       <div class="lecture-section-sub">
@@ -430,6 +564,42 @@
           <div class="lecture-formula-main">z ∈ iℝ ⟺ Re(z) = 0</div>
           <div class="lecture-formula-desc">Un complexe est imaginaire pur si et seulement si sa partie réelle est nulle.</div>
         </div>
+
+        <!-- SVG : le grand tri des nombres -->
+        <figure class="lecture-figure">
+          <svg viewBox="0 0 520 252" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Trois familles : réels purs, ni l'un ni l'autre, imaginaires purs, et le nombre zéro à part">
+            <text x="260" y="22" style="fill:var(--accent-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">LE GRAND TRI DES NOMBRES</text>
+
+            <!-- Bac 1 : réels purs -->
+            <rect x="14" y="38" width="156" height="152" rx="10" fill="rgba(74,222,128,0.05)" style="stroke:var(--green-bright)" stroke-width="1.2"/>
+            <text x="92" y="60" style="fill:var(--green-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="1">RÉELS PURS</text>
+            <text x="92" y="75" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">Im(z) = 0</text>
+            <text x="92" y="98" style="fill:var(--text-light)" font-size="12.5" font-family="Playfair Display, serif" text-anchor="middle">5 · −3 · √2 · π</text>
+            <text x="92" y="118" style="fill:var(--text-light)" font-size="12.5" font-family="Playfair Display, serif" text-anchor="middle">i² (= −1 !)</text>
+            <text x="92" y="138" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter" text-anchor="middle">tout réel est un complexe</text>
+
+            <!-- Bac 2 : ni l'un ni l'autre -->
+            <rect x="182" y="38" width="156" height="152" rx="10" fill="rgba(224,184,74,0.05)" style="stroke:var(--accent-bright)" stroke-width="1.2"/>
+            <text x="260" y="60" style="fill:var(--accent-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="1">NI L'UN NI L'AUTRE</text>
+            <text x="260" y="75" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">Re(z) ≠ 0 et Im(z) ≠ 0</text>
+            <text x="260" y="98" style="fill:var(--text-light)" font-size="12.5" font-family="Playfair Display, serif" text-anchor="middle">2 + 2i · 3 − 5i</text>
+            <text x="260" y="118" style="fill:var(--text-light)" font-size="12.5" font-family="Playfair Display, serif" text-anchor="middle">1 + i · 5 − 2i</text>
+            <text x="260" y="138" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter" text-anchor="middle">les deux ingrédients actifs</text>
+
+            <!-- Bac 3 : imaginaires purs -->
+            <rect x="350" y="38" width="156" height="152" rx="10" fill="rgba(96,165,250,0.05)" style="stroke:var(--blue)" stroke-width="1.2"/>
+            <text x="428" y="60" style="fill:var(--blue)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="1">IMAGINAIRES PURS</text>
+            <text x="428" y="75" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">Re(z) = 0</text>
+            <text x="428" y="98" style="fill:var(--text-light)" font-size="12.5" font-family="Playfair Display, serif" text-anchor="middle">3i · −7i · i√2</text>
+            <text x="428" y="118" style="fill:var(--text-light)" font-size="12.5" font-family="Playfair Display, serif" text-anchor="middle">−i</text>
+            <text x="428" y="138" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter" text-anchor="middle">coefficient réel obligatoire</text>
+
+            <!-- Cas zéro -->
+            <rect x="140" y="206" width="240" height="34" rx="17" fill="none" style="stroke:var(--accent-bright)" stroke-width="1.2" stroke-dasharray="4 3"/>
+            <text x="260" y="227" style="fill:var(--text-light)" font-size="11.5" font-weight="600" font-family="Inter" text-anchor="middle">0 : le SEUL à la fois réel pur ET imaginaire pur</text>
+          </svg>
+          <figcaption class="lecture-figure-caption">Un classement à retenir : on regarde Im pour « réel pur », Re pour « imaginaire pur » — et 0 coche les deux cases à la fois.</figcaption>
+        </figure>
 
         <div class="lecture-exercise">
           <div class="lecture-exercise-label">✏️ Exercice d'application 3 — Lire Re et Im, classer</div>
@@ -467,6 +637,51 @@
       <p class="lecture-text">
         En exercice, on te donnera rarement <span class="math">z</span> déjà écrit <span class="math">a + ib</span> : il faudra <strong>transformer une expression</strong> (somme, produit, puissance…) pour la mettre sous forme algébrique. Voici les techniques, de la plus simple à la plus complète.
       </p>
+
+      <!-- SVG : arbre de décision des techniques -->
+      <figure class="lecture-figure">
+        <svg viewBox="0 0 520 336" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Arbre de décision : somme, produit ou puissance, quelle technique pour mettre sous forme algébrique">
+          <text x="260" y="22" style="fill:var(--accent-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">QUELLE TECHNIQUE CHOISIR ?</text>
+
+          <!-- Noeud racine -->
+          <rect x="110" y="36" width="300" height="40" rx="10" fill="rgba(224,184,74,0.05)" style="stroke:var(--accent-bright)" stroke-width="1.4"/>
+          <text x="260" y="61" style="fill:var(--text-light)" font-size="12" font-weight="600" font-family="Inter" text-anchor="middle">une expression complexe à transformer</text>
+
+          <!-- Connecteurs -->
+          <line x1="260" y1="76" x2="260" y2="106" style="stroke:var(--text-muted)" stroke-width="1"/>
+          <line x1="92" y1="106" x2="428" y2="106" style="stroke:var(--text-muted)" stroke-width="1"/>
+          <line x1="92" y1="106" x2="92" y2="142" style="stroke:var(--text-muted)" stroke-width="1"/>
+          <line x1="260" y1="106" x2="260" y2="142" style="stroke:var(--text-muted)" stroke-width="1"/>
+          <line x1="428" y1="106" x2="428" y2="142" style="stroke:var(--text-muted)" stroke-width="1"/>
+          <polygon points="92,150 88,140 96,140" style="fill:var(--text-muted)"/>
+          <polygon points="260,150 256,140 264,140" style="fill:var(--text-muted)"/>
+          <polygon points="428,150 424,140 432,140" style="fill:var(--text-muted)"/>
+
+          <!-- Branche somme -->
+          <rect x="14" y="150" width="156" height="80" rx="10" fill="rgba(74,222,128,0.05)" style="stroke:var(--green-bright)" stroke-width="1.2"/>
+          <text x="92" y="172" style="fill:var(--green-bright)" font-size="10.5" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="1">SOMME / DIFFÉRENCE</text>
+          <text x="92" y="192" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">ingrédient par ingrédient :</text>
+          <text x="92" y="214" style="fill:var(--text-light)" font-size="12.5" font-family="Playfair Display, serif" text-anchor="middle">(a ± c) + i(b ± d)</text>
+
+          <!-- Branche produit -->
+          <rect x="182" y="150" width="156" height="80" rx="10" fill="rgba(224,184,74,0.05)" style="stroke:var(--accent-bright)" stroke-width="1.2"/>
+          <text x="260" y="172" style="fill:var(--accent-bright)" font-size="10.5" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="1">PRODUIT</text>
+          <text x="260" y="192" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">développer, puis remplacer</text>
+          <text x="260" y="214" style="fill:var(--text-light)" font-size="12.5" font-family="Playfair Display, serif" text-anchor="middle">chaque i² → −1</text>
+
+          <!-- Branche puissance -->
+          <rect x="350" y="150" width="156" height="80" rx="10" fill="rgba(96,165,250,0.05)" style="stroke:var(--blue)" stroke-width="1.2"/>
+          <text x="428" y="172" style="fill:var(--blue)" font-size="10.5" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="1">PUISSANCE</text>
+          <text x="428" y="192" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">multiplier par étapes :</text>
+          <text x="428" y="214" style="fill:var(--text-light)" font-size="12.5" font-family="Playfair Display, serif" text-anchor="middle">z², puis z³, z⁴…</text>
+
+          <!-- Note quotient -->
+          <rect x="46" y="262" width="428" height="44" rx="10" fill="none" style="stroke:var(--accent-bright)" stroke-width="1.2" stroke-dasharray="4 3"/>
+          <text x="260" y="280" style="fill:var(--text-dim)" font-size="10.5" font-family="Inter" text-anchor="middle">QUOTIENT ? Il attend la prochaine partie — avec l'arme secrète :</text>
+          <text x="260" y="297" style="fill:var(--text-light)" font-size="11.5" font-weight="600" font-family="Playfair Display, serif" text-anchor="middle">(a + ib)(a − ib) = a² + b²</text>
+        </svg>
+        <figcaption class="lecture-figure-caption">On identifie d'abord l'opération dominante, puis on applique la bonne technique. Dans tous les cas, la destination est la même : la forme a + ib.</figcaption>
+      </figure>
 
       <div class="lecture-section-sub">
         <h3 class="lecture-subtitle">Technique 1 — Sommes et différences : ingrédient par ingrédient</h3>
@@ -522,6 +737,15 @@
             <p>Exemple : <span class="math">(3 + 2i)(3 − 2i) = 9 + 4 = 13</span>. Ce schéma sera la clé des quotients plus loin dans le chapitre — mémorise-le maintenant !</p>
           </div>
         </div>
+
+        <div class="lecture-example">
+          <div class="lecture-example-label">Bonus — l'identité remarquable revisitée</div>
+          <div class="lecture-example-content">
+            <p><span class="math">(a + ib)² = a² + 2iab + i²b² = (a² − b²) + 2iab</span></p>
+            <p>Le carré d'un complexe se calcule comme en Troisième… sauf qu'au passage, chaque <span class="math">i²</span> devient <span class="math">−1</span> : le résultat mélange alors un bloc réel <span class="math">a² − b²</span> et un bloc imaginaire <span class="math">2iab</span>.</p>
+            <p>Exemple : <span class="math">(2 + i)² = (4 − 1) + 4i = 3 + 4i</span> — exactement le calcul demandé dans l'exercice 3 d'entraînement !</p>
+          </div>
+        </div>
       </div>
 
       <div class="lecture-section-sub">
@@ -535,6 +759,17 @@
             <p><span class="math">z³ = z² × z = 2i × (1 + i) = 2i + 2i² = −2 + 2i</span></p>
             <p><span class="math">z⁴ = z² × z² = 2i × 2i = 4i² = −4</span> — et hop, un réel !</p>
           </div>
+        </div>
+
+        <!-- Chaîne des puissances successives de z = 1 + i -->
+        <div class="lecture-chain">
+          <span class="chain-item active">z² = 2i</span>
+          <span class="chain-arrow">×z →</span>
+          <span class="chain-item">z³ = −2 + 2i</span>
+          <span class="chain-arrow">×z →</span>
+          <span class="chain-item">z⁴ = −4</span>
+          <span class="chain-arrow">×z →</span>
+          <span class="chain-item">z⁵ = −4 − 4i</span>
         </div>
 
         <div class="lecture-exercise">
@@ -588,21 +823,70 @@
       <!-- SVG : une égalité complexe = deux égalités réelles -->
       <figure class="lecture-figure">
         <svg viewBox="0 0 520 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Une égalité complexe équivaut à deux égalités réelles">
-          <text x="260" y="26" fill="#E0B84A" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">UNE ÉGALITÉ COMPLEXE = DEUX ÉGALITÉS RÉELLES</text>
+          <text x="260" y="26" style="fill:var(--accent-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">UNE ÉGALITÉ COMPLEXE = DEUX ÉGALITÉS RÉELLES</text>
 
-          <text x="260" y="90" fill="#F5F0E8" font-size="26" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">a + i b = a' + i b'</text>
+          <text x="260" y="90" style="fill:var(--text-light)" font-size="26" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">a + i b = a' + i b'</text>
 
           <!-- Arc réel : a ↔ a' -->
-          <path d="M 175 100 Q 190 165 330 100" fill="none" stroke="#E0B84A" stroke-width="1.8"/>
-          <text x="252" y="160" fill="#E0B84A" font-size="13" font-weight="700" font-family="Inter" text-anchor="middle">partie réelle = partie réelle</text>
-          <text x="252" y="177" fill="#8a8a7a" font-size="11" font-family="Inter" text-anchor="middle">a = a'</text>
+          <path d="M 175 100 Q 190 165 330 100" fill="none" style="stroke:var(--accent-bright)" stroke-width="1.8"/>
+          <text x="252" y="160" style="fill:var(--accent-bright)" font-size="13" font-weight="700" font-family="Inter" text-anchor="middle">partie réelle = partie réelle</text>
+          <text x="252" y="177" style="fill:var(--text-dim)" font-size="11" font-family="Inter" text-anchor="middle">a = a'</text>
 
           <!-- Arc imaginaire : b ↔ b' -->
-          <path d="M 238 100 Q 265 235 430 100" fill="none" stroke="#60a5fa" stroke-width="1.8"/>
-          <text x="345" y="222" fill="#60a5fa" font-size="13" font-weight="700" font-family="Inter" text-anchor="middle">partie imaginaire = partie imaginaire</text>
-          <text x="345" y="239" fill="#8a8a7a" font-size="11" font-family="Inter" text-anchor="middle">b = b'</text>
+          <path d="M 238 100 Q 265 235 430 100" fill="none" style="stroke:var(--blue)" stroke-width="1.8"/>
+          <text x="345" y="222" style="fill:var(--blue)" font-size="13" font-weight="700" font-family="Inter" text-anchor="middle">partie imaginaire = partie imaginaire</text>
+          <text x="345" y="239" style="fill:var(--text-dim)" font-size="11" font-family="Inter" text-anchor="middle">b = b'</text>
         </svg>
         <figcaption class="lecture-figure-caption">L'égalité se teste « ingrédient par ingrédient » : le réel se compare au réel, l'imaginaire à l'imaginaire. Il faut les DEUX coïncidences à la fois.</figcaption>
+      </figure>
+
+      <!-- SVG : le filtre à deux portes -->
+      <figure class="lecture-figure">
+        <svg viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagramme de décision : deux portes à franchir pour conclure z égal w, un seul refus conclut z différent de w">
+          <text x="260" y="22" style="fill:var(--accent-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">L'ÉGALITÉ : UN FILTRE À DEUX PORTES</text>
+
+          <!-- Départ -->
+          <rect x="170" y="36" width="180" height="34" rx="10" fill="rgba(255,255,255,0.02)" style="stroke:var(--border-soft)"/>
+          <text x="260" y="58" style="fill:var(--text-light)" font-size="11.5" font-weight="600" font-family="Inter" text-anchor="middle">comparer z et w</text>
+
+          <line x1="260" y1="70" x2="260" y2="86" style="stroke:var(--text-muted)" stroke-width="1"/>
+          <polygon points="260,94 256,84 264,84" style="fill:var(--text-muted)"/>
+
+          <!-- Porte 1 -->
+          <rect x="140" y="94" width="240" height="40" rx="10" fill="rgba(224,184,74,0.05)" style="stroke:var(--accent-bright)" stroke-width="1.4"/>
+          <text x="260" y="113" style="fill:var(--accent-bright)" font-size="10.5" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="1">PORTE 1</text>
+          <text x="260" y="127" style="fill:var(--text-light)" font-size="11.5" font-family="Inter" text-anchor="middle">parties réelles égales ?</text>
+
+          <!-- OUI vers porte 2 -->
+          <line x1="260" y1="134" x2="260" y2="166" style="stroke:var(--green-bright)" stroke-width="1.2"/>
+          <polygon points="260,174 256,164 264,164" style="fill:var(--green-bright)"/>
+          <text x="272" y="156" style="fill:var(--green-bright)" font-size="10.5" font-weight="700" font-family="Inter">OUI</text>
+
+          <!-- Porte 2 -->
+          <rect x="140" y="174" width="240" height="40" rx="10" fill="rgba(224,184,74,0.05)" style="stroke:var(--accent-bright)" stroke-width="1.4"/>
+          <text x="260" y="193" style="fill:var(--accent-bright)" font-size="10.5" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="1">PORTE 2</text>
+          <text x="260" y="207" style="fill:var(--text-light)" font-size="11.5" font-family="Inter" text-anchor="middle">parties imaginaires égales ?</text>
+
+          <!-- OUI vers conclusion -->
+          <line x1="260" y1="214" x2="260" y2="244" style="stroke:var(--green-bright)" stroke-width="1.2"/>
+          <polygon points="260,252 256,242 264,242" style="fill:var(--green-bright)"/>
+          <text x="272" y="234" style="fill:var(--green-bright)" font-size="10.5" font-weight="700" font-family="Inter">OUI</text>
+
+          <!-- Conclusion verte -->
+          <rect x="170" y="252" width="180" height="36" rx="10" fill="rgba(74,222,128,0.06)" style="stroke:var(--green-bright)" stroke-width="1.4"/>
+          <text x="260" y="275" style="fill:var(--green-bright)" font-size="13" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">z = w ✔</text>
+
+          <!-- Refus rouge -->
+          <rect x="402" y="140" width="106" height="44" rx="10" fill="rgba(248,113,113,0.06)" style="stroke:var(--danger-light)" stroke-width="1.4"/>
+          <text x="455" y="167" style="fill:var(--danger-light)" font-size="13" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">z ≠ w ✘</text>
+          <line x1="380" y1="112" x2="436" y2="140" style="stroke:var(--danger-light)" stroke-width="1.2"/>
+          <polygon points="443,144 432,142 437,133" style="fill:var(--danger-light)"/>
+          <text x="398" y="120" style="fill:var(--danger-light)" font-size="10.5" font-weight="700" font-family="Inter">NON</text>
+          <line x1="380" y1="196" x2="436" y2="186" style="stroke:var(--danger-light)" stroke-width="1.2"/>
+          <polygon points="444,184 433,180 432,190" style="fill:var(--danger-light)"/>
+          <text x="398" y="208" style="fill:var(--danger-light)" font-size="10.5" font-weight="700" font-family="Inter">NON</text>
+        </svg>
+        <figcaption class="lecture-figure-caption">Un seul « NON » suffit à conclure z ≠ w ; il faut DEUX « OUI » pour conclure z = w. C'est la logique du ET — exactement comme pour z = 0.</figcaption>
       </figure>
 
       <div class="lecture-section-sub">
@@ -632,6 +916,22 @@
           </div>
         </div>
 
+        <p class="lecture-text">
+          Entraîne l'œil : pour chaque paire, les deux complexes sont-ils égaux ? La règle tranche toujours en comparant les <strong>deux ingrédients</strong>.
+        </p>
+
+        <table>
+          <thead>
+            <tr><th>z</th><th>w</th><th>égaux ?</th><th>pourquoi</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>5</td><td>5 + 0i</td><td style="color:var(--green-bright);font-weight:700;">OUI</td><td>même nombre, deux habitudes d'écriture</td></tr>
+            <tr><td>2 + 3i</td><td>3 + 2i</td><td style="color:var(--danger-light);font-weight:700;">NON</td><td>réels 2 ≠ 3 ET imaginaires 3 ≠ 2 — tout est inversé</td></tr>
+            <tr><td>−i</td><td>i</td><td style="color:var(--danger-light);font-weight:700;">NON</td><td>imaginaires −1 ≠ 1 (les réels, eux, coïncident : 0 = 0)</td></tr>
+            <tr><td>1/2</td><td>0,5</td><td style="color:var(--green-bright);font-weight:700;">OUI</td><td>le même nombre écrit différemment</td></tr>
+          </tbody>
+        </table>
+
         <div class="lecture-exercise">
           <div class="lecture-exercise-label">✏️ Exercice d'application 5 — Utiliser la règle directement</div>
           <p class="lecture-text"><strong>Énoncé :</strong> déterminer les réels x et y tels que <span class="math">(2x − 1) + (y + 3)i = 5 − 2i</span></p>
@@ -643,7 +943,7 @@
               <p><span class="math">2x − 1 = 5</span> &nbsp;et&nbsp; <span class="math">y + 3 = −2</span></p>
               <p><strong>Étape 3 — Résoudre :</strong> <span class="math">2x = 6</span> donc <span class="math">x = 3</span> ; <span class="math">y = −2 − 3 = −5</span></p>
               <p><strong>Étape 4 — Vérifier :</strong> <span class="math">(2×3 − 1) + (−5 + 3)i = 5 − 2i</span> ✔</p>
-              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> x = 3 et y = −5</p>
+              <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Solution :</strong> x = 3 et y = −5</p>
             </div>
           </details>
         </div>
@@ -710,7 +1010,68 @@
           <p><span class="math">x − y = 2</span> &nbsp;et&nbsp; <span class="math">x + y = −1</span></p>
           <p><strong>Étape 3 — Résoudre :</strong> en additionnant les deux lignes : <span class="math">2x = 1</span>, donc <span class="math">x = 1/2</span> ; en reportant : <span class="math">1/2 + y = −1</span>, donc <span class="math">y = −3/2</span></p>
           <p><strong>Étape 4 — Vérifier :</strong> <span class="math">(1 + i)(1/2 − 3i/2) = 1/2 − 3i/2 + i/2 + 3/2 = 2 − i</span> ✔</p>
-          <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> <span class="math">z = 1/2 − (3/2)i</span></p>
+          <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Solution :</strong> <span class="math">z = 1/2 − (3/2)i</span></p>
+        </div>
+      </div>
+
+      <!-- SVG : le système vu géométriquement -->
+      <figure class="lecture-figure">
+        <svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Les deux équations du système sont deux droites qui se coupent au point S de coordonnées un demi et moins trois demis">
+          <text x="260" y="22" style="fill:var(--accent-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">LE SYSTÈME DE L'EXEMPLE, VU GÉOMÉTRIQUEMENT</text>
+
+          <!-- Grille -->
+          <g style="stroke:var(--border-soft)" stroke-width="1">
+            <line x1="160" y1="40" x2="160" y2="290"/>
+            <line x1="205" y1="40" x2="205" y2="290"/>
+            <line x1="295" y1="40" x2="295" y2="290"/>
+            <line x1="340" y1="40" x2="340" y2="290"/>
+            <line x1="385" y1="40" x2="385" y2="290"/>
+            <line x1="90" y1="60" x2="440" y2="60"/>
+            <line x1="90" y1="105" x2="440" y2="105"/>
+            <line x1="90" y1="195" x2="440" y2="195"/>
+            <line x1="90" y1="240" x2="440" y2="240"/>
+            <line x1="90" y1="285" x2="440" y2="285"/>
+          </g>
+
+          <!-- Axes -->
+          <line x1="85" y1="150" x2="445" y2="150" style="stroke:var(--text-dim)" stroke-width="1.4"/>
+          <polygon points="452,150 442,146 442,154" style="fill:var(--text-dim)"/>
+          <line x1="250" y1="295" x2="250" y2="45" style="stroke:var(--text-dim)" stroke-width="1.4"/>
+          <polygon points="250,38 246,48 254,48" style="fill:var(--text-dim)"/>
+          <text x="446" y="166" style="fill:var(--text-dim)" font-size="9.5" font-family="Inter">x</text>
+          <text x="258" y="50" style="fill:var(--text-dim)" font-size="9.5" font-family="Inter">y</text>
+
+          <!-- Graduations -->
+          <g style="fill:var(--text-muted)" font-size="9.5" font-family="Inter" text-anchor="middle">
+            <text x="205" y="164">−1</text>
+            <text x="295" y="164">1</text>
+            <text x="340" y="164">2</text>
+            <text x="242" y="109">1</text>
+            <text x="242" y="199">−1</text>
+            <text x="242" y="244">−2</text>
+          </g>
+
+          <!-- Droite L1 : x - y = 2 -->
+          <line x1="227" y1="262" x2="394" y2="96" style="stroke:var(--accent-bright)" stroke-width="2"/>
+          <text x="400" y="90" style="fill:var(--accent-bright)" font-size="11.5" font-weight="700" font-family="Inter" text-anchor="end">x − y = 2</text>
+
+          <!-- Droite L2 : x + y = -1 -->
+          <line x1="133" y1="78" x2="331" y2="276" style="stroke:var(--blue)" stroke-width="2"/>
+          <text x="126" y="68" style="fill:var(--blue)" font-size="11.5" font-weight="700" font-family="Inter">x + y = −1</text>
+
+          <!-- Point d'intersection S (0,5 ; -1,5) -->
+          <circle cx="272" cy="218" r="10" fill="rgba(74,222,128,0.15)"/>
+          <circle cx="272" cy="218" r="5" style="fill:var(--green-bright)"/>
+          <text x="288" y="236" style="fill:var(--green-bright)" font-size="12" font-weight="700" font-family="Playfair Display, serif">S ( 1/2 ; −3/2 )</text>
+        </svg>
+        <figcaption class="lecture-figure-caption">Chaque équation est une droite ; la solution du système est leur unique point d'intersection S. Pas d'intersection → aucune solution ; droites confondues → une infinité.</figcaption>
+      </figure>
+
+      <div class="lecture-callout lecture-callout-key">
+        <div class="lecture-callout-body">
+          <div class="lecture-callout-title">Et si le système n'a pas de solution unique ?</div>
+          <p>Trois destins sont possibles — exactement comme pour deux droites : elles se <strong>coupent en un point</strong> (une solution — le cas général), elles sont <strong>strictement parallèles</strong> (aucune solution — l'équation de départ était impossible), ou elles sont <strong>confondues</strong> (une infinité de solutions — tous les z de la droite conviennent).</p>
+          <p>Un système qui « ne se résout pas » n'est donc pas forcément une erreur de calcul : avant de conclure, regarde si l'équation de départ admet au moins une solution.</p>
         </div>
       </div>
 
@@ -734,7 +1095,7 @@
             <p><strong>Étape 3 — Identifier :</strong> <span class="math">x − y = 4</span> et <span class="math">x + y = 2</span></p>
             <p><strong>Étape 4 — Résoudre :</strong> addition : <span class="math">2x = 6</span> → <span class="math">x = 3</span> ; puis <span class="math">y = 2 − 3 = −1</span></p>
             <p><strong>Vérification :</strong> <span class="math">(1 + i)(3 − i) = 3 − i + 3i − i² = 4 + 2i</span> ✔</p>
-            <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> <span class="math">z = 3 − i</span></p>
+            <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Solution :</strong> <span class="math">z = 3 − i</span></p>
             <p>Remarque : cette équation ressemble à une division <span class="math">z = (4 + 2i)/(1 + i)</span> — l'identification permet de la résoudre sans aucune formule d'inverse !</p>
           </div>
         </div>
@@ -751,7 +1112,7 @@
             <p><strong>Étape 2 — Identifier :</strong> <span class="math">a + b = 4</span> et <span class="math">a − b = 2</span></p>
             <p><strong>Étape 3 — Résoudre :</strong> en additionnant : <span class="math">2a = 6</span> → <span class="math">a = 3</span> ; en reportant : <span class="math">b = 4 − 3 = 1</span></p>
             <p><strong>Vérification :</strong> <span class="math">3(1 + i) + 1(1 − i) = 3 + 3i + 1 − i = 4 + 2i</span> ✔</p>
-            <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> a = 3 et b = 1</p>
+            <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Solution :</strong> a = 3 et b = 1</p>
           </div>
         </div>
       </div>
@@ -767,7 +1128,7 @@
             <p><strong>Étape 2 — Appliquer :</strong> <span class="math">Im(z) = x² − 1</span>, donc on résout <span class="math">x² − 1 = 0</span></p>
             <p><strong>Étape 3 — Résoudre :</strong> <span class="math">x² = 1</span> → <span class="math">x = 1</span> ou <span class="math">x = −1</span></p>
             <p><strong>Vérification :</strong> pour x = 1 : <span class="math">z = 1 + 0i = 1</span> ✔ réel. Pour x = −1 : <span class="math">z = −1 + 0i = −1</span> ✔ réel.</p>
-            <p style="color:#4ade80;margin-top:10px;"><strong>✅ Conclusion :</strong> z est réel pur pour <span class="math">x = 1</span> ou <span class="math">x = −1</span></p>
+            <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Conclusion :</strong> z est réel pur pour <span class="math">x = 1</span> ou <span class="math">x = −1</span></p>
           </div>
         </div>
 
@@ -788,7 +1149,7 @@
               <p><strong>Étape 2 — Identifier :</strong> <span class="math">2x + y = 4</span> et <span class="math">−x + 2y = 3</span></p>
               <p><strong>Étape 3 — Résoudre par substitution :</strong> de la première : <span class="math">y = 4 − 2x</span>. Dans la seconde : <span class="math">−x + 2(4 − 2x) = 3</span> → <span class="math">−x + 8 − 4x = 3</span> → <span class="math">−5x = −5</span> → <span class="math">x = 1</span>, puis <span class="math">y = 4 − 2 = 2</span></p>
               <p><strong>Étape 4 — Vérifier :</strong> <span class="math">(1 + 2i)(2 − i) = 2 − i + 4i − 2i² = 4 + 3i</span> ✔</p>
-              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> x = 1 et y = 2</p>
+              <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Solution :</strong> x = 1 et y = 2</p>
             </div>
           </details>
         </div>
@@ -812,6 +1173,51 @@
       <p class="lecture-text">
         Trois procédés à automatiser. Le jour du contrôle, ils doivent venir sans réfléchir.
       </p>
+
+      <!-- SVG : la boîte à outils de la partie -->
+      <figure class="lecture-figure">
+        <svg viewBox="0 0 520 302" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Carte des trois méthodes de la partie : forme algébrique, identification, classification">
+          <text x="260" y="22" style="fill:var(--accent-bright)" font-size="11" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="2">LA BOÎTE À OUTILS DE LA PARTIE 1</text>
+
+          <!-- Noeud central -->
+          <rect x="170" y="38" width="180" height="44" rx="10" fill="rgba(224,184,74,0.05)" style="stroke:var(--accent-bright)" stroke-width="1.4"/>
+          <text x="260" y="66" style="fill:var(--text-light)" font-size="15" font-weight="700" font-family="Playfair Display, serif" text-anchor="middle">z = a + ib</text>
+
+          <!-- Connecteurs -->
+          <line x1="260" y1="82" x2="260" y2="106" style="stroke:var(--text-muted)" stroke-width="1"/>
+          <line x1="92" y1="106" x2="428" y2="106" style="stroke:var(--text-muted)" stroke-width="1"/>
+          <line x1="92" y1="106" x2="92" y2="124" style="stroke:var(--text-muted)" stroke-width="1"/>
+          <line x1="260" y1="106" x2="260" y2="124" style="stroke:var(--text-muted)" stroke-width="1"/>
+          <line x1="428" y1="106" x2="428" y2="124" style="stroke:var(--text-muted)" stroke-width="1"/>
+
+          <!-- Méthode 1 -->
+          <rect x="14" y="124" width="156" height="112" rx="10" fill="rgba(224,184,74,0.05)" style="stroke:var(--accent-bright)" stroke-width="1.2"/>
+          <text x="92" y="146" style="fill:var(--accent-bright)" font-size="10.5" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="1">MÉTHODE 1</text>
+          <text x="92" y="164" style="fill:var(--text-light)" font-size="11.5" font-weight="600" font-family="Inter" text-anchor="middle">forme algébrique</text>
+          <text x="92" y="186" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">développer</text>
+          <text x="92" y="202" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">i² → −1</text>
+          <text x="92" y="218" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">regrouper</text>
+
+          <!-- Méthode 2 -->
+          <rect x="182" y="124" width="156" height="112" rx="10" fill="rgba(96,165,250,0.05)" style="stroke:var(--blue)" stroke-width="1.2"/>
+          <text x="260" y="146" style="fill:var(--blue)" font-size="10.5" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="1">MÉTHODE 2</text>
+          <text x="260" y="164" style="fill:var(--text-light)" font-size="11.5" font-weight="600" font-family="Inter" text-anchor="middle">identification</text>
+          <text x="260" y="186" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">poser x + iy</text>
+          <text x="260" y="202" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">système 2 × 2</text>
+          <text x="260" y="218" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">vérifier</text>
+
+          <!-- Méthode 3 -->
+          <rect x="350" y="124" width="156" height="112" rx="10" fill="rgba(74,222,128,0.05)" style="stroke:var(--green-bright)" stroke-width="1.2"/>
+          <text x="428" y="146" style="fill:var(--green-bright)" font-size="10.5" font-weight="700" font-family="Inter" text-anchor="middle" letter-spacing="1">MÉTHODE 3</text>
+          <text x="428" y="164" style="fill:var(--text-light)" font-size="11.5" font-weight="600" font-family="Inter" text-anchor="middle">classification</text>
+          <text x="428" y="186" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">Im = 0 → réel pur</text>
+          <text x="428" y="202" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">Re = 0 → imaginaire pur</text>
+          <text x="428" y="218" style="fill:var(--text-dim)" font-size="10" font-family="Inter" text-anchor="middle">0 : les deux à la fois</text>
+
+          <text x="260" y="276" style="fill:var(--text-dim)" font-size="11" font-family="Inter" text-anchor="middle" font-style="italic">L'opération demandée dicte la méthode — pas l'inverse.</text>
+        </svg>
+        <figcaption class="lecture-figure-caption">Trois réflexes, une même boussole : tout finit dans la forme a + ib.</figcaption>
+      </figure>
 
       <div class="lecture-section-sub">
         <h3 class="lecture-subtitle">📋 Méthode 1 — Mettre une expression sous forme algébrique <em>(Notion 1)</em></h3>
@@ -919,6 +1325,19 @@
             <p><span class="math">z = x + (x² − 1)i</span> est réel pur ⟺ <span class="math">x² − 1 = 0</span> ⟺ <span class="math">x = ±1</span> ✔</p>
           </div>
         </div>
+
+        <div class="lecture-callout lecture-callout-warning">
+          <div class="lecture-callout-body">
+            <div class="lecture-callout-title">🧯 Erreurs fréquentes & antidotes</div>
+            <ul class="lecture-list-elegant">
+              <li><strong>Oublier un i²</strong><span>après chaque développement, relire terme à terme et se demander : « ce i², il est bien devenu −1 ? »</span></li>
+              <li><strong>Im(z) = 5i</strong><span>la partie imaginaire est le coefficient RÉEL de i — jamais un multiple de i</span></li>
+              <li><strong>Identifier en vrac</strong><span>regrouper d'abord en (réel) + i(réel), identifier ensuite — jamais terme à terme</span></li>
+              <li><strong>Écrire i = √(−1)</strong><span>interdit ! i est défini par i² = −1, et c'est tout</span></li>
+              <li><strong>Zapper la vérification</strong><span>reporter la solution dans l'équation de départ — 10 secondes qui sécurisent des points</span></li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -1009,6 +1428,48 @@
               <div class="lecture-quiz-answer"><strong>B) un réel.</strong> (2 + i)(2 − i) = 4 − i² = 4 + 1 = 5. Le schéma (a + ib)(a − ib) = a² + b² donne toujours un réel positif !</div>
             </details>
           </div>
+
+          <div class="lecture-quiz-item">
+            <p class="lecture-quiz-q">Q6 — i⁷ + i⁸ est égal à :</p>
+            <div class="lecture-quiz-options">
+              <span>A) 1 − i</span>
+              <span>B) 1 + i</span>
+              <span>C) −1 − i</span>
+              <span>D) 0</span>
+            </div>
+            <details>
+              <summary>Voir la réponse</summary>
+              <div class="lecture-quiz-answer"><strong>A) 1 − i.</strong> i⁷ = i⁴ × i³ = −i et i⁸ = (i⁴)² = 1. Somme : 1 − i. (On réduit d'abord chaque puissance avec le reste mod 4, on additionne ensuite.)</div>
+            </details>
+          </div>
+
+          <div class="lecture-quiz-item">
+            <p class="lecture-quiz-q">Q7 — L'équation (x + 2) + (y − 1)i = 0 admet pour solution (x, y) :</p>
+            <div class="lecture-quiz-options">
+              <span>A) (2 ; 1)</span>
+              <span>B) (−2 ; 1)</span>
+              <span>C) (−2 ; −1)</span>
+              <span>D) (2 ; −1)</span>
+            </div>
+            <details>
+              <summary>Voir la réponse</summary>
+              <div class="lecture-quiz-answer"><strong>B) (−2 ; 1).</strong> Un complexe est nul si et seulement si Re = 0 ET Im = 0 : x + 2 = 0 → x = −2, et y − 1 = 0 → y = 1. Une seule équation complexe, DEUX conditions à satisfaire !</div>
+            </details>
+          </div>
+
+          <div class="lecture-quiz-item">
+            <p class="lecture-quiz-q">Q8 — z = x + (x² − 3)i (x réel) est imaginaire pur pour :</p>
+            <div class="lecture-quiz-options">
+              <span>A) x = 0 uniquement</span>
+              <span>B) x = ±√3</span>
+              <span>C) x = 0 ou x = ±√3</span>
+              <span>D) jamais</span>
+            </div>
+            <details>
+              <summary>Voir la réponse</summary>
+              <div class="lecture-quiz-answer"><strong>A) x = 0 uniquement.</strong> Imaginaire pur ⟺ Re(z) = 0, et Re(z) = x : seule compte cette condition ! Le x² − 3 est la partie imaginaire — il n'a aucune raison d'être nul. Pour x = 0 : z = 0 − 3i = −3i ✔</div>
+            </details>
+          </div>
         </div>
       </div>
 
@@ -1052,7 +1513,7 @@
               <p><strong>Premier terme</strong> (identité (a+b)²) : <span class="math">(2 + i)² = 4 + 4i + i² = 3 + 4i</span></p>
               <p><strong>Second terme :</strong> <span class="math">3i(1 − i) = 3i − 3i² = 3 + 3i</span></p>
               <p><strong>Somme :</strong> <span class="math">z = (3 + 3) + i(4 + 3) = 6 + 7i</span></p>
-              <p style="color:#4ade80;margin-top:10px;"><strong>✅ z = 6 + 7i</strong> — avec <span class="math">Re(z) = 6</span> et <span class="math">Im(z) = 7</span></p>
+              <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ z = 6 + 7i</strong> — avec <span class="math">Re(z) = 6</span> et <span class="math">Im(z) = 7</span></p>
             </div>
           </details>
         </div>
@@ -1067,7 +1528,7 @@
               <p><span class="math">3x + 2 = 8</span> → <span class="math">3x = 6</span> → <span class="math">x = 2</span></p>
               <p><span class="math">y − 4 = −1</span> → <span class="math">y = 3</span></p>
               <p><strong>Vérification :</strong> <span class="math">(3×2 + 2) + (3 − 4)i = 8 − i</span> ✔</p>
-              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> x = 2 et y = 3</p>
+              <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Solution :</strong> x = 2 et y = 3</p>
             </div>
           </details>
         </div>
@@ -1082,7 +1543,7 @@
               <p><strong>Étape 2 — Identifier :</strong> <span class="math">2x − y = 3</span> et <span class="math">x + 2y = 1</span></p>
               <p><strong>Étape 3 — Résoudre :</strong> de la première : <span class="math">y = 2x − 3</span>. Dans la seconde : <span class="math">x + 4x − 6 = 1</span> → <span class="math">5x = 7</span> → <span class="math">x = 7/5</span>, puis <span class="math">y = 14/5 − 15/5 = −1/5</span></p>
               <p><strong>Étape 4 — Vérifier :</strong> <span class="math">(2 + i)(7/5 − i/5) = 14/5 − 2i/5 + 7i/5 + 1/5 = 3 + i</span> ✔</p>
-              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> x = 7/5 et y = −1/5</p>
+              <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Solution :</strong> x = 7/5 et y = −1/5</p>
             </div>
           </details>
         </div>
@@ -1098,7 +1559,7 @@
               <p><strong>Étape 3 — Identifier :</strong> <span class="math">x + y = 6</span> et <span class="math">y − x = 2</span></p>
               <p><strong>Étape 4 — Résoudre :</strong> en additionnant : <span class="math">2y = 8</span> → <span class="math">y = 4</span> ; puis <span class="math">x = 6 − 4 = 2</span></p>
               <p><strong>Vérification :</strong> <span class="math">(1 − i)(2 + 4i) = 2 + 4i − 2i − 4i² = 6 + 2i</span> ✔</p>
-              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> <span class="math">z = 2 + 4i</span></p>
+              <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Solution :</strong> <span class="math">z = 2 + 4i</span></p>
             </div>
           </details>
         </div>
@@ -1114,7 +1575,7 @@
               <p><span class="math">2a + b = 5</span> et <span class="math">a − b = 0</span></p>
               <p><strong>Étape 3 — Résoudre :</strong> la seconde donne <span class="math">a = b</span> ; en reportant : <span class="math">3a = 5</span> → <span class="math">a = b = 5/3</span></p>
               <p><strong>Vérification :</strong> <span class="math">(5/3)(2 + i) + (5/3)(1 − i) = (5/3)(3) = 5</span> ✔</p>
-              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solution :</strong> a = b = 5/3</p>
+              <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Solution :</strong> a = b = 5/3</p>
             </div>
           </details>
         </div>
@@ -1131,8 +1592,38 @@
               <p><span class="math">x² − y² = 0</span> &nbsp;et&nbsp; <span class="math">2xy = 2</span></p>
               <p><strong>Étape 3 — Résoudre :</strong> la première donne <span class="math">x² = y²</span>, donc <span class="math">y = x</span> ou <span class="math">y = −x</span>. La seconde donne <span class="math">xy = 1 &gt; 0</span> : x et y sont de <strong>même signe</strong> → on garde <span class="math">y = x</span>. Alors <span class="math">2x² = 2</span> → <span class="math">x² = 1</span> → <span class="math">x = 1</span> ou <span class="math">x = −1</span>, et <span class="math">y = x</span>.</p>
               <p><strong>Étape 4 — Vérifier :</strong> <span class="math">(1 + i)² = 2i</span> ✔ et <span class="math">(−1 − i)² = 1 + 2i + i² = 2i</span> ✔</p>
-              <p style="color:#4ade80;margin-top:10px;"><strong>✅ Solutions :</strong> <span class="math">z = 1 + i</span> ou <span class="math">z = −1 − i</span></p>
+              <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Solutions :</strong> <span class="math">z = 1 + i</span> ou <span class="math">z = −1 − i</span></p>
               <p>Cet exercice réunit les deux notions : la forme algébrique (développer z²) et l'égalité (identifier). Le jour du contrôle, c'est ce genre de sujet qui tombe !</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">Exercice 9 — Paramètre et classification ★★ (Notions 1 + 2)</div>
+          <p class="lecture-text">Soit <span class="math">m</span> un réel et <span class="math">z = (m² − 4) + (m + 2)i</span>. Déterminer <span class="math">m</span> pour que : a) <span class="math">z</span> soit réel pur ; b) <span class="math">z</span> soit imaginaire pur.</p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>a) z réel pur ⟺ Im(z) = 0 ⟺ m + 2 = 0 ⟺ m = −2.</strong> Vérification : pour m = −2, <span class="math">z = (4 − 4) + 0i = 0</span> ✔ — et 0 est bien un réel pur (le seul à être aussi imaginaire pur !).</p>
+              <p><strong>b) z imaginaire pur ⟺ Re(z) = 0 ⟺ m² − 4 = 0 ⟺ m = 2</strong> ou <span class="math">m = −2</span>.</p>
+              <p><strong>Vérifications :</strong> pour m = 2 : <span class="math">z = 0 + 4i = 4i</span> ✔ imaginaire pur. Pour m = −2 : <span class="math">z = 0</span> ✔ — toujours classé, des deux côtés à la fois.</p>
+              <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Conclusion :</strong> réel pur pour m = −2 ; imaginaire pur pour m = 2 ou m = −2.</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="lecture-exercise">
+          <div class="lecture-exercise-label">Exercice 10 — Équation du second degré cachée ★★ (Notions 1 + 2)</div>
+          <p class="lecture-text">Résoudre dans ℂ : <span class="math">z² = −4</span> <em>(indice : pose z = x + iy — et rappelle-toi qu'un carré réel négatif n'a pas de solution réelle…)</em></p>
+          <details>
+            <summary>Voir la solution détaillée</summary>
+            <div class="lecture-quiz-answer">
+              <p><strong>Étape 1 — Poser et développer :</strong> <span class="math">z² = (x + iy)² = (x² − y²) + 2xyi</span></p>
+              <p><strong>Étape 2 — Identifier</strong> avec <span class="math">−4 = −4 + 0i</span> :</p>
+              <p><span class="math">x² − y² = −4</span> &nbsp;et&nbsp; <span class="math">2xy = 0</span></p>
+              <p><strong>Étape 3 — Résoudre :</strong> la seconde équation impose x = 0 ou y = 0. Si y = 0 : <span class="math">x² = −4</span>, impossible dans ℝ. Si x = 0 : <span class="math">−y² = −4</span>, donc <span class="math">y² = 4</span>, donc <span class="math">y = 2</span> ou <span class="math">y = −2</span>.</p>
+              <p><strong>Étape 4 — Vérifier :</strong> <span class="math">(2i)² = 4i² = −4</span> ✔ et <span class="math">(−2i)² = 4i² = −4</span> ✔</p>
+              <p style="color:var(--green-bright);margin-top:10px;"><strong>✅ Solutions :</strong> <span class="math">z = 2i</span> ou <span class="math">z = −2i</span> — exactement les deux solutions annoncées en début de chapitre pour <span class="math">x² = −4</span> !</p>
             </div>
           </details>
         </div>
@@ -1150,10 +1641,12 @@
       <li><strong>[forme_algebrique]</strong> <span class="math">Re(z) = a</span> et <span class="math">Im(z) = b</span> sont deux <strong>réels</strong> (piège : Im(3 + 5i) = 5, pas 5i !) et <span class="math">z = Re(z) + i·Im(z)</span></li>
       <li><strong>[forme_algebrique]</strong> z réel pur ⟺ Im(z) = 0 · z imaginaire pur ⟺ Re(z) = 0 · 0 est les deux à la fois</li>
       <li><strong>[forme_algebrique]</strong> Calculs : développer puis remplacer chaque <span class="math">i²</span> par <span class="math">−1</span> ; schéma précieux <span class="math">(a + ib)(a − ib) = a² + b²</span></li>
+      <li><strong>[forme_algebrique]</strong> Identité remarquable revisitée : <span class="math">(a + ib)² = (a² − b²) + 2iab</span> — développer d'abord, remplacer chaque i² ensuite</li>
       <li><strong>[egalite_complexes]</strong> Règle : <span class="math">a + ib = a' + ib' ⟺ a = a'</span> ET <span class="math">b = b'</span> — justifiée par l'unicité de la forme algébrique</li>
       <li><strong>[egalite_complexes]</strong> <span class="math">z = 0 ⟺ Re(z) = 0</span> ET <span class="math">Im(z) = 0</span> — les deux conditions à la fois</li>
       <li><strong>[egalite_complexes]</strong> Une différence sur un seul ingrédient suffit pour conclure <span class="math">z ≠ z'</span></li>
       <li><strong>[egalite_complexes]</strong> L'identification (poser z = x + iy → développer → identifier → vérifier) transforme toute équation complexe en système réel — le réflexe n°1 du chapitre</li>
+      <li><strong>[egalite_complexes]</strong> Le système 2 × 2 obtenu peut avoir une solution unique (droites sécantes), aucune (parallèles) ou une infinité (confondues)</li>
     </ul>
   </div>
 
