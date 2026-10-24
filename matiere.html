@@ -1476,13 +1476,7 @@ function getChapterStatus(chapterIndex, chapterData) {
 // ================================================================
 // NAVIGATION
 // ================================================================
-function navigateToChapter(chapterIndex) {
-  // ⚡ Si le routeur SPA est présent, on lui délègue la navigation
-  if (window.arvexaNavigate) {
-    window.arvexaNavigate(`chapitre.html?subject=${subjectKey}&chapter=${chapterIndex}`);
-    return;
-  }
-  // Fallback : navigation classique si le routeur n'est pas chargé
+ function navigateToChapter(chapterIndex) {
   window.location.href = `chapitre.html?subject=${subjectKey}&chapter=${chapterIndex}`;
 }
     
@@ -2063,130 +2057,6 @@ window.addEventListener('beforeunload', () => {
   if (unsubscribeSubject) { try { unsubscribeSubject(); } catch (e) {} unsubscribeSubject = null; }
   if (unsubscribeChapters) { try { unsubscribeChapters(); } catch (e) {} unsubscribeChapters = null; }
 });
-
-    // ================================================================
-// ⚡ EXPOSITION POUR LE ROUTEUR SPA
-// ================================================================
-// Le routeur appelle cette fonction après chaque navigation.
-// Elle relit l'URL et recharge Firestore sans recharger la page.
-
-window.arvexaRechargerMatiere = function() {
-  // 1. Relire l'URL
-  const p = new URLSearchParams(window.location.search);
-  const newSubjectKey = p.get('subject') || 'mathematiques';
-
-  // 2. Si la matière n'a pas changé → ne rien faire
-  if (window.__arvexaCurrentSubject === newSubjectKey) {
-    console.log('[Matiere] Même matière, pas de rechargement');
-    return;
-  }
-
-  // 3. Mettre à jour la variable globale
-  window.__arvexaCurrentSubject = newSubjectKey;
-
-  // 4. Nettoyer les anciens listeners Firestore
-  if (unsubscribeSubject) { try { unsubscribeSubject(); } catch(e){} unsubscribeSubject = null; }
-  if (unsubscribeChapters) { try { unsubscribeChapters(); } catch(e){} unsubscribeChapters = null; }
-
-  // 5. Réinitialiser l'état
-  subjectConfig = null;
-  chapters = [];
-  isPremium = false;
-
-  // 6. Recharger depuis Firestore avec la nouvelle URL
-  // Note : subjectKey est maintenant lu depuis window.__arvexaCurrentSubject
-  // On doit recréer toutes les fonctions qui utilisent subjectKey…
-  // → On utilise un rechargement complet des données
-  rechargerToutPourNouvelleMatiere(newSubjectKey);
-};
-
-// ⚡ Fonction interne qui recharge tout pour une nouvelle matière
-function rechargerToutPourNouvelleMatiere(newSubject) {
-  // On ne peut pas modifier `subjectKey` car c'est une const
-  // → On va recharger les données manuellement avec la nouvelle clé
-
-  // 1. Charger la config de la nouvelle matière
-  const cfg = SUBJECTS_CONFIG[newSubject];
-  if (cfg) {
-    subjectConfig = {
-      name: cfg.name,
-      description: cfg.description || '',
-      icon: cfg.icon,
-      color: cfg.color
-    };
-  } else {
-    // Matière inconnue
-    window.location.href = 'index.html';
-    return;
-  }
-
-  // 2. Charger les chapitres fallback
-  const fallback = DEFAULT_CHAPTERS[newSubject] || [];
-  chapters = fallback.map((ch, i) => ({
-    title: typeof ch === 'string' ? ch : ch.title,
-    isFree: typeof ch === 'object' ? ch.isFree === true : (i === 0),
-    description: '',
-    order: i,
-    difficulty: null,
-    estimatedMinutes: 0,
-    totalParts: 0
-  }));
-
-  // 3. Render immédiat (fallback)
-  renderHero();
-  renderChapters();
-  renderProgress();
-
-  // 4. Écouter Firestore pour la nouvelle matière
-  const subjectRef = doc(db, 'subjects', newSubject);
-  unsubscribeSubject = onSnapshot(subjectRef,
-    (subjectSnap) => {
-      if (subjectSnap.exists()) {
-        const data = subjectSnap.data();
-        subjectConfig = {
-          name: data.name || cfg.name,
-          description: data.description || '',
-          icon: data.icon || cfg.icon,
-          color: data.color || cfg.color
-        };
-        renderHero();
-      }
-    },
-    (error) => console.warn('Firestore subject error:', error.code || error.message)
-  );
-
-  const chaptersQuery = query(
-    collection(db, 'subjects', newSubject, 'chapters'),
-    orderBy('order', 'asc')
-  );
-
-  unsubscribeChapters = onSnapshot(chaptersQuery,
-    (snap) => {
-      if (!snap.empty) {
-        chapters = snap.docs.map(d => {
-          const data = d.data();
-          return {
-            id: d.id,
-            title: data.title || '',
-            description: data.description || '',
-            isFree: data.isFree === true,
-            order: data.order || 0,
-            difficulty: data.difficulty || null,
-            estimatedMinutes: data.estimatedMinutes || 0,
-            totalParts: data.totalParts || 0
-          };
-        });
-        renderChapters();
-        renderProgress();
-        renderHero();
-      }
-    },
-    (error) => console.warn('Firestore chapters error:', error.code || error.message)
-  );
-}
-
-// ⚡ Initialiser la matière courante au premier chargement
-window.__arvexaCurrentSubject = subjectKey;
     
 console.log('🚀 ARVEXA — Matière (version corrigée C1-C8)');
 </script>
