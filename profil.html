@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0A0A0A">
   <meta name="description" content="ARVEXA School - Mon profil">
   <link rel="manifest" href="manifest.json">
@@ -12,7 +12,6 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <script src="arvexa-auth-core.js" defer></script>
   <script src="register-sw.js" defer></script>
 
   <style>
@@ -70,7 +69,7 @@
     }
 
     /* ============================================================
-       BACKGROUND
+       BACKGROUND — halos statiques (plus d'animation)
        ============================================================ */
     .gradient-bg {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
@@ -80,12 +79,11 @@
     }
     .glow {
       position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: -1;
-      opacity: 0.15; animation: glowMove 10s ease-in-out infinite alternate;
+      opacity: 0.12;
     }
     .glow-1 { width: 350px; height: 350px; background: rgba(26,58,42,0.18); top: -80px; right: -80px; }
-    .glow-2 { width: 200px; height: 200px; background: rgba(184,134,11,0.05); bottom: 0; left: 0; animation-delay: -4s; }
-    .glow-3 { width: 250px; height: 250px; background: rgba(26,58,42,0.1); top: 30%; left: 60%; transform: translate(-50%,-50%); animation-delay: -8s; }
-    @keyframes glowMove { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(30px,-20px) scale(1.1); } }
+    .glow-2 { width: 200px; height: 200px; background: rgba(184,134,11,0.05); bottom: 0; left: 0; }
+    .glow-3 { width: 250px; height: 250px; background: rgba(26,58,42,0.1); top: 30%; left: 60%; transform: translate(-50%,-50%); }
 
     .sidebar-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
@@ -114,11 +112,10 @@
     }
     .sidebar .logo span {
       background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
-      background-size: 200% auto; -webkit-background-clip: text; background-clip: text;
-      -webkit-text-fill-color: transparent; font-style: italic; animation: shimmerText 4s linear infinite;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; font-style: italic;
       margin-left: 4px;
     }
-    @keyframes shimmerText { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
     .sidebar .nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
     .sidebar .nav a {
       display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px;
@@ -191,11 +188,10 @@
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--success), var(--accent));
-      background-size: 300% 100%;
-      animation: borderShimmer 5s linear infinite;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
       z-index: 3;
+      opacity: 0.8;
     }
 
     /* ---------- COVER ---------- */
@@ -228,12 +224,8 @@
     .cover-glow {
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse at 30% 50%, rgba(224,184,74,0.15), transparent 70%);
-      animation: coverGlow 6s ease-in-out infinite alternate;
-    }
-    @keyframes coverGlow {
-      0% { opacity: 0.5; transform: scale(1); }
-      100% { opacity: 1; transform: scale(1.1); }
+      background: radial-gradient(ellipse at 30% 50%, rgba(224,184,74,0.18), transparent 70%);
+      opacity: 0.9;
     }
 
     /* ---------- AVATAR ---------- */
@@ -247,23 +239,17 @@
       position: relative;
       display: inline-block;
       cursor: pointer;
-      transition: var(--transition);
+      transition: var(--transition-fast);
     }
-    .avatar-wrapper:hover { transform: scale(1.04); }
     .avatar-wrapper::before {
       content: '';
       position: absolute;
-      inset: -6px;
+      inset: -5px;
       border-radius: 50%;
       background: conic-gradient(from 0deg, var(--accent-bright), var(--success), var(--accent-bright));
-      opacity: 0.7;
-      animation: avatarRotate 6s linear infinite;
+      opacity: 0.55;
       z-index: -1;
       filter: blur(8px);
-    }
-    @keyframes avatarRotate {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
     }
     .avatar-wrapper .avatar {
       width: clamp(90px, 14vw, 110px);
@@ -276,7 +262,7 @@
       font-family: 'Playfair Display', serif;
       color: #0A0A0A;
       border: 4px solid rgba(184, 134, 11, 0.4);
-      transition: var(--transition);
+      transition: var(--transition-fast);
       object-fit: cover;
       overflow: hidden;
       box-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05) inset;
@@ -301,14 +287,13 @@
       cursor: pointer;
       font-size: clamp(11px, 1.5vw, 13px);
       display: flex; align-items: center; justify-content: center;
-      transition: var(--transition);
+      transition: var(--transition-fast);
       box-shadow: 0 4px 12px rgba(0,0,0,0.4);
       pointer-events: none;
       z-index: 2;
     }
     .avatar-wrapper:hover .avatar-upload-btn {
       background: var(--accent-bright);
-      transform: scale(1.1);
     }
 
     .profile-name {
@@ -341,19 +326,6 @@
       overflow: hidden;
       animation: fadeInUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) backwards;
       animation-delay: 0.2s;
-    }
-    .profile-badge::after {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-      animation: badgeShimmer 3s ease-in-out infinite;
-    }
-    @keyframes badgeShimmer {
-      0% { left: -100%; }
-      50% { left: 100%; }
-      100% { left: 100%; }
     }
     .profile-badge.premium {
       background: rgba(184, 134, 11, 0.12);
@@ -391,7 +363,7 @@
       border-radius: 14px;
       padding: clamp(12px, 1.5vw, 16px) 8px;
       text-align: center;
-      transition: var(--transition);
+      transition: var(--transition-fast);
       position: relative;
       overflow: hidden;
     }
@@ -417,15 +389,14 @@
       font-family: 'Playfair Display', serif;
       color: var(--accent-bright);
       line-height: 1.2;
-      transition: var(--transition);
+      transition: color 0.2s ease;
     }
     .stat-item:hover .stat-number {
-      transform: scale(1.1);
-      text-shadow: 0 0 20px rgba(224, 184, 74, 0.4);
+      color: #F0CC65;
     }
     .stat-item .stat-label {
       font-size: clamp(9px, 1vw, 11px);
-      color: var(--text-muted);
+      color: var(--text-dim);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       font-weight: 600;
@@ -473,7 +444,7 @@
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.04);
       color: var(--text-muted);
-      transition: var(--transition);
+      transition: var(--transition-fast);
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -481,7 +452,7 @@
     }
     .badge-item i {
       font-size: clamp(16px, 2vw, 20px);
-      transition: var(--transition);
+      transition: color 0.2s ease;
     }
     .badge-item.unlocked {
       background: linear-gradient(135deg, rgba(184, 134, 11, 0.12), rgba(184, 134, 11, 0.04));
@@ -492,16 +463,11 @@
     .badge-item.unlocked::before {
       content: '';
       position: absolute;
-      top: 4px; right: 4px;
+      top: 5px; right: 5px;
       width: 6px; height: 6px;
       border-radius: 50%;
       background: var(--success-light);
-      box-shadow: 0 0 8px var(--success-light);
-      animation: pulseDot 2s ease-in-out infinite;
-    }
-    @keyframes pulseDot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.3); }
+      box-shadow: 0 0 6px rgba(58, 182, 126, 0.6);
     }
     .badge-item.unlocked i { color: var(--accent-bright); }
     .badge-item.unlocked:hover {
@@ -527,7 +493,7 @@
       background: rgba(255,255,255,0.02);
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.04);
-      transition: var(--transition);
+      transition: var(--transition-fast);
       gap: 10px;
       flex-wrap: wrap;
       position: relative;
@@ -547,7 +513,6 @@
     .info-row:hover {
       background: rgba(184, 134, 11, 0.04);
       border-color: rgba(184, 134, 11, 0.15);
-      transform: translateX(3px);
     }
     .info-row:hover::before { opacity: 1; }
     .info-row .label {
@@ -560,10 +525,10 @@
       font-size: clamp(12px, 1.2vw, 14px);
       color: var(--accent-bright);
       width: 18px;
-      transition: var(--transition);
+      transition: transform 0.2s ease;
     }
     .info-row:hover .label i {
-      transform: scale(1.15);
+      transform: scale(1.1);
     }
     .info-row .value {
       font-size: clamp(12px, 1.2vw, 14px);
@@ -601,7 +566,7 @@
       font-size: clamp(12.5px, 1.3vw, 14.5px);
       font-weight: 600;
       cursor: pointer;
-      transition: var(--transition);
+      transition: var(--transition-fast);
       font-family: 'Inter', sans-serif;
       display: flex; align-items: center; justify-content: center;
       gap: 10px;
@@ -674,7 +639,7 @@
     .skeleton-badge { height: 70px; border-radius: 12px; }
 
     /* ============================================================
-       MODALE DE CONFIRMATION
+       MODALE DE CONFIRMATION — statique (plus d'animation)
        ============================================================ */
     .arvexa-confirm-overlay {
       position: fixed;
@@ -689,7 +654,7 @@
       padding: 20px;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: opacity 0.25s ease, visibility 0.25s ease;
     }
     .arvexa-confirm-overlay.show {
       opacity: 1;
@@ -704,8 +669,8 @@
       width: 100%;
       position: relative;
       overflow: hidden;
-      transform: scale(0.9) translateY(20px);
-      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform: scale(0.96) translateY(10px);
+      transition: transform 0.3s ease;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(184, 134, 11, 0.08);
     }
     .arvexa-confirm-overlay.show .arvexa-confirm-modal {
@@ -715,14 +680,9 @@
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
-      background-size: 200% 100%;
-      animation: borderShimmer 3s linear infinite;
-    }
-    @keyframes borderShimmer {
-      0% { background-position: 0% 0%; }
-      100% { background-position: 200% 0%; }
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
+      opacity: 0.9;
     }
     .arvexa-confirm-modal::after {
       content: '';
@@ -750,20 +710,10 @@
       justify-content: center;
       font-size: 28px;
       position: relative;
-      animation: iconPulse 2s ease-in-out infinite;
-    }
-    @keyframes iconPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(184, 134, 11, 0.2); transform: scale(1); }
-      50% { box-shadow: 0 0 0 12px rgba(184, 134, 11, 0); transform: scale(1.03); }
     }
     .arvexa-confirm-icon-box.danger {
       background: linear-gradient(135deg, rgba(184, 92, 58, 0.15), rgba(184, 92, 58, 0.05));
       border-color: rgba(184, 92, 58, 0.3);
-      animation: iconPulseDanger 2s ease-in-out infinite;
-    }
-    @keyframes iconPulseDanger {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(184, 92, 58, 0.2); transform: scale(1); }
-      50% { box-shadow: 0 0 0 12px rgba(184, 92, 58, 0); transform: scale(1.03); }
     }
     .arvexa-confirm-title {
       font-size: 22px;
@@ -811,7 +761,7 @@
       font-size: 14px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: var(--transition-fast);
       font-family: 'Inter', sans-serif;
       display: flex;
       align-items: center;
@@ -866,13 +816,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: var(--transition);
+      transition: var(--transition-fast);
       z-index: 2;
     }
     .arvexa-confirm-close:hover {
       background: rgba(255, 255, 255, 0.08);
       color: var(--text-light);
-      transform: rotate(90deg);
     }
 
     /* ============================================================
@@ -964,44 +913,44 @@
       .btn-profile { padding: 12px 18px; font-size: 13px; }
 
       /* ✅ Bouton téléchargement hors ligne */
-#downloadOfflineBtn {
-  position: relative;
-}
+      #downloadOfflineBtn {
+        position: relative;
+      }
 
-#downloadOfflineBtn.loading {
-  pointer-events: none;
-  opacity: 0.7;
-}
+      #downloadOfflineBtn.loading {
+        pointer-events: none;
+        opacity: 0.7;
+      }
 
-#downloadOfflineBtn.loading #downloadOfflineText {
-  display: none;
-}
+      #downloadOfflineBtn.loading #downloadOfflineText {
+        display: none;
+      }
 
-.download-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(184, 134, 11, 0.2);
-  border-top-color: var(--accent-bright);
-  border-radius: 50%;
-  animation: downloadSpin 0.8s linear infinite;
-  display: inline-block;
-  margin-left: 8px;
-  vertical-align: middle;
-}
+      .download-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(184, 134, 11, 0.2);
+        border-top-color: var(--accent-bright);
+        border-radius: 50%;
+        animation: downloadSpin 0.8s linear infinite;
+        display: inline-block;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
 
-@keyframes downloadSpin {
-  to { transform: rotate(360deg); }
-}
+      @keyframes downloadSpin {
+        to { transform: rotate(360deg); }
+      }
 
-#downloadOfflineBtn.done {
-  background: rgba(45, 125, 90, 0.15);
-  color: var(--success-light);
-  border-color: rgba(45, 125, 90, 0.3);
-}
+      #downloadOfflineBtn.done {
+        background: rgba(45, 125, 90, 0.15);
+        color: var(--success-light);
+        border-color: rgba(45, 125, 90, 0.3);
+      }
 
-#downloadOfflineBtn.done i {
-  color: var(--success-light);
-}
+      #downloadOfflineBtn.done i {
+        color: var(--success-light);
+      }
 
       .arvexa-confirm-modal { padding: 26px 22px 20px; max-width: 360px; }
       .arvexa-confirm-icon-box { width: 56px; height: 56px; font-size: 24px; }
@@ -1091,16 +1040,31 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .glow,
+      .cover-glow,
+      .avatar-wrapper::before,
+      .profile-badge,
+      .badge-item.unlocked::before,
+      .profile-card::before,
+      .sidebar .logo span,
+      .arvexa-confirm-modal::before,
+      .arvexa-confirm-icon-box,
+      .arvexa-confirm-icon-box.danger {
+        animation: none !important;
       }
     }
 
     a:focus-visible,
     button:focus-visible,
     textarea:focus-visible,
-    input:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
+    input:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 3px;
       border-radius: 6px;
     }
 
@@ -1245,7 +1209,7 @@
     <i class="fas fa-crown"></i> Voir les offres Premium
   </a>
 
-  <!-- ✅ Bouton téléchargement hors ligne -->
+  <!-- ✅ NOUVEAU : Bouton téléchargement hors ligne -->
   <button class="btn-profile secondary" id="downloadOfflineBtn">
     <i class="fas fa-cloud-arrow-down"></i>
     <span id="downloadOfflineText">Télécharger tout hors ligne</span>
@@ -1313,18 +1277,6 @@
   <script type="module">
   // ================================================================
   // PROFIL — Version robuste anti-flash
-  // Corrections appliquées :
-  //  - C1 : Gestion blocked/paused alignée sur index.html (paused ne déconnecte PAS)
-  //  - C2 : Retry doux avant redirection register.html (aligné sur index.html)
-  //  - C3 : redirectToLogin préserve les clés existantes
-  //  - C4 : Unsubscribe propre du listener auth
-  //  - C5 : clearSession aligné (ajout redirectAfterLogin/redirectAfterAuth)
-  //  - C6 : saveSession écrit aussi sessionStorage
-  //  - C7 : Log explicite si setPersistence échoue
-  //  - C8 : handleLogout → auth-choice.html (cohérence avec index.html)
-  //  - C9 : signOut tolérant sur blocked (.catch().finally())
-  //  - C10 : message + retry si onSnapshot échoue sans cache
-  //  - C11 : getIdToken en fire-and-forget (affichage cache immédiat)
   // ================================================================
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -1341,7 +1293,6 @@
     persistentLocalCache,
     persistentSingleTabManager,
     doc,
-    getDoc,
     onSnapshot,
     updateDoc,
     serverTimestamp
@@ -1368,15 +1319,12 @@
     })
   });
 
-  // ✅ C7 — Log explicite si persistance refusée
   try {
     await setPersistence(auth, browserLocalPersistence);
-  } catch (e) {
-    console.warn('[Auth] Persistance locale indisponible sur profil.html :', e.code || e.message);
-  }
+  } catch (e) {}
 
   // ================================================================
-  // SESSION / CACHE — ✅ C5/C6 alignements
+  // SESSION / CACHE
   // ================================================================
   const SESSION_KEY = 'arvexa_session';
   const USER_DATA_KEY = 'arvexa_user_data';
@@ -1392,7 +1340,6 @@
         lastActive: Date.now()
       };
       localStorage.setItem(SESSION_KEY, JSON.stringify(data));
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C6
       localStorage.setItem(LAST_UID_KEY, user.uid);
     } catch (e) {}
   }
@@ -1403,9 +1350,6 @@
       localStorage.removeItem(USER_DATA_KEY);
       localStorage.removeItem(LAST_UID_KEY);
       sessionStorage.removeItem(SESSION_KEY);
-      // ✅ C5 — alignement
-      sessionStorage.removeItem('redirectAfterLogin');
-      sessionStorage.removeItem('redirectAfterAuth');
     } catch (e) {}
   }
 
@@ -1464,8 +1408,6 @@
   let isAuthResolved = false;
   let graceTimer = null;
   let maxTimer = null;
-  let authUnsubscribe = null;         // ✅ C4
-  let missingDocInFlight = false;     // ✅ C2
 
   // ================================================================
   // UTILITAIRE — TIMESTAMP
@@ -1646,13 +1588,16 @@
     const chaptersRead = countChaptersRead();
     const totalTime = data.totalStudyTime || 0;
 
+    // Avatar
     const profilePicture = data.profilePicture || null;
     const initials = getInitials(firstName, lastName);
     updateAvatarDisplay(profilePicture, initials);
 
+    // Nom + Email
     userFullName.textContent = lastName ? `${firstName} ${lastName}` : firstName;
     userEmail.textContent = email;
 
+    // Badge statut
     userBadge.className = 'profile-badge';
 
     if (isPending) {
@@ -1685,10 +1630,12 @@
       premiumBtn.href = 'abonnement.html';
     }
 
+    // Infos
     userEstablishment.textContent = establishment || 'Non renseigné';
     userClass.textContent = className;
     userSince.textContent = createdAt ? formatDate(createdAt) : 'Inconnue';
 
+    // Statut
     if (isPending) {
       userStatus.innerHTML = `<span class="status-badge pending">⏳ En attente</span>`;
     } else if (isPremium) {
@@ -1708,52 +1655,23 @@
       userStatus.innerHTML = `<span class="status-badge free">🔓 Gratuit</span>`;
     }
 
+    // Stats
     statChapters.textContent = chaptersRead;
     statTime.textContent = formatTime(totalTime);
     const level = getLevel(chaptersRead);
     statLevel.textContent = level.emoji;
     statLevel.title = level.text;
 
+    // Badges
     renderBadges(chaptersRead, isPremium, totalTime);
 
+    // Afficher
     skeletonLoading.style.display = 'none';
     dynamicContent.style.display = 'block';
   }
 
   // ================================================================
-  // ✅ C2 — Retry doux avant redirection register.html
-  // ================================================================
-  async function handleMissingUserDoc(uid) {
-    if (missingDocInFlight) return;
-    missingDocInFlight = true;
-    try {
-      await new Promise((r) => setTimeout(r, 900));
-      if (!auth.currentUser || auth.currentUser.uid !== uid) return;
-      const userRef = doc(db, 'users', uid);
-      const retry = await getDoc(userRef);
-      if (retry.exists()) {
-        const data = retry.data();
-        saveUserDataToCache(data, uid);
-        renderProfile(data);
-        return;
-      }
-      // Toujours absent : message + lien login (ne pas renvoyer vers register !)
-      showToast(
-        'Ton profil est introuvable. <a href="login.html">Se reconnecter</a>',
-        'error',
-        10000,
-        true
-      );
-    } catch (e) {
-      console.warn('[Profil] handleMissingUserDoc:', e.code || e.message);
-    } finally {
-      missingDocInFlight = false;
-    }
-  }
-
-  // ================================================================
   // CHARGEMENT UTILISATEUR
-  // ✅ C1 : blocked/paused aligné sur index.html
   // ================================================================
   function loadUserData(user) {
     if (unsubscribeUser) {
@@ -1763,29 +1681,19 @@
 
     const userRef = doc(db, 'users', user.uid);
 
-    unsubscribeUser = onSnapshot(userRef,
+       unsubscribeUser = onSnapshot(userRef,
       (docSnap) => {
         const cached = getCachedUserData(user.uid);
 
         if (docSnap.exists()) {
           const data = docSnap.data();
 
-          // ✅ C1 — Compte bloqué : signOut tolérant + auth-choice.html
-          if (data.accountStatus === 'blocked') {
-            if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
+          if (data.accountStatus === 'blocked' || data.accountStatus === 'paused') {
+            if (unsubscribeUser) unsubscribeUser();
             clearSession();
-            try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
-            signOut(auth)
-              .catch((err) => console.warn('[Profil] signOut bloqué :', err.code || err.message))
-              .finally(() => { window.location.replace('auth-choice.html'); });
-            return;
-          }
-
-          // ✅ C1 — Compte paused : NE PAS déconnecter, message + continuer
-          if (data.accountStatus === 'paused') {
-            showToast('Ton compte est temporairement en pause. Contacte le support.', 'error', 8000);
-            saveUserDataToCache(data, user.uid);
-            renderProfile(data);
+            signOut(auth).then(() => {
+              window.location.replace('login.html');
+            });
             return;
           }
 
@@ -1794,21 +1702,17 @@
         } else if (cached) {
           renderProfile(cached);
         } else {
-          // ✅ C2 — retry doux avant décision finale
-          handleMissingUserDoc(user.uid);
+          window.location.replace('register.html');
         }
       },
       (error) => {
-        // ✅ C10 — message clair si pas de cache
         const cached = getCachedUserData(user.uid);
         if (cached) {
           renderProfile(cached);
         } else {
           skeletonLoading.style.display = 'none';
           dynamicContent.style.display = 'block';
-          showToast('Impossible de charger ton profil. Vérifie ta connexion.', 'error', 6000);
         }
-        console.warn('[Profil] onSnapshot users:', error.code || error.message);
       }
     );
   }
@@ -1918,7 +1822,7 @@
   // ================================================================
   // TOAST
   // ================================================================
-  function showToast(message, type = 'success', duration = 3000, allowHtml = false) {
+  function showToast(message, type = 'success') {
     const icons = {
       success: 'fa-check-circle',
       error: 'fa-exclamation-circle',
@@ -1932,28 +1836,21 @@
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-
-    const icon = `<i class="fas ${icons[type] || icons.info}" style="color:${colors[type] || colors.info}"></i>`;
-    const span = document.createElement('span');
-    if (allowHtml) {
-      span.innerHTML = message;
-    } else {
-      span.textContent = message;
-    }
-
-    toast.innerHTML = icon;
-    toast.appendChild(span);
+    toast.innerHTML = `
+      <i class="fas ${icons[type] || icons.info}" style="color:${colors[type] || colors.info}"></i>
+      <span>${message}</span>
+    `;
     toastContainer.appendChild(toast);
 
     setTimeout(() => {
       toast.style.opacity = '0';
       toast.style.transform = 'translateY(-10px)';
       setTimeout(() => toast.remove(), 300);
-    }, duration);
+    }, 3000);
   }
 
   // ================================================================
-  // DÉCONNEXION — ✅ C4/C8
+  // DÉCONNEXION
   // ================================================================
   function handleLogout() {
     window.arvexaConfirm({
@@ -1964,56 +1861,34 @@
       cancelText: 'Annuler',
       variant: 'danger',
       onConfirm: async () => {
-        isRedirecting = true;
-
-        // ✅ C4 — désabonnements propres
-        if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
-        if (authUnsubscribe) {
-          try { authUnsubscribe(); } catch (e) {}
-          authUnsubscribe = null;
+        try {
+          isRedirecting = true;
+          if (unsubscribeUser) unsubscribeUser();
+          currentUid = null;
+          clearSession();
+          try { await signOut(auth); } catch (e) {}
+          window.location.replace('login.html');
+        } catch (error) {
+          window.location.replace('login.html');
         }
-        if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-        if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-
-        currentUid = null;
-        clearSession();
-        try { await signOut(auth); } catch (e) {}
-        // ✅ C8 — alignement sur index.html
-        window.location.replace('auth-choice.html');
       }
     });
   }
 
   // ================================================================
-  // AUTH ROBUSTE — ✅ C3/C4
+  // AUTH ROBUSTE — Anti-flash
   // ================================================================
-  // ✅ C3 — préserver les clés existantes
   function redirectToLogin() {
     if (isRedirecting) return;
     isRedirecting = true;
-
-    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-    if (authUnsubscribe) {
-      try { authUnsubscribe(); } catch (e) {}
-      authUnsubscribe = null;
-    }
-
     try {
-      const existing = sessionStorage.getItem('redirectAfterLogin')
-                    || sessionStorage.getItem('redirectAfterAuth');
-      if (!existing) {
-        sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search);
-      }
+      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
     } catch (e) {}
-
     window.location.replace('login.html');
   }
 
   function initAuthGuard(onAuthenticated) {
-    if (authUnsubscribe) return; // garde anti-double
-
-    authUnsubscribe = onAuthStateChanged(auth, (user) => {
+    auth.onAuthStateChanged((user) => {
       if (isAuthResolved) {
         if (user && user.uid !== currentUid) {
           currentUid = user.uid;
@@ -2028,9 +1903,8 @@
       }
 
       if (!user) {
-        if (graceTimer) return;
+        if (graceTimer) clearTimeout(graceTimer);
         graceTimer = setTimeout(() => {
-          graceTimer = null;
           if (isAuthResolved) return;
           if (auth.currentUser) return;
 
@@ -2081,13 +1955,10 @@
   }
 
   // ================================================================
-  // LANCER LA PROTECTION — ✅ C11 : cache-first, getIdToken fire-and-forget
+  // LANCER LA PROTECTION
   // ================================================================
   initAuthGuard(async (user) => {
-    // ✅ C11 — fire-and-forget, n'attend pas le réseau
-    getIdToken(user, true).catch((err) => {
-      console.warn('[Profil] getIdToken refresh :', err.code || err.message);
-    });
+    try { await getIdToken(user, true); } catch (e) {}
 
     // Cache-first
     const cached = getCachedUserData(user.uid);
@@ -2135,21 +2006,25 @@ const downloadSpinner = document.getElementById('downloadSpinner');
 
 if (downloadBtn) {
   downloadBtn.addEventListener('click', async () => {
+    // Vérifier que offline.js est chargé
     if (typeof window.arvexaOffline === 'undefined' || typeof window.arvexaOffline.downloadAll !== 'function') {
       showToast('Le module hors ligne n\'est pas encore chargé. Recharge la page.', 'error');
       return;
     }
 
+    // Vérifier la connexion
     if (!navigator.onLine) {
       showToast('Connecte-toi à Internet pour télécharger le contenu', 'error');
       return;
     }
 
+    // Vérifier le Service Worker
     if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
       showToast('Service Worker en préparation. Attends 3 secondes et réessaie.', 'error');
       return;
     }
 
+    // Lancer le téléchargement
     downloadBtn.classList.add('loading');
     downloadBtn.disabled = true;
     if (downloadSpinner) downloadSpinner.style.display = 'inline-block';
@@ -2157,6 +2032,8 @@ if (downloadBtn) {
     try {
       await window.arvexaOffline.downloadAll();
 
+      // Le succès est géré par la modale de offline.js
+      // On remet le bouton à son état normal après un délai
       setTimeout(() => {
         downloadBtn.classList.remove('loading');
         downloadBtn.classList.add('done');
@@ -2164,6 +2041,7 @@ if (downloadBtn) {
         if (downloadSpinner) downloadSpinner.style.display = 'none';
         if (downloadText) downloadText.textContent = 'Contenu téléchargé ✅';
 
+        // Revenir à l'état initial après 5 secondes
         setTimeout(() => {
           downloadBtn.classList.remove('done');
           if (downloadText) downloadText.textContent = 'Télécharger tout hors ligne';
@@ -2179,15 +2057,8 @@ if (downloadBtn) {
     }
   });
 }
-
-  // ✅ C4 — cleanup à la destruction
-  window.addEventListener('beforeunload', () => {
-    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-    if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
-  });
-
-  console.log('🚀 ARVEXA — Profil (version corrigée C1-C11)');
+    
+  console.log('🚀 ARVEXA — Profil (version nettoyée)');
   </script>
 </body>
 </html>
