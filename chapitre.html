@@ -955,114 +955,133 @@
   }
   </script>
 
-  <script type="module">
-  // ================================================================
-  // CHAPITRE — Version robuste anti-flash
-  // ================================================================
+ <script type="module">
+// ================================================================
+// CHAPITRE — Version robuste anti-flash
+// Corrections appliquées :
+//  - C1 : redirectToLogin préserve redirectAfterLogin/redirectAfterAuth
+//  - C2 : gestion blocked/paused alignée sur les autres pages protégées
+//  - C3 : retry doux + warn si doc users/{uid} absent
+//  - C4 : saveSession écrit aussi sessionStorage
+//  - C5 : clearSession supprime redirectAfterLogin/redirectAfterAuth
+//  - C6 : log explicite si setPersistence échoue
+//  - C7 : unsubscribe propre du listener auth
+//  - C8 : warn dans le catch de loadUserData
+//  - C10 : renderPage ne recharge plus le manifest quand seul Premium change
+//  - C11 : warn + message plus précis si loadManifest échoue
+// ================================================================
 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import {
-    getAuth,
-    onAuthStateChanged,
-    setPersistence,
-    browserLocalPersistence
-  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-  import {
-    initializeFirestore,
-    persistentLocalCache,
-    persistentSingleTabManager,
-    doc,
-    getDoc,
-    onSnapshot
-  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager,
+  doc,
+  getDoc,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-  // ================================================================
-  // CONFIG FIREBASE
-  // ================================================================
-  const firebaseConfig = {
-    apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
-    authDomain: "arvexa-fbf10.firebaseapp.com",
-    projectId: "arvexa-fbf10",
-    storageBucket: "arvexa-fbf10.firebasestorage.app",
-    messagingSenderId: "920108330053",
-    appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
-  };
+// ================================================================
+// CONFIG FIREBASE
+// ================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
+  authDomain: "arvexa-fbf10.firebaseapp.com",
+  projectId: "arvexa-fbf10",
+  storageBucket: "arvexa-fbf10.firebasestorage.app",
+  messagingSenderId: "920108330053",
+  appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-  const db = initializeFirestore(app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentSingleTabManager()
-    })
-  });
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentSingleTabManager()
+  })
+});
 
+// ✅ C6 — Log explicite si persistance refusée
+try {
+  await setPersistence(auth, browserLocalPersistence);
+} catch (e) {
+  console.warn('[Auth] Persistance locale indisponible sur chapitre.html :', e.code || e.message);
+}
+
+// ================================================================
+// SESSION / CACHE — ✅ C4/C5 alignements
+// ================================================================
+const SESSION_KEY = 'arvexa_session';
+const USER_DATA_KEY = 'arvexa_user_data';
+const LAST_UID_KEY = 'arvexa_last_uid';
+const READ_KEY = 'arvexa_read_parts';
+
+function saveSession(user) {
+  if (!user) return;
   try {
-    await setPersistence(auth, browserLocalPersistence);
+    const data = {
+      uid: user.uid,
+      email: user.email,
+      lastActive: Date.now()
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C4
+    localStorage.setItem(LAST_UID_KEY, user.uid);
   } catch (e) {}
+}
 
-  // ================================================================
-  // SESSION / CACHE
-  // ================================================================
-  const SESSION_KEY = 'arvexa_session';
-  const USER_DATA_KEY = 'arvexa_user_data';
-  const LAST_UID_KEY = 'arvexa_last_uid';
-  const READ_KEY = 'arvexa_read_parts';
+function clearSession() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(USER_DATA_KEY);
+    localStorage.removeItem(LAST_UID_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    // ✅ C5 — alignement
+    sessionStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('redirectAfterAuth');
+  } catch (e) {}
+}
 
-  function saveSession(user) {
-    if (!user) return;
-    try {
-      const data = {
-        uid: user.uid,
-        email: user.email,
-        lastActive: Date.now()
-      };
-      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
-      localStorage.setItem(LAST_UID_KEY, user.uid);
-    } catch (e) {}
-  }
-
-  function clearSession() {
-    try {
-      localStorage.removeItem(SESSION_KEY);
+function getCachedUserData(uid) {
+  try {
+    const raw = localStorage.getItem(USER_DATA_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (cached._uid && cached._uid !== uid) {
       localStorage.removeItem(USER_DATA_KEY);
-      localStorage.removeItem(LAST_UID_KEY);
-      sessionStorage.removeItem(SESSION_KEY);
-    } catch (e) {}
-  }
+      return null;
+    }
+    return cached;
+  } catch (e) { return null; }
+}
 
-  function getCachedUserData(uid) {
-    try {
-      const raw = localStorage.getItem(USER_DATA_KEY);
-      if (!raw) return null;
-      const cached = JSON.parse(raw);
-      if (cached._uid && cached._uid !== uid) {
-        localStorage.removeItem(USER_DATA_KEY);
-        return null;
-      }
-      return cached;
-    } catch (e) { return null; }
-  }
+// ================================================================
+// URL PARAMS
+// ================================================================
+const params = new URLSearchParams(window.location.search);
+const subjectKey = params.get('subject') || 'mathematiques';
+const chapIdx = parseInt(params.get('chapter')) || 0;
+const tabParam = params.get('tab') || 'cours';
 
-  // ================================================================
-  // URL PARAMS
-  // ================================================================
-  const params = new URLSearchParams(window.location.search);
-  const subjectKey = params.get('subject') || 'mathematiques';
-  const chapIdx = parseInt(params.get('chapter')) || 0;
-  const tabParam = params.get('tab') || 'cours';
+// ================================================================
+// CONFIG MATIÈRES (fallback)
+// ================================================================
+const SUBJECTS_CONFIG = {
+  mathematiques: { name: 'Mathématiques', icon: 'fa-square-root-variable', color: '#E0B84A' },
+  physique: { name: 'Physique', icon: 'fa-bolt', color: '#4AAFE0' },
+  chimie: { name: 'Chimie', icon: 'fa-flask', color: '#E07A4A' },
+  svt: { name: 'SVT', icon: 'fa-dna', color: '#7AE04A' }
+};
 
-  // ================================================================
-  // CONFIG MATIÈRES (fallback)
-  // ================================================================
-  const SUBJECTS_CONFIG = {
-    mathematiques: { name: 'Mathématiques', icon: 'fa-square-root-variable', color: '#E0B84A' },
-    physique: { name: 'Physique', icon: 'fa-bolt', color: '#4AAFE0' },
-    chimie: { name: 'Chimie', icon: 'fa-flask', color: '#E07A4A' },
-    svt: { name: 'SVT', icon: 'fa-dna', color: '#7AE04A' }
-  };
-
- const DEFAULT_CHAPTERS = {
+const DEFAULT_CHAPTERS = {
   mathematiques: [
     'Nombres complexes',
     'Similitudes planes directes',
@@ -1130,189 +1149,193 @@
   ]
 };
 
-  // ================================================================
-  // DOM
-  // ================================================================
-  const cardsView = document.getElementById('cardsView');
-  const cpRead = document.getElementById('cpRead');
-  const cpTotal = document.getElementById('cpTotal');
-  const cpPercent = document.getElementById('cpPercent');
-  const cpFill = document.getElementById('cpFill');
+// ================================================================
+// DOM
+// ================================================================
+const cardsView = document.getElementById('cardsView');
+const cpRead = document.getElementById('cpRead');
+const cpTotal = document.getElementById('cpTotal');
+const cpPercent = document.getElementById('cpPercent');
+const cpFill = document.getElementById('cpFill');
 
-  // ================================================================
-  // UTILITAIRE — TIMESTAMP
-  // ================================================================
-  function toDate(value) {
-    if (!value) return null;
-    if (typeof value.toDate === 'function') return value.toDate();
-    if (value.seconds !== undefined) return new Date(value.seconds * 1000);
-    const date = value instanceof Date ? value : new Date(value);
-    return Number.isNaN(date.getTime()) ? null : date;
+// ================================================================
+// UTILITAIRE — TIMESTAMP
+// ================================================================
+function toDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === 'function') return value.toDate();
+  if (value.seconds !== undefined) return new Date(value.seconds * 1000);
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+// ================================================================
+// VÉRIFICATION PREMIUM
+// ================================================================
+function isUserPremium(userData) {
+  if (!userData) return false;
+  const hasStatus = userData.premium === true ||
+                    userData.isUnlocked === true ||
+                    userData.hasDeposited === true;
+  if (!hasStatus) return false;
+  const endDate = toDate(userData.subscriptionEndDate);
+  if (!endDate) return true;
+  return endDate.getTime() > Date.now();
+}
+
+// ================================================================
+// GESTION DES PARTIES LUES
+// ================================================================
+function getReadParts() {
+  try {
+    return JSON.parse(localStorage.getItem(READ_KEY) || '[]');
+  } catch (e) { return []; }
+}
+
+function isPartRead(subject, chapter, tab, partIndex) {
+  const key = `${subject}_${chapter}_${tab}_${partIndex}`;
+  const readParts = getReadParts();
+  return readParts.includes(key);
+}
+
+function getPartsReadForChapter(subject, chapter, tab, totalParts) {
+  let count = 0;
+  for (let i = 0; i < totalParts; i++) {
+    if (isPartRead(subject, chapter, tab, i)) count++;
   }
+  return count;
+}
 
-  // ================================================================
-  // VÉRIFICATION PREMIUM
-  // ================================================================
-  function isUserPremium(userData) {
-    if (!userData) return false;
-    const hasStatus = userData.premium === true ||
-                      userData.isUnlocked === true ||
-                      userData.hasDeposited === true;
-    if (!hasStatus) return false;
-    const endDate = toDate(userData.subscriptionEndDate);
-    if (!endDate) return true;
-    return endDate.getTime() > Date.now();
-  }
+// ================================================================
+// NAVIGATION
+// ================================================================
+function openPart(index) {
+  window.location.href = `lecture.html?subject=${subjectKey}&chapter=${chapIdx}&tab=${currentTab}&part=${index}`;
+}
 
-  // ================================================================
-  // GESTION DES PARTIES LUES
-  // ================================================================
-  function getReadParts() {
-    try {
-      return JSON.parse(localStorage.getItem(READ_KEY) || '[]');
-    } catch (e) { return []; }
-  }
+function showPremiumPopup() {
+  const popup = document.getElementById('premiumPopup');
+  popup.classList.remove('hide');
+  popup.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
 
-  function isPartRead(subject, chapter, tab, partIndex) {
-    const key = `${subject}_${chapter}_${tab}_${partIndex}`;
-    const readParts = getReadParts();
-    return readParts.includes(key);
-  }
+function hidePremiumPopup() {
+  const popup = document.getElementById('premiumPopup');
+  popup.classList.remove('show');
+  popup.classList.add('hide');
+  document.body.style.overflow = '';
+}
 
-  function getPartsReadForChapter(subject, chapter, tab, totalParts) {
-    let count = 0;
-    for (let i = 0; i < totalParts; i++) {
-      if (isPartRead(subject, chapter, tab, i)) count++;
-    }
-    return count;
-  }
+window.openPart = openPart;
+window.showPremiumPopup = showPremiumPopup;
+window.hidePremiumPopup = hidePremiumPopup;
 
-  // ================================================================
-  // NAVIGATION
-  // ================================================================
-  function openPart(index) {
-    window.location.href = `lecture.html?subject=${subjectKey}&chapter=${chapIdx}&tab=${currentTab}&part=${index}`;
-  }
+// ================================================================
+// POPUP ÉVÉNEMENTS
+// ================================================================
+document.getElementById('popupCloseBtn').addEventListener('click', hidePremiumPopup);
+document.getElementById('premiumPopup').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) hidePremiumPopup();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') hidePremiumPopup();
+});
 
-  function showPremiumPopup() {
-    const popup = document.getElementById('premiumPopup');
-    popup.classList.remove('hide');
-    popup.classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
+// ================================================================
+// ÉTAT
+// ================================================================
+let subjectConfig = null;
+let chapters = [];
+let isPremium = false;
+let currentTab = (tabParam === 'cours' || tabParam === 'exercices' || tabParam === 'corrections')
+  ? tabParam
+  : 'cours';
+let currentParts = [];
+let unsubscribeUser = null;
+let currentUid = null;
+let authUnsubscribe = null;         // ✅ C7
+let missingDocInFlight = false;     // ✅ C3
 
-  function hidePremiumPopup() {
-    const popup = document.getElementById('premiumPopup');
-    popup.classList.remove('show');
-    popup.classList.add('hide');
-    document.body.style.overflow = '';
-  }
-
-  window.openPart = openPart;
-  window.showPremiumPopup = showPremiumPopup;
-  window.hidePremiumPopup = hidePremiumPopup;
-
-  // ================================================================
-  // POPUP ÉVÉNEMENTS
-  // ================================================================
-  document.getElementById('popupCloseBtn').addEventListener('click', hidePremiumPopup);
-  document.getElementById('premiumPopup').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) hidePremiumPopup();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') hidePremiumPopup();
-  });
-
-  // ================================================================
-  // ÉTAT
-  // ================================================================
-  let subjectConfig = null;
-  let chapters = [];
-  let isPremium = false;
-  let currentTab = (tabParam === 'cours' || tabParam === 'exercices' || tabParam === 'corrections')
-    ? tabParam
-    : 'cours';
-  let currentParts = [];
-  let unsubscribeUser = null;
-  let currentUid = null;
-
-  // ================================================================
-  // RENDU
-  // ================================================================
-  function loadSubjectData() {
-    // Cache d'abord (instantané)
-    try {
-      const cached = localStorage.getItem('arvexa_subject_' + subjectKey);
-      if (cached) {
-        const data = JSON.parse(cached);
-        subjectConfig = data.subjectConfig;
-        chapters = data.chapters;
-        renderPage();
-        return;
-      }
-    } catch (e) {}
-
-    // Fallback
-    const defaultData = SUBJECTS_CONFIG[subjectKey];
-    if (defaultData) {
-      subjectConfig = {
-        name: defaultData.name,
-        icon: defaultData.icon,
-        color: defaultData.color
-      };
-      chapters = DEFAULT_CHAPTERS[subjectKey] || [];
+// ================================================================
+// RENDU
+// ================================================================
+function loadSubjectData() {
+  // Cache d'abord (instantané)
+  try {
+    const cached = localStorage.getItem('arvexa_subject_' + subjectKey);
+    if (cached) {
+      const data = JSON.parse(cached);
+      subjectConfig = data.subjectConfig;
+      chapters = data.chapters;
       renderPage();
-    } else {
-      window.location.replace('index.html');
+      return;
     }
+  } catch (e) {}
+
+  // Fallback
+  const defaultData = SUBJECTS_CONFIG[subjectKey];
+  if (defaultData) {
+    subjectConfig = {
+      name: defaultData.name,
+      icon: defaultData.icon,
+      color: defaultData.color
+    };
+    chapters = DEFAULT_CHAPTERS[subjectKey] || [];
+    renderPage();
+  } else {
+    window.location.replace('index.html');
+  }
+}
+
+function renderPage() {
+  if (!subjectConfig || !chapters.length) return;
+
+  const title = chapters[chapIdx] || 'Chapitre ' + (chapIdx + 1);
+  document.title = 'ARVEXA - ' + title;
+  document.getElementById('pageTitle').innerHTML = '<i class="fas ' + subjectConfig.icon + '"></i> ' + title;
+  document.getElementById('backBtn').href = 'matiere.html?subject=' + subjectKey;
+
+  const isFree = chapIdx === 0;
+  const statusEl = document.getElementById('chapStatus');
+
+  document.getElementById('chapNum').textContent = chapIdx + 1;
+  document.getElementById('chapTitle').textContent = title;
+  document.getElementById('chapSub').textContent = subjectConfig.name + ' — Chapitre ' + (chapIdx + 1) + ' / ' + chapters.length;
+
+  if (isFree) {
+    statusEl.textContent = '🎁 Gratuit';
+    statusEl.className = 'ci-status free';
+  } else if (isPremium) {
+    statusEl.textContent = '👑 Premium';
+    statusEl.className = 'ci-status premium';
+  } else {
+    statusEl.textContent = '🔒 Verrouillé';
+    statusEl.className = 'ci-status locked';
   }
 
-  function renderPage() {
-    if (!subjectConfig || !chapters.length) return;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === currentTab);
+  });
 
-    const title = chapters[chapIdx] || 'Chapitre ' + (chapIdx + 1);
-    document.title = 'ARVEXA - ' + title;
-    document.getElementById('pageTitle').innerHTML = '<i class="fas ' + subjectConfig.icon + '"></i> ' + title;
-    document.getElementById('backBtn').href = 'matiere.html?subject=' + subjectKey;
+  loadManifest();
+}
 
-    const isFree = chapIdx === 0;
-    const statusEl = document.getElementById('chapStatus');
-
-    document.getElementById('chapNum').textContent = chapIdx + 1;
-    document.getElementById('chapTitle').textContent = title;
-    document.getElementById('chapSub').textContent = subjectConfig.name + ' — Chapitre ' + (chapIdx + 1) + ' / ' + chapters.length;
-
-    if (isFree) {
-      statusEl.textContent = '🎁 Gratuit';
-      statusEl.className = 'ci-status free';
-    } else if (isPremium) {
-      statusEl.textContent = '👑 Premium';
-      statusEl.className = 'ci-status premium';
-    } else {
-      statusEl.textContent = '🔒 Verrouillé';
-      statusEl.className = 'ci-status locked';
-    }
-
-    // Tabs
-    document.querySelectorAll('.tab-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.tab === currentTab);
-    });
-
-    // Charger le manifest
-    loadManifest();
-  }
-
+// ✅ C11 — warn + message plus précis
 function loadManifest() {
   const container = document.getElementById('cardsView');
   container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Chargement...</p></div>';
 
-  // ⚡ Charger le fichier unique de la matière
   const manifestPath = 'cours/' + subjectKey + '.json';
 
   fetch(manifestPath)
-    .then((r) => { if (!r.ok) throw new Error('not found'); return r.json(); })
+    .then((r) => {
+      if (!r.ok) {
+        throw new Error('HTTP ' + r.status + ' sur ' + manifestPath);
+      }
+      return r.json();
+    })
     .then((data) => {
-      // ⚡ Trouver le chapitre par son numéro
       const chapter = (data.chapters || []).find((c) => c.number === chapIdx);
       if (!chapter) {
         currentParts = [];
@@ -1320,7 +1343,6 @@ function loadManifest() {
         return;
       }
 
-      // ⚡ Choisir les parties selon l'onglet actif
       let partsKey;
       if (currentTab === 'cours') partsKey = 'cours';
       else if (currentTab === 'exercices') partsKey = 'exercices';
@@ -1328,7 +1350,6 @@ function loadManifest() {
 
       const rawParts = chapter[partsKey] || [];
 
-      // ⚡ Adapter le format pour renderCards
       currentParts = rawParts.map((p) => ({
         title: p.title || `Partie ${p.part}`,
         file: p.file || '',
@@ -1339,142 +1360,183 @@ function loadManifest() {
       renderCards();
     })
     .catch((err) => {
-      console.warn('Impossible de charger le chapitre :', err.message);
+      // ✅ C11 — warn au lieu du silence
+      console.warn('[Chapitre] loadManifest:', err.message);
       currentParts = [];
       renderEmpty();
     });
 }
-    
-  function renderCards() {
-    const container = document.getElementById('cardsView');
-    if (currentParts.length === 0) {
-      renderEmpty();
-      return;
-    }
 
-    const tabLabels = { cours: 'Partie', exercices: 'Exercice', corrections: 'Correction' };
-    const tabIcons = { cours: 'fa-book-open', exercices: 'fa-pen-to-square', corrections: 'fa-check-double' };
-    const iconClass = { cours: '', exercices: 'exo', corrections: 'corr' };
-    const label = tabLabels[currentTab] || 'Partie';
-    const icon = tabIcons[currentTab] || 'fa-file';
-    const ic = iconClass[currentTab] || '';
-
-    const isFree = chapIdx === 0;
-    const isLockedCorrection = currentTab === 'corrections' && !isPremium && !isFree;
-
-    const totalParts = currentParts.length;
-    const readCount = getPartsReadForChapter(subjectKey, chapIdx, currentTab, totalParts);
-    cpTotal.textContent = totalParts;
-    cpRead.textContent = readCount;
-    const percent = totalParts > 0 ? Math.round((readCount / totalParts) * 100) : 0;
-    cpFill.style.width = percent + '%';
-    cpPercent.textContent = `(${percent}%)`;
-
-    container.innerHTML = currentParts.map((part, i) => {
-      const isRead = isPartRead(subjectKey, chapIdx, currentTab, i);
-      const isLocked = isLockedCorrection;
-
-      let badge = '';
-      let badgeClass = '';
-      let cardClass = '';
-
-      if (isRead && !isLocked) {
-        badge = '✅ Lu';
-        badgeClass = 'read';
-        cardClass = 'read';
-      } else if (isLocked) {
-        badge = '🔒 Premium';
-        badgeClass = 'premium';
-        cardClass = 'locked';
-      } else if (isFree && currentTab === 'cours') {
-        badge = '🎁 Gratuit';
-        badgeClass = 'free';
-      }
-
-      const onclick = isLocked ? 'showPremiumPopup()' : `openPart(${i})`;
-
-      return `
-        <div class="part-card ${cardClass}" onclick="${onclick}">
-          <div class="pc-icon ${ic}">
-            <i class="fas ${icon}"></i>
-          </div>
-          <div class="pc-info">
-            <div class="pc-title">
-              ${escapeHtml(part.title)}
-              ${badge ? `<span class="pc-badge ${badgeClass}">${badge}</span>` : ''}
-            </div>
-            <div class="pc-sub">${label} ${i + 1} — ${subjectConfig.name}</div>
-          </div>
-          <div class="pc-arrow"><i class="fas fa-chevron-right"></i></div>
-        </div>
-      `;
-    }).join('');
+function renderCards() {
+  const container = document.getElementById('cardsView');
+  if (currentParts.length === 0) {
+    renderEmpty();
+    return;
   }
 
-  function renderEmpty() {
-    const container = document.getElementById('cardsView');
-    const tabNames = { cours: 'cours', exercices: 'exercices', corrections: 'corrections' };
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="es-icon"><i class="fas fa-folder-open"></i></div>
-        <h4>Aucun ${tabNames[currentTab] || 'contenu'} disponible</h4>
-        <p>Le contenu sera ajouté prochainement.</p>
+  const tabLabels = { cours: 'Partie', exercices: 'Exercice', corrections: 'Correction' };
+  const tabIcons = { cours: 'fa-book-open', exercices: 'fa-pen-to-square', corrections: 'fa-check-double' };
+  const iconClass = { cours: '', exercices: 'exo', corrections: 'corr' };
+  const label = tabLabels[currentTab] || 'Partie';
+  const icon = tabIcons[currentTab] || 'fa-file';
+  const ic = iconClass[currentTab] || '';
+
+  const isFree = chapIdx === 0;
+  const isLockedCorrection = currentTab === 'corrections' && !isPremium && !isFree;
+
+  const totalParts = currentParts.length;
+  const readCount = getPartsReadForChapter(subjectKey, chapIdx, currentTab, totalParts);
+  cpTotal.textContent = totalParts;
+  cpRead.textContent = readCount;
+  const percent = totalParts > 0 ? Math.round((readCount / totalParts) * 100) : 0;
+  cpFill.style.width = percent + '%';
+  cpPercent.textContent = `(${percent}%)`;
+
+  container.innerHTML = currentParts.map((part, i) => {
+    const isRead = isPartRead(subjectKey, chapIdx, currentTab, i);
+    const isLocked = isLockedCorrection;
+
+    let badge = '';
+    let badgeClass = '';
+    let cardClass = '';
+
+    if (isRead && !isLocked) {
+      badge = '✅ Lu';
+      badgeClass = 'read';
+      cardClass = 'read';
+    } else if (isLocked) {
+      badge = '🔒 Premium';
+      badgeClass = 'premium';
+      cardClass = 'locked';
+    } else if (isFree && currentTab === 'cours') {
+      badge = '🎁 Gratuit';
+      badgeClass = 'free';
+    }
+
+    const onclick = isLocked ? 'showPremiumPopup()' : `openPart(${i})`;
+
+    return `
+      <div class="part-card ${cardClass}" onclick="${onclick}">
+        <div class="pc-icon ${ic}">
+          <i class="fas ${icon}"></i>
+        </div>
+        <div class="pc-info">
+          <div class="pc-title">
+            ${escapeHtml(part.title)}
+            ${badge ? `<span class="pc-badge ${badgeClass}">${badge}</span>` : ''}
+          </div>
+          <div class="pc-sub">${label} ${i + 1} — ${subjectConfig.name}</div>
+        </div>
+        <div class="pc-arrow"><i class="fas fa-chevron-right"></i></div>
       </div>
     `;
-    cpTotal.textContent = '0';
-    cpRead.textContent = '0';
-    cpPercent.textContent = '(0%)';
-    cpFill.style.width = '0%';
-  }
+  }).join('');
+}
 
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
+function renderEmpty() {
+  const container = document.getElementById('cardsView');
+  const tabNames = { cours: 'cours', exercices: 'exercices', corrections: 'corrections' };
+  container.innerHTML = `
+    <div class="empty-state">
+      <div class="es-icon"><i class="fas fa-folder-open"></i></div>
+      <h4>Aucun ${tabNames[currentTab] || 'contenu'} disponible</h4>
+      <p>Le contenu sera ajouté prochainement.</p>
+    </div>
+  `;
+  cpTotal.textContent = '0';
+  cpRead.textContent = '0';
+  cpPercent.textContent = '(0%)';
+  cpFill.style.width = '0%';
+}
 
-  // ================================================================
-  // TABS
-  // ================================================================
-  function setupTabs() {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tab = btn.dataset.tab;
-        if (tab === currentTab) return;
-        currentTab = tab;
-        const url = new URL(window.location);
-        url.searchParams.set('tab', tab);
-        window.history.pushState({}, '', url);
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-        loadManifest();
-      });
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ================================================================
+// TABS
+// ================================================================
+function setupTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      if (tab === currentTab) return;
+      currentTab = tab;
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tab);
+      window.history.pushState({}, '', url);
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      loadManifest();
     });
+  });
+}
+
+// ================================================================
+// ✅ C3 — Retry doux si doc users/{uid} absent
+// ================================================================
+async function handleMissingUserDoc(uid) {
+  if (missingDocInFlight) return;
+  missingDocInFlight = true;
+  try {
+    await new Promise((r) => setTimeout(r, 900));
+    if (!auth.currentUser || auth.currentUser.uid !== uid) return;
+    const retry = await getDoc(doc(db, 'users', uid));
+    if (retry.exists()) {
+      const data = retry.data();
+      try {
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify({
+          ...data,
+          _uid: uid,
+          _cachedAt: Date.now()
+        }));
+      } catch (e) {}
+      const newPremium = isUserPremium(data);
+      if (newPremium !== isPremium) {
+        isPremium = newPremium;
+        // ✅ C10 — pas besoin de recharger le manifest, juste les cartes
+        if (subjectConfig && chapters.length) renderPage();
+      }
+      return;
+    }
+    console.warn('[Chapitre] Profil utilisateur introuvable pour', uid);
+  } catch (e) {
+    console.warn('[Chapitre] handleMissingUserDoc:', e.code || e.message);
+  } finally {
+    missingDocInFlight = false;
+  }
+}
+
+// ================================================================
+// CHARGEMENT UTILISATEUR — ✅ C2 + C3 + C8
+// ================================================================
+function loadUserData(user) {
+  if (unsubscribeUser) {
+    unsubscribeUser();
+    unsubscribeUser = null;
   }
 
-  // ================================================================
-  // CHARGEMENT UTILISATEUR (temps réel)
-  // ================================================================
-  function loadUserData(user) {
-    if (unsubscribeUser) {
-      unsubscribeUser();
-      unsubscribeUser = null;
-    }
+  const userRef = doc(db, 'users', user.uid);
 
-    const userRef = doc(db, 'users', user.uid);
+  unsubscribeUser = onSnapshot(userRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
 
-    unsubscribeUser = onSnapshot(userRef,
-      (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          const newPremium = isUserPremium(data);
+        // ✅ C2 — blocked : signOut tolérant + auth-choice.html
+        if (data.accountStatus === 'blocked') {
+          if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
+          clearSession();
+          try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
+          signOut(auth)
+            .catch((err) => console.warn('[Chapitre] signOut bloqué :', err.code || err.message))
+            .finally(() => { window.location.replace('auth-choice.html'); });
+          return;
+        }
 
-          if (newPremium !== isPremium) {
-            isPremium = newPremium;
-            if (subjectConfig && chapters.length) {
-              renderPage();
-            }
-          }
-
+        // ✅ C2 — paused : ne pas déconnecter, laisser la page fonctionner
+        if (data.accountStatus === 'paused') {
           try {
             localStorage.setItem(USER_DATA_KEY, JSON.stringify({
               ...data,
@@ -1482,136 +1544,179 @@ function loadManifest() {
               _cachedAt: Date.now()
             }));
           } catch (e) {}
-        } else {
-          const cached = getCachedUserData(user.uid);
-          if (cached) {
-            const newPremium = isUserPremium(cached);
-            if (newPremium !== isPremium) {
-              isPremium = newPremium;
-              if (subjectConfig && chapters.length) {
-                renderPage();
-              }
-            }
-          }
+          return;
         }
-      },
-      (error) => {
+
+        // Cas normal
+        const newPremium = isUserPremium(data);
+        if (newPremium !== isPremium) {
+          isPremium = newPremium;
+          if (subjectConfig && chapters.length) renderPage();
+        }
+
+        try {
+          localStorage.setItem(USER_DATA_KEY, JSON.stringify({
+            ...data,
+            _uid: user.uid,
+            _cachedAt: Date.now()
+          }));
+        } catch (e) {}
+      } else {
         const cached = getCachedUserData(user.uid);
         if (cached) {
           const newPremium = isUserPremium(cached);
           if (newPremium !== isPremium) {
             isPremium = newPremium;
-            if (subjectConfig && chapters.length) {
-              renderPage();
-            }
+            if (subjectConfig && chapters.length) renderPage();
           }
+        } else {
+          // ✅ C3 — retry doux
+          handleMissingUserDoc(user.uid);
         }
       }
-    );
+    },
+    (error) => {
+      // ✅ C8 — warn au lieu du silence
+      console.warn('[Chapitre] onSnapshot users:', error.code || error.message);
+      const cached = getCachedUserData(user.uid);
+      if (cached) {
+        const newPremium = isUserPremium(cached);
+        if (newPremium !== isPremium) {
+          isPremium = newPremium;
+          if (subjectConfig && chapters.length) renderPage();
+        }
+      }
+    }
+  );
+}
+
+// ================================================================
+// AUTH ROBUSTE — ✅ C1/C7
+// ================================================================
+let isRedirecting = false;
+let isAuthResolved = false;
+let graceTimer = null;
+let maxTimer = null;
+
+// ✅ C1 — préserver les clés existantes
+function redirectToLogin() {
+  if (isRedirecting) return;
+  isRedirecting = true;
+
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) {
+    try { authUnsubscribe(); } catch (e) {}
+    authUnsubscribe = null;
   }
 
-  // ================================================================
-  // AUTH ROBUSTE — Anti-flash
-  // ================================================================
-  let isRedirecting = false;
-  let isAuthResolved = false;
-  let graceTimer = null;
-  let maxTimer = null;
-
-  function redirectToLogin() {
-    if (isRedirecting) return;
-    isRedirecting = true;
-    try {
+  try {
+    const existing = sessionStorage.getItem('redirectAfterLogin')
+                  || sessionStorage.getItem('redirectAfterAuth');
+    if (!existing) {
       sessionStorage.setItem('redirectAfterLogin',
         window.location.pathname + window.location.search);
-    } catch (e) {}
-    window.location.replace('login.html');
-  }
+    }
+  } catch (e) {}
 
-  function initAuthGuard(onAuthenticated) {
-    auth.onAuthStateChanged((user) => {
-      if (isAuthResolved) {
-        if (user && user.uid !== currentUid) {
-          currentUid = user.uid;
-          saveSession(user);
-          onAuthenticated(user);
-        } else if (!user && currentUid) {
-          currentUid = null;
-          clearSession();
-          redirectToLogin();
-        }
-        return;
-      }
+  window.location.replace('login.html');
+}
 
-      if (!user) {
-        if (graceTimer) clearTimeout(graceTimer);
-        graceTimer = setTimeout(() => {
-          if (isAuthResolved) return;
-          if (auth.currentUser) return;
+function initAuthGuard(onAuthenticated) {
+  if (authUnsubscribe) return; // garde anti-double
 
-          const hasSession = localStorage.getItem(SESSION_KEY);
-          const hasUserData = localStorage.getItem(USER_DATA_KEY);
-
-          if ((hasSession || hasUserData) && !navigator.onLine) {
-            setTimeout(() => {
-              if (auth.currentUser) return;
-              if (!isAuthResolved) redirectToLogin();
-            }, 1500);
-            return;
-          }
-
-          if (hasSession && hasUserData) {
-            setTimeout(() => {
-              if (auth.currentUser) return;
-              if (!isAuthResolved) redirectToLogin();
-            }, 1500);
-            return;
-          }
-
-          redirectToLogin();
-        }, 600);
-        return;
-      }
-
-      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-      if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-
-      isAuthResolved = true;
-      currentUid = user.uid;
-      saveSession(user);
-      onAuthenticated(user);
-    });
-
-    maxTimer = setTimeout(() => {
-      if (isAuthResolved) return;
-      if (auth.currentUser) {
-        isAuthResolved = true;
-        currentUid = auth.currentUser.uid;
-        saveSession(auth.currentUser);
-        onAuthenticated(auth.currentUser);
-      } else {
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
+    if (isAuthResolved) {
+      if (user && user.uid !== currentUid) {
+        currentUid = user.uid;
+        saveSession(user);
+        onAuthenticated(user);
+      } else if (!user && currentUid) {
+        currentUid = null;
+        clearSession();
         redirectToLogin();
       }
-    }, 5000);
-  }
+      return;
+    }
 
-  // ================================================================
-  // LANCER LA PROTECTION
-  // ================================================================
-  initAuthGuard(async (user) => {
-    // Cache-first : Premium depuis le cache
-    const cached = getCachedUserData(user.uid);
-    isPremium = cached ? isUserPremium(cached) : false;
+    if (!user) {
+      if (graceTimer) return;
+      graceTimer = setTimeout(() => {
+        graceTimer = null;
+        if (isAuthResolved) return;
+        if (auth.currentUser) return;
 
-    // Charger les données
-    loadSubjectData();
-    setupTabs();
+        const hasSession = localStorage.getItem(SESSION_KEY);
+        const hasUserData = localStorage.getItem(USER_DATA_KEY);
 
-    // Écouter Firestore en temps réel
-    loadUserData(user);
+        if ((hasSession || hasUserData) && !navigator.onLine) {
+          setTimeout(() => {
+            if (auth.currentUser) return;
+            if (!isAuthResolved) redirectToLogin();
+          }, 1500);
+          return;
+        }
+
+        if (hasSession && hasUserData) {
+          setTimeout(() => {
+            if (auth.currentUser) return;
+            if (!isAuthResolved) redirectToLogin();
+          }, 1500);
+          return;
+        }
+
+        redirectToLogin();
+      }, 600);
+      return;
+    }
+
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+
+    isAuthResolved = true;
+    currentUid = user.uid;
+    saveSession(user);
+    onAuthenticated(user);
   });
 
-  console.log('🚀 ARVEXA — Chapitre (avec session robuste)');
-  </script>
+  maxTimer = setTimeout(() => {
+    if (isAuthResolved) return;
+    if (auth.currentUser) {
+      isAuthResolved = true;
+      currentUid = auth.currentUser.uid;
+      saveSession(auth.currentUser);
+      onAuthenticated(auth.currentUser);
+    } else {
+      redirectToLogin();
+    }
+  }, 5000);
+}
+
+// ================================================================
+// LANCER LA PROTECTION
+// ================================================================
+initAuthGuard(async (user) => {
+  // Cache-first : Premium depuis le cache
+  const cached = getCachedUserData(user.uid);
+  isPremium = cached ? isUserPremium(cached) : false;
+
+  // Charger les données
+  loadSubjectData();
+  setupTabs();
+
+  // Écouter Firestore en temps réel
+  loadUserData(user);
+});
+
+// ✅ C7 — cleanup global
+window.addEventListener('beforeunload', () => {
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+  if (unsubscribeUser) { try { unsubscribeUser(); } catch (e) {} unsubscribeUser = null; }
+});
+
+console.log('🚀 ARVEXA — Chapitre (version corrigée C1-C11)');
+</script>
 </body>
 </html>
