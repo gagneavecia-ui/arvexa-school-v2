@@ -954,7 +954,7 @@
 
   <script type="module">
   // ================================================================
-  // LOGIN — Version robuste anti-flash
+  // LOGIN — Version corrigée (sécurité + unicité de redirection)
   // ================================================================
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -991,7 +991,6 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
-  // ⚡ FIRESTORE AVEC PERSISTANCE LOCALE (mode hors-ligne)
   const db = initializeFirestore(app, {
     localCache: persistentLocalCache({
       tabManager: persistentSingleTabManager()
@@ -1000,7 +999,9 @@
 
   try {
     await setPersistence(auth, browserLocalPersistence);
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[Auth] Persistance locale indisponible, repli sur le mode par défaut :', e.code || e.message);
+  }
 
   // ================================================================
   // DOM
@@ -1023,9 +1024,24 @@
   // SESSION CACHE
   // ================================================================
   const SESSION_KEY = 'arvexa_session';
-  const USER_DATA_KEY = 'arvexa_user_data';
   const REMEMBER_KEY = 'arvexa_remember_email';
   const LAST_UID_KEY = 'arvexa_last_uid';
+
+  // Destinations internes autorisées après connexion
+  const ALLOWED_REDIRECTS = new Set([
+    'index.html',
+    'onboarding.html',
+    'profil.html',
+    'abonnement.html',
+    'notifications.html',
+    'arv-progress.html',
+    'matiere.html',
+    'calculatrice.html',
+    'formulaires.html',
+    'exam.html',
+    'tableau-periodique.html',
+    'outils.html'
+  ]);
 
   function saveSession(user) {
     if (!user) return;
@@ -1038,7 +1054,9 @@
       localStorage.setItem(SESSION_KEY, JSON.stringify(data));
       localStorage.setItem(LAST_UID_KEY, user.uid);
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
-    } catch (e) {}
+    } catch (e) {
+      console.warn('[Session] Impossible de sauvegarder la session :', e.message);
+    }
   }
 
   function clearSession() {
@@ -1049,21 +1067,79 @@
   }
 
   // ================================================================
-  // TOAST
+  // SÉCURISATION DES REDIRECTIONS
   // ================================================================
-  function showToast(message, type = 'success', isHtml = false, duration = 4000) {
+  function sanitizeRedirect(raw) {
+    if (typeof raw !== 'string' || raw.length === 0) return null;
+
+    // Rejeter tout protocole (http:, https:, javascript:, data:, ...)
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(raw)) return null;
+
+    // Rejeter les chemins réseau "//" et les variantes avec backslash
+    if (/^[\/\\]{2,}/.test(raw)) return null;
+
+    // Rejeter ".." pour éviter la traversée de répertoire
+    if (raw.includes('..')) return null;
+
+    // Extraire le chemin (sans query / hash)
+    const path = raw.split('?')[0].split('#')[0];
+
+    // Autoriser uniquement les fichiers HTML de la liste blanche
+    const clean = path.replace(/^\/+/, '').replace(/^\.\//, '');
+    if (!ALLOWED_REDIRECTS.has(clean)) return null;
+
+    return clean;
+  }
+
+  function consumeRedirectFromSession() {
+    const keys = ['redirectAfterLogin', 'redirectAfterAuth'];
+    let candidate = null;
+    for (const k of keys) {
+      try {
+        const v = sessionStorage.getItem(k);
+        if (v) { candidate = v; break; }
+      } catch (e) {}
+    }
+    for (const k of keys) {
+      try { sessionStorage.removeItem(k); } catch (e) {}
+    }
+    const safe = sanitizeRedirect(candidate);
+    return safe || 'index.html';
+  }
+
+  // ================================================================
+  // TOASTS — injection sécurisée par textContent
+  // ================================================================
+  function buildToast(type) {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
+    const icon = document.createElement('i');
+    icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    toast.appendChild(icon);
+    const span = document.createElement('span');
+    toast.appendChild(span);
+    return { toast, span };
+  }
 
-    const icon = type === 'success'
-      ? '<i class="fas fa-check-circle"></i>'
-      : '<i class="fas fa-exclamation-circle"></i>';
-
-    const content = isHtml ? message : message;
-
-    toast.innerHTML = `${icon}<span>${content}</span>`;
+  function showToast(message, type = 'success', duration = 4000) {
+    const { toast, span } = buildToast(type);
+    span.textContent = String(message);
     toastContainer.appendChild(toast);
+    scheduleRemoval(toast, duration);
+  }
 
+  function showToastWithRegisterLink(duration = 6000) {
+    const { toast, span } = buildToast('error');
+    span.appendChild(document.createTextNode('❌ Aucun compte trouvé. '));
+    const a = document.createElement('a');
+    a.href = 'register.html';
+    a.textContent = 'Créer un compte';
+    span.appendChild(a);
+    toastContainer.appendChild(toast);
+    scheduleRemoval(toast, duration);
+  }
+
+  function scheduleRemoval(toast, duration) {
     setTimeout(() => {
       toast.style.opacity = '0';
       toast.style.transform = 'translateY(-10px)';
@@ -1072,7 +1148,7 @@
   }
 
   // ================================================================
-  // VALIDATION
+  // VALIDATION UI
   // ================================================================
   function validateEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -1145,7 +1221,7 @@
   });
 
   // ================================================================
-  // LOAD SAVED EMAIL
+  // CHARGEMENT DE L'EMAIL MÉMORISÉ
   // ================================================================
   const savedEmail = localStorage.getItem(REMEMBER_KEY);
   if (savedEmail) {
@@ -1156,71 +1232,133 @@
   }
 
   // ================================================================
-  // AUTH STATE — REDIRECTION ROBUSTE
-  // ⚡ Version anti-flash avec attente intelligente
+  // RÉSOLUTION UNIQUE DE L'ACCÈS
   // ================================================================
-  let currentUid = null;
-  let isRedirecting = false;
-  let isAuthResolved = false;
+  let isResolving = false;      // une seule lecture Firestore à la fois
+  let isRedirecting = false;    // une seule redirection autorisée
+  let handledUid = null;        // évite de re-traiter le même utilisateur
+  let profileRedirectTimer = null;
 
-  onAuthStateChanged(auth, (user) => {
-    // ⚡ Première fois que le listener se déclenche
-    if (!isAuthResolved) {
-      isAuthResolved = true;
+  function cancelProfileRedirect() {
+    if (profileRedirectTimer) {
+      clearTimeout(profileRedirectTimer);
+      profileRedirectTimer = null;
+    }
+  }
 
-      // Cas 1 : Pas d'utilisateur → on reste sur login
-      if (!user) {
-        // Nettoyer les résidus de session éventuels
-        try {
-          // Si on est vraiment déconnecté, nettoyer
-          if (!localStorage.getItem(SESSION_KEY)) {
-            clearSession();
-          }
-        } catch (e) {}
-        return;
+  function redirectTo(path) {
+    if (isRedirecting) return;
+    isRedirecting = true;
+    cancelProfileRedirect();
+    window.location.replace(path);
+  }
+
+  async function attemptAccess(user) {
+    if (!user) return;
+    if (isResolving || isRedirecting) return;
+    if (handledUid === user.uid) return;
+
+    isResolving = true;
+    handledUid = user.uid;
+
+    let userDoc;
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      userDoc = await getDoc(userRef);
+    } catch (err) {
+      console.warn('[Firestore] Lecture du profil échouée :', err.code || err.message);
+      const code = err && err.code ? err.code : '';
+      if (code === 'unavailable' || code === 'deadline-exceeded' || code === 'network-request-failed') {
+        showToast('Problème de connexion. Vérifie ta connexion internet.', 'error', 6000);
+      } else if (code === 'permission-denied') {
+        showToast('Impossible de vérifier ton compte. Contacte le support.', 'error', 6000);
+      } else {
+        showToast('Impossible de vérifier ton compte pour le moment. Réessaie.', 'error', 6000);
       }
-
-      // Cas 2 : Utilisateur restauré → rediriger
-      redirectAfterLogin(user);
+      // On ne redirige pas, on ne signOut pas : l'utilisateur peut réessayer.
+      isResolving = false;
+      handledUid = null;
+      loginBtn.disabled = false;
+      loginBtn.classList.remove('loading');
       return;
     }
 
-    // ⚡ Changements ultérieurs
-    if (user && user.uid !== currentUid) {
-      // Nouvel utilisateur connecté (après signIn par exemple)
-      redirectAfterLogin(user);
-    } else if (!user && currentUid) {
-      // Déconnexion
-      currentUid = null;
+    // Profil absent
+    if (!userDoc.exists()) {
+      try { await signOut(auth); } catch (e) { console.warn('[Auth] signOut :', e.code || e.message); }
       clearSession();
+      showToast('Profil introuvable. Redirection vers l\'inscription…', 'error', 3000);
+      cancelProfileRedirect();
+      profileRedirectTimer = setTimeout(() => {
+        profileRedirectTimer = null;
+        redirectTo('register.html');
+      }, 1500);
+      isResolving = false;
+      loginBtn.disabled = false;
+      loginBtn.classList.remove('loading');
+      return;
     }
-  });
 
-  // ================================================================
-  // REDIRECTION APRÈS LOGIN
-  // ================================================================
-  function redirectAfterLogin(user) {
-    if (isRedirecting) return;
-    isRedirecting = true;
+    const userData = userDoc.data();
 
-    currentUid = user.uid;
+    if (userData.accountStatus === 'blocked') {
+      try { await signOut(auth); } catch (e) { console.warn('[Auth] signOut :', e.code || e.message); }
+      clearSession();
+      showToast('❌ Ton compte est bloqué. Contacte le support.', 'error', 6000);
+      isResolving = false;
+      loginBtn.disabled = false;
+      loginBtn.classList.remove('loading');
+      return;
+    }
 
-    console.log('[Login] Utilisateur connecté :', user.email);
+    if (userData.accountStatus === 'paused') {
+      try { await signOut(auth); } catch (e) { console.warn('[Auth] signOut :', e.code || e.message); }
+      clearSession();
+      showToast('⏸️ Ton compte est en pause. Contacte le support.', 'error', 6000);
+      isResolving = false;
+      loginBtn.disabled = false;
+      loginBtn.classList.remove('loading');
+      return;
+    }
 
-    // ⚡ Sauvegarder la session AVANT la redirection
+    // Compte actif → autoriser l'accès
     saveSession(user);
 
-    // ⚡ Récupérer la page de destination
-    const requestedRedirect = sessionStorage.getItem('redirectAfterLogin') || sessionStorage.getItem('redirectAfterAuth') || 'index.html';
-    const redirectPath = requestedRedirect.startsWith('/') || (!requestedRedirect.includes(':') && !requestedRedirect.startsWith('//')) ? requestedRedirect : 'index.html';
-    sessionStorage.removeItem('redirectAfterLogin');
-    sessionStorage.removeItem('redirectAfterAuth');
+    // Mise à jour de lastLogin : non bloquante, mais tracée
+    try {
+      await updateDoc(doc(db, 'users', user.uid), { lastLogin: serverTimestamp() });
+    } catch (err) {
+      console.warn('[Firestore] Mise à jour de lastLogin échouée (non bloquant) :', err.code || err.message);
+    }
 
-    // ⚡ Redirection immédiate avec replace
+    showToast('✅ Connexion réussie !', 'success', 1200);
+
+    const redirectPath = consumeRedirectFromSession();
+
+    // Petite pause pour laisser le toast apparaître, puis redirection unique
     setTimeout(() => {
-      window.location.replace(redirectPath);
-    }, 200);
+      redirectTo(redirectPath);
+    }, 600);
   }
+
+  // ================================================================
+  // onAuthStateChanged — point d'entrée unique
+  // ================================================================
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      // Pas d'utilisateur : nettoyer les résidus et laisser la page affichée
+      if (!localStorage.getItem(SESSION_KEY)) {
+        clearSession();
+      }
+      handledUid = null;
+      isResolving = false;
+      return;
+    }
+
+    // Utilisateur détecté (session restaurée OU signIn récent)
+    // On ne redirige JAMAIS sans passer par attemptAccess.
+    attemptAccess(user);
+  });
 
   // ================================================================
   // SOUMISSION DU FORMULAIRE
@@ -1244,97 +1382,20 @@
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Vérifier que le profil existe
-      const userRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userRef);
-
-      if (!userDoc.exists()) {
-        await signOut(auth);
-        showToast('Profil introuvable. Redirection...', 'error');
-        setTimeout(() => window.location.replace('register.html'), 1500);
-        isSubmitting = false;
-        loginBtn.disabled = false;
-        loginBtn.classList.remove('loading');
-        return;
-      }
-
-      const userData = userDoc.data();
-
-      // 3. Vérifier le statut du compte
-      if (userData.accountStatus === 'blocked') {
-        await signOut(auth);
-        showToast('❌ Ton compte est bloqué. Contacte le support.', 'error', false, 6000);
-        isSubmitting = false;
-        loginBtn.disabled = false;
-        loginBtn.classList.remove('loading');
-        return;
-      }
-
-      if (userData.accountStatus === 'paused') {
-        await signOut(auth);
-        showToast('⏸️ Ton compte est en pause. Contacte le support.', 'error', false, 6000);
-        isSubmitting = false;
-        loginBtn.disabled = false;
-        loginBtn.classList.remove('loading');
-        return;
-      }
-
-      // 4. Succès
+      // 2. Mémoriser l'email si demandé
       if (rememberMe.checked) {
-        localStorage.setItem(REMEMBER_KEY, email);
+        try { localStorage.setItem(REMEMBER_KEY, email); } catch (e) {}
       } else {
-        localStorage.removeItem(REMEMBER_KEY);
+        try { localStorage.removeItem(REMEMBER_KEY); } catch (e) {}
       }
 
-      try {
-        await updateDoc(userRef, { lastLogin: serverTimestamp() });
-      } catch (e) {}
-
-      // ⚡ Sauvegarder la session AVANT de rediriger
-      saveSession(user);
-
-      showToast('✅ Connexion réussie !', 'success');
-
-      // ⚡ isRedirecting sera géré par onAuthStateChanged
-      // mais on met un fallback au cas où
-      const redirectPath = sessionStorage.getItem('redirectAfterLogin') || 'index.html';
-      sessionStorage.removeItem('redirectAfterLogin');
-
-      setTimeout(() => {
-        if (!isRedirecting) {
-          isRedirecting = true;
-          window.location.replace(redirectPath);
-        }
-      }, 800);
+      // 3. Résolution unique de l'accès (lecture Firestore + statut + redirection)
+      //    Note : onAuthStateChanged a peut-être déjà appelé attemptAccess,
+      //    auquel cas isResolving === true et attemptAccess retournera immédiatement.
+      await attemptAccess(user);
 
     } catch (error) {
-      let message = 'Une erreur est survenue.';
-      let isHtml = false;
-
-      switch (error.code) {
-        case 'auth/user-not-found':
-          message = '❌ Aucun compte trouvé. <a href="register.html">Créer un compte</a>';
-          isHtml = true;
-          break;
-        case 'auth/wrong-password':
-        case 'auth/invalid-credential':
-          message = '❌ Mot de passe incorrect.';
-          break;
-        case 'auth/too-many-requests':
-          message = '⏳ Trop de tentatives. Réessaie dans quelques minutes.';
-          break;
-        case 'auth/invalid-email':
-          message = '❌ Adresse e-mail invalide.';
-          break;
-        case 'auth/network-request-failed':
-          message = '📶 Problème de connexion réseau.';
-          break;
-        default:
-          message = `❌ ${error.message}`;
-      }
-
-      showToast(message, 'error', isHtml, 6000);
-
+      handleSignInError(error);
       loginBtn.disabled = false;
       loginBtn.classList.remove('loading');
     } finally {
@@ -1342,7 +1403,39 @@
     }
   });
 
-  console.log('🚀 ARVEXA School — Login (avec session robuste)');
+  // ================================================================
+  // GESTION DES ERREURS DE CONNEXION
+  // ================================================================
+  function handleSignInError(error) {
+    const code = error && error.code ? error.code : '';
+
+    switch (code) {
+      case 'auth/user-not-found':
+        showToastWithRegisterLink(6000);
+        return;
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+        showToast('❌ Mot de passe incorrect.', 'error', 6000);
+        return;
+      case 'auth/too-many-requests':
+        showToast('⏳ Trop de tentatives. Réessaie dans quelques minutes.', 'error', 6000);
+        return;
+      case 'auth/invalid-email':
+        showToast('❌ Adresse e-mail invalide.', 'error', 6000);
+        return;
+      case 'auth/network-request-failed':
+        showToast('📶 Problème de connexion réseau.', 'error', 6000);
+        return;
+      case 'auth/user-disabled':
+        showToast('❌ Ce compte a été désactivé. Contacte le support.', 'error', 6000);
+        return;
+      default:
+        console.warn('[Auth] Erreur de connexion :', code || error.message);
+        showToast('❌ Une erreur est survenue. Réessaie.', 'error', 6000);
+    }
+  }
+
+  console.log('🚀 ARVEXA School — Login (sécurisé, redirection unique)');
   </script>
 
 </body>
