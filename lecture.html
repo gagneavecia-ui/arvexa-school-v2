@@ -1885,1060 +1885,1108 @@
   }
   </script>
 
-  <script type="module">
-  // ================================================================
-  // LECTURE — Interface refondue ARVEXA School
-  // ================================================================
+ <script type="module">
+// ================================================================
+// LECTURE — Interface refondue ARVEXA School
+// Corrections appliquées :
+//  - C1 : redirectToLogin préserve redirectAfterLogin/redirectAfterAuth
+//  - C2 : gestion blocked/paused alignée sur les autres pages protégées
+//  - C3 : retry doux + warn si doc users/{uid} absent
+//  - C4 : saveSession écrit aussi sessionStorage
+//  - C5 : clearSession supprime redirectAfterLogin/redirectAfterAuth
+//  - C6 : log explicite si setPersistence échoue
+//  - C7 : unsubscribe propre du listener auth
+//  - C8 : warn dans le catch de loadUserData
+//  - C9 : grâce initiale alignée à 600 ms (au lieu de 2000 ms)
+//  - C11 : saveStudyTime utilise increment() (plus de race condition)
+// ================================================================
 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import {
-    getAuth,
-    onAuthStateChanged,
-    setPersistence,
-    browserLocalPersistence
-  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-  import {
-    initializeFirestore,
-    persistentLocalCache,
-    persistentSingleTabManager,
-    doc,
-    onSnapshot,
-    getDoc,
-    updateDoc,
-    serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager,
+  doc,
+  getDoc,
+  onSnapshot,
+  updateDoc,
+  increment,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
-    authDomain: "arvexa-fbf10.firebaseapp.com",
-    projectId: "arvexa-fbf10",
-    storageBucket: "arvexa-fbf10.firebasestorage.app",
-    messagingSenderId: "920108330053",
-    appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
+const firebaseConfig = {
+  apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
+  authDomain: "arvexa-fbf10.firebaseapp.com",
+  projectId: "arvexa-fbf10",
+  storageBucket: "arvexa-fbf10.firebasestorage.app",
+  messagingSenderId: "920108330053",
+  appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentSingleTabManager()
+  })
+});
+
+// ✅ C6 — Log explicite si persistance refusée
+try {
+  await setPersistence(auth, browserLocalPersistence);
+} catch (e) {
+  console.warn('[Auth] Persistance locale indisponible sur lecture.html :', e.code || e.message);
+}
+
+// ================================================================
+// THÈME
+// ================================================================
+const THEME_KEY = 'arvexa_theme';
+
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = 'fas fa-sun';
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', '#FAF7F0');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.className = 'fas fa-moon';
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', '#0A0A0A');
+  }
+}
+
+function initTheme() {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    applyTheme(saved === 'light' ? 'light' : 'dark');
+  } catch (e) {
+    applyTheme('dark');
+  }
+}
+
+initTheme();
+
+document.getElementById('themeBtn').addEventListener('click', () => {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const newTheme = isLight ? 'dark' : 'light';
+  applyTheme(newTheme);
+  try { localStorage.setItem(THEME_KEY, newTheme); } catch (e) {}
+});
+
+// ================================================================
+// URL PARAMS
+// ================================================================
+const params = new URLSearchParams(window.location.search);
+const subject = params.get('subject') || 'mathematiques';
+const chapter = parseInt(params.get('chapter')) || 0;
+const tab = params.get('tab') || 'cours';
+const partIndex = parseInt(params.get('part')) || 0;
+
+const TAB_LABELS = {
+  cours: 'Cours',
+  exercices: 'Exercices',
+  corrections: 'Corrections'
+};
+const headerOverline = document.getElementById('headerOverline');
+if (headerOverline) {
+  headerOverline.textContent = TAB_LABELS[tab] || 'Lecture';
+}
+
+// ================================================================
+// DOM
+// ================================================================
+const contentBody = document.getElementById('contentBody');
+const pageTitle = document.getElementById('pageTitleText');
+const headerEl = document.getElementById('appHeader');
+const backBtn = document.getElementById('backBtn');
+const notesBtn = document.getElementById('notesBtn');
+const notesDot = document.getElementById('notesDot');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const partCounter = document.getElementById('partCounter');
+const partDots = document.getElementById('partDots');
+const readProgressFill = document.getElementById('readProgressFill');
+const contentWrapper = document.getElementById('contentWrapper');
+
+const notesModal = document.getElementById('notesModal');
+const modalClose = document.getElementById('modalClose');
+const modalCancel = document.getElementById('modalCancel');
+const modalSave = document.getElementById('modalSave');
+const notesTextarea = document.getElementById('notesTextarea');
+const modalSub = document.getElementById('modalSub');
+const noteSaved = document.getElementById('noteSaved');
+
+const ttsBtn = document.getElementById('ttsBtn');
+const ttsProgress = document.getElementById('ttsProgress');
+const ttsProgressFill = document.getElementById('ttsProgressFill');
+
+// ================================================================
+// SESSION / CACHE — ✅ C4/C5 alignements
+// ================================================================
+const SESSION_KEY = 'arvexa_session';
+const USER_DATA_KEY = 'arvexa_user_data';
+const LAST_UID_KEY = 'arvexa_last_uid';
+const READ_KEY = 'arvexa_read_parts';
+const NOTES_KEY = 'arvexa_notes';
+
+function saveSession(user) {
+  if (!user) return;
+  try {
+    const data = {
+      uid: user.uid,
+      email: user.email,
+      lastActive: Date.now()
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C4
+    localStorage.setItem(LAST_UID_KEY, user.uid);
+  } catch (e) {}
+}
+
+function clearSession() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(USER_DATA_KEY);
+    localStorage.removeItem(LAST_UID_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    // ✅ C5 — alignement
+    sessionStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('redirectAfterAuth');
+  } catch (e) {}
+}
+
+function getCachedUserData(uid) {
+  try {
+    const raw = localStorage.getItem(USER_DATA_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (cached._uid && cached._uid !== uid) {
+      localStorage.removeItem(USER_DATA_KEY);
+      return null;
+    }
+    return cached;
+  } catch (e) { return null; }
+}
+
+// ================================================================
+// UTILITAIRE
+// ================================================================
+function toDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === 'function') return value.toDate();
+  if (value.seconds !== undefined) return new Date(value.seconds * 1000);
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isUserPremium(userData) {
+  if (!userData) return false;
+  const hasStatus = userData.premium === true ||
+                    userData.isUnlocked === true ||
+                    userData.hasDeposited === true;
+  if (!hasStatus) return false;
+  const endDate = toDate(userData.subscriptionEndDate);
+  if (!endDate) return true;
+  return endDate.getTime() > Date.now();
+}
+
+function scrollToTopInstant() {
+  try {
+    document.documentElement.style.scrollBehavior = 'auto';
+    window.scrollTo(0, 0);
+    contentWrapper.scrollTop = 0;
+    requestAnimationFrame(() => {
+      document.documentElement.style.scrollBehavior = '';
+    });
+  } catch (e) {}
+}
+
+// ================================================================
+// STORAGE
+// ================================================================
+function getReadParts() {
+  try { return JSON.parse(localStorage.getItem(READ_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+
+function markPartAsRead() {
+  const key = `${subject}_${chapter}_${tab}_${partIndex}`;
+  const readParts = getReadParts();
+  if (!readParts.includes(key)) {
+    readParts.push(key);
+    try { localStorage.setItem(READ_KEY, JSON.stringify(readParts)); } catch (e) {}
+  }
+}
+
+function getNotesKey() {
+  return `${subject}_${chapter}_${tab}_${partIndex}`;
+}
+
+function loadNotes() {
+  try {
+    const notes = JSON.parse(localStorage.getItem(NOTES_KEY) || '{}');
+    const key = getNotesKey();
+    if (notes[key]) {
+      notesTextarea.value = notes[key];
+      notesDot.classList.add('show');
+    } else {
+      notesTextarea.value = '';
+      notesDot.classList.remove('show');
+    }
+  } catch (e) {}
+}
+
+function saveNotes() {
+  try {
+    const notes = JSON.parse(localStorage.getItem(NOTES_KEY) || '{}');
+    const key = getNotesKey();
+    const text = notesTextarea.value.trim();
+    if (text) {
+      notes[key] = text;
+      notesDot.classList.add('show');
+    } else {
+      delete notes[key];
+      notesDot.classList.remove('show');
+    }
+    localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+    noteSaved.classList.add('show');
+    setTimeout(() => noteSaved.classList.remove('show'), 2000);
+  } catch (e) {}
+}
+
+// ================================================================
+// ÉTAT
+// ================================================================
+let parts = [];
+let currentIndex = partIndex;
+let isPremium = false;
+let currentUid = null;
+let unsubscribeUser = null;
+let authUnsubscribe = null;         // ✅ C7
+let missingDocInFlight = false;     // ✅ C3
+
+// ================================================================
+// PRÉ-PROCESSING
+// ================================================================
+function preprocessContent(html) {
+  if (!html) return '';
+  let processed = html;
+  processed = processed.replace(/<style[\s\S]*?<\/style>/gi, '');
+  processed = processed.replace(/<script[\s\S]*?<\/script>/gi, '');
+  return processed;
+}
+
+// ================================================================
+// KATEX
+// ================================================================
+function renderKaTeX() {
+  if (typeof renderMathInElement !== 'function') {
+    setTimeout(renderKaTeX, 200);
+    return;
+  }
+  try {
+    renderMathInElement(contentBody, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '\\[', right: '\\]', display: true },
+        { left: '$', right: '$', display: false },
+        { left: '\\(', right: '\\)', display: false }
+      ],
+      throwOnError: false,
+      errorColor: '#f87171',
+      strict: false,
+      trust: false,
+      macros: {
+        "\\R": "\\mathbb{R}",
+        "\\C": "\\mathbb{C}",
+        "\\N": "\\mathbb{N}",
+        "\\Z": "\\mathbb{Z}",
+        "\\Q": "\\mathbb{Q}",
+        "\\Re": "\\operatorname{Re}",
+        "\\Im": "\\operatorname{Im}",
+        "\\arg": "\\operatorname{arg}"
+      }
+    });
+  } catch (e) {}
+}
+
+// ================================================================
+// CONTENU INDISPONIBLE
+// ================================================================
+function showContentUnavailable() {
+  const partNumber = currentIndex + 1;
+
+  const tabConfig = {
+    cours: {
+      backLabel: 'Retour au cours',
+      backIcon: 'fa-arrow-left',
+      listLabel: 'Voir les autres parties',
+      listIcon: 'fa-book',
+      description: `La partie ${partNumber} du cours de ce chapitre sera bientôt disponible.`
+    },
+    exercices: {
+      backLabel: 'Retour aux exercices',
+      backIcon: 'fa-arrow-left',
+      listLabel: 'Voir les autres exercices',
+      listIcon: 'fa-pen-to-square',
+      description: `L'exercice ${partNumber} de ce chapitre sera bientôt disponible.`
+    },
+    corrections: {
+      backLabel: 'Retour aux corrections',
+      backIcon: 'fa-arrow-left',
+      listLabel: 'Voir les autres corrections',
+      listIcon: 'fa-check-double',
+      description: `La correction ${partNumber} de ce chapitre sera bientôt disponible.`
+    }
   };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+  const cfg = tabConfig[tab] || tabConfig.cours;
 
-  const db = initializeFirestore(app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentSingleTabManager()
-    })
+  let title;
+  if (tab === 'cours') title = `Partie ${partNumber} — Cours`;
+  else if (tab === 'exercices') title = `Exercice ${partNumber}`;
+  else if (tab === 'corrections') title = `Correction ${partNumber}`;
+  else title = `Partie ${partNumber}`;
+
+  const hourglassSVG = `
+    <div class="hourglass-wrap">
+      <span class="hourglass-particle"></span>
+      <span class="hourglass-particle"></span>
+      <span class="hourglass-particle"></span>
+      <span class="hourglass-particle"></span>
+      <svg class="hourglass-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path class="frame" d="M 20 15 L 80 15" />
+        <path class="frame" d="M 20 85 L 80 85" />
+        <path class="glass" d="M 22 17 L 78 17 L 50 50 Z" />
+        <path class="glass" d="M 50 50 L 78 83 L 22 83 Z" />
+        <path class="sand-top" d="M 26 20 L 74 20 L 50 47 Z" />
+        <rect class="sand-stream" x="48.5" y="47" width="3" height="8" />
+        <path class="sand-bottom" d="M 50 53 L 74 80 L 26 80 Z" />
+      </svg>
+    </div>
+  `;
+
+  contentBody.innerHTML = `
+    <div class="content-unavailable">
+      ${hourglassSVG}
+      <h2>${title} en préparation</h2>
+      <p>${cfg.description}</p>
+      <div class="cu-actions">
+        <a href="chapitre.html?subject=${subject}&chapter=${chapter}&tab=${tab}" class="cu-btn primary">
+          <i class="fas ${cfg.backIcon}"></i> ${cfg.backLabel}
+        </a>
+        <a href="matiere.html?subject=${subject}" class="cu-btn">
+          <i class="fas ${cfg.listIcon}"></i> ${cfg.listLabel}
+        </a>
+      </div>
+    </div>
+  `;
+  pageTitle.textContent = `${title} en préparation`;
+  document.title = `ARVEXA - ${title} en préparation`;
+  prevBtn.style.display = 'none';
+  nextBtn.style.display = 'none';
+  partCounter.style.display = 'none';
+  notesBtn.style.display = 'none';
+  if (partDots) partDots.style.display = 'none';
+  if (ttsBtn) ttsBtn.style.display = 'none';
+}
+
+// ================================================================
+// AMÉLIORATIONS DU CONTENU
+// ================================================================
+let tocObserver = null;
+
+function initTocSpy() {
+  if (tocObserver) {
+    try { tocObserver.disconnect(); } catch (e) {}
+    tocObserver = null;
+  }
+  const tocLinks = contentBody.querySelectorAll('.lecture-toc-list a[href^="#"]');
+  if (!tocLinks.length || !('IntersectionObserver' in window)) return;
+
+  const map = new Map();
+  tocLinks.forEach(a => {
+    const href = a.getAttribute('href') || '';
+    if (href.length < 2) return;
+    const id = decodeURIComponent(href.slice(1));
+    const target = document.getElementById(id);
+    if (target) map.set(target, a);
   });
+  if (!map.size) return;
 
+  tocObserver = new IntersectionObserver((entries) => {
+    entries.forEach(en => {
+      const link = map.get(en.target);
+      if (!link) return;
+      if (en.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('toc-active'));
+        link.classList.add('toc-active');
+      }
+    });
+  }, { rootMargin: '-12% 0px -70% 0px', threshold: 0 });
+
+  map.forEach((_, target) => {
+    try { tocObserver.observe(target); } catch (e) {}
+  });
+}
+
+function enhanceContent() {
   try {
-    await setPersistence(auth, browserLocalPersistence);
+    contentBody.querySelectorAll('table').forEach(tbl => {
+      const parent = tbl.parentElement;
+      if (parent && parent.classList.contains('table-wrap')) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'table-wrap';
+      tbl.parentNode.insertBefore(wrap, tbl);
+      wrap.appendChild(tbl);
+    });
   } catch (e) {}
 
-  // ================================================================
-  // THÈME
-  // ================================================================
-  const THEME_KEY = 'arvexa_theme';
+  try {
+    contentBody.querySelectorAll('img').forEach(img => {
+      if (!img.hasAttribute('loading')) img.setAttribute('loading', 'lazy');
+    });
+  } catch (e) {}
 
-  function applyTheme(theme) {
-    if (theme === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light');
-      const icon = document.getElementById('themeIcon');
-      if (icon) icon.className = 'fas fa-sun';
-      const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute('content', '#FAF7F0');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-      const icon = document.getElementById('themeIcon');
-      if (icon) icon.className = 'fas fa-moon';
-      const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute('content', '#0A0A0A');
-    }
+  try { initTocSpy(); } catch (e) {}
+}
+
+function updatePartDots() {
+  if (!partDots) return;
+  if (!parts.length || parts.length > 20) {
+    partDots.hidden = true;
+    return;
+  }
+  if (partDots.hidden) partDots.hidden = false;
+  if (partDots.childElementCount !== parts.length) {
+    partDots.innerHTML = parts.map(() => '<span class="pdot"></span>').join('');
+  }
+  Array.from(partDots.children).forEach((d, i) => {
+    d.classList.toggle('active', i === currentIndex);
+    d.classList.toggle('done', i < currentIndex);
+  });
+}
+
+// ================================================================
+// CHARGEMENT
+// ================================================================
+function loadContent() {
+  const manifestPath = `cours/${subject}.json`;
+
+  contentBody.innerHTML = `
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement du contenu...</p>
+    </div>
+  `;
+
+  fetch(manifestPath)
+    .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
+    .then(data => {
+      const ch = (data.chapters || []).find(c => c.number === chapter);
+      if (!ch) { showContentUnavailable(); return; }
+
+      const tabKey = tab === 'cours' ? 'cours'
+                   : tab === 'exercices' ? 'exercices'
+                   : 'corrections';
+
+      parts = (ch[tabKey] || []).map(p => ({
+        title: p.title || `Partie ${p.part}`,
+        file: p.file || '',
+        part: p.part,
+        duration: p.duration || 0
+      }));
+
+      parts = parts.filter(p => p.file);
+
+      if (parts.length === 0) {
+        showContentUnavailable();
+        return;
+      }
+
+      if (currentIndex >= parts.length) currentIndex = 0;
+      renderPart();
+    })
+    .catch(() => {
+      showContentUnavailable();
+    });
+}
+
+function renderPart() {
+  if (!parts || parts.length === 0) {
+    showContentUnavailable();
+    return;
+  }
+  if (currentIndex >= parts.length || currentIndex < 0) currentIndex = 0;
+
+  const part = parts[currentIndex];
+  if (!part) {
+    showContentUnavailable();
+    return;
   }
 
-  function initTheme() {
-    try {
-      const saved = localStorage.getItem(THEME_KEY);
-      applyTheme(saved === 'light' ? 'light' : 'dark');
-    } catch (e) {
-      applyTheme('dark');
-    }
+  stopTTS();
+
+  pageTitle.textContent = part.title || 'Partie ' + (currentIndex + 1);
+  document.title = 'ARVEXA - ' + (part.title || 'Lecture');
+
+  partCounter.textContent = `${currentIndex + 1} / ${parts.length}`;
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.disabled = currentIndex >= parts.length - 1;
+  modalSub.textContent = part.title || 'Partie ' + (currentIndex + 1);
+
+  const prevPart = parts[currentIndex - 1];
+  const nextPart = parts[currentIndex + 1];
+  prevBtn.title = prevPart ? prevPart.title : '';
+  nextBtn.title = nextPart ? nextPart.title : '';
+  updatePartDots();
+
+  const filePath = part.file;
+
+  contentBody.innerHTML = `
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement...</p>
+    </div>
+  `;
+
+  fetch(filePath)
+    .then(r => { if (!r.ok) throw new Error('not found'); return r.text(); })
+    .then(html => {
+      const cleaned = preprocessContent(html);
+      contentBody.innerHTML = cleaned;
+      markPartAsRead();
+      loadNotes();
+      renderKaTeX();
+      enhanceContent();
+      updateReadProgress();
+      resetStudyTimer();
+    })
+    .catch(() => {
+      showContentUnavailable();
+    });
+}
+
+// ================================================================
+// PROGRESSION DE LECTURE
+// ================================================================
+function updateReadProgress() {
+  const docEl = document.documentElement;
+  const max = docEl.scrollHeight - window.innerHeight;
+  const progress = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0;
+  readProgressFill.style.width = progress + '%';
+  if (headerEl) headerEl.classList.toggle('scrolled', window.scrollY > 6);
+}
+
+window.addEventListener('scroll', updateReadProgress, { passive: true });
+window.addEventListener('resize', updateReadProgress);
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function goToPrev() {
+  if (currentIndex > 0) {
+    saveStudyTimeBeforeChange();
+    currentIndex--;
+    if (notesTextarea.value.trim()) saveNotes();
+    scrollToTopInstant();
+    renderPart();
   }
+}
 
-  initTheme();
+function goToNext() {
+  if (currentIndex < parts.length - 1) {
+    saveStudyTimeBeforeChange();
+    currentIndex++;
+    if (notesTextarea.value.trim()) saveNotes();
+    scrollToTopInstant();
+    renderPart();
+  }
+}
 
-  document.getElementById('themeBtn').addEventListener('click', () => {
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-    const newTheme = isLight ? 'dark' : 'light';
-    applyTheme(newTheme);
-    try { localStorage.setItem(THEME_KEY, newTheme); } catch (e) {}
+// ================================================================
+// MODAL NOTES
+// ================================================================
+function openModal() {
+  notesModal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  notesTextarea.focus();
+}
+
+function closeModal() {
+  notesModal.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ================================================================
+// ÉVÉNEMENTS
+// ================================================================
+backBtn.addEventListener('click', () => {
+  saveStudyTimeBeforeChange();
+  window.location.href = `chapitre.html?subject=${subject}&chapter=${chapter}&tab=${tab}`;
+});
+
+prevBtn.addEventListener('click', goToPrev);
+nextBtn.addEventListener('click', goToNext);
+
+document.addEventListener('keydown', (e) => {
+  if (notesModal.classList.contains('show')) {
+    if (e.key === 'Escape') closeModal();
+    return;
+  }
+  if (e.key === 'ArrowLeft' && !prevBtn.disabled) goToPrev();
+  if (e.key === 'ArrowRight' && !nextBtn.disabled) goToNext();
+});
+
+notesBtn.addEventListener('click', openModal);
+modalClose.addEventListener('click', closeModal);
+modalCancel.addEventListener('click', closeModal);
+notesModal.addEventListener('click', (e) => {
+  if (e.target === notesModal) closeModal();
+});
+
+modalSave.addEventListener('click', () => {
+  saveNotes();
+  closeModal();
+});
+
+// ================================================================
+// TTS
+// ================================================================
+const TTS_SUPPORTED = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+
+const tts = {
+  synth: TTS_SUPPORTED ? window.speechSynthesis : null,
+  chunks: [],
+  currentChunk: 0,
+  utterance: null,
+  voice: null,
+  isSpeaking: false,
+  isPaused: false,
+  isActive: false,
+  rate: 0.92,
+  pitch: 1,
+  volume: 1,
+  stopRequested: false
+};
+
+function loadTTSVoices() {
+  if (!TTS_SUPPORTED) return;
+  const voices = tts.synth.getVoices();
+  if (!voices || voices.length === 0) return;
+  tts.voice =
+    voices.find(v => v.lang && v.lang.toLowerCase() === 'fr-fr' && v.localService) ||
+    voices.find(v => v.lang && v.lang.toLowerCase() === 'fr-fr') ||
+    voices.find(v => v.lang && v.lang.toLowerCase().startsWith('fr')) ||
+    null;
+}
+
+loadTTSVoices();
+if (TTS_SUPPORTED && 'onvoiceschanged' in window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = loadTTSVoices;
+}
+
+function cleanTTS(text) {
+  if (!text) return '';
+  let result = String(text);
+  result = result.replace(/\$\$([^$]+)\$\$/g, (m, f) => convertMathToSpeech(f));
+  result = result.replace(/\$([^$]+)\$/g, (m, f) => convertMathToSpeech(f));
+  result = result.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, ' ');
+  result = result.replace(/⟺/g, ' si et seulement si ');
+  result = result.replace(/⟹/g, ' implique ');
+  result = result.replace(/→/g, ' vers ');
+  result = result.replace(/←/g, ' de ');
+  result = result.replace(/∈/g, ' appartient à ');
+  result = result.replace(/≤/g, ' inférieur ou égal à ');
+  result = result.replace(/≥/g, ' supérieur ou égal à ');
+  result = result.replace(/≠/g, ' différent de ');
+  result = result.replace(/√/g, ' racine carrée de ');
+  result = result.replace(/([A-Za-z0-9])²/g, '$1 au carré');
+  result = result.replace(/([A-Za-z0-9])³/g, '$1 au cube');
+  result = result.replace(/×/g, ' fois ');
+  result = result.replace(/÷/g, ' divisé par ');
+  result = result.replace(/∞/g, ' infini ');
+  result = result.replace(/π/g, ' pi ');
+  result = result.replace(/−/g, ' moins ');
+  return result.replace(/\s+/g, ' ').trim();
+}
+
+function convertMathToSpeech(latex) {
+  let s = String(latex);
+  s = s.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, ' $1 sur $2 ');
+  s = s.replace(/\\sqrt\{([^}]+)\}/g, ' racine de $1 ');
+  s = s.replace(/([a-zA-Z0-9])\^\{([^}]+)\}/g, ' $1 puissance $2 ');
+  s = s.replace(/([a-zA-Z0-9])\^([a-zA-Z0-9])/g, ' $1 puissance $2 ');
+  s = s.replace(/([a-zA-Z0-9])_\{([^}]+)\}/g, ' $1 indice $2 ');
+  s = s.replace(/([a-zA-Z0-9])_([a-zA-Z0-9])/g, ' $1 indice $2 ');
+  s = s.replace(/\\cos/g, ' cosinus ');
+  s = s.replace(/\\sin/g, ' sinus ');
+  s = s.replace(/\\tan/g, ' tangente ');
+  s = s.replace(/\\ln/g, ' logarithme népérien ');
+  s = s.replace(/\\pi/g, ' pi ');
+  s = s.replace(/\\times/g, ' fois ');
+  s = s.replace(/\\div/g, ' divisé par ');
+  s = s.replace(/\\infty/g, ' infini ');
+  s = s.replace(/\\/g, ' ');
+  s = s.replace(/[{}]/g, ' ');
+  return s.replace(/\s+/g, ' ').trim();
+}
+
+function extractReadableContent() {
+  const container = document.querySelector('#contentBody .lecture-container') ||
+                    document.querySelector('.lecture-container') ||
+                    document.querySelector('#contentBody');
+  if (!container) return [];
+
+  const parts = [];
+  const selectors = [
+    '.lecture-hero h1', '.lecture-hero p',
+    '.lecture-section h2', '.lecture-section h3', '.lecture-section p',
+    '.lecture-callout', '.lecture-aside',
+    '.lecture-example p', '.lecture-formula-main',
+    '.lecture-step p', '.lecture-container > p'
+  ];
+
+  const elements = container.querySelectorAll(selectors.join(','));
+  const seen = new Set();
+
+  elements.forEach(el => {
+    if (seen.has(el)) return;
+    if (el.closest('button') || el.matches('button')) return;
+    let text = el.innerText || el.textContent || '';
+    text = cleanTTS(text);
+    if (!text) return;
+    if (parts.some(p => p.toLowerCase() === text.toLowerCase())) return;
+    seen.add(el);
+    parts.push(text);
   });
 
-  // ================================================================
-  // URL PARAMS
-  // ================================================================
-  const params = new URLSearchParams(window.location.search);
-  const subject = params.get('subject') || 'mathematiques';
-  const chapter = parseInt(params.get('chapter')) || 0;
-  const tab = params.get('tab') || 'cours';
-  const partIndex = parseInt(params.get('part')) || 0;
+  if (parts.length === 0) {
+    let fallback = container.innerText || container.textContent || '';
+    fallback = cleanTTS(fallback);
+    if (fallback) parts.push(fallback);
+  }
 
-  const TAB_LABELS = {
-    cours: 'Cours',
-    exercices: 'Exercices',
-    corrections: 'Corrections'
+  const chunks = [];
+  parts.forEach(text => {
+    const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+    let current = '';
+    sentences.forEach(s => {
+      s = s.trim();
+      if (!s) return;
+      if ((current + ' ' + s).length <= 200) {
+        current += (current ? ' ' : '') + s;
+      } else {
+        if (current) chunks.push(current.trim());
+        current = s;
+      }
+    });
+    if (current) chunks.push(current.trim());
+  });
+
+  return chunks.filter(c => c.length > 1);
+}
+
+function updateTTSButton(state) {
+  if (!ttsBtn) return;
+  const icon = ttsBtn.querySelector('i');
+  const text = ttsBtn.querySelector('span');
+  if (state === 'speaking') {
+    ttsBtn.classList.add('speaking');
+    ttsBtn.classList.remove('paused');
+    if (icon) icon.className = 'fas fa-pause';
+    if (text) text.textContent = 'Pause';
+  } else if (state === 'paused') {
+    ttsBtn.classList.remove('speaking');
+    ttsBtn.classList.add('paused');
+    if (icon) icon.className = 'fas fa-play';
+    if (text) text.textContent = 'Reprendre';
+  } else {
+    ttsBtn.classList.remove('speaking', 'paused');
+    if (icon) icon.className = 'fas fa-volume-up';
+    if (text) text.textContent = 'Écouter';
+  }
+}
+
+function updateTTSProgress() {
+  if (!ttsProgressFill || !tts.chunks.length) return;
+  const p = ((tts.currentChunk + 1) / tts.chunks.length) * 100;
+  ttsProgressFill.style.width = Math.min(100, p) + '%';
+}
+
+function resetTTSProgress() {
+  if (ttsProgressFill) ttsProgressFill.style.width = '0%';
+}
+
+function speakChunk(index) {
+  if (!TTS_SUPPORTED) return;
+  if (index >= tts.chunks.length) { finishTTS(); return; }
+  if (tts.stopRequested) return;
+
+  tts.currentChunk = index;
+  const text = tts.chunks[index];
+  if (!text) { speakChunk(index + 1); return; }
+
+  try { tts.synth.cancel(); } catch (e) {}
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  tts.utterance = utterance;
+  utterance.lang = 'fr-FR';
+  utterance.rate = tts.rate;
+  utterance.pitch = tts.pitch;
+  utterance.volume = tts.volume;
+  if (tts.voice) utterance.voice = tts.voice;
+
+  utterance.onstart = () => {
+    tts.isSpeaking = true;
+    tts.isPaused = false;
+    updateTTSButton('speaking');
+    updateTTSProgress();
   };
-  const headerOverline = document.getElementById('headerOverline');
-  if (headerOverline) {
-    headerOverline.textContent = TAB_LABELS[tab] || 'Lecture';
-  }
 
-  // ================================================================
-  // DOM
-  // ================================================================
-  const contentBody = document.getElementById('contentBody');
-  const pageTitle = document.getElementById('pageTitleText');
-  const headerEl = document.getElementById('appHeader');
-  const backBtn = document.getElementById('backBtn');
-  const notesBtn = document.getElementById('notesBtn');
-  const notesDot = document.getElementById('notesDot');
-  const prevBtn = document.getElementById('prevBtn');
-  const nextBtn = document.getElementById('nextBtn');
-  const partCounter = document.getElementById('partCounter');
-  const partDots = document.getElementById('partDots');
-  const readProgressFill = document.getElementById('readProgressFill');
-  const contentWrapper = document.getElementById('contentWrapper');
+  utterance.onend = () => {
+    if (tts.stopRequested) return;
+    const next = index + 1;
+    if (next < tts.chunks.length) {
+      setTimeout(() => {
+        if (tts.isSpeaking && !tts.isPaused && !tts.stopRequested) speakChunk(next);
+      }, 80);
+    } else finishTTS();
+  };
 
-  const notesModal = document.getElementById('notesModal');
-  const modalClose = document.getElementById('modalClose');
-  const modalCancel = document.getElementById('modalCancel');
-  const modalSave = document.getElementById('modalSave');
-  const notesTextarea = document.getElementById('notesTextarea');
-  const modalSub = document.getElementById('modalSub');
-  const noteSaved = document.getElementById('noteSaved');
+  utterance.onerror = (e) => {
+    if (e.error === 'interrupted' || e.error === 'canceled') return;
+    finishTTS();
+  };
 
-  const ttsBtn = document.getElementById('ttsBtn');
-  const ttsProgress = document.getElementById('ttsProgress');
-  const ttsProgressFill = document.getElementById('ttsProgressFill');
-
-  // ================================================================
-  // SESSION / CACHE
-  // ================================================================
-  const SESSION_KEY = 'arvexa_session';
-  const USER_DATA_KEY = 'arvexa_user_data';
-  const LAST_UID_KEY = 'arvexa_last_uid';
-  const READ_KEY = 'arvexa_read_parts';
-  const NOTES_KEY = 'arvexa_notes';
-
-  function saveSession(user) {
-    if (!user) return;
-    try {
-      const data = {
-        uid: user.uid,
-        email: user.email,
-        lastActive: Date.now()
-      };
-      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
-      localStorage.setItem(LAST_UID_KEY, user.uid);
-    } catch (e) {}
-  }
-
-  function clearSession() {
-    try {
-      localStorage.removeItem(SESSION_KEY);
-      localStorage.removeItem(USER_DATA_KEY);
-      localStorage.removeItem(LAST_UID_KEY);
-      sessionStorage.removeItem(SESSION_KEY);
-    } catch (e) {}
-  }
-
-  function getCachedUserData(uid) {
-    try {
-      const raw = localStorage.getItem(USER_DATA_KEY);
-      if (!raw) return null;
-      const cached = JSON.parse(raw);
-      if (cached._uid && cached._uid !== uid) {
-        localStorage.removeItem(USER_DATA_KEY);
-        return null;
-      }
-      return cached;
-    } catch (e) { return null; }
-  }
-
-  // ================================================================
-  // UTILITAIRE
-  // ================================================================
-  function toDate(value) {
-    if (!value) return null;
-    if (typeof value.toDate === 'function') return value.toDate();
-    if (value.seconds !== undefined) return new Date(value.seconds * 1000);
-    const date = value instanceof Date ? value : new Date(value);
-    return Number.isNaN(date.getTime()) ? null : date;
-  }
-
-  function isUserPremium(userData) {
-    if (!userData) return false;
-    const hasStatus = userData.premium === true ||
-                      userData.isUnlocked === true ||
-                      userData.hasDeposited === true;
-    if (!hasStatus) return false;
-    const endDate = toDate(userData.subscriptionEndDate);
-    if (!endDate) return true;
-    return endDate.getTime() > Date.now();
-  }
-
-  function scrollToTopInstant() {
-    try {
-      document.documentElement.style.scrollBehavior = 'auto';
-      window.scrollTo(0, 0);
-      contentWrapper.scrollTop = 0;
-      requestAnimationFrame(() => {
-        document.documentElement.style.scrollBehavior = '';
-      });
-    } catch (e) {}
-  }
-
-  // ================================================================
-  // STORAGE
-  // ================================================================
-  function getReadParts() {
-    try { return JSON.parse(localStorage.getItem(READ_KEY) || '[]'); }
-    catch (e) { return []; }
-  }
-
-  function markPartAsRead() {
-    const key = `${subject}_${chapter}_${tab}_${partIndex}`;
-    const readParts = getReadParts();
-    if (!readParts.includes(key)) {
-      readParts.push(key);
-      try { localStorage.setItem(READ_KEY, JSON.stringify(readParts)); } catch (e) {}
+  tts.synth.speak(utterance);
+  setTimeout(() => {
+    if (tts.isSpeaking && !tts.isPaused && !tts.stopRequested) {
+      try { tts.synth.resume(); } catch (e) {}
     }
-  }
+  }, 100);
+}
 
-  function getNotesKey() {
-    return `${subject}_${chapter}_${tab}_${partIndex}`;
-  }
+function startTTS() {
+  if (!TTS_SUPPORTED) return;
+  try { tts.synth.cancel(); } catch (e) {}
+  tts.stopRequested = false;
+  tts.chunks = extractReadableContent();
+  if (!tts.chunks.length) return;
+  loadTTSVoices();
+  tts.currentChunk = 0;
+  tts.isSpeaking = true;
+  tts.isPaused = false;
+  tts.isActive = true;
+  ttsProgress.classList.add('active');
+  resetTTSProgress();
+  updateTTSButton('speaking');
+  speakChunk(0);
+}
 
-  function loadNotes() {
-    try {
-      const notes = JSON.parse(localStorage.getItem(NOTES_KEY) || '{}');
-      const key = getNotesKey();
-      if (notes[key]) {
-        notesTextarea.value = notes[key];
-        notesDot.classList.add('show');
-      } else {
-        notesTextarea.value = '';
-        notesDot.classList.remove('show');
+function pauseTTS() {
+  if (!TTS_SUPPORTED || !tts.synth || !tts.isSpeaking) return;
+  try { tts.synth.cancel(); } catch (e) {}
+  tts.isPaused = true;
+  tts.isSpeaking = false;
+  updateTTSButton('paused');
+}
+
+function resumeTTS() {
+  if (!TTS_SUPPORTED || !tts.synth || !tts.isPaused) return;
+  tts.isPaused = false;
+  tts.isSpeaking = true;
+  tts.stopRequested = false;
+  updateTTSButton('speaking');
+  setTimeout(() => {
+    if (tts.isSpeaking && !tts.isPaused && !tts.stopRequested) speakChunk(tts.currentChunk);
+  }, 150);
+}
+
+function stopTTS() {
+  if (!TTS_SUPPORTED || !tts.synth) return;
+  tts.stopRequested = true;
+  try { tts.synth.cancel(); } catch (e) {}
+  tts.isSpeaking = false;
+  tts.isPaused = false;
+  tts.isActive = false;
+  tts.utterance = null;
+  tts.currentChunk = 0;
+  updateTTSButton('stopped');
+  resetTTSProgress();
+  ttsProgress.classList.remove('active');
+}
+
+function finishTTS() {
+  tts.isSpeaking = false;
+  tts.isPaused = false;
+  tts.isActive = false;
+  tts.stopRequested = false;
+  tts.utterance = null;
+  updateTTSButton('stopped');
+  if (ttsProgressFill) {
+    ttsProgressFill.style.width = '100%';
+    setTimeout(() => {
+      if (!tts.isSpeaking) {
+        ttsProgressFill.style.width = '0%';
+        ttsProgress.classList.remove('active');
       }
-    } catch (e) {}
+    }, 1000);
   }
+}
 
-  function saveNotes() {
-    try {
-      const notes = JSON.parse(localStorage.getItem(NOTES_KEY) || '{}');
-      const key = getNotesKey();
-      const text = notesTextarea.value.trim();
-      if (text) {
-        notes[key] = text;
-        notesDot.classList.add('show');
-      } else {
-        delete notes[key];
-        notesDot.classList.remove('show');
-      }
-      localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
-      noteSaved.classList.add('show');
-      setTimeout(() => noteSaved.classList.remove('show'), 2000);
-    } catch (e) {}
+if (ttsBtn) {
+  ttsBtn.addEventListener('click', () => {
+    if (!TTS_SUPPORTED) return;
+    if (tts.isSpeaking) pauseTTS();
+    else if (tts.isPaused) resumeTTS();
+    else startTTS();
+  });
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && tts.isSpeaking) {
+    try { tts.synth.pause(); } catch (e) {}
   }
+});
 
-  // ================================================================
-  // ÉTAT
-  // ================================================================
-  let parts = [];
-  let currentIndex = partIndex;
-  let isPremium = false;
-  let currentUid = null;
-  let unsubscribeUser = null;
+window.addEventListener('beforeunload', () => {
+  try { if (tts.synth) tts.synth.cancel(); } catch (e) {}
+});
 
-  // ================================================================
-  // PRÉ-PROCESSING
-  // ================================================================
-  function preprocessContent(html) {
-    if (!html) return '';
+// ================================================================
+// SUIVI DU TEMPS D'ÉTUDE — ✅ C11 : increment() atomique
+// ================================================================
+let studyStartTime = Date.now();
+let studyTimeActive = true;
+let studySaveInFlight = false;
 
-    let processed = html;
-
-    processed = processed.replace(/<style[\s\S]*?<\/style>/gi, '');
-    processed = processed.replace(/<script[\s\S]*?<\/script>/gi, '');
-
-    return processed;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    pauseStudyTime();
+  } else {
+    resumeStudyTime();
   }
+});
 
-  // ================================================================
-  // KATEX — rendu après injection dynamique
-  // ================================================================
-  function renderKaTeX() {
-    if (typeof renderMathInElement !== 'function') {
-      setTimeout(renderKaTeX, 200);
-      return;
-    }
-    try {
-      renderMathInElement(contentBody, {
-        delimiters: [
-          { left: '$$', right: '$$', display: true },
-          { left: '\\[', right: '\\]', display: true },
-          { left: '$', right: '$', display: false },
-          { left: '\\(', right: '\\)', display: false }
-        ],
-        throwOnError: false,
-        errorColor: '#f87171',
-        strict: false,
-        trust: false,
-        macros: {
-          "\\R": "\\mathbb{R}",
-          "\\C": "\\mathbb{C}",
-          "\\N": "\\mathbb{N}",
-          "\\Z": "\\mathbb{Z}",
-          "\\Q": "\\mathbb{Q}",
-          "\\Re": "\\operatorname{Re}",
-          "\\Im": "\\operatorname{Im}",
-          "\\arg": "\\operatorname{arg}"
-        }
-      });
-    } catch (e) {}
+function pauseStudyTime() {
+  if (!studyTimeActive) return;
+  const duration = Math.floor((Date.now() - studyStartTime) / 1000);
+  if (duration >= 5) {
+    saveStudyTime(duration);
   }
-  // ================================================================
-  // CONTENU INDISPONIBLE
-  // ================================================================
-  function showContentUnavailable() {
-    const partNumber = currentIndex + 1;
+  studyTimeActive = false;
+}
 
-    const tabConfig = {
-      cours: {
-        titleLabel: 'Partie',
-        tabName: 'Cours',
-        description: `La partie ${partNumber} du cours de ce chapitre sera bientôt disponible.`,
-        backLabel: 'Retour au cours',
-        backIcon: 'fa-arrow-left',
-        listLabel: 'Voir les autres parties',
-        listIcon: 'fa-book'
-      },
-      exercices: {
-        titleLabel: 'Exercice',
-        tabName: 'Exercices',
-        description: `L'exercice ${partNumber} de ce chapitre sera bientôt disponible.`,
-        backLabel: 'Retour aux exercices',
-        backIcon: 'fa-arrow-left',
-        listLabel: 'Voir les autres exercices',
-        listIcon: 'fa-pen-to-square'
-      },
-      corrections: {
-        titleLabel: 'Correction',
-        tabName: 'Corrections',
-        description: `La correction ${partNumber} de ce chapitre sera bientôt disponible.`,
-        backLabel: 'Retour aux corrections',
-        backIcon: 'fa-arrow-left',
-        listLabel: 'Voir les autres corrections',
-        listIcon: 'fa-check-double'
-      }
-    };
+function resumeStudyTime() {
+  studyStartTime = Date.now();
+  studyTimeActive = true;
+}
 
-    const cfg = tabConfig[tab] || tabConfig.cours;
+window.addEventListener('beforeunload', () => {
+  pauseStudyTime();
+});
 
-    let title;
-    if (tab === 'cours') {
-      title = `Partie ${partNumber} — Cours`;
-    } else if (tab === 'exercices') {
-      title = `Exercice ${partNumber}`;
-    } else if (tab === 'corrections') {
-      title = `Correction ${partNumber}`;
-    } else {
-      title = `Partie ${partNumber}`;
-    }
-
-    const hourglassSVG = `
-      <div class="hourglass-wrap">
-        <span class="hourglass-particle"></span>
-        <span class="hourglass-particle"></span>
-        <span class="hourglass-particle"></span>
-        <span class="hourglass-particle"></span>
-        <svg class="hourglass-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <path class="frame" d="M 20 15 L 80 15" />
-          <path class="frame" d="M 20 85 L 80 85" />
-          <path class="glass" d="M 22 17 L 78 17 L 50 50 Z" />
-          <path class="glass" d="M 50 50 L 78 83 L 22 83 Z" />
-          <path class="sand-top" d="M 26 20 L 74 20 L 50 47 Z" />
-          <rect class="sand-stream" x="48.5" y="47" width="3" height="8" />
-          <path class="sand-bottom" d="M 50 53 L 74 80 L 26 80 Z" />
-        </svg>
-      </div>
-    `;
-
-    contentBody.innerHTML = `
-      <div class="content-unavailable">
-        ${hourglassSVG}
-        <h2>${title} en préparation</h2>
-        <p>${cfg.description}</p>
-        <div class="cu-actions">
-          <a href="chapitre.html?subject=${subject}&chapter=${chapter}&tab=${tab}" class="cu-btn primary">
-            <i class="fas ${cfg.backIcon}"></i> ${cfg.backLabel}
-          </a>
-          <a href="matiere.html?subject=${subject}" class="cu-btn">
-            <i class="fas ${cfg.listIcon}"></i> ${cfg.listLabel}
-          </a>
-        </div>
-      </div>
-    `;
-    pageTitle.textContent = `${title} en préparation`;
-    document.title = `ARVEXA - ${title} en préparation`;
-    prevBtn.style.display = 'none';
-    nextBtn.style.display = 'none';
-    partCounter.style.display = 'none';
-    notesBtn.style.display = 'none';
-    if (partDots) partDots.style.display = 'none';
-    if (ttsBtn) ttsBtn.style.display = 'none';
+function saveStudyTimeBeforeChange() {
+  const duration = Math.floor((Date.now() - studyStartTime) / 1000);
+  if (duration >= 5) {
+    saveStudyTime(duration);
   }
+  studyStartTime = Date.now();
+}
 
-  // ================================================================
-  // AMÉLIORATIONS DU CONTENU INJECTÉ
-  // ================================================================
-  let tocObserver = null;
+// ✅ C11 — updateDoc avec increment(seconds) : atomique, pas de read-then-write
+async function saveStudyTime(seconds) {
+  const user = auth.currentUser;
+  if (!user) return;
 
-  function initTocSpy() {
-    if (tocObserver) {
-      try { tocObserver.disconnect(); } catch (e) {}
-      tocObserver = null;
-    }
-    const tocLinks = contentBody.querySelectorAll('.lecture-toc-list a[href^="#"]');
-    if (!tocLinks.length || !('IntersectionObserver' in window)) return;
-
-    const map = new Map();
-    tocLinks.forEach(a => {
-      const href = a.getAttribute('href') || '';
-      if (href.length < 2) return;
-      const id = decodeURIComponent(href.slice(1));
-      const target = document.getElementById(id);
-      if (target) map.set(target, a);
+  try {
+    await updateDoc(doc(db, 'users', user.uid), {
+      totalStudyTime: increment(seconds),
+      lastStudyUpdate: serverTimestamp()
     });
-    if (!map.size) return;
-
-    tocObserver = new IntersectionObserver((entries) => {
-      entries.forEach(en => {
-        const link = map.get(en.target);
-        if (!link) return;
-        if (en.isIntersecting) {
-          tocLinks.forEach(l => l.classList.remove('toc-active'));
-          link.classList.add('toc-active');
-        }
-      });
-    }, { rootMargin: '-12% 0px -70% 0px', threshold: 0 });
-
-    map.forEach((_, target) => {
-      try { tocObserver.observe(target); } catch (e) {}
-    });
+  } catch (e) {
+    // Silencieux : le temps d'étude n'est pas critique
+    console.warn('[Lecture] saveStudyTime:', e.code || e.message);
   }
+}
 
-  function enhanceContent() {
-    // Tableaux responsives : encapsulation pour défilement horizontal
-    try {
-      contentBody.querySelectorAll('table').forEach(tbl => {
-        const parent = tbl.parentElement;
-        if (parent && parent.classList.contains('table-wrap')) return;
-        const wrap = document.createElement('div');
-        wrap.className = 'table-wrap';
-        tbl.parentNode.insertBefore(wrap, tbl);
-        wrap.appendChild(tbl);
-      });
-    } catch (e) {}
+function resetStudyTimer() {
+  studyStartTime = Date.now();
+  studyTimeActive = true;
+}
 
-    // Chargement différé des images du cours
-    try {
-      contentBody.querySelectorAll('img').forEach(img => {
-        if (!img.hasAttribute('loading')) img.setAttribute('loading', 'lazy');
-      });
-    } catch (e) {}
-
-    // Sommaire actif pendant la lecture
-    try { initTocSpy(); } catch (e) {}
-  }
-
-  function updatePartDots() {
-    if (!partDots) return;
-    if (!parts.length || parts.length > 20) {
-      partDots.hidden = true;
-      return;
-    }
-    if (partDots.hidden) partDots.hidden = false;
-    if (partDots.childElementCount !== parts.length) {
-      partDots.innerHTML = parts.map(() => '<span class="pdot"></span>').join('');
-    }
-    Array.from(partDots.children).forEach((d, i) => {
-      d.classList.toggle('active', i === currentIndex);
-      d.classList.toggle('done', i < currentIndex);
-    });
-  }
-
-  // ================================================================
-  // CHARGEMENT
-  // ================================================================
-  function loadContent() {
-    const manifestPath = `cours/${subject}.json`;
-
-    contentBody.innerHTML = `
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Chargement du contenu...</p>
-      </div>
-    `;
-
-    fetch(manifestPath)
-      .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
-      .then(data => {
-        const ch = (data.chapters || []).find(c => c.number === chapter);
-        if (!ch) { showContentUnavailable(); return; }
-
-        const tabKey = tab === 'cours' ? 'cours'
-                     : tab === 'exercices' ? 'exercices'
-                     : 'corrections';
-
-        parts = (ch[tabKey] || []).map(p => ({
-          title: p.title || `Partie ${p.part}`,
-          file: p.file || '',
-          part: p.part,
-          duration: p.duration || 0
+// ================================================================
+// ✅ C3 — Retry doux si doc users/{uid} absent
+// ================================================================
+async function handleMissingUserDoc(uid) {
+  if (missingDocInFlight) return;
+  missingDocInFlight = true;
+  try {
+    await new Promise((r) => setTimeout(r, 900));
+    if (!auth.currentUser || auth.currentUser.uid !== uid) return;
+    const retry = await getDoc(doc(db, 'users', uid));
+    if (retry.exists()) {
+      const data = retry.data();
+      try {
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify({
+          ...data,
+          _uid: uid,
+          _cachedAt: Date.now()
         }));
+      } catch (e) {}
+      const newPremium = isUserPremium(data);
+      if (newPremium !== isPremium) isPremium = newPremium;
+      return;
+    }
+    console.warn('[Lecture] Profil utilisateur introuvable pour', uid);
+  } catch (e) {
+    console.warn('[Lecture] handleMissingUserDoc:', e.code || e.message);
+  } finally {
+    missingDocInFlight = false;
+  }
+}
 
-        parts = parts.filter(p => p.file);
+// ================================================================
+// CHARGEMENT UTILISATEUR — ✅ C2 + C3 + C8
+// ================================================================
+function loadUserData(user) {
+  if (unsubscribeUser) {
+    unsubscribeUser();
+    unsubscribeUser = null;
+  }
+  const userRef = doc(db, 'users', user.uid);
+  unsubscribeUser = onSnapshot(userRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
 
-        if (parts.length === 0) {
-          showContentUnavailable();
+        // ✅ C2 — blocked : signOut tolérant + auth-choice.html
+        if (data.accountStatus === 'blocked') {
+          if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
+          stopTTS();
+          clearSession();
+          try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
+          signOut(auth)
+            .catch((err) => console.warn('[Lecture] signOut bloqué :', err.code || err.message))
+            .finally(() => { window.location.replace('auth-choice.html'); });
           return;
         }
 
-        if (currentIndex >= parts.length) currentIndex = 0;
-        renderPart();
-      })
-      .catch(() => {
-        showContentUnavailable();
-      });
-  }
-
-  function renderPart() {
-    if (!parts || parts.length === 0) {
-      showContentUnavailable();
-      return;
-    }
-    if (currentIndex >= parts.length || currentIndex < 0) currentIndex = 0;
-
-    const part = parts[currentIndex];
-    if (!part) {
-      showContentUnavailable();
-      return;
-    }
-
-    stopTTS();
-
-    pageTitle.textContent = part.title || 'Partie ' + (currentIndex + 1);
-    document.title = 'ARVEXA - ' + (part.title || 'Lecture');
-
-    partCounter.textContent = `${currentIndex + 1} / ${parts.length}`;
-    prevBtn.disabled = currentIndex === 0;
-    nextBtn.disabled = currentIndex >= parts.length - 1;
-    modalSub.textContent = part.title || 'Partie ' + (currentIndex + 1);
-
-    const prevPart = parts[currentIndex - 1];
-    const nextPart = parts[currentIndex + 1];
-    prevBtn.title = prevPart ? prevPart.title : '';
-    nextBtn.title = nextPart ? nextPart.title : '';
-    updatePartDots();
-
-    const filePath = part.file;
-
-    contentBody.innerHTML = `
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Chargement...</p>
-      </div>
-    `;
-
-    fetch(filePath)
-      .then(r => { if (!r.ok) throw new Error('not found'); return r.text(); })
-      .then(html => {
-        const cleaned = preprocessContent(html);
-        contentBody.innerHTML = cleaned;
-        markPartAsRead();
-        loadNotes();
-        renderKaTeX();
-        enhanceContent();
-        updateReadProgress();
-        resetStudyTimer();
-      })
-      .catch(() => {
-        showContentUnavailable();
-      });
-  }
-
-  // ================================================================
-  // PROGRESSION DE LECTURE
-  // ================================================================
-  function updateReadProgress() {
-    const doc = document.documentElement;
-    const max = doc.scrollHeight - window.innerHeight;
-    const progress = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0;
-    readProgressFill.style.width = progress + '%';
-    if (headerEl) headerEl.classList.toggle('scrolled', window.scrollY > 6);
-  }
-
-  window.addEventListener('scroll', updateReadProgress, { passive: true });
-  window.addEventListener('resize', updateReadProgress);
-
-  // ================================================================
-  // NAVIGATION
-  // ================================================================
-  function goToPrev() {
-    if (currentIndex > 0) {
-      saveStudyTimeBeforeChange();
-      currentIndex--;
-      if (notesTextarea.value.trim()) saveNotes();
-      scrollToTopInstant();
-      renderPart();
-    }
-  }
-
-  function goToNext() {
-    if (currentIndex < parts.length - 1) {
-      saveStudyTimeBeforeChange();
-      currentIndex++;
-      if (notesTextarea.value.trim()) saveNotes();
-      scrollToTopInstant();
-      renderPart();
-    }
-  }
-
-  // ================================================================
-  // MODAL NOTES
-  // ================================================================
-  function openModal() {
-    notesModal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-    notesTextarea.focus();
-  }
-
-  function closeModal() {
-    notesModal.classList.remove('show');
-    document.body.style.overflow = '';
-  }
-
-  // ================================================================
-  // ÉVÉNEMENTS
-  // ================================================================
-  backBtn.addEventListener('click', () => {
-    saveStudyTimeBeforeChange();
-    window.location.href = `chapitre.html?subject=${subject}&chapter=${chapter}&tab=${tab}`;
-  });
-
-  prevBtn.addEventListener('click', goToPrev);
-  nextBtn.addEventListener('click', goToNext);
-
-  document.addEventListener('keydown', (e) => {
-    if (notesModal.classList.contains('show')) {
-      if (e.key === 'Escape') closeModal();
-      return;
-    }
-    if (e.key === 'ArrowLeft' && !prevBtn.disabled) goToPrev();
-    if (e.key === 'ArrowRight' && !nextBtn.disabled) goToNext();
-  });
-
-  notesBtn.addEventListener('click', openModal);
-  modalClose.addEventListener('click', closeModal);
-  modalCancel.addEventListener('click', closeModal);
-  notesModal.addEventListener('click', (e) => {
-    if (e.target === notesModal) closeModal();
-  });
-
-  modalSave.addEventListener('click', () => {
-    saveNotes();
-    closeModal();
-  });
-
-  // ================================================================
-  // TTS
-  // ================================================================
-  const TTS_SUPPORTED = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
-
-  const tts = {
-    synth: TTS_SUPPORTED ? window.speechSynthesis : null,
-    chunks: [],
-    currentChunk: 0,
-    utterance: null,
-    voice: null,
-    isSpeaking: false,
-    isPaused: false,
-    isActive: false,
-    rate: 0.92,
-    pitch: 1,
-    volume: 1,
-    stopRequested: false
-  };
-
-  function loadTTSVoices() {
-    if (!TTS_SUPPORTED) return;
-    const voices = tts.synth.getVoices();
-    if (!voices || voices.length === 0) return;
-    tts.voice =
-      voices.find(v => v.lang && v.lang.toLowerCase() === 'fr-fr' && v.localService) ||
-      voices.find(v => v.lang && v.lang.toLowerCase() === 'fr-fr') ||
-      voices.find(v => v.lang && v.lang.toLowerCase().startsWith('fr')) ||
-      null;
-  }
-
-  loadTTSVoices();
-  if (TTS_SUPPORTED && 'onvoiceschanged' in window.speechSynthesis) {
-    window.speechSynthesis.onvoiceschanged = loadTTSVoices;
-  }
-
-  function cleanTTS(text) {
-    if (!text) return '';
-    let result = String(text);
-    result = result.replace(/\$\$([^$]+)\$\$/g, (m, f) => convertMathToSpeech(f));
-    result = result.replace(/\$([^$]+)\$/g, (m, f) => convertMathToSpeech(f));
-    result = result.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, ' ');
-    result = result.replace(/⟺/g, ' si et seulement si ');
-    result = result.replace(/⟹/g, ' implique ');
-    result = result.replace(/→/g, ' vers ');
-    result = result.replace(/←/g, ' de ');
-    result = result.replace(/∈/g, ' appartient à ');
-    result = result.replace(/≤/g, ' inférieur ou égal à ');
-    result = result.replace(/≥/g, ' supérieur ou égal à ');
-    result = result.replace(/≠/g, ' différent de ');
-    result = result.replace(/√/g, ' racine carrée de ');
-    result = result.replace(/([A-Za-z0-9])²/g, '$1 au carré');
-    result = result.replace(/([A-Za-z0-9])³/g, '$1 au cube');
-    result = result.replace(/×/g, ' fois ');
-    result = result.replace(/÷/g, ' divisé par ');
-    result = result.replace(/∞/g, ' infini ');
-    result = result.replace(/π/g, ' pi ');
-    result = result.replace(/−/g, ' moins ');
-    return result.replace(/\s+/g, ' ').trim();
-  }
-
-  function convertMathToSpeech(latex) {
-    let s = String(latex);
-    s = s.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, ' $1 sur $2 ');
-    s = s.replace(/\\sqrt\{([^}]+)\}/g, ' racine de $1 ');
-    s = s.replace(/([a-zA-Z0-9])\^\{([^}]+)\}/g, ' $1 puissance $2 ');
-    s = s.replace(/([a-zA-Z0-9])\^([a-zA-Z0-9])/g, ' $1 puissance $2 ');
-    s = s.replace(/([a-zA-Z0-9])_\{([^}]+)\}/g, ' $1 indice $2 ');
-    s = s.replace(/([a-zA-Z0-9])_([a-zA-Z0-9])/g, ' $1 indice $2 ');
-    s = s.replace(/\\cos/g, ' cosinus ');
-    s = s.replace(/\\sin/g, ' sinus ');
-    s = s.replace(/\\tan/g, ' tangente ');
-    s = s.replace(/\\ln/g, ' logarithme népérien ');
-    s = s.replace(/\\pi/g, ' pi ');
-    s = s.replace(/\\times/g, ' fois ');
-    s = s.replace(/\\div/g, ' divisé par ');
-    s = s.replace(/\\infty/g, ' infini ');
-    s = s.replace(/\\/g, ' ');
-    s = s.replace(/[{}]/g, ' ');
-    return s.replace(/\s+/g, ' ').trim();
-  }
-
-  function extractReadableContent() {
-    const container = document.querySelector('#contentBody .lecture-container') ||
-                      document.querySelector('.lecture-container') ||
-                      document.querySelector('#contentBody');
-    if (!container) return [];
-
-    const parts = [];
-    const selectors = [
-      '.lecture-hero h1', '.lecture-hero p',
-      '.lecture-section h2', '.lecture-section h3', '.lecture-section p',
-      '.lecture-callout', '.lecture-aside',
-      '.lecture-example p', '.lecture-formula-main',
-      '.lecture-step p', '.lecture-container > p'
-    ];
-
-    const elements = container.querySelectorAll(selectors.join(','));
-    const seen = new Set();
-
-    elements.forEach(el => {
-      if (seen.has(el)) return;
-      if (el.closest('button') || el.matches('button')) return;
-      let text = el.innerText || el.textContent || '';
-      text = cleanTTS(text);
-      if (!text) return;
-      if (parts.some(p => p.toLowerCase() === text.toLowerCase())) return;
-      seen.add(el);
-      parts.push(text);
-    });
-
-    if (parts.length === 0) {
-      let fallback = container.innerText || container.textContent || '';
-      fallback = cleanTTS(fallback);
-      if (fallback) parts.push(fallback);
-    }
-
-    const chunks = [];
-    parts.forEach(text => {
-      const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
-      let current = '';
-      sentences.forEach(s => {
-        s = s.trim();
-        if (!s) return;
-        if ((current + ' ' + s).length <= 200) {
-          current += (current ? ' ' : '') + s;
-        } else {
-          if (current) chunks.push(current.trim());
-          current = s;
-        }
-      });
-      if (current) chunks.push(current.trim());
-    });
-
-    return chunks.filter(c => c.length > 1);
-  }
-
-  function updateTTSButton(state) {
-    if (!ttsBtn) return;
-    const icon = ttsBtn.querySelector('i');
-    const text = ttsBtn.querySelector('span');
-    if (state === 'speaking') {
-      ttsBtn.classList.add('speaking');
-      ttsBtn.classList.remove('paused');
-      if (icon) icon.className = 'fas fa-pause';
-      if (text) text.textContent = 'Pause';
-    } else if (state === 'paused') {
-      ttsBtn.classList.remove('speaking');
-      ttsBtn.classList.add('paused');
-      if (icon) icon.className = 'fas fa-play';
-      if (text) text.textContent = 'Reprendre';
-    } else {
-      ttsBtn.classList.remove('speaking', 'paused');
-      if (icon) icon.className = 'fas fa-volume-up';
-      if (text) text.textContent = 'Écouter';
-    }
-  }
-
-  function updateTTSProgress() {
-    if (!ttsProgressFill || !tts.chunks.length) return;
-    const p = ((tts.currentChunk + 1) / tts.chunks.length) * 100;
-    ttsProgressFill.style.width = Math.min(100, p) + '%';
-  }
-
-  function resetTTSProgress() {
-    if (ttsProgressFill) ttsProgressFill.style.width = '0%';
-  }
-
-  function speakChunk(index) {
-    if (!TTS_SUPPORTED) return;
-    if (index >= tts.chunks.length) { finishTTS(); return; }
-    if (tts.stopRequested) return;
-
-    tts.currentChunk = index;
-    const text = tts.chunks[index];
-    if (!text) { speakChunk(index + 1); return; }
-
-    try { tts.synth.cancel(); } catch (e) {}
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    tts.utterance = utterance;
-    utterance.lang = 'fr-FR';
-    utterance.rate = tts.rate;
-    utterance.pitch = tts.pitch;
-    utterance.volume = tts.volume;
-    if (tts.voice) utterance.voice = tts.voice;
-
-    utterance.onstart = () => {
-      tts.isSpeaking = true;
-      tts.isPaused = false;
-      updateTTSButton('speaking');
-      updateTTSProgress();
-    };
-
-    utterance.onend = () => {
-      if (tts.stopRequested) return;
-      const next = index + 1;
-      if (next < tts.chunks.length) {
-        setTimeout(() => {
-          if (tts.isSpeaking && !tts.isPaused && !tts.stopRequested) speakChunk(next);
-        }, 80);
-      } else finishTTS();
-    };
-
-    utterance.onerror = (e) => {
-      if (e.error === 'interrupted' || e.error === 'canceled') return;
-      finishTTS();
-    };
-
-    tts.synth.speak(utterance);
-    setTimeout(() => {
-      if (tts.isSpeaking && !tts.isPaused && !tts.stopRequested) {
-        try { tts.synth.resume(); } catch (e) {}
-      }
-    }, 100);
-  }
-
-  function startTTS() {
-    if (!TTS_SUPPORTED) return;
-    try { tts.synth.cancel(); } catch (e) {}
-    tts.stopRequested = false;
-    tts.chunks = extractReadableContent();
-    if (!tts.chunks.length) return;
-    loadTTSVoices();
-    tts.currentChunk = 0;
-    tts.isSpeaking = true;
-    tts.isPaused = false;
-    tts.isActive = true;
-    ttsProgress.classList.add('active');
-    resetTTSProgress();
-    updateTTSButton('speaking');
-    speakChunk(0);
-  }
-
-  function pauseTTS() {
-    if (!TTS_SUPPORTED || !tts.synth || !tts.isSpeaking) return;
-    try { tts.synth.cancel(); } catch (e) {}
-    tts.isPaused = true;
-    tts.isSpeaking = false;
-    updateTTSButton('paused');
-  }
-
-  function resumeTTS() {
-    if (!TTS_SUPPORTED || !tts.synth || !tts.isPaused) return;
-    tts.isPaused = false;
-    tts.isSpeaking = true;
-    tts.stopRequested = false;
-    updateTTSButton('speaking');
-    setTimeout(() => {
-      if (tts.isSpeaking && !tts.isPaused && !tts.stopRequested) speakChunk(tts.currentChunk);
-    }, 150);
-  }
-
-  function stopTTS() {
-    if (!TTS_SUPPORTED || !tts.synth) return;
-    tts.stopRequested = true;
-    try { tts.synth.cancel(); } catch (e) {}
-    tts.isSpeaking = false;
-    tts.isPaused = false;
-    tts.isActive = false;
-    tts.utterance = null;
-    tts.currentChunk = 0;
-    updateTTSButton('stopped');
-    resetTTSProgress();
-    ttsProgress.classList.remove('active');
-  }
-
-  function finishTTS() {
-    tts.isSpeaking = false;
-    tts.isPaused = false;
-    tts.isActive = false;
-    tts.stopRequested = false;
-    tts.utterance = null;
-    updateTTSButton('stopped');
-    if (ttsProgressFill) {
-      ttsProgressFill.style.width = '100%';
-      setTimeout(() => {
-        if (!tts.isSpeaking) {
-          ttsProgressFill.style.width = '0%';
-          ttsProgress.classList.remove('active');
-        }
-      }, 1000);
-    }
-  }
-
-  if (ttsBtn) {
-    ttsBtn.addEventListener('click', () => {
-      if (!TTS_SUPPORTED) return;
-      if (tts.isSpeaking) pauseTTS();
-      else if (tts.isPaused) resumeTTS();
-      else startTTS();
-    });
-  }
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden' && tts.isSpeaking) {
-      try { tts.synth.pause(); } catch (e) {}
-    }
-  });
-
-  window.addEventListener('beforeunload', () => {
-    try { if (tts.synth) tts.synth.cancel(); } catch (e) {}
-  });
-
-  // ================================================================
-  // SUIVI DU TEMPS D'ÉTUDE
-  // ================================================================
-  let studyStartTime = Date.now();
-  let studyTimeActive = true;
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      pauseStudyTime();
-    } else {
-      resumeStudyTime();
-    }
-  });
-
-  function pauseStudyTime() {
-    if (!studyTimeActive) return;
-    const duration = Math.floor((Date.now() - studyStartTime) / 1000);
-    if (duration >= 5) {
-      saveStudyTime(duration);
-    }
-    studyTimeActive = false;
-  }
-
-  function resumeStudyTime() {
-    studyStartTime = Date.now();
-    studyTimeActive = true;
-  }
-
-  window.addEventListener('beforeunload', () => {
-    pauseStudyTime();
-  });
-
-  function saveStudyTimeBeforeChange() {
-    const duration = Math.floor((Date.now() - studyStartTime) / 1000);
-    if (duration >= 5) {
-      saveStudyTime(duration);
-    }
-    studyStartTime = Date.now();
-  }
-
-  async function saveStudyTime(seconds) {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    try {
-      const userRef = doc(db, 'users', user.uid);
-      const snap = await getDoc(userRef);
-      if (snap.exists()) {
-        const current = snap.data().totalStudyTime || 0;
-        await updateDoc(userRef, {
-          totalStudyTime: current + seconds,
-          lastStudyUpdate: serverTimestamp()
-        });
-      }
-    } catch (e) {
-      // Silencieux
-    }
-  }
-
-  function resetStudyTimer() {
-    studyStartTime = Date.now();
-    studyTimeActive = true;
-  }
-
-  // ================================================================
-  // CHARGEMENT UTILISATEUR (temps réel)
-  // ================================================================
-  function loadUserData(user) {
-    if (unsubscribeUser) {
-      unsubscribeUser();
-      unsubscribeUser = null;
-    }
-    const userRef = doc(db, 'users', user.uid);
-    unsubscribeUser = onSnapshot(userRef,
-      (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          const newPremium = isUserPremium(data);
-          if (newPremium !== isPremium) isPremium = newPremium;
+        // ✅ C2 — paused : ne pas déconnecter
+        if (data.accountStatus === 'paused') {
           try {
             localStorage.setItem(USER_DATA_KEY, JSON.stringify({
               ...data,
@@ -2946,122 +2994,167 @@
               _cachedAt: Date.now()
             }));
           } catch (e) {}
-        } else {
-          const cached = getCachedUserData(user.uid);
-          if (cached) {
-            const newPremium = isUserPremium(cached);
-            if (newPremium !== isPremium) isPremium = newPremium;
-          }
+          return;
         }
-      },
-      (error) => {
+
+        // Cas normal
+        const newPremium = isUserPremium(data);
+        if (newPremium !== isPremium) isPremium = newPremium;
+
+        try {
+          localStorage.setItem(USER_DATA_KEY, JSON.stringify({
+            ...data,
+            _uid: user.uid,
+            _cachedAt: Date.now()
+          }));
+        } catch (e) {}
+      } else {
         const cached = getCachedUserData(user.uid);
         if (cached) {
           const newPremium = isUserPremium(cached);
           if (newPremium !== isPremium) isPremium = newPremium;
+        } else {
+          // ✅ C3 — retry doux
+          handleMissingUserDoc(user.uid);
         }
       }
-    );
+    },
+    (error) => {
+      // ✅ C8 — warn au lieu du silence
+      console.warn('[Lecture] onSnapshot users:', error.code || error.message);
+      const cached = getCachedUserData(user.uid);
+      if (cached) {
+        const newPremium = isUserPremium(cached);
+        if (newPremium !== isPremium) isPremium = newPremium;
+      }
+    }
+  );
+}
+
+// ================================================================
+// AUTH ROBUSTE — ✅ C1/C7/C9
+// ================================================================
+let isRedirecting = false;
+let isAuthResolved = false;
+let graceTimer = null;
+let maxTimer = null;
+
+// ✅ C1 — préserver les clés existantes
+function redirectToLogin() {
+  if (isRedirecting) return;
+  isRedirecting = true;
+
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) {
+    try { authUnsubscribe(); } catch (e) {}
+    authUnsubscribe = null;
   }
 
-  // ================================================================
-  // AUTH ROBUSTE — Anti-flash
-  // ================================================================
-  let isRedirecting = false;
-  let isAuthResolved = false;
-  let graceTimer = null;
-  let maxTimer = null;
-
-  function redirectToLogin() {
-    if (isRedirecting) return;
-    isRedirecting = true;
-    try {
+  try {
+    const existing = sessionStorage.getItem('redirectAfterLogin')
+                  || sessionStorage.getItem('redirectAfterAuth');
+    if (!existing) {
       sessionStorage.setItem('redirectAfterLogin',
         window.location.pathname + window.location.search);
-    } catch (e) {}
-    window.location.replace('login.html');
-  }
+    }
+  } catch (e) {}
 
-  function initAuthGuard(onAuthenticated) {
-    auth.onAuthStateChanged((user) => {
-      if (isAuthResolved) {
-        if (user && user.uid !== currentUid) {
-          currentUid = user.uid;
-          saveSession(user);
-          onAuthenticated(user);
-        } else if (!user && currentUid) {
-          currentUid = null;
-          clearSession();
-          stopTTS();
-          redirectToLogin();
-        }
-        return;
-      }
+  window.location.replace('login.html');
+}
 
-      if (!user) {
-        if (graceTimer) clearTimeout(graceTimer);
-        graceTimer = setTimeout(() => {
-          if (isAuthResolved) return;
-          if (auth.currentUser) return;
+function initAuthGuard(onAuthenticated) {
+  if (authUnsubscribe) return; // garde anti-double
 
-          const hasSession = localStorage.getItem(SESSION_KEY);
-          const hasUserData = localStorage.getItem(USER_DATA_KEY);
-
-          if ((hasSession || hasUserData) && !navigator.onLine) {
-            setTimeout(() => {
-              if (auth.currentUser) return;
-              if (!isAuthResolved) redirectToLogin();
-            }, 1500);
-            return;
-          }
-
-          if (hasSession && hasUserData) {
-            setTimeout(() => {
-              if (auth.currentUser) return;
-              if (!isAuthResolved) redirectToLogin();
-            }, 1500);
-            return;
-          }
-
-          redirectToLogin();
-        }, 2000);
-        return;
-      }
-
-      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-      if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-
-      isAuthResolved = true;
-      currentUid = user.uid;
-      saveSession(user);
-      onAuthenticated(user);
-    });
-
-    maxTimer = setTimeout(() => {
-      if (isAuthResolved) return;
-      if (auth.currentUser) {
-        isAuthResolved = true;
-        currentUid = auth.currentUser.uid;
-        saveSession(auth.currentUser);
-        onAuthenticated(auth.currentUser);
-      } else {
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
+    if (isAuthResolved) {
+      if (user && user.uid !== currentUid) {
+        currentUid = user.uid;
+        saveSession(user);
+        onAuthenticated(user);
+      } else if (!user && currentUid) {
+        currentUid = null;
+        clearSession();
+        stopTTS();
         redirectToLogin();
       }
-    }, 5000);
-  }
+      return;
+    }
 
-  // ================================================================
-  // LANCER LA PROTECTION
-  // ================================================================
-  initAuthGuard(async (user) => {
-    const cached = getCachedUserData(user.uid);
-    isPremium = cached ? isUserPremium(cached) : false;
+    if (!user) {
+      if (graceTimer) return;
+      // ✅ C9 — aligné à 600 ms
+      graceTimer = setTimeout(() => {
+        graceTimer = null;
+        if (isAuthResolved) return;
+        if (auth.currentUser) return;
 
-    loadContent();
-    loadUserData(user);
+        const hasSession = localStorage.getItem(SESSION_KEY);
+        const hasUserData = localStorage.getItem(USER_DATA_KEY);
+
+        if ((hasSession || hasUserData) && !navigator.onLine) {
+          setTimeout(() => {
+            if (auth.currentUser) return;
+            if (!isAuthResolved) redirectToLogin();
+          }, 1500);
+          return;
+        }
+
+        if (hasSession && hasUserData) {
+          setTimeout(() => {
+            if (auth.currentUser) return;
+            if (!isAuthResolved) redirectToLogin();
+          }, 1500);
+          return;
+        }
+
+        redirectToLogin();
+      }, 600);
+      return;
+    }
+
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+
+    isAuthResolved = true;
+    currentUid = user.uid;
+    saveSession(user);
+    onAuthenticated(user);
   });
 
-  console.log('🚀 ARVEXA — Lecture (interface refondue)');
-  </script>
+  maxTimer = setTimeout(() => {
+    if (isAuthResolved) return;
+    if (auth.currentUser) {
+      isAuthResolved = true;
+      currentUid = auth.currentUser.uid;
+      saveSession(auth.currentUser);
+      onAuthenticated(auth.currentUser);
+    } else {
+      redirectToLogin();
+    }
+  }, 5000);
+}
+
+// ================================================================
+// LANCER LA PROTECTION
+// ================================================================
+initAuthGuard(async (user) => {
+  const cached = getCachedUserData(user.uid);
+  isPremium = cached ? isUserPremium(cached) : false;
+
+  loadContent();
+  loadUserData(user);
+});
+
+// ✅ C7 — cleanup global
+window.addEventListener('beforeunload', () => {
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+  if (unsubscribeUser) { try { unsubscribeUser(); } catch (e) {} unsubscribeUser = null; }
+});
+
+console.log('🚀 ARVEXA — Lecture (version corrigée C1-C11)');
+</script>
 </body>
 </html>
