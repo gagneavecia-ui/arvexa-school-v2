@@ -1,6 +1,9 @@
 // ================================================================
 // OFFLINE.JS — ARVEXA School
-// Version : v6.0 — Offline complet (appli + cours)
+// Version : v6.1 — Offline complet (appli + cours)
+// Corrections appliquées :
+//  - C1 : retrait des pages protégées de appPages (cohérence avec service-worker.js C2)
+//  - C2 : console.warn sur catch silencieux (observabilité)
 // ================================================================
 
 (function () {
@@ -122,6 +125,8 @@
         const success = await trySyncItem(item);
         if (!success) failed.push(item);
       } catch (e) {
+        // ✅ C2 — warn
+        console.warn('[Offline] sync item failed:', e.message);
         failed.push(item);
       }
     }
@@ -143,6 +148,8 @@
     try {
       return await window.__arvexaSync(item);
     } catch (e) {
+      // ✅ C2 — warn
+      console.warn('[Offline] __arvexaSync error:', e.message);
       return false;
     }
   }
@@ -165,27 +172,12 @@
 
     try {
       // ═══ ÉTAPE 1 : pages de l'application ═══
+      // ✅ C1 — UNIQUEMENT les pages PUBLIQUES.
+      // Les pages protégées sont exclues pour éviter le flash de contenu protégé
+      // et pour rester cohérent avec la liste PROTECTED_PAGES du Service Worker.
       const appPages = [
         'index.html',
         'outils.html',
-        'profil.html',
-        'notifications.html',
-        'abonnement.html',
-        'matiere.html',
-        'chapitre.html',
-        'lecture.html',
-        'calculatrice.html',
-        'formulaires.html',
-        'tableau-periodique.html',
-        'arv-progress.html',
-        'arv.html',
-        'arv-pilot.html',
-        'exam.html',
-        'exam-history.html',
-        'reviseur.html',
-        'reviseur-history.html',
-        'planificateur.html',
-        'groupe.html',
         'conditions.html',
         'confidentialite.html',
         '404.html'
@@ -218,6 +210,10 @@
           });
         } catch (e) {
           // Matière absente → ignorer
+          // ✅ C2 — warn (mais silencieux si 404)
+          if (e.name !== 'SyntaxError') {
+            console.warn('[Offline] fetch ' + jsonFile + ':', e.message);
+          }
         }
       }
 
@@ -270,6 +266,10 @@
             failed: 0,
             total: data.done
           });
+        } else if (data.type === 'DOWNLOAD_ERROR') {
+          // ✅ C2 — gestion de l'erreur SW (offline ou autre)
+          showToast(data.message || 'Erreur de téléchargement', 'error');
+          closeDownloadModal();
         }
       };
 
@@ -642,5 +642,5 @@
 
   init();
 
-  console.log('✅ ARVEXA — Mode hors ligne v6.0 (offline complet) prêt');
+  console.log('✅ ARVEXA — Mode hors ligne v6.1 (offline complet) prêt');
 })();
