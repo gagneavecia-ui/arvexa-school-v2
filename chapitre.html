@@ -2,10 +2,9 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0A0A0A">
   <meta name="description" content="ARVEXA School - Chapitre">
-  <meta name="view-transition" content="same-origin">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" href="icon.png" type="image/png">
@@ -17,7 +16,7 @@
 
   <style>
     /* ============================================================
-       ROOT — Design system ARVEXA
+       ROOT — Design system ARVEXA (harmonisé avec matiere.html)
        ============================================================ */
     :root {
       --primary: #1A3A2A;
@@ -27,24 +26,26 @@
       --accent-bright: #E0B84A;
       --accent-dim: rgba(184, 134, 11, 0.08);
       --success: #2D7D5A;
+      --success-light: #3AB67E;
       --danger: #B85C3A;
       --warning: #D4A017;
       --bg-dark: #0A0A0A;
       --bg-surface: #141414;
-      --bg-card: rgba(20, 20, 20, 0.7);
+      --bg-card: rgba(20, 20, 20, 0.55);
       --text-light: #F5F0E8;
-      --text-dim: #8A8A7A;
-      --text-muted: #5A5A4A;
-      --card-border: rgba(184, 134, 11, 0.08);
-      --transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --text-dim: #A0A090;
+      --text-muted: #7A7A6A;
+      --card-border: rgba(255, 255, 255, 0.05);
+      --transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+      --transition-fast: all 0.18s ease;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.42);
       --radius: 16px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html { scroll-behavior: smooth; width: 100%; overflow-x: hidden; }
+    html { scroll-behavior: smooth; width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
     body {
       font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
       background: var(--bg-dark);
@@ -61,262 +62,312 @@
 
     .gradient-bg {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
-      background: radial-gradient(ellipse 40% 30% at 30% 15%, rgba(26, 58, 42, 0.16) 0%, transparent 70%),
-                  radial-gradient(ellipse 35% 25% at 75% 85%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
+      background: radial-gradient(ellipse 40% 30% at 30% 15%, rgba(26, 58, 42, 0.18) 0%, transparent 70%),
+                  radial-gradient(ellipse 35% 25% at 75% 85%, rgba(184, 134, 11, 0.06) 0%, transparent 60%),
                   linear-gradient(180deg, #0A0A0A 0%, #060606 100%);
     }
 
     .glow {
       position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: -1;
-      opacity: 0.15; animation: glowMove 10s ease-in-out infinite alternate;
+      opacity: 0.12;
     }
-    .glow-1 { width: 300px; height: 300px; background: rgba(26,58,42,0.18); top: -80px; right: -80px; }
-    .glow-2 { width: 180px; height: 180px; background: rgba(184,134,11,0.05); bottom: 0; left: 0; animation-delay: -4s; }
-    @keyframes glowMove { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(30px,-20px) scale(1.1); } }
+    .glow-1 { width: 300px; height: 300px; background: rgba(26,58,42,0.20); top: -80px; right: -80px; }
+    .glow-2 { width: 180px; height: 180px; background: rgba(184,134,11,0.06); bottom: 0; left: 0; }
 
     /* ============================================================
-       HEADER
+       HEADER PREMIUM (harmonisé avec matiere.html)
        ============================================================ */
     .header {
-      position: sticky; top: 0; z-index: 50; display: flex; align-items: center;
-      justify-content: space-between; padding: calc(10px + var(--safe-top)) 16px 10px;
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: calc(10px + var(--safe-top)) 16px 10px;
       background: rgba(10,10,10,0.92);
-      backdrop-filter: blur(12px); border-bottom: 1px solid rgba(184,134,11,0.06);
-      gap: 12px; min-height: 56px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(224, 184, 74, 0.10);
+      gap: 12px;
+      min-height: 60px;
     }
-    .header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .header::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: -1px; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(224, 184, 74, 0.35), transparent);
+      pointer-events: none;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+    .brand-mark {
+      display: inline-flex;
+      align-items: baseline;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      color: var(--text-light);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .brand-mark span {
+      color: var(--accent-bright);
+      font-style: italic;
+      margin-left: 1px;
+    }
+    .header-divider {
+      width: 1px; height: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
     .back-btn {
-      display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;
-      border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); background: transparent;
-      color: var(--text-dim); cursor: pointer; transition: var(--transition); font-size: 16px;
-      text-decoration: none; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      width: 38px; height: 38px; border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06); background: transparent;
+      color: var(--text-dim); cursor: pointer; transition: var(--transition-fast);
+      font-size: 15px; text-decoration: none; flex-shrink: 0;
     }
-    .back-btn:hover { border-color: rgba(184,134,11,0.14); color: var(--text-light); }
+    .back-btn:hover {
+      border-color: rgba(224, 184, 74, 0.30);
+      color: var(--accent-bright);
+      background: rgba(224, 184, 74, 0.05);
+    }
+    .back-btn:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 2px;
+    }
     .page-title {
       font-size: clamp(13px, 1.6vw, 15px); font-weight: 600; color: var(--text-light);
       font-family: 'Playfair Display', serif;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       max-width: clamp(180px, 50vw, 350px);
+      min-width: 0;
+      letter-spacing: -0.01em;
     }
     .page-title i { color: var(--accent-bright); margin-right: 6px; font-size: 13px; }
 
     /* ============================================================
        CONTAINER
        ============================================================ */
-    .container { max-width: 640px; margin: 0 auto; padding: 12px 12px 32px; width: 100%; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+    .container { max-width: 680px; margin: 0 auto; padding: 18px 16px 48px; width: 100%; display: flex; flex-direction: column; gap: 14px; flex: 1; }
 
     /* ============================================================
        CHAPTER INFO
        ============================================================ */
     .chapter-info {
-      display: flex; align-items: center; gap: clamp(10px, 1.4vw, 16px);
-      padding: clamp(12px, 1.5vw, 16px) clamp(14px, 1.8vw, 20px);
-      border-radius: var(--radius); background: var(--bg-card); backdrop-filter: blur(10px);
-      border: 1px solid var(--card-border); position: relative; overflow: hidden;
+      display: flex; align-items: center; gap: clamp(12px, 1.4vw, 16px);
+      padding: clamp(14px, 1.5vw, 18px) clamp(16px, 1.8vw, 20px);
+      border-radius: 16px;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(26, 58, 42, 0.35) 0%, transparent 70%),
+        linear-gradient(160deg, rgba(20, 20, 20, 0.75), rgba(10, 10, 10, 0.75));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(224, 184, 74, 0.14);
+      position: relative; overflow: hidden;
     }
     .chapter-info::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--success), var(--accent));
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(224, 184, 74, 0.55), transparent);
     }
     .ci-num {
-      width: clamp(36px, 5vw, 44px); height: clamp(36px, 5vw, 44px);
+      width: clamp(40px, 5vw, 46px); height: clamp(40px, 5vw, 46px);
       border-radius: 12px; display: flex; align-items: center;
-      justify-content: center; font-size: clamp(14px, 1.8vw, 18px);
+      justify-content: center; font-size: clamp(15px, 1.8vw, 18px);
       font-weight: 700; flex-shrink: 0;
       font-family: 'Playfair Display', serif;
-      background: rgba(184,134,11,0.1); color: var(--accent-bright);
-      border: 1px solid rgba(184,134,11,0.12);
+      background: rgba(224, 184, 74, 0.10);
+      color: var(--accent-bright);
+      border: 1px solid rgba(224, 184, 74, 0.18);
     }
-    .ci-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+    .ci-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
     .ci-title {
       font-size: clamp(14px, 1.6vw, 17px);
       font-weight: 600; color: var(--text-light); line-height: 1.3;
     }
     .ci-sub {
-      font-size: clamp(10px, 1.1vw, 12px);
+      font-size: clamp(11px, 1.1vw, 12px);
       color: var(--text-muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     }
     .ci-status {
-      font-size: clamp(9px, 0.9vw, 11px);
-      font-weight: 600; padding: 2px 8px; border-radius: 10px;
+      font-size: clamp(10px, 0.9vw, 11px);
+      font-weight: 600; padding: 2px 10px; border-radius: 999px;
       white-space: nowrap;
     }
-    .ci-status.premium { background: rgba(184,134,11,0.1); color: var(--accent-bright); }
-    .ci-status.free { background: rgba(45,125,90,0.1); color: var(--success); }
-    .ci-status.locked { background: rgba(184,92,58,0.1); color: var(--danger); }
+    .ci-status.premium { background: rgba(224,184,74,0.12); color: var(--accent-bright); border: 1px solid rgba(224,184,74,0.22); }
+    .ci-status.free { background: rgba(45,125,90,0.12); color: #7FE0A6; border: 1px solid rgba(45,125,90,0.22); }
+    .ci-status.locked { background: rgba(184,92,58,0.12); color: #E8A48C; border: 1px solid rgba(184,92,58,0.22); }
 
     /* ============================================================
        CHAPTER PROGRESS
        ============================================================ */
     .chapter-progress {
-      background: var(--bg-card); backdrop-filter: blur(10px);
-      border: 1px solid var(--card-border); border-radius: var(--radius);
-      padding: clamp(10px, 1.2vw, 14px) clamp(14px, 1.8vw, 20px);
-      transition: var(--transition);
+      background: rgba(20, 20, 20, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(224, 184, 74, 0.10);
+      border-radius: 16px;
+      padding: clamp(12px, 1.2vw, 16px) clamp(16px, 1.8vw, 20px);
+      transition: var(--transition-fast);
     }
-    .chapter-progress:hover { border-color: rgba(184,134,11,0.1); }
+    .chapter-progress:hover { border-color: rgba(224, 184, 74, 0.20); }
     .chapter-progress .cp-header {
       display: flex; justify-content: space-between; align-items: center;
-      font-size: clamp(10px, 1.1vw, 12px);
+      font-size: clamp(11px, 1.1vw, 13px);
       color: var(--text-dim); flex-wrap: wrap; gap: 4px;
     }
-    .chapter-progress .cp-header strong { color: var(--text-light); }
+    .chapter-progress .cp-header strong { color: var(--text-light); font-weight: 700; }
     .chapter-progress .cp-header .cp-percent {
       font-weight: 700; color: var(--accent-bright);
-      font-size: clamp(11px, 1.2vw, 13px);
+      font-size: clamp(12px, 1.2vw, 13.5px);
     }
     .chapter-progress .cp-track {
-      width: 100%; height: 4px; border-radius: 4px;
-      background: rgba(255,255,255,0.06); overflow: hidden; margin-top: 5px;
+      width: 100%; height: 6px; border-radius: 999px;
+      background: rgba(255,255,255,0.06); overflow: hidden; margin-top: 8px;
       position: relative;
     }
     .chapter-progress .cp-track .cp-fill {
-      height: 100%; border-radius: 4px;
+      height: 100%; border-radius: 999px;
       background: linear-gradient(90deg, var(--accent), var(--accent-bright));
       transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
       width: 0%;
-      position: relative;
-    }
-    .chapter-progress .cp-track .cp-fill::after {
-      content: '';
-      position: absolute; right: 0; top: 0;
-      width: 20px; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15));
-      animation: shimmerProgress 2s ease-in-out infinite;
-    }
-    @keyframes shimmerProgress {
-      0% { opacity: 0; }
-      50% { opacity: 1; }
-      100% { opacity: 0; }
     }
 
     /* ============================================================
        TABS
        ============================================================ */
     .tabs {
-      display: flex; gap: 4px; background: rgba(255,255,255,0.02); border-radius: 12px;
-      padding: 4px; border: 1px solid rgba(255,255,255,0.04);
+      display: flex; gap: 4px; background: rgba(255,255,255,0.02); border-radius: 16px;
+      padding: 4px; border: 1px solid rgba(255,255,255,0.05);
     }
     .tab-btn {
-      flex: 1; padding: clamp(8px, 1vw, 12px) clamp(6px, 0.8vw, 10px);
-      border: none; border-radius: 10px; background: transparent;
-      color: var(--text-muted); font-size: clamp(10px, 1.1vw, 13px);
+      flex: 1; padding: clamp(10px, 1vw, 12px) clamp(6px, 0.8vw, 10px);
+      border: none; border-radius: 12px; background: transparent;
+      color: var(--text-muted); font-size: clamp(11px, 1.1vw, 13px);
       font-weight: 600; cursor: pointer;
-      transition: var(--transition); font-family: 'Inter', sans-serif;
+      transition: var(--transition-fast); font-family: 'Inter', sans-serif;
       display: flex; align-items: center; justify-content: center; gap: 6px;
       position: relative;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     .tab-btn i { font-size: clamp(11px, 1.1vw, 14px); }
     .tab-btn.active {
-      background: rgba(184,134,11,0.1); color: var(--accent-bright);
-      border: 1px solid rgba(184,134,11,0.12);
+      background: rgba(224, 184, 74, 0.10); color: var(--accent-bright);
+      border: 1px solid rgba(224, 184, 74, 0.22);
     }
     .tab-btn:not(.active) { border: 1px solid transparent; }
-    .tab-btn:hover:not(.active) { color: var(--text-dim); }
+    .tab-btn:hover:not(.active) { color: var(--text-light); background: rgba(255,255,255,0.03); }
+    .tab-btn:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 2px;
+    }
 
     /* ============================================================
        CARDS VIEW
        ============================================================ */
-    .cards-view { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .cards-view { display: flex; flex-direction: column; gap: 10px; flex: 1; }
 
     /* ============================================================
-       PART CARD
+       PART CARD (harmonisé avec matiere.html)
        ============================================================ */
     .part-card {
-      background: var(--bg-card); backdrop-filter: blur(10px);
-      border: 1px solid var(--card-border); border-radius: var(--radius);
-      padding: clamp(12px, 1.5vw, 18px) clamp(14px, 1.8vw, 20px);
-      cursor: pointer; transition: var(--transition);
+      background: rgba(20, 20, 20, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: clamp(14px, 1.5vw, 18px) clamp(14px, 1.8vw, 20px);
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.2s ease, box-shadow 0.2s ease;
       display: flex; align-items: center; gap: clamp(10px, 1.4vw, 16px);
       position: relative; overflow: hidden;
       text-decoration: none; color: inherit;
     }
-    .part-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      opacity: 0; transition: opacity 0.3s ease;
+    .part-card:hover {
+      border-color: rgba(224, 184, 74, 0.22);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.30);
     }
-    .part-card:hover { border-color: rgba(184,134,11,0.15); transform: translateY(-2px); }
-    .part-card:hover::before { opacity: 1; }
-    .part-card:active { transform: scale(0.98); }
-    .part-card.locked { opacity: 0.7; }
-    .part-card.locked:hover { opacity: 0.85; }
+    .part-card:active { transform: scale(0.995); }
+    .part-card.locked { opacity: 0.72; }
+    .part-card.locked:hover { opacity: 0.88; }
 
     .part-card.read {
-      border-color: rgba(45, 125, 90, 0.25);
-      background: rgba(45, 125, 90, 0.04);
+      border-color: rgba(58, 182, 126, 0.30);
+      background: rgba(58, 182, 126, 0.035);
     }
     .part-card.read::before {
-      background: linear-gradient(90deg, transparent, var(--success), transparent);
-      opacity: 1;
+      content: '';
+      position: absolute; top: 0; left: 0; bottom: 0; width: 3px;
+      background: linear-gradient(180deg, var(--success), var(--success-light));
     }
     .part-card.read .pc-icon {
-      background: rgba(45, 125, 90, 0.12);
-      color: var(--success);
-      border-color: rgba(45, 125, 90, 0.2);
+      background: rgba(58, 182, 126, 0.12);
+      color: var(--success-light);
+      border-color: rgba(58, 182, 126, 0.25);
     }
 
     .pc-icon {
-      width: clamp(36px, 4.5vw, 48px);
-      height: clamp(36px, 4.5vw, 48px);
+      width: clamp(40px, 4.5vw, 48px);
+      height: clamp(40px, 4.5vw, 48px);
       border-radius: 12px; display: flex; align-items: center;
-      justify-content: center; font-size: clamp(15px, 1.8vw, 20px);
+      justify-content: center; font-size: clamp(16px, 1.8vw, 20px);
       flex-shrink: 0;
-      background: rgba(184,134,11,0.06); color: var(--accent-bright);
-      border: 1px solid rgba(184,134,11,0.08);
-      transition: var(--transition);
+      background: rgba(224, 184, 74, 0.08);
+      color: var(--accent-bright);
+      border: 1px solid rgba(224, 184, 74, 0.15);
+      transition: var(--transition-fast);
     }
-    .pc-icon.exo { background: rgba(45,125,90,0.06); color: var(--success); border-color: rgba(45,125,90,0.08); }
-    .pc-icon.corr { background: rgba(74,175,224,0.06); color: #4AAFE0; border-color: rgba(74,175,224,0.08); }
+    .pc-icon.exo { background: rgba(45,125,90,0.08); color: #7FE0A6; border-color: rgba(45,125,90,0.18); }
+    .pc-icon.corr { background: rgba(74,175,224,0.08); color: #6FC8F0; border-color: rgba(74,175,224,0.18); }
 
-    .pc-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+    .pc-info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
     .pc-title {
-      font-size: clamp(13px, 1.4vw, 15px);
-      font-weight: 600; color: var(--text-light); line-height: 1.3;
+      font-size: clamp(14px, 1.5vw, 15px);
+      font-weight: 600; color: var(--text-light); line-height: 1.35;
       display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px;
     }
     .pc-title .pc-badge {
-      font-size: clamp(8px, 0.9vw, 10px);
-      font-weight: 600; padding: 1px 8px; border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600; padding: 2px 9px; border-radius: 999px;
       white-space: nowrap;
       display: inline-flex; align-items: center; gap: 3px;
     }
     .pc-title .pc-badge.read {
-      color: var(--success); background: rgba(45,125,90,0.1);
-      border: 1px solid rgba(45,125,90,0.12);
+      color: #7FE0A6; background: rgba(45,125,90,0.12);
+      border: 1px solid rgba(45,125,90,0.22);
     }
     .pc-title .pc-badge.premium {
-      color: var(--accent-bright); background: rgba(184,134,11,0.1);
-      border: 1px solid rgba(184,134,11,0.12);
+      color: var(--accent-bright); background: rgba(224,184,74,0.12);
+      border: 1px solid rgba(224,184,74,0.22);
     }
     .pc-title .pc-badge.free {
-      color: var(--success); background: rgba(45,125,90,0.1);
-      border: 1px solid rgba(45,125,90,0.12);
+      color: #7FE0A6; background: rgba(45,125,90,0.12);
+      border: 1px solid rgba(45,125,90,0.22);
     }
     .pc-sub {
-      font-size: clamp(10px, 1vw, 12px);
+      font-size: clamp(11px, 1vw, 12.5px);
       color: var(--text-muted);
     }
     .pc-arrow {
       display: flex; align-items: center; justify-content: center;
-      width: 28px; height: 28px; border-radius: 8px;
+      width: 30px; height: 30px; border-radius: 8px;
       background: rgba(255,255,255,0.03); color: var(--text-muted);
-      flex-shrink: 0; transition: var(--transition); font-size: clamp(10px, 1vw, 12px);
+      flex-shrink: 0; transition: var(--transition-fast); font-size: clamp(11px, 1vw, 12px);
     }
     .part-card:hover .pc-arrow {
-      color: var(--accent-bright); background: rgba(184,134,11,0.08);
+      color: var(--accent-bright); background: rgba(224,184,74,0.10);
       transform: translateX(2px);
     }
 
     /* ============================================================
-       LOADING & EMPTY
+       LOADING & EMPTY (harmonisé)
        ============================================================ */
     .loading-state {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 60px 20px; gap: 12px; min-height: 200px;
+      padding: 60px 20px; gap: 14px; min-height: 200px;
     }
     .spinner {
-      width: 32px; height: 32px; border: 3px solid rgba(184,134,11,0.15);
+      width: 32px; height: 32px; border: 3px solid rgba(224,184,74,0.15);
       border-top-color: var(--accent-bright); border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
@@ -324,528 +375,503 @@
     .loading-state p { font-size: 13px; color: var(--text-muted); }
 
     .empty-state {
-      text-align: center; padding: 60px 24px; display: flex; flex-direction: column;
+      text-align: center; padding: 56px 24px; display: flex; flex-direction: column;
       align-items: center; gap: 14px;
     }
     .empty-state .es-icon {
-      width: 64px; height: 64px; border-radius: 18px; display: flex; align-items: center;
-      justify-content: center; background: rgba(184,134,11,0.06); border: 1px solid rgba(184,134,11,0.08);
-      font-size: 24px; color: var(--text-muted);
+      width: 72px; height: 72px; border-radius: 20px; display: flex; align-items: center;
+      justify-content: center; background: rgba(224,184,74,0.08);
+      border: 1px solid rgba(224,184,74,0.14);
+      font-size: 28px; color: var(--accent-bright);
     }
-    .empty-state h4 { font-size: clamp(15px, 1.6vw, 18px); color: var(--text-dim); font-weight: 600; }
-    .empty-state p { font-size: 13px; color: var(--text-muted); max-width: 300px; line-height: 1.6; }
+    .empty-state h4 { font-size: 16px; color: var(--text-dim); font-weight: 600; }
+    .empty-state p { font-size: 13px; color: var(--text-muted); max-width: 320px; line-height: 1.65; }
 
     /* ═══════════════════════════════════════════════════════════════════
-   ARVEXA — POP-UP PREMIUM UNIVERSEL
-   Version 10 — Réduite · Bouton unique
-   Un seul design pour toutes les pages · Contenu adapté par page
-   ═══════════════════════════════════════════════════════════════════ */
+       ARVEXA — POP-UP PREMIUM UNIVERSEL
+       ⚠️ NE PAS MODIFIER — réutilisé par matiere.html
+       ═══════════════════════════════════════════════════════════════════ */
 
-/* ─────────────────────────────────────────────────────────────
-   1. OVERLAY
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: grid;
-  place-items: center;
-  padding: 18px;
-  background: rgba(0, 0, 0, 0.82);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.30s cubic-bezier(0.4, 0, 0.2, 1),
-              visibility 0.30s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
-.arvexa-popup-overlay.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   2. CARTE
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup {
-  position: relative;
-  width: 100%;
-  max-width: 360px;
-  margin: auto;
-  padding: 30px 26px 22px;
-  border: 1px solid rgba(224, 184, 74, 0.20);
-  border-radius: 22px;
-  background:
-    radial-gradient(ellipse 120% 70% at 50% -10%, rgba(224, 184, 74, 0.10) 0%, transparent 65%),
-    radial-gradient(ellipse 100% 50% at 50% 110%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
-    linear-gradient(165deg, #171717 0%, #0b0b0b 100%);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.02),
-    0 0 60px rgba(224, 184, 74, 0.08),
-    0 24px 60px rgba(0, 0, 0, 0.70),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transform: scale(0.94) translateY(20px);
-  transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
-  text-align: center;
-  overflow: hidden;
-  isolation: isolate;
-}
-.arvexa-popup-overlay.show .arvexa-popup {
-  transform: scale(1) translateY(0);
-}
-
-.arvexa-popup::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 20%;
-  right: 20%;
-  height: 2px;
-  border-radius: 0 0 4px 4px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(224, 184, 74, 0.4) 20%,
-    #E0B84A 50%,
-    rgba(224, 184, 74, 0.4) 80%,
-    transparent 100%);
-  opacity: 0.9;
-  z-index: 2;
-}
-
-.arvexa-popup::after {
-  content: '';
-  position: absolute;
-  top: -50px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 160px;
-  height: 100px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(224, 184, 74, 0.18) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-  filter: blur(6px);
-}
-
-/* ─────────────────────────────────────────────────────────────
-   3. BOUTON FERMER
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-close {
-  position: absolute;
-  top: 13px;
-  right: 13px;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.03);
-  color: #6A6A5A;
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-  z-index: 4;
-  -webkit-tap-highlight-color: transparent;
-}
-.arvexa-popup-close:hover {
-  background: rgba(224, 184, 74, 0.12);
-  color: #E0B84A;
-  transform: rotate(90deg) scale(1.05);
-}
-.arvexa-popup-close:active {
-  transform: rotate(90deg) scale(0.95);
-}
-
-/* ─────────────────────────────────────────────────────────────
-   4. ICÔNE
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
-  border: 1px solid rgba(224, 184, 74, 0.28);
-  color: #E0B84A;
-  font-size: 26px;
-  margin: 0 auto 16px;
-  position: relative;
-  z-index: 1;
-  animation: arvexaCrownPulse 3s ease-in-out infinite;
-  box-shadow:
-    0 0 20px rgba(224, 184, 74, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-@keyframes arvexaCrownPulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow:
-      0 0 20px rgba(224, 184, 74, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-  50% {
-    transform: scale(1.04);
-    box-shadow:
-      0 0 34px rgba(224, 184, 74, 0.32),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   5. TITRE
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-title {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: #F5F0E8;
-  line-height: 1.25;
-  margin: 0 0 10px;
-  letter-spacing: -0.015em;
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-title em {
-  color: #E0B84A;
-  font-style: italic;
-  font-weight: 700;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   6. MESSAGE
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-message {
-  font-size: 13.5px;
-  color: #8A8A7A;
-  line-height: 1.6;
-  margin: 0 auto 20px;
-  max-width: 280px;
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-message strong {
-  color: #E0B84A;
-  font-weight: 700;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   7. BÉNÉFICES (desktop)
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-benefits {
-  display: none;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 22px;
-  padding: 14px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-benefits span {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-  font-size: 11px;
-  color: #8A8A7A;
-  line-height: 1.35;
-  text-align: center;
-  font-weight: 500;
-}
-.arvexa-popup-benefits span::before {
-  content: '✓';
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(224, 184, 74, 0.10);
-  border: 1px solid rgba(224, 184, 74, 0.22);
-  color: #E0B84A;
-  font-weight: 800;
-  font-size: 11px;
-  line-height: 1;
-}
-
-@media (min-width: 600px) {
-  .arvexa-popup-benefits {
-    display: grid;
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   8. ACTION (bouton unique)
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-actions {
-  display: flex;
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-actions .arvexa-popup-btn {
-  flex: 1;
-  width: 100%;
-}
-
-.arvexa-popup-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 13px 18px;
-  min-height: 48px;
-  border-radius: 100px;
-  border: none;
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  position: relative;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.arvexa-popup-btn.primary {
-  background: linear-gradient(135deg, #E0B84A 0%, #B8860B 100%);
-  color: #0A0A0A;
-  box-shadow: 0 4px 16px rgba(224, 184, 74, 0.28);
-}
-.arvexa-popup-btn.primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -120%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.30) 50%,
-    transparent 100%);
-  transform: skewX(-20deg);
-  transition: left 0.7s cubic-bezier(0.25, 1, 0.5, 1);
-  pointer-events: none;
-}
-.arvexa-popup-btn.primary:hover::before {
-  left: 130%;
-}
-.arvexa-popup-btn.primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
-}
-.arvexa-popup-btn.primary:active {
-  transform: translateY(0) scale(0.97);
-}
-.arvexa-popup-btn.primary i {
-  font-size: 12px;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   9. RESPONSIVE
-   ───────────────────────────────────────────────────────────── */
-@media (max-width: 599px) {
-  .arvexa-popup-overlay {
-    padding: 16px;
-  }
-  .arvexa-popup {
-    max-width: 100%;
-    padding: 28px 22px 20px;
-    border-radius: 20px;
-  }
-  .arvexa-popup-icon {
-    width: 56px;
-    height: 56px;
-    font-size: 24px;
-    margin-bottom: 14px;
-  }
-  .arvexa-popup-title {
-    font-size: 21px;
-  }
-  .arvexa-popup-message {
-    font-size: 13.5px;
-    margin-bottom: 18px;
-  }
-  .arvexa-popup-btn {
-    min-height: 46px;
-    font-size: 13.5px;
-  }
-}
-
-@media (max-width: 380px) {
-  .arvexa-popup-overlay {
-    padding: 12px;
-  }
-  .arvexa-popup {
-    padding: 24px 18px 16px;
-    border-radius: 18px;
-  }
-  .arvexa-popup::before {
-    left: 24%;
-    right: 24%;
-  }
-  .arvexa-popup-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 21px;
-    margin-bottom: 12px;
-  }
-  .arvexa-popup-title {
-    font-size: 19px;
-  }
-  .arvexa-popup-message {
-    font-size: 13px;
-    margin-bottom: 16px;
-  }
-  .arvexa-popup-btn {
-    min-height: 44px;
-    font-size: 13px;
-    padding: 12px 14px;
-  }
-  .arvexa-popup-close {
-    width: 28px;
-    height: 28px;
-    top: 10px;
-    right: 10px;
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   10. ACCESSIBILITÉ
-   ───────────────────────────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  .arvexa-popup,
-  .arvexa-popup-overlay,
-  .arvexa-popup-icon,
-  .arvexa-popup-btn {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-.arvexa-popup-btn:focus-visible,
-.arvexa-popup-close:focus-visible {
-  outline: 2px solid #E0B84A;
-  outline-offset: 3px;
+    .arvexa-popup-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(16px) saturate(120%);
+      -webkit-backdrop-filter: blur(16px) saturate(120%);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.30s cubic-bezier(0.4, 0, 0.2, 1),
+                  visibility 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
     }
-    
+    .arvexa-popup-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .arvexa-popup {
+      position: relative;
+      width: 100%;
+      max-width: 360px;
+      margin: auto;
+      padding: 30px 26px 22px;
+      border: 1px solid rgba(224, 184, 74, 0.20);
+      border-radius: 22px;
+      background:
+        radial-gradient(ellipse 120% 70% at 50% -10%, rgba(224, 184, 74, 0.10) 0%, transparent 65%),
+        radial-gradient(ellipse 100% 50% at 50% 110%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
+        linear-gradient(165deg, #171717 0%, #0b0b0b 100%);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.02),
+        0 0 60px rgba(224, 184, 74, 0.08),
+        0 24px 60px rgba(0, 0, 0, 0.70),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transform: scale(0.94) translateY(20px);
+      transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .arvexa-popup-overlay.show .arvexa-popup {
+      transform: scale(1) translateY(0);
+    }
+
+    .arvexa-popup::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20%;
+      right: 20%;
+      height: 2px;
+      border-radius: 0 0 4px 4px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(224, 184, 74, 0.4) 20%,
+        #E0B84A 50%,
+        rgba(224, 184, 74, 0.4) 80%,
+        transparent 100%);
+      opacity: 0.9;
+      z-index: 2;
+    }
+
+    .arvexa-popup::after {
+      content: '';
+      position: absolute;
+      top: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 160px;
+      height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(224, 184, 74, 0.18) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(6px);
+    }
+
+    .arvexa-popup-close {
+      position: absolute;
+      top: 13px;
+      right: 13px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.03);
+      color: #6A6A5A;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+      z-index: 4;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .arvexa-popup-close:hover {
+      background: rgba(224, 184, 74, 0.12);
+      color: #E0B84A;
+      transform: rotate(90deg) scale(1.05);
+    }
+    .arvexa-popup-close:active {
+      transform: rotate(90deg) scale(0.95);
+    }
+
+    .arvexa-popup-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
+      border: 1px solid rgba(224, 184, 74, 0.28);
+      color: #E0B84A;
+      font-size: 26px;
+      margin: 0 auto 16px;
+      position: relative;
+      z-index: 1;
+      animation: arvexaCrownPulse 3s ease-in-out infinite;
+      box-shadow:
+        0 0 20px rgba(224, 184, 74, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    @keyframes arvexaCrownPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow:
+          0 0 20px rgba(224, 184, 74, 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+      50% {
+        transform: scale(1.04);
+        box-shadow:
+          0 0 34px rgba(224, 184, 74, 0.32),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+    }
+
+    .arvexa-popup-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #F5F0E8;
+      line-height: 1.25;
+      margin: 0 0 10px;
+      letter-spacing: -0.015em;
+      position: relative;
+      z-index: 1;
+    }
+    .arvexa-popup-title em {
+      color: #E0B84A;
+      font-style: italic;
+      font-weight: 700;
+    }
+
+    .arvexa-popup-message {
+      font-size: 13.5px;
+      color: #8A8A7A;
+      line-height: 1.6;
+      margin: 0 auto 20px;
+      max-width: 280px;
+      position: relative;
+      z-index: 1;
+    }
+    .arvexa-popup-message strong {
+      color: #E0B84A;
+      font-weight: 700;
+    }
+
+    .arvexa-popup-benefits {
+      display: none;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 22px;
+      padding: 14px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
+      z-index: 1;
+    }
+    .arvexa-popup-benefits span {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 6px;
+      font-size: 11px;
+      color: #8A8A7A;
+      line-height: 1.35;
+      text-align: center;
+      font-weight: 500;
+    }
+    .arvexa-popup-benefits span::before {
+      content: '✓';
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(224, 184, 74, 0.10);
+      border: 1px solid rgba(224, 184, 74, 0.22);
+      color: #E0B84A;
+      font-weight: 800;
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    @media (min-width: 600px) {
+      .arvexa-popup-benefits {
+        display: grid;
+      }
+    }
+
+    .arvexa-popup-actions {
+      display: flex;
+      position: relative;
+      z-index: 1;
+    }
+    .arvexa-popup-actions .arvexa-popup-btn {
+      flex: 1;
+      width: 100%;
+    }
+
+    .arvexa-popup-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 13px 18px;
+      min-height: 48px;
+      border-radius: 100px;
+      border: none;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .arvexa-popup-btn.primary {
+      background: linear-gradient(135deg, #E0B84A 0%, #B8860B 100%);
+      color: #0A0A0A;
+      box-shadow: 0 4px 16px rgba(224, 184, 74, 0.28);
+    }
+    .arvexa-popup-btn.primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -120%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.30) 50%,
+        transparent 100%);
+      transform: skewX(-20deg);
+      transition: left 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+      pointer-events: none;
+    }
+    .arvexa-popup-btn.primary:hover::before {
+      left: 130%;
+    }
+    .arvexa-popup-btn.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
+    }
+    .arvexa-popup-btn.primary:active {
+      transform: translateY(0) scale(0.97);
+    }
+    .arvexa-popup-btn.primary i {
+      font-size: 12px;
+    }
+
+    @media (max-width: 599px) {
+      .arvexa-popup-overlay {
+        padding: 16px;
+      }
+      .arvexa-popup {
+        max-width: 100%;
+        padding: 28px 22px 20px;
+        border-radius: 20px;
+      }
+      .arvexa-popup-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 24px;
+        margin-bottom: 14px;
+      }
+      .arvexa-popup-title {
+        font-size: 21px;
+      }
+      .arvexa-popup-message {
+        font-size: 13.5px;
+        margin-bottom: 18px;
+      }
+      .arvexa-popup-btn {
+        min-height: 46px;
+        font-size: 13.5px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .arvexa-popup-overlay {
+        padding: 12px;
+      }
+      .arvexa-popup {
+        padding: 24px 18px 16px;
+        border-radius: 18px;
+      }
+      .arvexa-popup::before {
+        left: 24%;
+        right: 24%;
+      }
+      .arvexa-popup-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 21px;
+        margin-bottom: 12px;
+      }
+      .arvexa-popup-title {
+        font-size: 19px;
+      }
+      .arvexa-popup-message {
+        font-size: 13px;
+        margin-bottom: 16px;
+      }
+      .arvexa-popup-btn {
+        min-height: 44px;
+        font-size: 13px;
+        padding: 12px 14px;
+      }
+      .arvexa-popup-close {
+        width: 28px;
+        height: 28px;
+        top: 10px;
+        right: 10px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .arvexa-popup,
+      .arvexa-popup-overlay,
+      .arvexa-popup-icon,
+      .arvexa-popup-btn {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    .arvexa-popup-btn:focus-visible,
+    .arvexa-popup-close:focus-visible {
+      outline: 2px solid #E0B84A;
+      outline-offset: 3px;
+    }
+
     /* ============================================================
        RESPONSIVE
        ============================================================ */
     @media (max-width: 640px) {
-      .container { padding: 10px 10px 24px; }
-      .chapter-info { padding: 12px 14px; }
-      .ci-num { width: 36px; height: 36px; font-size: 14px; }
-      .ci-title { font-size: 14px; }
-      .chapter-progress { padding: 10px 14px; }
-      .part-card { padding: 12px 14px; }
-      .pc-icon { width: 36px; height: 36px; font-size: 15px; }
-      .pc-title { font-size: 13px; }
+      .container { padding: 14px 14px 36px; gap: 12px; }
+      .chapter-info { padding: 14px 16px; }
+      .ci-num { width: 42px; height: 42px; font-size: 15px; }
+      .ci-title { font-size: 14.5px; }
+      .chapter-progress { padding: 12px 16px; }
+      .part-card { padding: 14px 16px; }
+      .pc-icon { width: 40px; height: 40px; font-size: 16px; }
+      .pc-title { font-size: 14px; }
     }
 
     @media (max-width: 480px) {
-      .header { padding: 8px 12px; padding-top: calc(8px + var(--safe-top)); min-height: 48px; }
-      .back-btn { width: 32px; height: 32px; font-size: 14px; }
-      .page-title { font-size: 12px; max-width: 180px; }
+      .header { padding: 8px 12px; padding-top: calc(8px + var(--safe-top)); min-height: 54px; }
+      .brand-mark { font-size: 11.5px; }
+      .back-btn { width: 34px; height: 34px; font-size: 13px; }
+      .page-title { font-size: 12.5px; max-width: 180px; }
 
-      .container { padding: 8px 8px 20px; gap: 10px; }
-      .chapter-info { padding: 10px 12px; gap: 10px; border-radius: 12px; }
-      .ci-num { width: 32px; height: 32px; font-size: 13px; border-radius: 8px; }
-      .ci-title { font-size: 13px; }
+      .container { padding: 12px 12px 32px; gap: 10px; }
+      .chapter-info { padding: 12px 14px; gap: 12px; border-radius: 14px; }
+      .ci-num { width: 38px; height: 38px; font-size: 14px; border-radius: 10px; }
+      .ci-title { font-size: 13.5px; }
 
-      .chapter-progress { padding: 8px 12px; border-radius: 12px; }
-      .chapter-progress .cp-header { font-size: 10px; }
+      .chapter-progress { padding: 10px 14px; border-radius: 14px; }
+      .chapter-progress .cp-header { font-size: 11px; }
 
-      .tabs { border-radius: 10px; padding: 3px; gap: 3px; }
-      .tab-btn { font-size: 10px; padding: 8px 4px; }
+      .tabs { border-radius: 14px; padding: 3px; gap: 3px; }
+      .tab-btn { font-size: 11px; padding: 9px 4px; border-radius: 10px; }
       .tab-btn i { font-size: 11px; }
 
-      .part-card { padding: 10px 12px; border-radius: 12px; gap: 10px; }
-      .pc-icon { width: 32px; height: 32px; font-size: 13px; border-radius: 8px; }
-      .pc-title { font-size: 12px; }
-      .pc-title .pc-badge { font-size: 8px; padding: 1px 6px; }
-      .pc-sub { font-size: 10px; }
-      .pc-arrow { width: 24px; height: 24px; font-size: 10px; }
-
-      .premium-popup { padding: 16px 14px; max-width: 340px; }
-      .premium-popup h2 { font-size: 17px; }
-      .offers-grid { gap: 6px; }
-      .offer-card { padding: 10px 6px; }
-      .offer-card .offer-price { font-size: 16px; }
-      .premium-popup .popup-features { grid-template-columns: 1fr 1fr; }
+      .part-card { padding: 12px 14px; border-radius: 14px; gap: 12px; }
+      .pc-icon { width: 38px; height: 38px; font-size: 15px; border-radius: 10px; }
+      .pc-title { font-size: 13.5px; }
+      .pc-title .pc-badge { font-size: 9.5px; padding: 1px 7px; }
+      .pc-sub { font-size: 11px; }
+      .pc-arrow { width: 26px; height: 26px; font-size: 11px; }
     }
 
-    @media (max-width: 360px) {
-      .header { padding: 6px 8px; padding-top: calc(6px + var(--safe-top)); min-height: 42px; }
-      .back-btn { width: 28px; height: 28px; font-size: 12px; }
-      .page-title { font-size: 11px; max-width: 140px; }
+    @media (max-width: 380px) {
+      .header { padding: 6px 10px; padding-top: calc(6px + var(--safe-top)); min-height: 50px; gap: 8px; }
+      .brand-mark { display: none; }
+      .header-divider { display: none; }
+      .back-btn { width: 32px; height: 32px; font-size: 12px; }
+      .page-title { font-size: 12px; max-width: 160px; }
       .page-title i { font-size: 11px; }
 
-      .container { padding: 6px 6px 16px; gap: 8px; }
-      .chapter-info { padding: 8px 10px; gap: 8px; border-radius: 10px; }
-      .ci-num { width: 28px; height: 28px; font-size: 11px; border-radius: 6px; }
-      .ci-title { font-size: 12px; }
-      .ci-sub { font-size: 9px; gap: 4px; }
-      .ci-status { font-size: 8px; padding: 1px 6px; }
+      .container { padding: 10px 10px 24px; gap: 8px; }
+      .chapter-info { padding: 10px 12px; gap: 10px; border-radius: 12px; }
+      .ci-num { width: 34px; height: 34px; font-size: 13px; border-radius: 8px; }
+      .ci-title { font-size: 12.5px; }
+      .ci-sub { font-size: 10px; gap: 5px; }
+      .ci-status { font-size: 9.5px; padding: 2px 8px; }
 
-      .chapter-progress { padding: 6px 10px; border-radius: 10px; }
-      .chapter-progress .cp-header { font-size: 9px; flex-direction: column; align-items: flex-start; gap: 2px; }
-      .chapter-progress .cp-track { height: 3px; }
+      .chapter-progress { padding: 10px 12px; border-radius: 12px; }
+      .chapter-progress .cp-header { font-size: 10.5px; }
+      .chapter-progress .cp-track { height: 5px; }
 
-      .tabs { border-radius: 8px; padding: 2px; gap: 2px; }
-      .tab-btn { font-size: 9px; padding: 6px 3px; }
+      .tabs { border-radius: 12px; padding: 3px; gap: 2px; }
+      .tab-btn { font-size: 10px; padding: 8px 3px; border-radius: 9px; }
       .tab-btn i { font-size: 10px; }
 
-      .part-card { padding: 8px 10px; border-radius: 10px; gap: 8px; }
-      .pc-icon { width: 28px; height: 28px; font-size: 11px; border-radius: 6px; }
-      .pc-title { font-size: 11px; flex-direction: column; align-items: flex-start; gap: 2px; }
-      .pc-title .pc-badge { font-size: 7px; padding: 1px 4px; }
-      .pc-sub { font-size: 9px; }
-      .pc-arrow { width: 20px; height: 20px; font-size: 9px; }
-
-      .premium-popup { padding: 14px 10px; max-width: 300px; border-radius: 12px; }
-      .premium-popup h2 { font-size: 15px; }
-      .premium-popup .popup-features { grid-template-columns: 1fr; }
-      .offers-grid { grid-template-columns: 1fr; gap: 4px; }
-      .offer-card { padding: 8px 4px; }
-      .offer-card .offer-price { font-size: 14px; }
-      .premium-popup .popup-subtitle { font-size: 11px; }
-      .premium-popup .popup-features .feature { padding: 6px 4px; font-size: 10px; }
-      .premium-popup .popup-buttons .btn-subscribe { font-size: 13px; padding: 8px; }
+      .part-card { padding: 10px 12px; border-radius: 12px; gap: 10px; }
+      .pc-icon { width: 34px; height: 34px; font-size: 13px; border-radius: 8px; }
+      .pc-title { font-size: 12.5px; }
+      .pc-title .pc-badge { font-size: 9px; padding: 1px 6px; }
+      .pc-sub { font-size: 10.5px; }
+      .pc-arrow { width: 24px; height: 24px; font-size: 10px; }
     }
 
     @media (min-width: 768px) {
-      .container { max-width: 680px; }
+      .container { max-width: 720px; padding: 24px 24px 56px; }
     }
 
     @media (min-width: 1024px) {
-      .container { max-width: 720px; }
+      .container { max-width: 760px; }
     }
 
+    /* ============================================================
+       ACCESSIBILITÉ
+       ============================================================ */
     @media (prefers-reduced-motion: reduce) {
-      * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .glow,
+      .chapter-progress .cp-track .cp-fill::after {
+        animation: none !important;
+      }
     }
 
-    a:focus-visible, button:focus-visible {
-      outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px;
+    a:focus-visible,
+    button:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 3px;
+      border-radius: 6px;
     }
-    ::-webkit-scrollbar { width: 4px; }
+
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(184,134,11,0.25); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(184,134,11,0.4); }
+    ::-webkit-scrollbar-thumb { background: rgba(224,184,74,0.25); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(224,184,74,0.45); }
   </style>
 </head>
 <body>
@@ -857,7 +883,9 @@
   <!-- ===== HEADER ===== -->
   <header class="header">
     <div class="header-left">
-      <a href="#" class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i></a>
+      <a href="#" class="back-btn" id="backBtn" aria-label="Retour"><i class="fas fa-arrow-left"></i></a>
+      <span class="brand-mark" aria-hidden="true">ARVEX<span>A School</span></span>
+      <span class="header-divider" aria-hidden="true"></span>
       <h1 class="page-title" id="pageTitle">Chapitre</h1>
     </div>
   </header>
@@ -955,133 +983,114 @@
   }
   </script>
 
- <script type="module">
-// ================================================================
-// CHAPITRE — Version robuste anti-flash
-// Corrections appliquées :
-//  - C1 : redirectToLogin préserve redirectAfterLogin/redirectAfterAuth
-//  - C2 : gestion blocked/paused alignée sur les autres pages protégées
-//  - C3 : retry doux + warn si doc users/{uid} absent
-//  - C4 : saveSession écrit aussi sessionStorage
-//  - C5 : clearSession supprime redirectAfterLogin/redirectAfterAuth
-//  - C6 : log explicite si setPersistence échoue
-//  - C7 : unsubscribe propre du listener auth
-//  - C8 : warn dans le catch de loadUserData
-//  - C10 : renderPage ne recharge plus le manifest quand seul Premium change
-//  - C11 : warn + message plus précis si loadManifest échoue
-// ================================================================
+  <script type="module">
+  // ================================================================
+  // CHAPITRE — Version robuste anti-flash
+  // ================================================================
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  setPersistence,
-  browserLocalPersistence,
-  signOut
-} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-import {
-  initializeFirestore,
-  persistentLocalCache,
-  persistentSingleTabManager,
-  doc,
-  getDoc,
-  onSnapshot
-} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence
+  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+  import {
+    initializeFirestore,
+    persistentLocalCache,
+    persistentSingleTabManager,
+    doc,
+    getDoc,
+    onSnapshot
+  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-// ================================================================
-// CONFIG FIREBASE
-// ================================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
-  authDomain: "arvexa-fbf10.firebaseapp.com",
-  projectId: "arvexa-fbf10",
-  storageBucket: "arvexa-fbf10.firebasestorage.app",
-  messagingSenderId: "920108330053",
-  appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
-};
+  // ================================================================
+  // CONFIG FIREBASE
+  // ================================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
+    authDomain: "arvexa-fbf10.firebaseapp.com",
+    projectId: "arvexa-fbf10",
+    storageBucket: "arvexa-fbf10.firebasestorage.app",
+    messagingSenderId: "920108330053",
+    appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
+  };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentSingleTabManager()
-  })
-});
+  const db = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentSingleTabManager()
+    })
+  });
 
-// ✅ C6 — Log explicite si persistance refusée
-try {
-  await setPersistence(auth, browserLocalPersistence);
-} catch (e) {
-  console.warn('[Auth] Persistance locale indisponible sur chapitre.html :', e.code || e.message);
-}
-
-// ================================================================
-// SESSION / CACHE — ✅ C4/C5 alignements
-// ================================================================
-const SESSION_KEY = 'arvexa_session';
-const USER_DATA_KEY = 'arvexa_user_data';
-const LAST_UID_KEY = 'arvexa_last_uid';
-const READ_KEY = 'arvexa_read_parts';
-
-function saveSession(user) {
-  if (!user) return;
   try {
-    const data = {
-      uid: user.uid,
-      email: user.email,
-      lastActive: Date.now()
-    };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C4
-    localStorage.setItem(LAST_UID_KEY, user.uid);
+    await setPersistence(auth, browserLocalPersistence);
   } catch (e) {}
-}
 
-function clearSession() {
-  try {
-    localStorage.removeItem(SESSION_KEY);
-    localStorage.removeItem(USER_DATA_KEY);
-    localStorage.removeItem(LAST_UID_KEY);
-    sessionStorage.removeItem(SESSION_KEY);
-    // ✅ C5 — alignement
-    sessionStorage.removeItem('redirectAfterLogin');
-    sessionStorage.removeItem('redirectAfterAuth');
-  } catch (e) {}
-}
+  // ================================================================
+  // SESSION / CACHE
+  // ================================================================
+  const SESSION_KEY = 'arvexa_session';
+  const USER_DATA_KEY = 'arvexa_user_data';
+  const LAST_UID_KEY = 'arvexa_last_uid';
+  const READ_KEY = 'arvexa_read_parts';
 
-function getCachedUserData(uid) {
-  try {
-    const raw = localStorage.getItem(USER_DATA_KEY);
-    if (!raw) return null;
-    const cached = JSON.parse(raw);
-    if (cached._uid && cached._uid !== uid) {
+  function saveSession(user) {
+    if (!user) return;
+    try {
+      const data = {
+        uid: user.uid,
+        email: user.email,
+        lastActive: Date.now()
+      };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+      localStorage.setItem(LAST_UID_KEY, user.uid);
+    } catch (e) {}
+  }
+
+  function clearSession() {
+    try {
+      localStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(USER_DATA_KEY);
-      return null;
-    }
-    return cached;
-  } catch (e) { return null; }
-}
+      localStorage.removeItem(LAST_UID_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch (e) {}
+  }
 
-// ================================================================
-// URL PARAMS
-// ================================================================
-const params = new URLSearchParams(window.location.search);
-const subjectKey = params.get('subject') || 'mathematiques';
-const chapIdx = parseInt(params.get('chapter')) || 0;
-const tabParam = params.get('tab') || 'cours';
+  function getCachedUserData(uid) {
+    try {
+      const raw = localStorage.getItem(USER_DATA_KEY);
+      if (!raw) return null;
+      const cached = JSON.parse(raw);
+      if (cached._uid && cached._uid !== uid) {
+        localStorage.removeItem(USER_DATA_KEY);
+        return null;
+      }
+      return cached;
+    } catch (e) { return null; }
+  }
 
-// ================================================================
-// CONFIG MATIÈRES (fallback)
-// ================================================================
-const SUBJECTS_CONFIG = {
-  mathematiques: { name: 'Mathématiques', icon: 'fa-square-root-variable', color: '#E0B84A' },
-  physique: { name: 'Physique', icon: 'fa-bolt', color: '#4AAFE0' },
-  chimie: { name: 'Chimie', icon: 'fa-flask', color: '#E07A4A' },
-  svt: { name: 'SVT', icon: 'fa-dna', color: '#7AE04A' }
-};
+  // ================================================================
+  // URL PARAMS
+  // ================================================================
+  const params = new URLSearchParams(window.location.search);
+  const subjectKey = params.get('subject') || 'mathematiques';
+  const chapIdx = parseInt(params.get('chapter')) || 0;
+  const tabParam = params.get('tab') || 'cours';
 
-const DEFAULT_CHAPTERS = {
+  // ================================================================
+  // CONFIG MATIÈRES (fallback)
+  // ================================================================
+  const SUBJECTS_CONFIG = {
+    mathematiques: { name: 'Mathématiques', icon: 'fa-square-root-variable', color: '#E0B84A' },
+    physique: { name: 'Physique', icon: 'fa-bolt', color: '#4AAFE0' },
+    chimie: { name: 'Chimie', icon: 'fa-flask', color: '#E07A4A' },
+    svt: { name: 'SVT', icon: 'fa-dna', color: '#7AE04A' }
+  };
+
+ const DEFAULT_CHAPTERS = {
   mathematiques: [
     'Nombres complexes',
     'Similitudes planes directes',
@@ -1149,193 +1158,189 @@ const DEFAULT_CHAPTERS = {
   ]
 };
 
-// ================================================================
-// DOM
-// ================================================================
-const cardsView = document.getElementById('cardsView');
-const cpRead = document.getElementById('cpRead');
-const cpTotal = document.getElementById('cpTotal');
-const cpPercent = document.getElementById('cpPercent');
-const cpFill = document.getElementById('cpFill');
+  // ================================================================
+  // DOM
+  // ================================================================
+  const cardsView = document.getElementById('cardsView');
+  const cpRead = document.getElementById('cpRead');
+  const cpTotal = document.getElementById('cpTotal');
+  const cpPercent = document.getElementById('cpPercent');
+  const cpFill = document.getElementById('cpFill');
 
-// ================================================================
-// UTILITAIRE — TIMESTAMP
-// ================================================================
-function toDate(value) {
-  if (!value) return null;
-  if (typeof value.toDate === 'function') return value.toDate();
-  if (value.seconds !== undefined) return new Date(value.seconds * 1000);
-  const date = value instanceof Date ? value : new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-// ================================================================
-// VÉRIFICATION PREMIUM
-// ================================================================
-function isUserPremium(userData) {
-  if (!userData) return false;
-  const hasStatus = userData.premium === true ||
-                    userData.isUnlocked === true ||
-                    userData.hasDeposited === true;
-  if (!hasStatus) return false;
-  const endDate = toDate(userData.subscriptionEndDate);
-  if (!endDate) return true;
-  return endDate.getTime() > Date.now();
-}
-
-// ================================================================
-// GESTION DES PARTIES LUES
-// ================================================================
-function getReadParts() {
-  try {
-    return JSON.parse(localStorage.getItem(READ_KEY) || '[]');
-  } catch (e) { return []; }
-}
-
-function isPartRead(subject, chapter, tab, partIndex) {
-  const key = `${subject}_${chapter}_${tab}_${partIndex}`;
-  const readParts = getReadParts();
-  return readParts.includes(key);
-}
-
-function getPartsReadForChapter(subject, chapter, tab, totalParts) {
-  let count = 0;
-  for (let i = 0; i < totalParts; i++) {
-    if (isPartRead(subject, chapter, tab, i)) count++;
+  // ================================================================
+  // UTILITAIRE — TIMESTAMP
+  // ================================================================
+  function toDate(value) {
+    if (!value) return null;
+    if (typeof value.toDate === 'function') return value.toDate();
+    if (value.seconds !== undefined) return new Date(value.seconds * 1000);
+    const date = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
   }
-  return count;
-}
 
-// ================================================================
-// NAVIGATION
-// ================================================================
-function openPart(index) {
-  window.location.href = `lecture.html?subject=${subjectKey}&chapter=${chapIdx}&tab=${currentTab}&part=${index}`;
-}
+  // ================================================================
+  // VÉRIFICATION PREMIUM
+  // ================================================================
+  function isUserPremium(userData) {
+    if (!userData) return false;
+    const hasStatus = userData.premium === true ||
+                      userData.isUnlocked === true ||
+                      userData.hasDeposited === true;
+    if (!hasStatus) return false;
+    const endDate = toDate(userData.subscriptionEndDate);
+    if (!endDate) return true;
+    return endDate.getTime() > Date.now();
+  }
 
-function showPremiumPopup() {
-  const popup = document.getElementById('premiumPopup');
-  popup.classList.remove('hide');
-  popup.classList.add('show');
-  document.body.style.overflow = 'hidden';
-}
+  // ================================================================
+  // GESTION DES PARTIES LUES
+  // ================================================================
+  function getReadParts() {
+    try {
+      return JSON.parse(localStorage.getItem(READ_KEY) || '[]');
+    } catch (e) { return []; }
+  }
 
-function hidePremiumPopup() {
-  const popup = document.getElementById('premiumPopup');
-  popup.classList.remove('show');
-  popup.classList.add('hide');
-  document.body.style.overflow = '';
-}
+  function isPartRead(subject, chapter, tab, partIndex) {
+    const key = `${subject}_${chapter}_${tab}_${partIndex}`;
+    const readParts = getReadParts();
+    return readParts.includes(key);
+  }
 
-window.openPart = openPart;
-window.showPremiumPopup = showPremiumPopup;
-window.hidePremiumPopup = hidePremiumPopup;
-
-// ================================================================
-// POPUP ÉVÉNEMENTS
-// ================================================================
-document.getElementById('popupCloseBtn').addEventListener('click', hidePremiumPopup);
-document.getElementById('premiumPopup').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) hidePremiumPopup();
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') hidePremiumPopup();
-});
-
-// ================================================================
-// ÉTAT
-// ================================================================
-let subjectConfig = null;
-let chapters = [];
-let isPremium = false;
-let currentTab = (tabParam === 'cours' || tabParam === 'exercices' || tabParam === 'corrections')
-  ? tabParam
-  : 'cours';
-let currentParts = [];
-let unsubscribeUser = null;
-let currentUid = null;
-let authUnsubscribe = null;         // ✅ C7
-let missingDocInFlight = false;     // ✅ C3
-
-// ================================================================
-// RENDU
-// ================================================================
-function loadSubjectData() {
-  // Cache d'abord (instantané)
-  try {
-    const cached = localStorage.getItem('arvexa_subject_' + subjectKey);
-    if (cached) {
-      const data = JSON.parse(cached);
-      subjectConfig = data.subjectConfig;
-      chapters = data.chapters;
-      renderPage();
-      return;
+  function getPartsReadForChapter(subject, chapter, tab, totalParts) {
+    let count = 0;
+    for (let i = 0; i < totalParts; i++) {
+      if (isPartRead(subject, chapter, tab, i)) count++;
     }
-  } catch (e) {}
-
-  // Fallback
-  const defaultData = SUBJECTS_CONFIG[subjectKey];
-  if (defaultData) {
-    subjectConfig = {
-      name: defaultData.name,
-      icon: defaultData.icon,
-      color: defaultData.color
-    };
-    chapters = DEFAULT_CHAPTERS[subjectKey] || [];
-    renderPage();
-  } else {
-    window.location.replace('index.html');
-  }
-}
-
-function renderPage() {
-  if (!subjectConfig || !chapters.length) return;
-
-  const title = chapters[chapIdx] || 'Chapitre ' + (chapIdx + 1);
-  document.title = 'ARVEXA - ' + title;
-  document.getElementById('pageTitle').innerHTML = '<i class="fas ' + subjectConfig.icon + '"></i> ' + title;
-  document.getElementById('backBtn').href = 'matiere.html?subject=' + subjectKey;
-
-  const isFree = chapIdx === 0;
-  const statusEl = document.getElementById('chapStatus');
-
-  document.getElementById('chapNum').textContent = chapIdx + 1;
-  document.getElementById('chapTitle').textContent = title;
-  document.getElementById('chapSub').textContent = subjectConfig.name + ' — Chapitre ' + (chapIdx + 1) + ' / ' + chapters.length;
-
-  if (isFree) {
-    statusEl.textContent = '🎁 Gratuit';
-    statusEl.className = 'ci-status free';
-  } else if (isPremium) {
-    statusEl.textContent = '👑 Premium';
-    statusEl.className = 'ci-status premium';
-  } else {
-    statusEl.textContent = '🔒 Verrouillé';
-    statusEl.className = 'ci-status locked';
+    return count;
   }
 
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.tab === currentTab);
+  // ================================================================
+  // NAVIGATION
+  // ================================================================
+  function openPart(index) {
+    window.location.href = `lecture.html?subject=${subjectKey}&chapter=${chapIdx}&tab=${currentTab}&part=${index}`;
+  }
+
+  function showPremiumPopup() {
+    const popup = document.getElementById('premiumPopup');
+    popup.classList.remove('hide');
+    popup.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hidePremiumPopup() {
+    const popup = document.getElementById('premiumPopup');
+    popup.classList.remove('show');
+    popup.classList.add('hide');
+    document.body.style.overflow = '';
+  }
+
+  window.openPart = openPart;
+  window.showPremiumPopup = showPremiumPopup;
+  window.hidePremiumPopup = hidePremiumPopup;
+
+  // ================================================================
+  // POPUP ÉVÉNEMENTS
+  // ================================================================
+  document.getElementById('popupCloseBtn').addEventListener('click', hidePremiumPopup);
+  document.getElementById('premiumPopup').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) hidePremiumPopup();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hidePremiumPopup();
   });
 
-  loadManifest();
-}
+  // ================================================================
+  // ÉTAT
+  // ================================================================
+  let subjectConfig = null;
+  let chapters = [];
+  let isPremium = false;
+  let currentTab = (tabParam === 'cours' || tabParam === 'exercices' || tabParam === 'corrections')
+    ? tabParam
+    : 'cours';
+  let currentParts = [];
+  let unsubscribeUser = null;
+  let currentUid = null;
 
-// ✅ C11 — warn + message plus précis
+  // ================================================================
+  // RENDU
+  // ================================================================
+  function loadSubjectData() {
+    // Cache d'abord (instantané)
+    try {
+      const cached = localStorage.getItem('arvexa_subject_' + subjectKey);
+      if (cached) {
+        const data = JSON.parse(cached);
+        subjectConfig = data.subjectConfig;
+        chapters = data.chapters;
+        renderPage();
+        return;
+      }
+    } catch (e) {}
+
+    // Fallback
+    const defaultData = SUBJECTS_CONFIG[subjectKey];
+    if (defaultData) {
+      subjectConfig = {
+        name: defaultData.name,
+        icon: defaultData.icon,
+        color: defaultData.color
+      };
+      chapters = DEFAULT_CHAPTERS[subjectKey] || [];
+      renderPage();
+    } else {
+      window.location.replace('index.html');
+    }
+  }
+
+  function renderPage() {
+    if (!subjectConfig || !chapters.length) return;
+
+    const title = chapters[chapIdx] || 'Chapitre ' + (chapIdx + 1);
+    document.title = 'ARVEXA - ' + title;
+    document.getElementById('pageTitle').innerHTML = '<i class="fas ' + subjectConfig.icon + '"></i> ' + title;
+    document.getElementById('backBtn').href = 'matiere.html?subject=' + subjectKey;
+
+    const isFree = chapIdx === 0;
+    const statusEl = document.getElementById('chapStatus');
+
+    document.getElementById('chapNum').textContent = chapIdx + 1;
+    document.getElementById('chapTitle').textContent = title;
+    document.getElementById('chapSub').textContent = subjectConfig.name + ' — Chapitre ' + (chapIdx + 1) + ' / ' + chapters.length;
+
+    if (isFree) {
+      statusEl.textContent = '🎁 Gratuit';
+      statusEl.className = 'ci-status free';
+    } else if (isPremium) {
+      statusEl.textContent = '👑 Premium';
+      statusEl.className = 'ci-status premium';
+    } else {
+      statusEl.textContent = '🔒 Verrouillé';
+      statusEl.className = 'ci-status locked';
+    }
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === currentTab);
+    });
+
+    // Charger le manifest
+    loadManifest();
+  }
+
 function loadManifest() {
   const container = document.getElementById('cardsView');
   container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Chargement...</p></div>';
 
+  // ⚡ Charger le fichier unique de la matière
   const manifestPath = 'cours/' + subjectKey + '.json';
 
   fetch(manifestPath)
-    .then((r) => {
-      if (!r.ok) {
-        throw new Error('HTTP ' + r.status + ' sur ' + manifestPath);
-      }
-      return r.json();
-    })
+    .then((r) => { if (!r.ok) throw new Error('not found'); return r.json(); })
     .then((data) => {
+      // ⚡ Trouver le chapitre par son numéro
       const chapter = (data.chapters || []).find((c) => c.number === chapIdx);
       if (!chapter) {
         currentParts = [];
@@ -1343,6 +1348,7 @@ function loadManifest() {
         return;
       }
 
+      // ⚡ Choisir les parties selon l'onglet actif
       let partsKey;
       if (currentTab === 'cours') partsKey = 'cours';
       else if (currentTab === 'exercices') partsKey = 'exercices';
@@ -1350,6 +1356,7 @@ function loadManifest() {
 
       const rawParts = chapter[partsKey] || [];
 
+      // ⚡ Adapter le format pour renderCards
       currentParts = rawParts.map((p) => ({
         title: p.title || `Partie ${p.part}`,
         file: p.file || '',
@@ -1360,183 +1367,142 @@ function loadManifest() {
       renderCards();
     })
     .catch((err) => {
-      // ✅ C11 — warn au lieu du silence
-      console.warn('[Chapitre] loadManifest:', err.message);
+      console.warn('Impossible de charger le chapitre :', err.message);
       currentParts = [];
       renderEmpty();
     });
 }
-
-function renderCards() {
-  const container = document.getElementById('cardsView');
-  if (currentParts.length === 0) {
-    renderEmpty();
-    return;
-  }
-
-  const tabLabels = { cours: 'Partie', exercices: 'Exercice', corrections: 'Correction' };
-  const tabIcons = { cours: 'fa-book-open', exercices: 'fa-pen-to-square', corrections: 'fa-check-double' };
-  const iconClass = { cours: '', exercices: 'exo', corrections: 'corr' };
-  const label = tabLabels[currentTab] || 'Partie';
-  const icon = tabIcons[currentTab] || 'fa-file';
-  const ic = iconClass[currentTab] || '';
-
-  const isFree = chapIdx === 0;
-  const isLockedCorrection = currentTab === 'corrections' && !isPremium && !isFree;
-
-  const totalParts = currentParts.length;
-  const readCount = getPartsReadForChapter(subjectKey, chapIdx, currentTab, totalParts);
-  cpTotal.textContent = totalParts;
-  cpRead.textContent = readCount;
-  const percent = totalParts > 0 ? Math.round((readCount / totalParts) * 100) : 0;
-  cpFill.style.width = percent + '%';
-  cpPercent.textContent = `(${percent}%)`;
-
-  container.innerHTML = currentParts.map((part, i) => {
-    const isRead = isPartRead(subjectKey, chapIdx, currentTab, i);
-    const isLocked = isLockedCorrection;
-
-    let badge = '';
-    let badgeClass = '';
-    let cardClass = '';
-
-    if (isRead && !isLocked) {
-      badge = '✅ Lu';
-      badgeClass = 'read';
-      cardClass = 'read';
-    } else if (isLocked) {
-      badge = '🔒 Premium';
-      badgeClass = 'premium';
-      cardClass = 'locked';
-    } else if (isFree && currentTab === 'cours') {
-      badge = '🎁 Gratuit';
-      badgeClass = 'free';
-    }
-
-    const onclick = isLocked ? 'showPremiumPopup()' : `openPart(${i})`;
-
-    return `
-      <div class="part-card ${cardClass}" onclick="${onclick}">
-        <div class="pc-icon ${ic}">
-          <i class="fas ${icon}"></i>
-        </div>
-        <div class="pc-info">
-          <div class="pc-title">
-            ${escapeHtml(part.title)}
-            ${badge ? `<span class="pc-badge ${badgeClass}">${badge}</span>` : ''}
-          </div>
-          <div class="pc-sub">${label} ${i + 1} — ${subjectConfig.name}</div>
-        </div>
-        <div class="pc-arrow"><i class="fas fa-chevron-right"></i></div>
-      </div>
-    `;
-  }).join('');
-}
-
-function renderEmpty() {
-  const container = document.getElementById('cardsView');
-  const tabNames = { cours: 'cours', exercices: 'exercices', corrections: 'corrections' };
-  container.innerHTML = `
-    <div class="empty-state">
-      <div class="es-icon"><i class="fas fa-folder-open"></i></div>
-      <h4>Aucun ${tabNames[currentTab] || 'contenu'} disponible</h4>
-      <p>Le contenu sera ajouté prochainement.</p>
-    </div>
-  `;
-  cpTotal.textContent = '0';
-  cpRead.textContent = '0';
-  cpPercent.textContent = '(0%)';
-  cpFill.style.width = '0%';
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// ================================================================
-// TABS
-// ================================================================
-function setupTabs() {
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tab = btn.dataset.tab;
-      if (tab === currentTab) return;
-      currentTab = tab;
-      const url = new URL(window.location);
-      url.searchParams.set('tab', tab);
-      window.history.pushState({}, '', url);
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-      loadManifest();
-    });
-  });
-}
-
-// ================================================================
-// ✅ C3 — Retry doux si doc users/{uid} absent
-// ================================================================
-async function handleMissingUserDoc(uid) {
-  if (missingDocInFlight) return;
-  missingDocInFlight = true;
-  try {
-    await new Promise((r) => setTimeout(r, 900));
-    if (!auth.currentUser || auth.currentUser.uid !== uid) return;
-    const retry = await getDoc(doc(db, 'users', uid));
-    if (retry.exists()) {
-      const data = retry.data();
-      try {
-        localStorage.setItem(USER_DATA_KEY, JSON.stringify({
-          ...data,
-          _uid: uid,
-          _cachedAt: Date.now()
-        }));
-      } catch (e) {}
-      const newPremium = isUserPremium(data);
-      if (newPremium !== isPremium) {
-        isPremium = newPremium;
-        // ✅ C10 — pas besoin de recharger le manifest, juste les cartes
-        if (subjectConfig && chapters.length) renderPage();
-      }
+    
+  function renderCards() {
+    const container = document.getElementById('cardsView');
+    if (currentParts.length === 0) {
+      renderEmpty();
       return;
     }
-    console.warn('[Chapitre] Profil utilisateur introuvable pour', uid);
-  } catch (e) {
-    console.warn('[Chapitre] handleMissingUserDoc:', e.code || e.message);
-  } finally {
-    missingDocInFlight = false;
+
+    const tabLabels = { cours: 'Partie', exercices: 'Exercice', corrections: 'Correction' };
+    const tabIcons = { cours: 'fa-book-open', exercices: 'fa-pen-to-square', corrections: 'fa-check-double' };
+    const iconClass = { cours: '', exercices: 'exo', corrections: 'corr' };
+    const label = tabLabels[currentTab] || 'Partie';
+    const icon = tabIcons[currentTab] || 'fa-file';
+    const ic = iconClass[currentTab] || '';
+
+    const isFree = chapIdx === 0;
+    const isLockedCorrection = currentTab === 'corrections' && !isPremium && !isFree;
+
+    const totalParts = currentParts.length;
+    const readCount = getPartsReadForChapter(subjectKey, chapIdx, currentTab, totalParts);
+    cpTotal.textContent = totalParts;
+    cpRead.textContent = readCount;
+    const percent = totalParts > 0 ? Math.round((readCount / totalParts) * 100) : 0;
+    cpFill.style.width = percent + '%';
+    cpPercent.textContent = `(${percent}%)`;
+
+    container.innerHTML = currentParts.map((part, i) => {
+      const isRead = isPartRead(subjectKey, chapIdx, currentTab, i);
+      const isLocked = isLockedCorrection;
+
+      let badge = '';
+      let badgeClass = '';
+      let cardClass = '';
+
+      if (isRead && !isLocked) {
+        badge = '✅ Lu';
+        badgeClass = 'read';
+        cardClass = 'read';
+      } else if (isLocked) {
+        badge = '🔒 Premium';
+        badgeClass = 'premium';
+        cardClass = 'locked';
+      } else if (isFree && currentTab === 'cours') {
+        badge = '🎁 Gratuit';
+        badgeClass = 'free';
+      }
+
+      const onclick = isLocked ? 'showPremiumPopup()' : `openPart(${i})`;
+
+      return `
+        <div class="part-card ${cardClass}" onclick="${onclick}">
+          <div class="pc-icon ${ic}">
+            <i class="fas ${icon}"></i>
+          </div>
+          <div class="pc-info">
+            <div class="pc-title">
+              ${escapeHtml(part.title)}
+              ${badge ? `<span class="pc-badge ${badgeClass}">${badge}</span>` : ''}
+            </div>
+            <div class="pc-sub">${label} ${i + 1} — ${subjectConfig.name}</div>
+          </div>
+          <div class="pc-arrow"><i class="fas fa-chevron-right"></i></div>
+        </div>
+      `;
+    }).join('');
   }
-}
 
-// ================================================================
-// CHARGEMENT UTILISATEUR — ✅ C2 + C3 + C8
-// ================================================================
-function loadUserData(user) {
-  if (unsubscribeUser) {
-    unsubscribeUser();
-    unsubscribeUser = null;
+  function renderEmpty() {
+    const container = document.getElementById('cardsView');
+    const tabNames = { cours: 'cours', exercices: 'exercices', corrections: 'corrections' };
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon"><i class="fas fa-folder-open"></i></div>
+        <h4>Aucun ${tabNames[currentTab] || 'contenu'} disponible</h4>
+        <p>Le contenu sera ajouté prochainement.</p>
+      </div>
+    `;
+    cpTotal.textContent = '0';
+    cpRead.textContent = '0';
+    cpPercent.textContent = '(0%)';
+    cpFill.style.width = '0%';
   }
 
-  const userRef = doc(db, 'users', user.uid);
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
 
-  unsubscribeUser = onSnapshot(userRef,
-    (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
+  // ================================================================
+  // TABS
+  // ================================================================
+  function setupTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        if (tab === currentTab) return;
+        currentTab = tab;
+        const url = new URL(window.location);
+        url.searchParams.set('tab', tab);
+        window.history.pushState({}, '', url);
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+        loadManifest();
+      });
+    });
+  }
 
-        // ✅ C2 — blocked : signOut tolérant + auth-choice.html
-        if (data.accountStatus === 'blocked') {
-          if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
-          clearSession();
-          try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
-          signOut(auth)
-            .catch((err) => console.warn('[Chapitre] signOut bloqué :', err.code || err.message))
-            .finally(() => { window.location.replace('auth-choice.html'); });
-          return;
-        }
+  // ================================================================
+  // CHARGEMENT UTILISATEUR (temps réel)
+  // ================================================================
+  function loadUserData(user) {
+    if (unsubscribeUser) {
+      unsubscribeUser();
+      unsubscribeUser = null;
+    }
 
-        // ✅ C2 — paused : ne pas déconnecter, laisser la page fonctionner
-        if (data.accountStatus === 'paused') {
+    const userRef = doc(db, 'users', user.uid);
+
+    unsubscribeUser = onSnapshot(userRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const newPremium = isUserPremium(data);
+
+          if (newPremium !== isPremium) {
+            isPremium = newPremium;
+            if (subjectConfig && chapters.length) {
+              renderPage();
+            }
+          }
+
           try {
             localStorage.setItem(USER_DATA_KEY, JSON.stringify({
               ...data,
@@ -1544,179 +1510,136 @@ function loadUserData(user) {
               _cachedAt: Date.now()
             }));
           } catch (e) {}
-          return;
+        } else {
+          const cached = getCachedUserData(user.uid);
+          if (cached) {
+            const newPremium = isUserPremium(cached);
+            if (newPremium !== isPremium) {
+              isPremium = newPremium;
+              if (subjectConfig && chapters.length) {
+                renderPage();
+              }
+            }
+          }
         }
-
-        // Cas normal
-        const newPremium = isUserPremium(data);
-        if (newPremium !== isPremium) {
-          isPremium = newPremium;
-          if (subjectConfig && chapters.length) renderPage();
-        }
-
-        try {
-          localStorage.setItem(USER_DATA_KEY, JSON.stringify({
-            ...data,
-            _uid: user.uid,
-            _cachedAt: Date.now()
-          }));
-        } catch (e) {}
-      } else {
+      },
+      (error) => {
         const cached = getCachedUserData(user.uid);
         if (cached) {
           const newPremium = isUserPremium(cached);
           if (newPremium !== isPremium) {
             isPremium = newPremium;
-            if (subjectConfig && chapters.length) renderPage();
+            if (subjectConfig && chapters.length) {
+              renderPage();
+            }
           }
-        } else {
-          // ✅ C3 — retry doux
-          handleMissingUserDoc(user.uid);
         }
       }
-    },
-    (error) => {
-      // ✅ C8 — warn au lieu du silence
-      console.warn('[Chapitre] onSnapshot users:', error.code || error.message);
-      const cached = getCachedUserData(user.uid);
-      if (cached) {
-        const newPremium = isUserPremium(cached);
-        if (newPremium !== isPremium) {
-          isPremium = newPremium;
-          if (subjectConfig && chapters.length) renderPage();
-        }
-      }
-    }
-  );
-}
-
-// ================================================================
-// AUTH ROBUSTE — ✅ C1/C7
-// ================================================================
-let isRedirecting = false;
-let isAuthResolved = false;
-let graceTimer = null;
-let maxTimer = null;
-
-// ✅ C1 — préserver les clés existantes
-function redirectToLogin() {
-  if (isRedirecting) return;
-  isRedirecting = true;
-
-  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-  if (authUnsubscribe) {
-    try { authUnsubscribe(); } catch (e) {}
-    authUnsubscribe = null;
+    );
   }
 
-  try {
-    const existing = sessionStorage.getItem('redirectAfterLogin')
-                  || sessionStorage.getItem('redirectAfterAuth');
-    if (!existing) {
+  // ================================================================
+  // AUTH ROBUSTE — Anti-flash
+  // ================================================================
+  let isRedirecting = false;
+  let isAuthResolved = false;
+  let graceTimer = null;
+  let maxTimer = null;
+
+  function redirectToLogin() {
+    if (isRedirecting) return;
+    isRedirecting = true;
+    try {
       sessionStorage.setItem('redirectAfterLogin',
         window.location.pathname + window.location.search);
-    }
-  } catch (e) {}
+    } catch (e) {}
+    window.location.replace('login.html');
+  }
 
-  window.location.replace('login.html');
-}
+  function initAuthGuard(onAuthenticated) {
+    auth.onAuthStateChanged((user) => {
+      if (isAuthResolved) {
+        if (user && user.uid !== currentUid) {
+          currentUid = user.uid;
+          saveSession(user);
+          onAuthenticated(user);
+        } else if (!user && currentUid) {
+          currentUid = null;
+          clearSession();
+          redirectToLogin();
+        }
+        return;
+      }
 
-function initAuthGuard(onAuthenticated) {
-  if (authUnsubscribe) return; // garde anti-double
+      if (!user) {
+        if (graceTimer) clearTimeout(graceTimer);
+        graceTimer = setTimeout(() => {
+          if (isAuthResolved) return;
+          if (auth.currentUser) return;
 
-  authUnsubscribe = onAuthStateChanged(auth, (user) => {
-    if (isAuthResolved) {
-      if (user && user.uid !== currentUid) {
-        currentUid = user.uid;
-        saveSession(user);
-        onAuthenticated(user);
-      } else if (!user && currentUid) {
-        currentUid = null;
-        clearSession();
+          const hasSession = localStorage.getItem(SESSION_KEY);
+          const hasUserData = localStorage.getItem(USER_DATA_KEY);
+
+          if ((hasSession || hasUserData) && !navigator.onLine) {
+            setTimeout(() => {
+              if (auth.currentUser) return;
+              if (!isAuthResolved) redirectToLogin();
+            }, 1500);
+            return;
+          }
+
+          if (hasSession && hasUserData) {
+            setTimeout(() => {
+              if (auth.currentUser) return;
+              if (!isAuthResolved) redirectToLogin();
+            }, 1500);
+            return;
+          }
+
+          redirectToLogin();
+        }, 600);
+        return;
+      }
+
+      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+      if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+
+      isAuthResolved = true;
+      currentUid = user.uid;
+      saveSession(user);
+      onAuthenticated(user);
+    });
+
+    maxTimer = setTimeout(() => {
+      if (isAuthResolved) return;
+      if (auth.currentUser) {
+        isAuthResolved = true;
+        currentUid = auth.currentUser.uid;
+        saveSession(auth.currentUser);
+        onAuthenticated(auth.currentUser);
+      } else {
         redirectToLogin();
       }
-      return;
-    }
+    }, 5000);
+  }
 
-    if (!user) {
-      if (graceTimer) return;
-      graceTimer = setTimeout(() => {
-        graceTimer = null;
-        if (isAuthResolved) return;
-        if (auth.currentUser) return;
+  // ================================================================
+  // LANCER LA PROTECTION
+  // ================================================================
+  initAuthGuard(async (user) => {
+    // Cache-first : Premium depuis le cache
+    const cached = getCachedUserData(user.uid);
+    isPremium = cached ? isUserPremium(cached) : false;
 
-        const hasSession = localStorage.getItem(SESSION_KEY);
-        const hasUserData = localStorage.getItem(USER_DATA_KEY);
+    // Charger les données
+    loadSubjectData();
+    setupTabs();
 
-        if ((hasSession || hasUserData) && !navigator.onLine) {
-          setTimeout(() => {
-            if (auth.currentUser) return;
-            if (!isAuthResolved) redirectToLogin();
-          }, 1500);
-          return;
-        }
-
-        if (hasSession && hasUserData) {
-          setTimeout(() => {
-            if (auth.currentUser) return;
-            if (!isAuthResolved) redirectToLogin();
-          }, 1500);
-          return;
-        }
-
-        redirectToLogin();
-      }, 600);
-      return;
-    }
-
-    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-
-    isAuthResolved = true;
-    currentUid = user.uid;
-    saveSession(user);
-    onAuthenticated(user);
+    // Écouter Firestore en temps réel
+    loadUserData(user);
   });
 
-  maxTimer = setTimeout(() => {
-    if (isAuthResolved) return;
-    if (auth.currentUser) {
-      isAuthResolved = true;
-      currentUid = auth.currentUser.uid;
-      saveSession(auth.currentUser);
-      onAuthenticated(auth.currentUser);
-    } else {
-      redirectToLogin();
-    }
-  }, 5000);
-}
-
-// ================================================================
-// LANCER LA PROTECTION
-// ================================================================
-initAuthGuard(async (user) => {
-  // Cache-first : Premium depuis le cache
-  const cached = getCachedUserData(user.uid);
-  isPremium = cached ? isUserPremium(cached) : false;
-
-  // Charger les données
-  loadSubjectData();
-  setupTabs();
-
-  // Écouter Firestore en temps réel
-  loadUserData(user);
-});
-
-// ✅ C7 — cleanup global
-window.addEventListener('beforeunload', () => {
-  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
-  if (unsubscribeUser) { try { unsubscribeUser(); } catch (e) {} unsubscribeUser = null; }
-});
-
-console.log('🚀 ARVEXA — Chapitre (version corrigée C1-C11)');
-</script>
+  console.log('🚀 ARVEXA — Chapitre (avec session robuste)');
+  </script>
 </body>
 </html>
