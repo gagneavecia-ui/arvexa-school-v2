@@ -1244,7 +1244,7 @@
     <i class="fas fa-crown"></i> Voir les offres Premium
   </a>
 
-  <!-- ✅ NOUVEAU : Bouton téléchargement hors ligne -->
+  <!-- ✅ Bouton téléchargement hors ligne -->
   <button class="btn-profile secondary" id="downloadOfflineBtn">
     <i class="fas fa-cloud-arrow-down"></i>
     <span id="downloadOfflineText">Télécharger tout hors ligne</span>
@@ -1312,6 +1312,18 @@
   <script type="module">
   // ================================================================
   // PROFIL — Version robuste anti-flash
+  // Corrections appliquées :
+  //  - C1 : Gestion blocked/paused alignée sur index.html (paused ne déconnecte PAS)
+  //  - C2 : Retry doux avant redirection register.html (aligné sur index.html)
+  //  - C3 : redirectToLogin préserve les clés existantes
+  //  - C4 : Unsubscribe propre du listener auth
+  //  - C5 : clearSession aligné (ajout redirectAfterLogin/redirectAfterAuth)
+  //  - C6 : saveSession écrit aussi sessionStorage
+  //  - C7 : Log explicite si setPersistence échoue
+  //  - C8 : handleLogout → auth-choice.html (cohérence avec index.html)
+  //  - C9 : signOut tolérant sur blocked (.catch().finally())
+  //  - C10 : message + retry si onSnapshot échoue sans cache
+  //  - C11 : getIdToken en fire-and-forget (affichage cache immédiat)
   // ================================================================
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -1328,6 +1340,7 @@
     persistentLocalCache,
     persistentSingleTabManager,
     doc,
+    getDoc,
     onSnapshot,
     updateDoc,
     serverTimestamp
@@ -1354,12 +1367,15 @@
     })
   });
 
+  // ✅ C7 — Log explicite si persistance refusée
   try {
     await setPersistence(auth, browserLocalPersistence);
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[Auth] Persistance locale indisponible sur profil.html :', e.code || e.message);
+  }
 
   // ================================================================
-  // SESSION / CACHE
+  // SESSION / CACHE — ✅ C5/C6 alignements
   // ================================================================
   const SESSION_KEY = 'arvexa_session';
   const USER_DATA_KEY = 'arvexa_user_data';
@@ -1375,6 +1391,7 @@
         lastActive: Date.now()
       };
       localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C6
       localStorage.setItem(LAST_UID_KEY, user.uid);
     } catch (e) {}
   }
@@ -1385,6 +1402,9 @@
       localStorage.removeItem(USER_DATA_KEY);
       localStorage.removeItem(LAST_UID_KEY);
       sessionStorage.removeItem(SESSION_KEY);
+      // ✅ C5 — alignement
+      sessionStorage.removeItem('redirectAfterLogin');
+      sessionStorage.removeItem('redirectAfterAuth');
     } catch (e) {}
   }
 
@@ -1443,6 +1463,8 @@
   let isAuthResolved = false;
   let graceTimer = null;
   let maxTimer = null;
+  let authUnsubscribe = null;         // ✅ C4
+  let missingDocInFlight = false;     // ✅ C2
 
   // ================================================================
   // UTILITAIRE — TIMESTAMP
@@ -1623,16 +1645,13 @@
     const chaptersRead = countChaptersRead();
     const totalTime = data.totalStudyTime || 0;
 
-    // Avatar
     const profilePicture = data.profilePicture || null;
     const initials = getInitials(firstName, lastName);
     updateAvatarDisplay(profilePicture, initials);
 
-    // Nom + Email
     userFullName.textContent = lastName ? `${firstName} ${lastName}` : firstName;
     userEmail.textContent = email;
 
-    // Badge statut
     userBadge.className = 'profile-badge';
 
     if (isPending) {
@@ -1665,12 +1684,10 @@
       premiumBtn.href = 'abonnement.html';
     }
 
-    // Infos
     userEstablishment.textContent = establishment || 'Non renseigné';
     userClass.textContent = className;
     userSince.textContent = createdAt ? formatDate(createdAt) : 'Inconnue';
 
-    // Statut
     if (isPending) {
       userStatus.innerHTML = `<span class="status-badge pending">⏳ En attente</span>`;
     } else if (isPremium) {
@@ -1690,23 +1707,52 @@
       userStatus.innerHTML = `<span class="status-badge free">🔓 Gratuit</span>`;
     }
 
-    // Stats
     statChapters.textContent = chaptersRead;
     statTime.textContent = formatTime(totalTime);
     const level = getLevel(chaptersRead);
     statLevel.textContent = level.emoji;
     statLevel.title = level.text;
 
-    // Badges
     renderBadges(chaptersRead, isPremium, totalTime);
 
-    // Afficher
     skeletonLoading.style.display = 'none';
     dynamicContent.style.display = 'block';
   }
 
   // ================================================================
+  // ✅ C2 — Retry doux avant redirection register.html
+  // ================================================================
+  async function handleMissingUserDoc(uid) {
+    if (missingDocInFlight) return;
+    missingDocInFlight = true;
+    try {
+      await new Promise((r) => setTimeout(r, 900));
+      if (!auth.currentUser || auth.currentUser.uid !== uid) return;
+      const userRef = doc(db, 'users', uid);
+      const retry = await getDoc(userRef);
+      if (retry.exists()) {
+        const data = retry.data();
+        saveUserDataToCache(data, uid);
+        renderProfile(data);
+        return;
+      }
+      // Toujours absent : message + lien login (ne pas renvoyer vers register !)
+      showToast(
+        'Ton profil est introuvable. <a href="login.html">Se reconnecter</a>',
+        'error',
+        10000,
+        true
+      );
+    } catch (e) {
+      console.warn('[Profil] handleMissingUserDoc:', e.code || e.message);
+    } finally {
+      missingDocInFlight = false;
+    }
+  }
+
+  // ================================================================
   // CHARGEMENT UTILISATEUR
+  // ✅ C1 : blocked/paused aligné sur index.html
   // ================================================================
   function loadUserData(user) {
     if (unsubscribeUser) {
@@ -1716,19 +1762,29 @@
 
     const userRef = doc(db, 'users', user.uid);
 
-       unsubscribeUser = onSnapshot(userRef,
+    unsubscribeUser = onSnapshot(userRef,
       (docSnap) => {
         const cached = getCachedUserData(user.uid);
 
         if (docSnap.exists()) {
           const data = docSnap.data();
 
-          if (data.accountStatus === 'blocked' || data.accountStatus === 'paused') {
-            if (unsubscribeUser) unsubscribeUser();
+          // ✅ C1 — Compte bloqué : signOut tolérant + auth-choice.html
+          if (data.accountStatus === 'blocked') {
+            if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
             clearSession();
-            signOut(auth).then(() => {
-              window.location.replace('login.html');
-            });
+            try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
+            signOut(auth)
+              .catch((err) => console.warn('[Profil] signOut bloqué :', err.code || err.message))
+              .finally(() => { window.location.replace('auth-choice.html'); });
+            return;
+          }
+
+          // ✅ C1 — Compte paused : NE PAS déconnecter, message + continuer
+          if (data.accountStatus === 'paused') {
+            showToast('Ton compte est temporairement en pause. Contacte le support.', 'error', 8000);
+            saveUserDataToCache(data, user.uid);
+            renderProfile(data);
             return;
           }
 
@@ -1737,17 +1793,21 @@
         } else if (cached) {
           renderProfile(cached);
         } else {
-          window.location.replace('register.html');
+          // ✅ C2 — retry doux avant décision finale
+          handleMissingUserDoc(user.uid);
         }
       },
       (error) => {
+        // ✅ C10 — message clair si pas de cache
         const cached = getCachedUserData(user.uid);
         if (cached) {
           renderProfile(cached);
         } else {
           skeletonLoading.style.display = 'none';
           dynamicContent.style.display = 'block';
+          showToast('Impossible de charger ton profil. Vérifie ta connexion.', 'error', 6000);
         }
+        console.warn('[Profil] onSnapshot users:', error.code || error.message);
       }
     );
   }
@@ -1857,7 +1917,7 @@
   // ================================================================
   // TOAST
   // ================================================================
-  function showToast(message, type = 'success') {
+  function showToast(message, type = 'success', duration = 3000, allowHtml = false) {
     const icons = {
       success: 'fa-check-circle',
       error: 'fa-exclamation-circle',
@@ -1871,21 +1931,28 @@
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.innerHTML = `
-      <i class="fas ${icons[type] || icons.info}" style="color:${colors[type] || colors.info}"></i>
-      <span>${message}</span>
-    `;
+
+    const icon = `<i class="fas ${icons[type] || icons.info}" style="color:${colors[type] || colors.info}"></i>`;
+    const span = document.createElement('span');
+    if (allowHtml) {
+      span.innerHTML = message;
+    } else {
+      span.textContent = message;
+    }
+
+    toast.innerHTML = icon;
+    toast.appendChild(span);
     toastContainer.appendChild(toast);
 
     setTimeout(() => {
       toast.style.opacity = '0';
       toast.style.transform = 'translateY(-10px)';
       setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    }, duration);
   }
 
   // ================================================================
-  // DÉCONNEXION
+  // DÉCONNEXION — ✅ C4/C8
   // ================================================================
   function handleLogout() {
     window.arvexaConfirm({
@@ -1896,34 +1963,56 @@
       cancelText: 'Annuler',
       variant: 'danger',
       onConfirm: async () => {
-        try {
-          isRedirecting = true;
-          if (unsubscribeUser) unsubscribeUser();
-          currentUid = null;
-          clearSession();
-          try { await signOut(auth); } catch (e) {}
-          window.location.replace('login.html');
-        } catch (error) {
-          window.location.replace('login.html');
+        isRedirecting = true;
+
+        // ✅ C4 — désabonnements propres
+        if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
+        if (authUnsubscribe) {
+          try { authUnsubscribe(); } catch (e) {}
+          authUnsubscribe = null;
         }
+        if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+        if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+
+        currentUid = null;
+        clearSession();
+        try { await signOut(auth); } catch (e) {}
+        // ✅ C8 — alignement sur index.html
+        window.location.replace('auth-choice.html');
       }
     });
   }
 
   // ================================================================
-  // AUTH ROBUSTE — Anti-flash
+  // AUTH ROBUSTE — ✅ C3/C4
   // ================================================================
+  // ✅ C3 — préserver les clés existantes
   function redirectToLogin() {
     if (isRedirecting) return;
     isRedirecting = true;
+
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+    if (authUnsubscribe) {
+      try { authUnsubscribe(); } catch (e) {}
+      authUnsubscribe = null;
+    }
+
     try {
-      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+      const existing = sessionStorage.getItem('redirectAfterLogin')
+                    || sessionStorage.getItem('redirectAfterAuth');
+      if (!existing) {
+        sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search);
+      }
     } catch (e) {}
+
     window.location.replace('login.html');
   }
 
   function initAuthGuard(onAuthenticated) {
-    auth.onAuthStateChanged((user) => {
+    if (authUnsubscribe) return; // garde anti-double
+
+    authUnsubscribe = onAuthStateChanged(auth, (user) => {
       if (isAuthResolved) {
         if (user && user.uid !== currentUid) {
           currentUid = user.uid;
@@ -1938,8 +2027,9 @@
       }
 
       if (!user) {
-        if (graceTimer) clearTimeout(graceTimer);
+        if (graceTimer) return;
         graceTimer = setTimeout(() => {
+          graceTimer = null;
           if (isAuthResolved) return;
           if (auth.currentUser) return;
 
@@ -1990,10 +2080,13 @@
   }
 
   // ================================================================
-  // LANCER LA PROTECTION
+  // LANCER LA PROTECTION — ✅ C11 : cache-first, getIdToken fire-and-forget
   // ================================================================
   initAuthGuard(async (user) => {
-    try { await getIdToken(user, true); } catch (e) {}
+    // ✅ C11 — fire-and-forget, n'attend pas le réseau
+    getIdToken(user, true).catch((err) => {
+      console.warn('[Profil] getIdToken refresh :', err.code || err.message);
+    });
 
     // Cache-first
     const cached = getCachedUserData(user.uid);
@@ -2041,25 +2134,21 @@ const downloadSpinner = document.getElementById('downloadSpinner');
 
 if (downloadBtn) {
   downloadBtn.addEventListener('click', async () => {
-    // Vérifier que offline.js est chargé
     if (typeof window.arvexaOffline === 'undefined' || typeof window.arvexaOffline.downloadAll !== 'function') {
       showToast('Le module hors ligne n\'est pas encore chargé. Recharge la page.', 'error');
       return;
     }
 
-    // Vérifier la connexion
     if (!navigator.onLine) {
       showToast('Connecte-toi à Internet pour télécharger le contenu', 'error');
       return;
     }
 
-    // Vérifier le Service Worker
     if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
       showToast('Service Worker en préparation. Attends 3 secondes et réessaie.', 'error');
       return;
     }
 
-    // Lancer le téléchargement
     downloadBtn.classList.add('loading');
     downloadBtn.disabled = true;
     if (downloadSpinner) downloadSpinner.style.display = 'inline-block';
@@ -2067,8 +2156,6 @@ if (downloadBtn) {
     try {
       await window.arvexaOffline.downloadAll();
 
-      // Le succès est géré par la modale de offline.js
-      // On remet le bouton à son état normal après un délai
       setTimeout(() => {
         downloadBtn.classList.remove('loading');
         downloadBtn.classList.add('done');
@@ -2076,7 +2163,6 @@ if (downloadBtn) {
         if (downloadSpinner) downloadSpinner.style.display = 'none';
         if (downloadText) downloadText.textContent = 'Contenu téléchargé ✅';
 
-        // Revenir à l'état initial après 5 secondes
         setTimeout(() => {
           downloadBtn.classList.remove('done');
           if (downloadText) downloadText.textContent = 'Télécharger tout hors ligne';
@@ -2092,8 +2178,15 @@ if (downloadBtn) {
     }
   });
 }
-    
-  console.log('🚀 ARVEXA — Profil (version nettoyée)');
+
+  // ✅ C4 — cleanup à la destruction
+  window.addEventListener('beforeunload', () => {
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+    if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+  });
+
+  console.log('🚀 ARVEXA — Profil (version corrigée C1-C11)');
   </script>
 </body>
 </html>
