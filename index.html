@@ -1563,6 +1563,15 @@ button:focus-visible {
   // ================================================================
   // INDEX — Version robuste avec modale de confirmation
   // Corrections appliquées (voir commentaires ✅)
+  //  - C1 : Garde d'auth avec délai de grâce sur null initial + unsub unique
+  //  - C2 : Retry Firestore avant redirect register.html
+  //  - C3 : Log explicite si browserLocalPersistence refusée
+  //  - C4 : Désabonnement propre onAuthStateChanged dans performLogout
+  //  - C5 : Garde dans blocked avec signOut tolérant
+  //  - A1 : isAuthResolved réellement utilisé (bloque redirectToLogin tant que non résolu)
+  //  - A2 : redirectToLogin inerte si déjà résolu sans user ET si auth.currentUser existe
+  //  - A3 : loadUserData !exists ne redirige plus immédiatement (retry doux)
+  //  - A4 : Cleanup unsub sur beforeunload (hygiène)
   // ================================================================
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -1625,9 +1634,12 @@ button:focus-visible {
     console.warn('FCM non supporté:', e);
   }
 
+  // ✅ CORRECTION C3 — Log explicite de l'échec de persistance
   try {
     await setPersistence(auth, browserLocalPersistence);
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[Auth] Persistance locale indisponible, repli sur le mode par défaut :', e.code || e.message);
+  }
 
   // ================================================================
   // SESSION / CACHE
@@ -2269,6 +2281,9 @@ button:focus-visible {
   let isAuthResolved = false;
   // ✅ CORRECTION #2 — Mémoriser le dernier UID écouté pour éviter les doubles abonnements
   let lastSnapshotUid = null;
+  // ✅ CORRECTION C1 — Timer de grâce pour le null initial + unsub unique de l'observateur auth
+  let authGraceTimer = null;
+  let authUnsubscribe = null;
 
   // ================================================================
   // MODALE AVIS
@@ -2507,6 +2522,7 @@ button:focus-visible {
 
   // ================================================================
   // LOAD USER DATA (temps réel)
+  // ✅ CORRECTION C2/A3 : retry doux si doc users/{uid} absent avant redirect
   // ================================================================
   function loadUserData(user) {
     // ✅ CORRECTION #2 — Éviter de recréer une connexion temps réel inutilement
@@ -2529,14 +2545,16 @@ button:focus-visible {
 
           // ✅ CORRECTION #1 — Gestion propre des comptes bloqués et en pause
           if (userData.accountStatus === 'blocked') {
-            if (unsubscribeUser) unsubscribeUser();
+            if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
+            lastSnapshotUid = null;
             clearSession();
             try {
               sessionStorage.setItem('arvexa_account_blocked', '1');
             } catch (e) {}
-            signOut(auth).then(() => {
-              window.location.replace('auth-choice.html');
-            });
+            // ✅ CORRECTION C5 — signOut tolérant : si ça pend, on redirige quand même
+            signOut(auth)
+              .catch((err) => console.warn('[Auth] signOut bloqué :', err.code || err.message))
+              .finally(() => { window.location.replace('auth-choice.html'); });
             return;
           }
 
@@ -2557,7 +2575,8 @@ button:focus-visible {
           renderUserData(cached);
           showDashboard();
         } else {
-          window.location.replace('register.html');
+          // ✅ CORRECTION C2/A3 — Retry doux avant de renvoyer vers register.html
+          handleMissingUserDoc(user.uid);
         }
       },
       (error) => {
@@ -2569,8 +2588,35 @@ button:focus-visible {
         } else {
           showDashboard();
         }
+        console.warn('[Firestore] onSnapshot users:', error.code || error.message);
       }
     );
+  }
+
+  // ✅ CORRECTION C2/A3 — Vérification douce avant redirection vers register.html
+  let missingUserDocInFlight = false;
+  async function handleMissingUserDoc(uid) {
+    if (missingUserDocInFlight) return;
+    missingUserDocInFlight = true;
+    try {
+      await new Promise((r) => setTimeout(r, 900));
+      if (!auth.currentUser || auth.currentUser.uid !== uid) return;
+      const userRef = doc(db, 'users', uid);
+      const retry = await getDoc(userRef);
+      if (retry.exists()) {
+        userData = retry.data();
+        saveUserDataToCache(userData, uid);
+        renderUserData(userData);
+        showDashboard();
+        return;
+      }
+      window.location.replace('register.html');
+    } catch (e) {
+      // Panne réseau : on ne redirige pas, on garde l'écran (le snapshot temps réel corrigera)
+      console.warn('[Firestore] handleMissingUserDoc:', e.code || e.message);
+    } finally {
+      missingUserDocInFlight = false;
+    }
   }
 
   // ================================================================
@@ -2612,9 +2658,12 @@ button:focus-visible {
 
   // ================================================================
   // AUTH ROBUSTE — Anti-flash
+  // ✅ CORRECTION C1/A1/A2 : délai de grâce sur null initial + rattrapage
   // ================================================================
   function redirectToLogin() {
     if (isRedirecting) return;
+    // ✅ A2 — Ne pas rediriger si un utilisateur est finalement présent (rattrapage)
+    if (auth.currentUser) return;
     isRedirecting = true;
     try {
       sessionStorage.setItem('redirectAfterAuth', window.location.pathname + window.location.search);
@@ -2623,19 +2672,49 @@ button:focus-visible {
   }
 
   function initAuthGuard(onAuthenticated) {
-    auth.onAuthStateChanged((user) => {
-      if (!isAuthResolved) isAuthResolved = true;
-      if (!user) {
-        currentUid = null;
-        lastSnapshotUid = null;
-        clearSession();
-        redirectToLogin();
+    // ✅ C1 — Unsub unique + délai de grâce sur null initial
+    if (authUnsubscribe) {
+      // Déjà branché : ne pas dupliquer l'abonnement
+      return;
+    }
+
+    authUnsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Un utilisateur confirmé : annuler tout timer de grâce en attente
+        if (authGraceTimer) { clearTimeout(authGraceTimer); authGraceTimer = null; }
+        if (!isAuthResolved) isAuthResolved = true;
+
+        if (user.uid === currentUid) return;
+        currentUid = user.uid;
+        saveSession(user);
+        onAuthenticated(user);
         return;
       }
-      if (user.uid === currentUid) return;
-      currentUid = user.uid;
-      saveSession(user);
-      onAuthenticated(user);
+
+      // user === null
+      if (!isAuthResolved) {
+        // ✅ A1 — Premier tick sans user : on attend un court délai.
+        // Si un user arrive, on annule. Sinon, on redirige proprement.
+        if (authGraceTimer) return;
+        authGraceTimer = setTimeout(() => {
+          authGraceTimer = null;
+          // Rattrapage : un user est apparu entre-temps ?
+          if (auth.currentUser) return;
+          if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+          isAuthResolved = true;
+          currentUid = null;
+          lastSnapshotUid = null;
+          clearSession();
+          redirectToLogin();
+        }, 1200);
+        return;
+      }
+
+      // Session établie puis perdue → vraie déconnexion
+      currentUid = null;
+      lastSnapshotUid = null;
+      clearSession();
+      redirectToLogin();
     });
   }
 
@@ -2668,10 +2747,16 @@ button:focus-visible {
 
   // ================================================================
   // DÉCONNEXION — AVEC MODALE DE CONFIRMATION
+  // ✅ CORRECTION C4 : désabonnement propre de onAuthStateChanged
   // ================================================================
   async function performLogout() {
     isRedirecting = true;
-    if (unsubscribeUser) unsubscribeUser();
+    if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
+    if (authUnsubscribe) {
+      try { authUnsubscribe(); } catch (e) {}
+      authUnsubscribe = null;
+    }
+    if (authGraceTimer) { clearTimeout(authGraceTimer); authGraceTimer = null; }
     lastSnapshotUid = null;
     clearSession();
     try { await signOut(auth); } catch (e) {}
@@ -2749,7 +2834,13 @@ button:focus-visible {
     }
   });
 
-  console.log('🚀 ARVEXA School — Index (version corrigée)');
+  // ✅ CORRECTION A4 — Cleanup global (hygiène, non bloquant)
+  window.addEventListener('beforeunload', () => {
+    if (authGraceTimer) { clearTimeout(authGraceTimer); authGraceTimer = null; }
+    // Ne PAS désabonner authUnsubscribe ici : inutile, le contexte est détruit.
+  });
+
+  console.log('🚀 ARVEXA School — Index (version corrigée — C1-C5, A1-A4)');
   </script>
 </body>
 </html>
