@@ -1685,1406 +1685,1464 @@
   }
   </script>
 
-  <script type="module">
-  // ═══════════════════════════════════════════════════════════════
-  // RÉVISEUR v7.2 — Multi-format + Historique mobile
-  // ═══════════════════════════════════════════════════════════════
+ <script type="module">
+// ═══════════════════════════════════════════════════════════════
+// RÉVISEUR v7.3 — Multi-format + Historique mobile
+// Corrections appliquées :
+//  - C1 : initializeFirestore avec cache persistant (aligné sur les autres pages)
+//  - C2 : garde d'auth robuste (grâce 600ms + maxTimer 5s + offline + unsub)
+//  - C3 : redirectAfterLogin posé avant redirection
+//  - C4 : gestion blocked/paused via getDoc users/{uid}
+//  - C5 : saveSession / clearSession alignés
+//  - C6 : setPersistence avec log
+//  - C7 : imports setPersistence + signOut
+//  - C8 : console.warn sur catch silencieux
+//  - C9 : cleanup global (beforeunload)
+// ═══════════════════════════════════════════════════════════════
 
-  import { initializeApp } from 'firebase/app';
-  import { getAuth, onAuthStateChanged, getIdToken } from 'firebase/auth';
-  import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import {
+  getAuth,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  getIdToken,
+  signOut
+} from 'firebase/auth';
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager,
+  doc,
+  getDoc,
+  serverTimestamp
+} from 'firebase/firestore';
 
-  const firebaseConfig = {
-    apiKey: 'AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE',
-    authDomain: 'arvexa-fbf10.firebaseapp.com',
-    projectId: 'arvexa-fbf10',
-    storageBucket: 'arvexa-fbf10.firebasestorage.app',
-    messagingSenderId: '920108330053',
-    appId: '1:920108330053:web:f532d71cbc2c824bc7472c'
-  };
+const firebaseConfig = {
+  apiKey: 'AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE',
+  authDomain: 'arvexa-fbf10.firebaseapp.com',
+  projectId: 'arvexa-fbf10',
+  storageBucket: 'arvexa-fbf10.firebasestorage.app',
+  messagingSenderId: '920108330053',
+  appId: '1:920108330053:web:f532d71cbc2c824bc7472c'
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-  // ═══════════════════════════════════════════════════════════════
-  // CONFIG
-  // ═══════════════════════════════════════════════════════════════
-  const SUBJECTS = {
-    mathematiques: 'Mathématiques',
-    physique: 'Physique',
-    chimie: 'Chimie',
-    svt: 'SVT',
-    philosophie: 'Philosophie',
-    histoire: 'Histoire',
-    geographie: 'Géographie'
-  };
+// ✅ C1 — initializeFirestore avec cache persistant
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentSingleTabManager()
+  })
+});
 
-  const SUBJECT_EMOJIS = {
-    mathematiques: '📐',
-    physique: '⚡',
-    chimie: '🧪',
-    svt: '🧬',
-    philosophie: '🧠',
-    histoire: '🌍',
-    geographie: '🗺️'
-  };
+// ✅ C6 — Log explicite si persistance refusée
+try {
+  await setPersistence(auth, browserLocalPersistence);
+} catch (e) {
+  console.warn('[Reviseur] Persistance locale indisponible :', e.code || e.message);
+}
 
-  // ✅ Classification des matières
-  const SCIENTIFIC_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie']);
+// ═══════════════════════════════════════════════════════════════
+// ✅ C5 — SESSION / CACHE alignés sur les autres pages
+// ═══════════════════════════════════════════════════════════════
+const SESSION_KEY = 'arvexa_session';
+const USER_DATA_KEY = 'arvexa_user_data';
+const LAST_UID_KEY = 'arvexa_last_uid';
 
-  const CHAPTERS = {
-    mathematiques: [
-      'Nombres complexes',
-      'Similitudes planes directes',
-      'Calcul de probabilités',
-      'Variable aléatoire',
-      'Fonction numérique',
-      'Fonction logarithme',
-      'Fonction exponentielle',
-      'Calcul intégral',
-      'Équations différentielles',
-      'Suites numériques',
-      'Statistiques'
-    ],
-    physique: [
-      'Cinématique',
-      'Mouvement rectiligne',
-      'Mouvement dans le champ de pesanteur',
-      'Mouvement des particules chargées',
-      'Oscillateurs mécaniques',
-      'Généralités sur les ondes',
-      'Mouvement vibratoire',
-      'Superposition des ondes',
-      'Interférence lumineuse',
-      'Champ magnétique',
-      'Force de Laplace',
-      'Force de Lorentz',
-      'Induction magnétique',
-      'Auto-induction',
-      'Circuit LC',
-      'Circuit RLC',
-      'Radioactivité'
-    ],
-    chimie: [
-      'Solutions aqueuses et leur pH',
-      'Acide fort, base forte',
-      'Acide faible, base faible',
-      'Couples acide/base et classification',
-      'Réaction acido-basique et solution tampon',
-      'Alcools',
-      'Acides carboxyliques et ses dérivés',
-      'Amines et amides',
-      'Acides α-aminés et protéines'
-    ],
-    svt: [
-      'Notion de l\'IG',
-      'Nature chimique et structure de l\'IG : la molécule d\'ADN',
-      'La reproduction conforme',
-      'Cycle cellulaire et évolution de la quantité d\'ADN',
-      'Protéines',
-      'Synthèse des protéines',
-      'Reproduction sexuée',
-      'Brassage des gènes',
-      'Transmission des caractères héréditaires',
-      'Anomalies chromosomiques',
-      'Tissus nerveux et réflexes',
-      'Messages nerveux',
-      'La glycémie',
-      'Appareils génitaux',
-      'Régulation des organes génitaux',
-      'De la fécondation à la nidation',
-      'Régulation des naissances',
-      'Le soi et le non soi',
-      'Réponses immunitaires',
-      'VIH/SIDA'
-    ],
-    philosophie: [
-      'Conscience - Inconscient',
-      'Les passions',
-      'Autrui',
-      'Travail',
-      'Histoire',
-      'Religion',
-      'Science et technique',
-      'Le langage',
-      'La vérité',
-      'Espace - temps',
-      'État',
-      'La justice',
-      'La liberté'
-    ],
-    histoire: [
-      'Les causes de la Seconde Guerre mondiale',
-      'Le déroulement de la Seconde Guerre mondiale',
-      'L\'Afrique dans la guerre',
-      'Le bilan de la Seconde Guerre mondiale',
-      'Les conditions de la lutte de libération',
-      'La libération de l\'Algérie',
-      'La décolonisation en AOF',
-      'Les problèmes des pays décolonisés'
-    ],
-    geographie: [
-      'Les aspects physiques',
-      'Étude humaine',
-      'L\'agriculture',
-      'L\'élevage',
-      'La pêche',
-      'L\'industrie et l\'artisanat',
-      'La communication et le transport',
-      'Le commerce',
-      'Le tourisme'
-    ]
-  };
-
-  const STORAGE_KEY_SUBJECT = 'arvexa_reviseur_last_subject';
-  const STORAGE_KEY_CHAPTER = 'arvexa_reviseur_last_chapter';
-
-  // ═══════════════════════════════════════════════════════════════
-  // STATE
-  // ═══════════════════════════════════════════════════════════════
-  const state = {
-    user: null,
-    subject: null,
-    chapter: null,
-    subjectType: 'scientific',
-    totalAvailable: 0,
-    generatedCount: 0,
-    notions: [],
-    generatedIds: [],
-    currentNotion: null,
-    currentNotionIndex: 0,
-    quiz: [],
-    quizAnswers: {},
-    isGenerating: false,
-    isGeneratingQuiz: false
-  };
-
-  const $ = (id) => document.getElementById(id);
-
-  // ═══════════════════════════════════════════════════════════════
-  // UTILITAIRES
-  // ═══════════════════════════════════════════════════════════════
-  function escapeHtml(text) {
-    return String(text === null || text === undefined ? '' : text)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  function safeText(value) {
-    const txt = String(value === null || value === undefined ? '' : value);
-    const parts = txt.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$)/g);
-    return parts.map((part, i) => {
-      if (i % 2 === 1) return part;
-      return escapeHtml(part);
-    }).join('');
-  }
-
-  function cleanLatex(value) {
-    let txt = String(value || '').trim();
-    txt = txt.replace(/^\$\$([\s\S]*)\$\$$/, '$1');
-    txt = txt.replace(/^\$([\s\S]*)\$$/, '$1');
-    return txt.trim();
-  }
-
-  function showToast(message, type = 'info') {
-    const icons = {
-      success: 'fa-check-circle',
-      error: 'fa-exclamation-circle',
-      info: 'fa-info-circle'
+function saveSession(user) {
+  if (!user) return;
+  try {
+    const data = {
+      uid: user.uid,
+      email: user.email,
+      lastActive: Date.now()
     };
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span>${escapeHtml(message)}</span>`;
-    $('toastContainer').appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      setTimeout(() => toast.remove(), 250);
-    }, 3200);
-  }
+    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    localStorage.setItem(LAST_UID_KEY, user.uid);
+  } catch (e) {}
+}
 
-  // ═══════════════════════════════════════════════════════════════
-  // ✅ NAVIGATION AVEC HISTORIQUE (pour le bouton Retour du téléphone)
-  // ═══════════════════════════════════════════════════════════════
+function clearSession() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(USER_DATA_KEY);
+    localStorage.removeItem(LAST_UID_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('redirectAfterAuth');
+  } catch (e) {}
+}
 
-  // Vue affichée SANS toucher à l'historique (utilisée par popstate)
-  function showView(id) {
-    document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
-    const target = $(id);
-    if (target) target.classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+// ═══════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════
+const SUBJECTS = {
+  mathematiques: 'Mathématiques',
+  physique: 'Physique',
+  chimie: 'Chimie',
+  svt: 'SVT',
+  philosophie: 'Philosophie',
+  histoire: 'Histoire',
+  geographie: 'Géographie'
+};
 
-   // ✅ Vues qui NE doivent PAS être empilées dans l'historique
-  const NON_HISTORY_VIEWS = new Set([
-    'viewLoading',
-    'viewQuizResults'
-  ]);
+const SUBJECT_EMOJIS = {
+  mathematiques: '📐',
+  physique: '⚡',
+  chimie: '🧪',
+  svt: '🧬',
+  philosophie: '🧠',
+  histoire: '🌍',
+  geographie: '🗺️'
+};
 
-  // ✅ Vues "racines" : on ne peut y aller que depuis l'accueil
-  const ROOT_VIEWS = new Set([
-    'viewNotions',
-    'viewQuiz'
-  ]);
+const SCIENTIFIC_SUBJECTS = new Set(['mathematiques', 'physique', 'chimie']);
 
-  function navigateTo(viewId, stateData = {}) {
-    const currentView = document.querySelector('.view.active')?.id;
+const CHAPTERS = {
+  mathematiques: [
+    'Nombres complexes', 'Similitudes planes directes', 'Calcul de probabilités',
+    'Variable aléatoire', 'Fonction numérique', 'Fonction logarithme',
+    'Fonction exponentielle', 'Calcul intégral', 'Équations différentielles',
+    'Suites numériques', 'Statistiques'
+  ],
+  physique: [
+    'Cinématique', 'Mouvement rectiligne', 'Mouvement dans le champ de pesanteur',
+    'Mouvement des particules chargées', 'Oscillateurs mécaniques',
+    'Généralités sur les ondes', 'Mouvement vibratoire', 'Superposition des ondes',
+    'Interférence lumineuse', 'Champ magnétique', 'Force de Laplace',
+    'Force de Lorentz', 'Induction magnétique', 'Auto-induction', 'Circuit LC',
+    'Circuit RLC', 'Radioactivité'
+  ],
+  chimie: [
+    'Solutions aqueuses et leur pH', 'Acide fort, base forte',
+    'Acide faible, base faible', 'Couples acide/base et classification',
+    'Réaction acido-basique et solution tampon', 'Alcools',
+    'Acides carboxyliques et ses dérivés', 'Amines et amides',
+    'Acides α-aminés et protéines'
+  ],
+  svt: [
+    'Notion de l\'IG', 'Nature chimique et structure de l\'IG : la molécule d\'ADN',
+    'La reproduction conforme', 'Cycle cellulaire et évolution de la quantité d\'ADN',
+    'Protéines', 'Synthèse des protéines', 'Reproduction sexuée',
+    'Brassage des gènes', 'Transmission des caractères héréditaires',
+    'Anomalies chromosomiques', 'Tissus nerveux et réflexes', 'Messages nerveux',
+    'La glycémie', 'Appareils génitaux', 'Régulation des organes génitaux',
+    'De la fécondation à la nidation', 'Régulation des naissances',
+    'Le soi et le non soi', 'Réponses immunitaires', 'VIH/SIDA'
+  ],
+  philosophie: [
+    'Conscience - Inconscient', 'Les passions', 'Autrui', 'Travail', 'Histoire',
+    'Religion', 'Science et technique', 'Le langage', 'La vérité',
+    'Espace - temps', 'État', 'La justice', 'La liberté'
+  ],
+  histoire: [
+    'Les causes de la Seconde Guerre mondiale', 'Le déroulement de la Seconde Guerre mondiale',
+    'L\'Afrique dans la guerre', 'Le bilan de la Seconde Guerre mondiale',
+    'Les conditions de la lutte de libération', 'La libération de l\'Algérie',
+    'La décolonisation en AOF', 'Les problèmes des pays décolonisés'
+  ],
+  geographie: [
+    'Les aspects physiques', 'Étude humaine', 'L\'agriculture', 'L\'élevage',
+    'La pêche', 'L\'industrie et l\'artisanat', 'La communication et le transport',
+    'Le commerce', 'Le tourisme'
+  ]
+};
 
-    if (currentView === viewId) {
-      showView(viewId);
-      return;
-    }
+const STORAGE_KEY_SUBJECT = 'arvexa_reviseur_last_subject';
+const STORAGE_KEY_CHAPTER = 'arvexa_reviseur_last_chapter';
 
-    // ✅ Règle simple :
-    // - On REVIENT à l'accueil → popstate (déjà géré)
-    // - On va sur une sous-vue depuis l'accueil → pushState
-    // - On va sur une sous-vue depuis une autre sous-vue → replaceState
-    // - Les vues de chargement/résultats → TOUJOURS replaceState
-    try {
-      const isReturningHome = (viewId === 'viewHome');
-      const isFromHome = (currentView === 'viewHome');
-      const isNonHistory = NON_HISTORY_VIEWS.has(viewId);
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+const state = {
+  user: null,
+  subject: null,
+  chapter: null,
+  subjectType: 'scientific',
+  totalAvailable: 0,
+  generatedCount: 0,
+  notions: [],
+  generatedIds: [],
+  currentNotion: null,
+  currentNotionIndex: 0,
+  quiz: [],
+  quizAnswers: {},
+  isGenerating: false,
+  isGeneratingQuiz: false
+};
 
-      if (isNonHistory || (!isFromHome && !isReturningHome)) {
-        // ✅ Remplace l'entrée actuelle
-        window.history.replaceState(
-          { view: viewId, ...stateData },
-          '',
-          window.location.pathname + window.location.search
-        );
-      } else if (isFromHome && !isReturningHome) {
-        // ✅ Empile (depuis l'accueil vers une sous-vue)
-        window.history.pushState(
-          { view: viewId, ...stateData },
-          '',
-          window.location.pathname + window.location.search
-        );
-      } else {
-        // ✅ Retour à l'accueil → remplace
-        window.history.replaceState(
-          { view: 'viewHome', ...stateData },
-          '',
-          window.location.pathname + window.location.search
-        );
-      }
-    } catch (e) {
-      console.warn('[Réviseur] history error:', e.message);
-    }
+const $ = (id) => document.getElementById(id);
 
+// ✅ C2 — Variables de garde d'auth
+let currentUid = null;
+let isRedirecting = false;
+let isAuthResolved = false;
+let graceTimer = null;
+let maxTimer = null;
+let authUnsubscribe = null;
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITAIRES
+// ═══════════════════════════════════════════════════════════════
+function escapeHtml(text) {
+  return String(text === null || text === undefined ? '' : text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function safeText(value) {
+  const txt = String(value === null || value === undefined ? '' : value);
+  const parts = txt.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$)/g);
+  return parts.map((part, i) => {
+    if (i % 2 === 1) return part;
+    return escapeHtml(part);
+  }).join('');
+}
+
+function cleanLatex(value) {
+  let txt = String(value || '').trim();
+  txt = txt.replace(/^\$\$([\s\S]*)\$\$$/, '$1');
+  txt = txt.replace(/^\$([\s\S]*)\$$/, '$1');
+  return txt.trim();
+}
+
+function showToast(message, type = 'info') {
+  const icons = {
+    success: 'fa-check-circle',
+    error: 'fa-exclamation-circle',
+    info: 'fa-info-circle'
+  };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span>${escapeHtml(message)}</span>`;
+  $('toastContainer').appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 250);
+  }, 3200);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION AVEC HISTORIQUE
+// ═══════════════════════════════════════════════════════════════
+function showView(id) {
+  document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
+  const target = $(id);
+  if (target) target.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+const NON_HISTORY_VIEWS = new Set(['viewLoading', 'viewQuizResults']);
+const ROOT_VIEWS = new Set(['viewNotions', 'viewQuiz']);
+
+function navigateTo(viewId, stateData = {}) {
+  const currentView = document.querySelector('.view.active')?.id;
+
+  if (currentView === viewId) {
     showView(viewId);
+    return;
   }
 
-      function goBack() {
-    const currentView = document.querySelector('.view.active')?.id;
+  try {
+    const isReturningHome = (viewId === 'viewHome');
+    const isFromHome = (currentView === 'viewHome');
+    const isNonHistory = NON_HISTORY_VIEWS.has(viewId);
 
-    // ✅ Règle simple :
-    // - Sur l'accueil → on sort de la page
-    // - Sur n'importe quelle autre vue → on revient à l'accueil
-    // (peu importe la vue : notions, quiz, détail, résultats, etc.)
-
-    if (currentView === 'viewHome') {
-      // ✅ Sortie de la page
-      window.history.back();
-      return;
-    }
-
-    // ✅ On retourne à l'accueil en REMPLAÇANT l'historique
-    try {
+    if (isNonHistory || (!isFromHome && !isReturningHome)) {
       window.history.replaceState(
-        { view: 'viewHome' },
+        { view: viewId, ...stateData },
         '',
         window.location.pathname + window.location.search
       );
-    } catch (e) {}
-
-    // Rendre l'accueil dans son état normal
-    updateHomeUI();
-    showView('viewHome');
+    } else if (isFromHome && !isReturningHome) {
+      window.history.pushState(
+        { view: viewId, ...stateData },
+        '',
+        window.location.pathname + window.location.search
+      );
+    } else {
+      window.history.replaceState(
+        { view: 'viewHome', ...stateData },
+        '',
+        window.location.pathname + window.location.search
+      );
+    }
+  } catch (e) {
+    console.warn('[Réviseur] history error:', e.message);
   }
 
-      window.addEventListener('popstate', (event) => {
-    const targetView = event.state?.view;
+  showView(viewId);
+}
 
-    // ✅ Cas 1 : pas de vue cible (sortie de la page) → on laisse faire
-    if (!targetView) {
-      return;
-    }
+function goBack() {
+  const currentView = document.querySelector('.view.active')?.id;
 
-    // ✅ Cas 2 : vue cible = accueil → on l'affiche
-    if (targetView === 'viewHome') {
-      updateHomeUI();
-      showView('viewHome');
-      return;
-    }
+  if (currentView === 'viewHome') {
+    window.history.back();
+    return;
+  }
 
-    // ✅ Cas 3 : vue cible = sous-vue valide → on l'affiche (sans regénération)
-    if (targetView === 'viewNotions') {
-      renderNotionsList();
-      showView('viewNotions');
-      return;
-    }
+  try {
+    window.history.replaceState(
+      { view: 'viewHome' },
+      '',
+      window.location.pathname + window.location.search
+    );
+  } catch (e) {}
 
-    if (targetView === 'viewNotionDetail') {
-      // Si on a une notion en cours, on l'affiche
-      if (state.currentNotion) {
-        const idx = state.currentNotionIndex;
-        const notion = state.notions[idx];
-        if (notion) {
-          state.currentNotion = notion;
-          $('notionDetailEyebrow').textContent = 'Notion ' + (idx + 1);
-          $('notionDetailTitle').textContent = notion.notionTitle || 'Notion';
-          $('notionDetailMeta').textContent = state.chapter + ' · ' + (SUBJECTS[state.subject] || state.subject);
-          $('notionDetailContent').innerHTML = renderNotionContent(notion);
-          showView('viewNotionDetail');
-          return;
-        }
+  updateHomeUI();
+  showView('viewHome');
+}
+
+window.addEventListener('popstate', (event) => {
+  const targetView = event.state?.view;
+
+  if (!targetView) return;
+
+  if (targetView === 'viewHome') {
+    updateHomeUI();
+    showView('viewHome');
+    return;
+  }
+
+  if (targetView === 'viewNotions') {
+    renderNotionsList();
+    showView('viewNotions');
+    return;
+  }
+
+  if (targetView === 'viewNotionDetail') {
+    if (state.currentNotion) {
+      const idx = state.currentNotionIndex;
+      const notion = state.notions[idx];
+      if (notion) {
+        state.currentNotion = notion;
+        $('notionDetailEyebrow').textContent = 'Notion ' + (idx + 1);
+        $('notionDetailTitle').textContent = notion.notionTitle || 'Notion';
+        $('notionDetailMeta').textContent = state.chapter + ' · ' + (SUBJECTS[state.subject] || state.subject);
+        $('notionDetailContent').innerHTML = renderNotionContent(notion);
+        showView('viewNotionDetail');
+        return;
       }
-      // Fallback : retour à la liste
-      renderNotionsList();
-      showView('viewNotions');
-      return;
     }
-
-    // ✅ Cas 4 : vue inconnue (chargement, résultats) → retour accueil
-    try {
-      window.history.replaceState(
-        { view: 'viewHome' },
-        '',
-        window.location.pathname + window.location.search
-      );
-    } catch (e) {}
-
-    updateHomeUI();
-    showView('viewHome');
-  });
-  
-  // ═══════════════════════════════════════════════════════════════
-  // SÉLECTEURS
-  // ═══════════════════════════════════════════════════════════════
-  function closeAllSelectors() {
-    document.querySelectorAll('.selector.open').forEach((el) => el.classList.remove('open'));
+    renderNotionsList();
+    showView('viewNotions');
+    return;
   }
 
-  function saveSelection() {
-    try {
-      localStorage.setItem(STORAGE_KEY_SUBJECT, state.subject);
-      localStorage.setItem(STORAGE_KEY_CHAPTER, state.chapter);
-    } catch (e) {}
-  }
+  try {
+    window.history.replaceState(
+      { view: 'viewHome' },
+      '',
+      window.location.pathname + window.location.search
+    );
+  } catch (e) {}
 
-  function initSubjectSelector() {
-    const el = document.getElementById('subjectSelector');
-    const trigger = el.querySelector('.selector-trigger');
-    const valueEl = document.getElementById('subjectSelectorValue');
-    const optionsEl = document.getElementById('subjectSelectorOptions');
+  updateHomeUI();
+  showView('viewHome');
+});
 
-    function render() {
-      valueEl.textContent = SUBJECTS[state.subject] || state.subject;
+// ═══════════════════════════════════════════════════════════════
+// SÉLECTEURS
+// ═══════════════════════════════════════════════════════════════
+function closeAllSelectors() {
+  document.querySelectorAll('.selector.open').forEach((el) => el.classList.remove('open'));
+}
 
-      optionsEl.innerHTML = Object.entries(SUBJECTS).map(([key, label]) => `
-        <div class="selector-option ${key === state.subject ? 'selected' : ''}" data-value="${key}">
-          <span class="option-emoji">${SUBJECT_EMOJIS[key] || '📖'}</span>
-          <span>${escapeHtml(label)}</span>
-        </div>
-      `).join('');
+function saveSelection() {
+  try {
+    localStorage.setItem(STORAGE_KEY_SUBJECT, state.subject);
+    localStorage.setItem(STORAGE_KEY_CHAPTER, state.chapter);
+  } catch (e) {}
+}
 
-      optionsEl.querySelectorAll('.selector-option').forEach((opt) => {
-        opt.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const newSubject = opt.dataset.value;
-          if (newSubject === state.subject) {
-            closeAllSelectors();
-            return;
-          }
+function initSubjectSelector() {
+  const el = document.getElementById('subjectSelector');
+  const trigger = el.querySelector('.selector-trigger');
+  const valueEl = document.getElementById('subjectSelectorValue');
+  const optionsEl = document.getElementById('subjectSelectorOptions');
 
-          state.subject = newSubject;
-          state.chapter = CHAPTERS[newSubject]?.[0] || '';
-          state.subjectType = SCIENTIFIC_SUBJECTS.has(newSubject) ? 'scientific' : 'lesson';
-          saveSelection();
+  function render() {
+    valueEl.textContent = SUBJECTS[state.subject] || state.subject;
 
-          closeAllSelectors();
-          render();
-
-          // ✅ Réinitialise le sélecteur de chapitre (sans empiler les listeners)
-          resetChapterSelector();
-          loadCahier();
-        });
-      });
-    }
-
-    // ✅ Utiliser onclick (écrase au lieu d'empiler)
-    trigger.onclick = (e) => {
-      e.stopPropagation();
-      const wasOpen = el.classList.contains('open');
-      closeAllSelectors();
-      if (!wasOpen) el.classList.add('open');
-    };
-
-    render();
-  }
-
-    function initChapterSelector() {
-    const el = document.getElementById('chapterSelector');
-    const trigger = el.querySelector('.selector-trigger');
-    const valueEl = document.getElementById('chapterSelectorValue');
-    const optionsEl = document.getElementById('chapterSelectorOptions');
-
-    // ✅ Utiliser onclick (écrase au lieu d'empiler)
-    trigger.onclick = (e) => {
-      e.stopPropagation();
-      const wasOpen = el.classList.contains('open');
-      closeAllSelectors();
-      if (!wasOpen) el.classList.add('open');
-    };
-
-    renderChapterOptions();
-  }
-
-  // ✅ Fonction séparée : met à jour seulement le contenu (pas les listeners globaux)
-  function renderChapterOptions() {
-    const el = document.getElementById('chapterSelector');
-    const valueEl = document.getElementById('chapterSelectorValue');
-    const optionsEl = document.getElementById('chapterSelectorOptions');
-
-    const chapters = CHAPTERS[state.subject] || [];
-
-    valueEl.textContent = state.chapter || 'Choisir un chapitre';
-
-    optionsEl.innerHTML = chapters.map((ch) => `
-      <div class="selector-option ${ch === state.chapter ? 'selected' : ''}" data-value="${escapeHtml(ch)}">
-        <span class="option-emoji">📖</span>
-        <span>${escapeHtml(ch)}</span>
+    optionsEl.innerHTML = Object.entries(SUBJECTS).map(([key, label]) => `
+      <div class="selector-option ${key === state.subject ? 'selected' : ''}" data-value="${key}">
+        <span class="option-emoji">${SUBJECT_EMOJIS[key] || '📖'}</span>
+        <span>${escapeHtml(label)}</span>
       </div>
     `).join('');
 
     optionsEl.querySelectorAll('.selector-option').forEach((opt) => {
       opt.addEventListener('click', (e) => {
         e.stopPropagation();
-        const newChapter = opt.dataset.value;
-        if (newChapter === state.chapter) {
+        const newSubject = opt.dataset.value;
+        if (newSubject === state.subject) {
           closeAllSelectors();
           return;
         }
 
-        state.chapter = newChapter;
+        state.subject = newSubject;
+        state.chapter = CHAPTERS[newSubject]?.[0] || '';
+        state.subjectType = SCIENTIFIC_SUBJECTS.has(newSubject) ? 'scientific' : 'lesson';
         saveSelection();
 
         closeAllSelectors();
-        renderChapterOptions();
+        render();
+        resetChapterSelector();
         loadCahier();
       });
     });
   }
 
-  // ✅ Nouvelle fonction : réinitialise le sélecteur de chapitre après changement de matière
-  function resetChapterSelector() {
-    renderChapterOptions();
-  }
-
-  document.addEventListener('click', () => closeAllSelectors());
-
-  // ═══════════════════════════════════════════════════════════════
-  // API CALL
-  // ═══════════════════════════════════════════════════════════════
-  async function callApi(payload) {
-    if (!state.user) throw new Error('Non authentifié.');
-    const token = await getIdToken(state.user);
-    const res = await fetch('/api/reviseur', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json().catch(() => null);
-
-    if (res.status === 401 && data?.code === 'AUTH_REQUIRED') {
-      window.location.replace('auth-choice.html');
-      throw new Error('Session expirée');
-    }
-
-    if (!res.ok || !data?.success) {
-      const err = new Error(data?.error || `Erreur ${res.status}`);
-      err.code = data?.code;
-      err.status = res.status;
-      throw err;
-    }
-    return data;
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // CHARGEMENT DU CAHIER
-  // ═══════════════════════════════════════════════════════════════
-  async function loadCahier() {
-    try {
-      const data = await callApi({
-        action: 'loadCahier',
-        subject: state.subject,
-        chapter: state.chapter
-      });
-
-      state.totalAvailable = data.totalAvailable || 0;
-      state.generatedCount = data.generatedCount || 0;
-      state.notions = data.notions || [];
-      state.generatedIds = data.generatedIds || [];
-      state.subjectType = data.subjectType || (SCIENTIFIC_SUBJECTS.has(state.subject) ? 'scientific' : 'lesson');
-
-      updateHomeUI();
-    } catch (err) {
-      console.error('[Réviseur] loadCahier error:', err);
-      showToast(err.message || 'Impossible de charger le cahier', 'error');
-      state.totalAvailable = 0;
-      state.generatedCount = 0;
-      state.notions = [];
-      state.generatedIds = [];
-      updateHomeUI();
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // MISE À JOUR UI ACCUEIL
-  // ═══════════════════════════════════════════════════════════════
-  function updateHomeUI() {
-    $('subjectLabel').textContent = SUBJECTS[state.subject] || state.subject;
-    $('chapterTitle').textContent = state.chapter;
-
-    const chapterValueEl = document.getElementById('chapterSelectorValue');
-    if (chapterValueEl) chapterValueEl.textContent = state.chapter;
-
-    const subjectValueEl = document.getElementById('subjectSelectorValue');
-    if (subjectValueEl) subjectValueEl.textContent = SUBJECTS[state.subject] || state.subject;
-
-    const percent = state.totalAvailable > 0
-      ? Math.round((state.generatedCount / state.totalAvailable) * 100)
-      : 0;
-    $('progressFill').style.width = percent + '%';
-    $('progressCurrent').textContent = state.generatedCount;
-    $('progressTotal').textContent = '/ ' + state.totalAvailable + ' notions';
-
-    if (state.generatedCount > 0) {
-      $('btnViewNotions').disabled = false;
-      $('viewNotionsDesc').textContent = state.generatedCount + ' notion' + (state.generatedCount > 1 ? 's' : '') + ' disponible' + (state.generatedCount > 1 ? 's' : '') + '. Lecture gratuite.';
-    } else {
-      $('btnViewNotions').disabled = true;
-      $('viewNotionsDesc').textContent = 'Aucune notion générée pour le moment.';
-    }
-
-    const remaining = state.totalAvailable - state.generatedCount;
-
-    if (state.generatedCount === 0) {
-      $('btnGenerate').disabled = false;
-      $('btnGenerateTitle').textContent = 'Générer mes premières notions';
-      $('btnGenerateDesc').textContent = '4 notions · ~15 secondes';
-    } else if (remaining === 0) {
-      $('btnGenerate').disabled = true;
-      $('btnGenerateTitle').textContent = 'Toutes les notions sont générées ✅';
-      $('btnGenerateDesc').textContent = 'Tu as terminé ce chapitre !';
-    } else {
-      $('btnGenerate').disabled = false;
-      const count = Math.min(3, remaining);
-      $('btnGenerateTitle').textContent = 'Générer de nouvelles notions';
-      $('btnGenerateDesc').textContent = count + ' notion' + (count > 1 ? 's' : '') + ' · ' + remaining + ' restante' + (remaining > 1 ? 's' : '');
-    }
-
-    if (state.generatedCount >= 3) {
-      $('btnQuiz').disabled = false;
-      $('btnQuizDesc').textContent = 'Teste tes connaissances sur ' + state.generatedCount + ' notions';
-    } else {
-      $('btnQuiz').disabled = true;
-      $('btnQuizDesc').textContent = 'Génère au moins 3 notions d\'abord';
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // GÉNÉRATION INITIALE
-  // ═══════════════════════════════════════════════════════════════
-  async function generateInitial() {
-    if (state.isGenerating) return;
-    state.isGenerating = true;
-
-    $('loadingTitle').textContent = 'Génération de tes premières notions';
-    $('loadingMessage').textContent = 'L\'IA prépare 4 notions complètes. Cela peut prendre 15 à 20 secondes.';
-
-    navigateTo('viewLoading');
-
-    try {
-      const data = await callApi({
-        action: 'generateInitial',
-        subject: state.subject,
-        chapter: state.chapter
-      });
-
-      state.notions = data.notions || [];
-      state.generatedCount = data.generatedCount || state.notions.length;
-      state.totalAvailable = data.totalAvailable || 0;
-
-      if (data.message) {
-        showToast(data.message, 'success');
-      } else {
-        showToast(state.notions.length + ' notions générées !', 'success');
-      }
-
-           updateHomeUI();
-
-      // ✅ On remplace l'entrée "loading" par "home" (pas d'empilement)
-      try {
-        window.history.replaceState(
-          { view: 'viewHome' },
-          '',
-          window.location.pathname + window.location.search
-        );
-      } catch (e) {}
-      showView('viewHome');
-
-    } catch (err) {
-      console.error('[Réviseur] generateInitial error:', err);
-      if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
-        showPremiumPopup();
-        navigateTo('viewHome');
-      } else {
-        showToast(err.message || 'Erreur de génération', 'error', 5000);
-        navigateTo('viewHome');
-      }
-    } finally {
-      state.isGenerating = false;
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // GÉNÉRATION SUPPLÉMENTAIRE
-  // ═══════════════════════════════════════════════════════════════
-  async function generateMore() {
-    if (state.isGenerating) return;
-    state.isGenerating = true;
-
-    $('loadingTitle').textContent = 'Génération de nouvelles notions';
-    $('loadingMessage').textContent = 'L\'IA prépare 3 nouvelles notions. Cela peut prendre 10 à 15 secondes.';
-
-    navigateTo('viewLoading');
-
-    try {
-      const data = await callApi({
-        action: 'generateMore',
-        subject: state.subject,
-        chapter: state.chapter
-      });
-
-      await loadCahier();
-
-      if (data.message) {
-        showToast(data.message, 'success');
-      } else {
-        showToast('Nouvelles notions générées !', 'success');
-      }
-
-           updateHomeUI();
-
-      // ✅ On remplace l'entrée "loading" par "home" (pas d'empilement)
-      try {
-        window.history.replaceState(
-          { view: 'viewHome' },
-          '',
-          window.location.pathname + window.location.search
-        );
-      } catch (e) {}
-      showView('viewHome');
-
-    } catch (err) {
-      console.error('[Réviseur] generateMore error:', err);
-      if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
-        showPremiumPopup();
-        navigateTo('viewHome');
-      } else {
-        showToast(err.message || 'Erreur de génération', 'error', 5000);
-        navigateTo('viewHome');
-      }
-    } finally {
-      state.isGenerating = false;
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // LISTE DES NOTIONS
-  // ═══════════════════════════════════════════════════════════════
-  function renderNotionsList() {
-    const list = $('notionsList');
-    const empty = $('notionsEmpty');
-
-    $('notionsListTitle').textContent = state.chapter;
-    $('notionsListMeta').textContent = state.generatedCount + ' notion' + (state.generatedCount > 1 ? 's' : '') + ' générée' + (state.generatedCount > 1 ? 's' : '');
-
-    if (state.notions.length === 0) {
-      list.innerHTML = '';
-      empty.style.display = 'flex';
-      return;
-    }
-
-    empty.style.display = 'none';
-
-    list.innerHTML = state.notions.map((n, i) => {
-      const tags = [];
-
-      // ✅ Tags pour scientifiques
-      if (Array.isArray(n.formules) && n.formules.length > 0) {
-        tags.push('<span class="notion-row-tag"><i class="fas fa-square-root-variable"></i> Formules</span>');
-      }
-
-      // ✅ Tags pour leçons
-      if (Array.isArray(n.points_cles) && n.points_cles.length > 0) {
-        tags.push('<span class="notion-row-tag"><i class="fas fa-list-check"></i> Points clés</span>');
-      }
-      if (Array.isArray(n.termes) && n.termes.length > 0) {
-        tags.push('<span class="notion-row-tag"><i class="fas fa-book"></i> Termes</span>');
-      }
-      if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) {
-        tags.push('<span class="notion-row-tag"><i class="fas fa-cogs"></i> Mécanismes</span>');
-      }
-      if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) {
-        tags.push('<span class="notion-row-tag"><i class="fas fa-calendar"></i> Dates</span>');
-      }
-
-      // ✅ Tags communs
-      if (n.methode && Array.isArray(n.methode.steps) && n.methode.steps.length > 0) {
-        tags.push('<span class="notion-row-tag"><i class="fas fa-list-ol"></i> Méthode</span>');
-      }
-      if (n.exempleResolu && n.exempleResolu.enonce) {
-        tags.push('<span class="notion-row-tag"><i class="fas fa-check-circle"></i> Exemple</span>');
-      }
-      if (n.piegeBAC && n.piegeBAC.trap) {
-        tags.push('<span class="notion-row-tag"><i class="fas fa-triangle-exclamation"></i> Piège</span>');
-      }
-
-      return `
-        <button class="notion-row" data-notion-index="${i}">
-          <div class="notion-row-num">${i + 1}</div>
-          <div class="notion-row-body">
-            <div class="notion-row-title">${escapeHtml(n.notionTitle || 'Sans titre')}</div>
-            <div class="notion-row-tags">${tags.join('')}</div>
-          </div>
-          <i class="fas fa-chevron-right notion-row-arrow"></i>
-        </button>
-      `;
-    }).join('');
-
-    list.querySelectorAll('.notion-row').forEach((row) => {
-      row.addEventListener('click', () => {
-        const idx = Number(row.dataset.notionIndex);
-        openNotionDetail(idx);
-      });
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // DÉTAIL D'UNE NOTION
-  // ═══════════════════════════════════════════════════════════════
-  function openNotionDetail(index) {
-    const notion = state.notions[index];
-    if (!notion) return;
-
-    state.currentNotion = notion;
-    state.currentNotionIndex = index;
-
-    $('notionDetailEyebrow').textContent = 'Notion ' + (index + 1);
-    $('notionDetailTitle').textContent = notion.notionTitle || 'Notion';
-    $('notionDetailMeta').textContent = state.chapter + ' · ' + (SUBJECTS[state.subject] || state.subject);
-
-    const content = $('notionDetailContent');
-    content.innerHTML = renderNotionContent(notion);
-
-    navigateTo('viewNotionDetail');
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // ✅ RENDU MULTI-FORMAT
-  // ═══════════════════════════════════════════════════════════════
-  function renderNotionContent(n) {
-    let html = '';
-
-    // ─── COMPRENDRE ───
-    if (n.comprendre && n.comprendre.trim()) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-lightbulb"></i> Comprendre</div>
-          <div class="block-text">${safeText(n.comprendre)}</div>
-        </div>
-      `;
-    }
-
-    // ─── POINTS CLÉS (leçons) ───
-    if (Array.isArray(n.points_cles) && n.points_cles.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-list-check"></i> Points clés</div>
-          <ul class="simple-list">
-            ${n.points_cles.map((p) => `<li>${safeText(p)}</li>`).join('')}
-          </ul>
-        </div>
-      `;
-    }
-
-    // ─── TERMES (leçons) ───
-    if (Array.isArray(n.termes) && n.termes.length > 0) {
-      const termesHtml = n.termes.map((t) => {
-        const term = t.terme || t.mot || '';
-        const def = t.definition || t.meaning || '';
-        if (!term) return '';
-        return `<li><strong>${safeText(term)}</strong> — ${safeText(def)}</li>`;
-      }).filter(Boolean).join('');
-
-      if (termesHtml) {
-        html += `
-          <div class="block">
-            <div class="block-label"><i class="fas fa-book"></i> Termes clés</div>
-            <ul class="simple-list">${termesHtml}</ul>
-          </div>
-        `;
-      }
-    }
-
-    // ─── MÉCANISMES (SVT) ───
-    if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) {
-      const mecaHtml = n.mecanismes.map((m) => {
-        const nom = m.nom || m.name || 'Mécanisme';
-        const etapes = Array.isArray(m.etapes) ? m.etapes : [];
-        const consequences = Array.isArray(m.consequences) ? m.consequences : [];
-
-        let inner = `<div class="mechanism-name"><i class="fas fa-cogs"></i> ${safeText(nom)}</div>`;
-
-        if (etapes.length > 0) {
-          inner += `<ol class="mechanism-steps">${etapes.map((e) => `<li>${safeText(e)}</li>`).join('')}</ol>`;
-        }
-
-        if (consequences.length > 0) {
-          inner += `
-            <div class="mechanism-consequences">
-              <div class="mechanism-consequences-title">Conséquences</div>
-              <ul>${consequences.map((c) => `<li>${safeText(c)}</li>`).join('')}</ul>
-            </div>
-          `;
-        }
-
-        return `<div class="mechanism">${inner}</div>`;
-      }).join('');
-
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-cogs"></i> Mécanismes</div>
-          ${mecaHtml}
-        </div>
-      `;
-    }
-
-    // ─── DATES CLÉS (Histoire) ───
-    if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) {
-      const datesHtml = n.dates_cles.map((d) => {
-        const date = d.date || '';
-        const evt = d.evenement || d.event || '';
-        if (!date) return '';
-        return `<li><strong>${safeText(date)}</strong> — ${safeText(evt)}</li>`;
-      }).filter(Boolean).join('');
-
-      if (datesHtml) {
-        html += `
-          <div class="block">
-            <div class="block-label"><i class="fas fa-calendar"></i> Dates clés</div>
-            <ul class="simple-list">${datesHtml}</ul>
-          </div>
-        `;
-      }
-    }
-
-    // ─── PERSONNAGES (Histoire) ───
-    if (Array.isArray(n.personnages) && n.personnages.length > 0) {
-      const persoHtml = n.personnages.map((p) => {
-        const nom = p.nom || p.name || '';
-        const role = p.role || '';
-        if (!nom) return '';
-        return `<li><strong>${safeText(nom)}</strong> — ${safeText(role)}</li>`;
-      }).filter(Boolean).join('');
-
-      if (persoHtml) {
-        html += `
-          <div class="block">
-            <div class="block-label"><i class="fas fa-user-tie"></i> Personnages clés</div>
-            <ul class="simple-list">${persoHtml}</ul>
-          </div>
-        `;
-      }
-    }
-
-    // ─── LIEUX (Géo/Histoire) ───
-    if (Array.isArray(n.lieux) && n.lieux.length > 0) {
-      const lieuxHtml = n.lieux.map((l) => {
-        const nom = l.nom || l.name || l.lieu || '';
-        const info = l.info || l.description || '';
-        if (!nom) return '';
-        return `<li><strong>${safeText(nom)}</strong> — ${safeText(info)}</li>`;
-      }).filter(Boolean).join('');
-
-      if (lieuxHtml) {
-        html += `
-          <div class="block">
-            <div class="block-label"><i class="fas fa-map-location-dot"></i> Lieux importants</div>
-            <ul class="simple-list">${lieuxHtml}</ul>
-          </div>
-        `;
-      }
-    }
-
-    // ─── AUTEURS (Philosophie) ───
-    if (Array.isArray(n.auteurs) && n.auteurs.length > 0) {
-      const auteursHtml = n.auteurs.map((a) => {
-        const nom = a.nom || a.name || '';
-        const idee = a.idee || a.these || '';
-        if (!nom) return '';
-        return `<li><strong>${safeText(nom)}</strong> — ${safeText(idee)}</li>`;
-      }).filter(Boolean).join('');
-
-      if (auteursHtml) {
-        html += `
-          <div class="block">
-            <div class="block-label"><i class="fas fa-user-graduate"></i> Auteurs clés</div>
-            <ul class="simple-list">${auteursHtml}</ul>
-          </div>
-        `;
-      }
-    }
-
-    // ─── FORMULES (scientifiques) ───
-    if (Array.isArray(n.formules) && n.formules.length > 0) {
-      const formulesHtml = n.formules.map((f) => {
-        const latex = cleanLatex(f.latex || '');
-        if (!latex) return '';
-        return `
-          <div class="formula-item">
-            <div class="formula-latex">$$${safeText(latex)}$$</div>
-            ${f.condition ? `<div class="formula-condition">${safeText(f.condition)}</div>` : ''}
-          </div>
-        `;
-      }).filter(Boolean).join('');
-
-      if (formulesHtml) {
-        html += `
-          <div class="block">
-            <div class="block-label"><i class="fas fa-square-root-variable"></i> Formules clés</div>
-            <div class="formulas-list">${formulesHtml}</div>
-          </div>
-        `;
-      }
-    }
-
-    // ─── PROPRIÉTÉS (scientifiques) ───
-    if (Array.isArray(n.proprietes) && n.proprietes.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-list-ul"></i> Propriétés</div>
-          <ul class="simple-list">
-            ${n.proprietes.map((p) => `<li>${safeText(p)}</li>`).join('')}
-          </ul>
-        </div>
-      `;
-    }
-
-    // ─── MÉTHODE PAS-À-PAS (commun) ───
-    let methodeSteps = [];
-    let methodeTitle = 'Méthode pas-à-pas';
-
-    if (n.methode && typeof n.methode === 'object' && !Array.isArray(n.methode)) {
-      methodeTitle = n.methode.title || methodeTitle;
-      methodeSteps = Array.isArray(n.methode.steps) ? n.methode.steps : [];
-    } else if (Array.isArray(n.methodes) && n.methodes.length > 0) {
-      methodeSteps = n.methodes;
-    }
-
-    if (methodeSteps.length > 0) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-list-ol"></i> ${escapeHtml(methodeTitle)}</div>
-          <ol class="method-steps">
-            ${methodeSteps.map((s) => `<li>${safeText(s)}</li>`).join('')}
-          </ol>
-        </div>
-      `;
-    }
-
-    // ─── EXEMPLE RÉSOLU (commun) ───
-    if (n.exempleResolu && typeof n.exempleResolu === 'object') {
-      const ex = n.exempleResolu;
-      if (ex.enonce || (Array.isArray(ex.etapes) && ex.etapes.length > 0)) {
-        let exHtml = '<div class="block"><div class="block-label"><i class="fas fa-check-circle"></i> Exemple résolu</div>';
-        if (ex.enonce) exHtml += `<div class="example-enonce">${safeText(ex.enonce)}</div>`;
-        if (Array.isArray(ex.etapes) && ex.etapes.length > 0) {
-          exHtml += `<ol class="example-steps">${ex.etapes.map((e) => `<li>${safeText(e)}</li>`).join('')}</ol>`;
-        }
-        if (ex.conclusion) exHtml += `<div class="example-conclusion">${safeText(ex.conclusion)}</div>`;
-        exHtml += '</div>';
-        html += exHtml;
-      }
-    }
-
-    // ─── PIÈGE DU BAC (commun) ───
-    if (n.piegeBAC && (n.piegeBAC.trap || n.piegeBAC.solution)) {
-      html += `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-triangle-exclamation"></i> Piège du BAC</div>
-          ${n.piegeBAC.trap ? `<div class="piege-trap">${safeText(n.piegeBAC.trap)}</div>` : ''}
-          ${n.piegeBAC.solution ? `<div class="piege-solution">${safeText(n.piegeBAC.solution)}</div>` : ''}
-        </div>
-      `;
-    }
-
-    // ─── ASTUCE (commun) ───
-    if (n.astuce && n.astuce.trim()) {
-      html += `
-        <div class="block astuce">
-          <div class="block-label"><i class="fas fa-star"></i> Astuce</div>
-          <div class="block-text">${safeText(n.astuce)}</div>
-        </div>
-      `;
-    }
-
-    // ─── FALLBACK ───
-    if (!html) {
-      html = `
-        <div class="block">
-          <div class="block-label"><i class="fas fa-info-circle"></i> Information</div>
-          <div class="block-text">Le contenu de cette notion n'est pas disponible.</div>
-        </div>
-      `;
-    }
-
-    return html;
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // SUPPRESSION D'UNE NOTION
-  // ═══════════════════════════════════════════════════════════════
-  async function deleteCurrentNotion() {
-    if (!state.currentNotion) return;
-
-    const confirmed = window.confirm('Supprimer cette notion ? Elle pourra être régénérée plus tard.');
-    if (!confirmed) return;
-
-    try {
-      await callApi({
-        action: 'deleteNotion',
-        subject: state.subject,
-        chapter: state.chapter,
-        notionId: state.currentNotion.notionId
-      });
-
-      showToast('Notion supprimée', 'success');
-      state.currentNotion = null;
-      await loadCahier();
-
-      // ✅ On remplace l'historique pour éviter de revenir sur une notion supprimée
-      window.history.replaceState({ view: 'viewHome' }, '', window.location.pathname + window.location.search);
-      showView('viewHome');
-
-    } catch (err) {
-      console.error('[Réviseur] deleteNotion error:', err);
-      showToast(err.message || 'Erreur de suppression', 'error');
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // QUIZ
-  // ═══════════════════════════════════════════════════════════════
-  async function generateQuiz() {
-    if (state.isGeneratingQuiz) return;
-    state.isGeneratingQuiz = true;
-
-    $('loadingTitle').textContent = 'Génération du quiz';
-    $('loadingMessage').textContent = 'L\'IA prépare 10 questions sur tes notions. ~10 secondes.';
-
-    navigateTo('viewLoading');
-
-    try {
-      const data = await callApi({
-        action: 'quiz',
-        subject: state.subject,
-        chapter: state.chapter,
-        count: 10
-      });
-
-      state.quiz = data.quiz || [];
-      state.quizAnswers = {};
-
-      if (state.quiz.length === 0) {
-        showToast('Aucune question générée. Réessaie.', 'error');
-        navigateTo('viewHome');
+  trigger.onclick = (e) => {
+    e.stopPropagation();
+    const wasOpen = el.classList.contains('open');
+    closeAllSelectors();
+    if (!wasOpen) el.classList.add('open');
+  };
+
+  render();
+}
+
+function initChapterSelector() {
+  const el = document.getElementById('chapterSelector');
+  const trigger = el.querySelector('.selector-trigger');
+
+  trigger.onclick = (e) => {
+    e.stopPropagation();
+    const wasOpen = el.classList.contains('open');
+    closeAllSelectors();
+    if (!wasOpen) el.classList.add('open');
+  };
+
+  renderChapterOptions();
+}
+
+function renderChapterOptions() {
+  const valueEl = document.getElementById('chapterSelectorValue');
+  const optionsEl = document.getElementById('chapterSelectorOptions');
+  const chapters = CHAPTERS[state.subject] || [];
+
+  valueEl.textContent = state.chapter || 'Choisir un chapitre';
+
+  optionsEl.innerHTML = chapters.map((ch) => `
+    <div class="selector-option ${ch === state.chapter ? 'selected' : ''}" data-value="${escapeHtml(ch)}">
+      <span class="option-emoji">📖</span>
+      <span>${escapeHtml(ch)}</span>
+    </div>
+  `).join('');
+
+  optionsEl.querySelectorAll('.selector-option').forEach((opt) => {
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const newChapter = opt.dataset.value;
+      if (newChapter === state.chapter) {
+        closeAllSelectors();
         return;
       }
-
-           renderQuiz();
-
-      try {
-        window.history.replaceState(
-          { view: 'viewQuiz' },
-          '',
-          window.location.pathname + window.location.search
-        );
-      } catch (e) {}
-      showView('viewQuiz');
-
-       } catch (err) {
-      console.error('[Réviseur] quiz error:', err);
-
-      // ✅ Gestion spécifique du quota dépassé
-      if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
-        showPremiumPopup();
-        navigateTo('viewHome');
-      } else {
-        showToast(err.message || 'Erreur de génération du quiz', 'error');
-        navigateTo('viewHome');
-      }
-    } finally {
-      state.isGeneratingQuiz = false;
-    }
-  }
-
-  function renderQuiz() {
-    const container = $('quizContent');
-    container.innerHTML = '';
-
-    $('quizMeta').textContent = state.quiz.length + ' questions · ' + state.chapter;
-
-    state.quiz.forEach((q, i) => {
-      const div = document.createElement('div');
-      div.className = 'quiz-question';
-      div.dataset.index = i;
-
-      const opts = (q.options || []).map((opt) => `
-        <button class="quiz-option" data-option="${escapeHtml(opt.id)}" data-qindex="${i}" type="button">
-          <span class="quiz-letter">${escapeHtml(opt.id)}</span>
-          <span>${safeText(opt.text)}</span>
-        </button>
-      `).join('');
-
-      div.innerHTML = `
-        <div class="quiz-q-header">
-          <div class="quiz-q-num">Question ${i + 1}</div>
-        </div>
-        <div class="quiz-q-text">${safeText(q.question)}</div>
-        <div class="quiz-options">${opts}</div>
-        <div class="quiz-explanation" id="expl-${i}"></div>
-      `;
-      container.appendChild(div);
+      state.chapter = newChapter;
+      saveSelection();
+      closeAllSelectors();
+      renderChapterOptions();
+      loadCahier();
     });
-
-    container.querySelectorAll('.quiz-option').forEach((opt) => {
-      opt.addEventListener('click', () => handleQuizAnswer(opt));
-    });
-
-    $('btnValidateQuiz').disabled = true;
-  }
-
-  function handleQuizAnswer(opt) {
-    const i = parseInt(opt.dataset.qindex);
-    if (state.quizAnswers[i]) return;
-
-    const q = state.quiz[i];
-    state.quizAnswers[i] = opt.dataset.option;
-
-    const question = document.querySelector(`.quiz-question[data-index="${i}"]`);
-    question.querySelectorAll('.quiz-option').forEach((o) => {
-      o.classList.add('disabled');
-      if (o.dataset.option === q.correctAnswer) {
-        o.classList.add('correct');
-      } else if (o.dataset.option === opt.dataset.option) {
-        o.classList.add('wrong');
-      }
-    });
-
-    const expl = document.getElementById('expl-' + i);
-    if (q.explanation) {
-      expl.innerHTML = `<strong>💡</strong> ${safeText(q.explanation)}`;
-      expl.classList.add('show');
-    }
-
-    const answered = Object.keys(state.quizAnswers).length;
-    $('btnValidateQuiz').disabled = answered < state.quiz.length;
-  }
-
-  function validateQuiz() {
-    let correct = 0;
-    state.quiz.forEach((q, i) => {
-      if (state.quizAnswers[i] === q.correctAnswer) correct++;
-    });
-
-    const total = state.quiz.length;
-    if (total === 0) return;
-
-    const score = Math.round((correct / total) * 20);
-    const percent = Math.round((correct / total) * 100);
-
-    $('metricCorrect').textContent = correct + '/' + total;
-    $('metricScore').textContent = score + '/20';
-    $('metricPercent').textContent = percent + '%';
-
-    let emoji, title, sub;
-    if (percent >= 90) { emoji = '🏆'; title = 'Excellent !'; sub = 'Chapitre maîtrisé !'; }
-    else if (percent >= 70) { emoji = '🎉'; title = 'Bravo !'; sub = 'Bonne progression.'; }
-    else if (percent >= 50) { emoji = '📚'; title = 'Pas mal'; sub = 'Continue à réviser.'; }
-    else { emoji = '💪'; title = 'Courage'; sub = 'Retravaille ce chapitre.'; }
-
-    $('quizResultEmoji').textContent = emoji;
-    $('quizResultTitle').textContent = title;
-    $('quizResultSub').textContent = sub;
-
-    navigateTo('viewQuizResults');
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // PREMIUM POPUP
-  // ═══════════════════════════════════════════════════════════════
-  function showPremiumPopup() {
-    $('premiumOverlay').classList.add('show');
-  }
-  function hidePremiumPopup() {
-    $('premiumOverlay').classList.remove('show');
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // EVENT LISTENERS
-  // ═══════════════════════════════════════════════════════════════
-
-  $('btnViewNotions').addEventListener('click', () => {
-    renderNotionsList();
-    navigateTo('viewNotions');
   });
+}
 
-  $('btnGenerate').addEventListener('click', () => {
-    if (state.generatedCount === 0) {
-      generateInitial();
-    } else {
-      generateMore();
-    }
+function resetChapterSelector() {
+  renderChapterOptions();
+}
+
+document.addEventListener('click', () => closeAllSelectors());
+
+// ═══════════════════════════════════════════════════════════════
+// API CALL
+// ═══════════════════════════════════════════════════════════════
+async function callApi(payload) {
+  if (!state.user) throw new Error('Non authentifié.');
+  const token = await getIdToken(state.user);
+  const res = await fetch('/api/reviseur', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
+    body: JSON.stringify(payload)
   });
+  const data = await res.json().catch(() => null);
 
-  $('btnQuiz').addEventListener('click', generateQuiz);
-
-  $('backFromNotions').addEventListener('click', () => {
-    goBack();
-  });
-
-  $('backFromNotionDetail').addEventListener('click', () => {
-    goBack();
-  });
-
-  $('btnDeleteNotion').addEventListener('click', deleteCurrentNotion);
-
-  $('backFromQuiz').addEventListener('click', () => {
-    goBack();
-  });
-
-  $('btnValidateQuiz').addEventListener('click', validateQuiz);
-
-  $('btnNewQuiz').addEventListener('click', () => {
-    generateQuiz();
-  });
-
-  $('btnBackHomeFromResults').addEventListener('click', () => {
-    goBack();
-  });
-
-  $('premiumClose').addEventListener('click', hidePremiumPopup);
-  $('premiumOverlay').addEventListener('click', (e) => {
-    if (e.target === $('premiumOverlay')) hidePremiumPopup();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && $('premiumOverlay').classList.contains('show')) {
-      hidePremiumPopup();
-    }
-  });
-
-  // ═══════════════════════════════════════════════════════════════
-  // PRÉREMPLISSAGE
-  // ═══════════════════════════════════════════════════════════════
-  function prefillFromUrl() {
+  if (res.status === 401 && data?.code === 'AUTH_REQUIRED') {
     try {
-      const params = new URLSearchParams(window.location.search);
-      const urlSubject = params.get('subject');
-      const urlChapter = params.get('chapter');
-
-      if (urlSubject && SUBJECTS[urlSubject]) {
-        state.subject = urlSubject;
-        if (urlChapter && CHAPTERS[state.subject]?.includes(urlChapter)) {
-          state.chapter = urlChapter;
-        } else {
-          state.chapter = CHAPTERS[state.subject]?.[0] || 'Nombres complexes';
-        }
-        state.subjectType = SCIENTIFIC_SUBJECTS.has(urlSubject) ? 'scientific' : 'lesson';
-        return;
-      }
-
-      try {
-        const savedSubject = localStorage.getItem(STORAGE_KEY_SUBJECT);
-        const savedChapter = localStorage.getItem(STORAGE_KEY_CHAPTER);
-
-        if (savedSubject && SUBJECTS[savedSubject]) {
-          state.subject = savedSubject;
-          if (savedChapter && CHAPTERS[state.subject]?.includes(savedChapter)) {
-            state.chapter = savedChapter;
-            state.subjectType = SCIENTIFIC_SUBJECTS.has(savedSubject) ? 'scientific' : 'lesson';
-            return;
-          }
-        }
-      } catch (e) {}
-
-      state.subject = 'mathematiques';
-      state.chapter = 'Nombres complexes';
-      state.subjectType = 'scientific';
-    } catch (e) {
-      console.warn('[Réviseur] prefillFromUrl error:', e.message);
-      state.subject = 'mathematiques';
-      state.chapter = 'Nombres complexes';
-      state.subjectType = 'scientific';
-    }
+      sessionStorage.setItem('redirectAfterLogin',
+        window.location.pathname + window.location.search);
+    } catch (e) {}
+    window.location.replace('auth-choice.html');
+    throw new Error('Session expirée');
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // AUTH
-  // ═══════════════════════════════════════════════════════════════
-  onAuthStateChanged(auth, async (user) => {
-    const conn = $('connectionState');
+  if (!res.ok || !data?.success) {
+    const err = new Error(data?.error || `Erreur ${res.status}`);
+    err.code = data?.code;
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
 
-    if (!user) {
-      window.location.replace('auth-choice.html');
-      return;
+// ═══════════════════════════════════════════════════════════════
+// CHARGEMENT DU CAHIER
+// ═══════════════════════════════════════════════════════════════
+async function loadCahier() {
+  try {
+    const data = await callApi({
+      action: 'loadCahier',
+      subject: state.subject,
+      chapter: state.chapter
+    });
+
+    state.totalAvailable = data.totalAvailable || 0;
+    state.generatedCount = data.generatedCount || 0;
+    state.notions = data.notions || [];
+    state.generatedIds = data.generatedIds || [];
+    state.subjectType = data.subjectType || (SCIENTIFIC_SUBJECTS.has(state.subject) ? 'scientific' : 'lesson');
+
+    updateHomeUI();
+  } catch (err) {
+    console.error('[Réviseur] loadCahier error:', err);
+    showToast(err.message || 'Impossible de charger le cahier', 'error');
+    state.totalAvailable = 0;
+    state.generatedCount = 0;
+    state.notions = [];
+    state.generatedIds = [];
+    updateHomeUI();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MISE À JOUR UI ACCUEIL
+// ═══════════════════════════════════════════════════════════════
+function updateHomeUI() {
+  $('subjectLabel').textContent = SUBJECTS[state.subject] || state.subject;
+  $('chapterTitle').textContent = state.chapter;
+
+  const chapterValueEl = document.getElementById('chapterSelectorValue');
+  if (chapterValueEl) chapterValueEl.textContent = state.chapter;
+
+  const subjectValueEl = document.getElementById('subjectSelectorValue');
+  if (subjectValueEl) subjectValueEl.textContent = SUBJECTS[state.subject] || state.subject;
+
+  const percent = state.totalAvailable > 0
+    ? Math.round((state.generatedCount / state.totalAvailable) * 100)
+    : 0;
+  $('progressFill').style.width = percent + '%';
+  $('progressCurrent').textContent = state.generatedCount;
+  $('progressTotal').textContent = '/ ' + state.totalAvailable + ' notions';
+
+  if (state.generatedCount > 0) {
+    $('btnViewNotions').disabled = false;
+    $('viewNotionsDesc').textContent = state.generatedCount + ' notion' + (state.generatedCount > 1 ? 's' : '') + ' disponible' + (state.generatedCount > 1 ? 's' : '') + '. Lecture gratuite.';
+  } else {
+    $('btnViewNotions').disabled = true;
+    $('viewNotionsDesc').textContent = 'Aucune notion générée pour le moment.';
+  }
+
+  const remaining = state.totalAvailable - state.generatedCount;
+
+  if (state.generatedCount === 0) {
+    $('btnGenerate').disabled = false;
+    $('btnGenerateTitle').textContent = 'Générer mes premières notions';
+    $('btnGenerateDesc').textContent = '4 notions · ~15 secondes';
+  } else if (remaining === 0) {
+    $('btnGenerate').disabled = true;
+    $('btnGenerateTitle').textContent = 'Toutes les notions sont générées ✅';
+    $('btnGenerateDesc').textContent = 'Tu as terminé ce chapitre !';
+  } else {
+    $('btnGenerate').disabled = false;
+    const count = Math.min(3, remaining);
+    $('btnGenerateTitle').textContent = 'Générer de nouvelles notions';
+    $('btnGenerateDesc').textContent = count + ' notion' + (count > 1 ? 's' : '') + ' · ' + remaining + ' restante' + (remaining > 1 ? 's' : '');
+  }
+
+  if (state.generatedCount >= 3) {
+    $('btnQuiz').disabled = false;
+    $('btnQuizDesc').textContent = 'Teste tes connaissances sur ' + state.generatedCount + ' notions';
+  } else {
+    $('btnQuiz').disabled = true;
+    $('btnQuizDesc').textContent = 'Génère au moins 3 notions d\'abord';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GÉNÉRATION
+// ═══════════════════════════════════════════════════════════════
+async function generateInitial() {
+  if (state.isGenerating) return;
+  state.isGenerating = true;
+
+  $('loadingTitle').textContent = 'Génération de tes premières notions';
+  $('loadingMessage').textContent = 'L\'IA prépare 4 notions complètes. Cela peut prendre 15 à 20 secondes.';
+
+  navigateTo('viewLoading');
+
+  try {
+    const data = await callApi({
+      action: 'generateInitial',
+      subject: state.subject,
+      chapter: state.chapter
+    });
+
+    state.notions = data.notions || [];
+    state.generatedCount = data.generatedCount || state.notions.length;
+    state.totalAvailable = data.totalAvailable || 0;
+
+    if (data.message) {
+      showToast(data.message, 'success');
+    } else {
+      showToast(state.notions.length + ' notions générées !', 'success');
     }
 
-    state.user = user;
-    conn.textContent = 'Connecté';
-    conn.classList.add('online');
+    updateHomeUI();
 
-    prefillFromUrl();
-
-    initSubjectSelector();
-    initChapterSelector();
-
-    // ✅ Initialise l'historique avec la vue d'accueil
     try {
       window.history.replaceState(
         { view: 'viewHome' },
         '',
         window.location.pathname + window.location.search
       );
-    } catch (e) {
-      console.warn('[Réviseur] replaceState error:', e.message);
+    } catch (e) {}
+    showView('viewHome');
+
+  } catch (err) {
+    console.error('[Réviseur] generateInitial error:', err);
+    if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
+      showPremiumPopup();
+      navigateTo('viewHome');
+    } else {
+      showToast(err.message || 'Erreur de génération', 'error', 5000);
+      navigateTo('viewHome');
     }
+  } finally {
+    state.isGenerating = false;
+  }
+}
+
+async function generateMore() {
+  if (state.isGenerating) return;
+  state.isGenerating = true;
+
+  $('loadingTitle').textContent = 'Génération de nouvelles notions';
+  $('loadingMessage').textContent = 'L\'IA prépare 3 nouvelles notions. Cela peut prendre 10 à 15 secondes.';
+
+  navigateTo('viewLoading');
+
+  try {
+    const data = await callApi({
+      action: 'generateMore',
+      subject: state.subject,
+      chapter: state.chapter
+    });
 
     await loadCahier();
 
+    if (data.message) {
+      showToast(data.message, 'success');
+    } else {
+      showToast('Nouvelles notions générées !', 'success');
+    }
+
+    updateHomeUI();
+
+    try {
+      window.history.replaceState(
+        { view: 'viewHome' },
+        '',
+        window.location.pathname + window.location.search
+      );
+    } catch (e) {}
     showView('viewHome');
+
+  } catch (err) {
+    console.error('[Réviseur] generateMore error:', err);
+    if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
+      showPremiumPopup();
+      navigateTo('viewHome');
+    } else {
+      showToast(err.message || 'Erreur de génération', 'error', 5000);
+      navigateTo('viewHome');
+    }
+  } finally {
+    state.isGenerating = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LISTE DES NOTIONS
+// ═══════════════════════════════════════════════════════════════
+function renderNotionsList() {
+  const list = $('notionsList');
+  const empty = $('notionsEmpty');
+
+  $('notionsListTitle').textContent = state.chapter;
+  $('notionsListMeta').textContent = state.generatedCount + ' notion' + (state.generatedCount > 1 ? 's' : '') + ' générée' + (state.generatedCount > 1 ? 's' : '');
+
+  if (state.notions.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'flex';
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  list.innerHTML = state.notions.map((n, i) => {
+    const tags = [];
+
+    if (Array.isArray(n.formules) && n.formules.length > 0) {
+      tags.push('<span class="notion-row-tag"><i class="fas fa-square-root-variable"></i> Formules</span>');
+    }
+    if (Array.isArray(n.points_cles) && n.points_cles.length > 0) {
+      tags.push('<span class="notion-row-tag"><i class="fas fa-list-check"></i> Points clés</span>');
+    }
+    if (Array.isArray(n.termes) && n.termes.length > 0) {
+      tags.push('<span class="notion-row-tag"><i class="fas fa-book"></i> Termes</span>');
+    }
+    if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) {
+      tags.push('<span class="notion-row-tag"><i class="fas fa-cogs"></i> Mécanismes</span>');
+    }
+    if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) {
+      tags.push('<span class="notion-row-tag"><i class="fas fa-calendar"></i> Dates</span>');
+    }
+    if (n.methode && Array.isArray(n.methode.steps) && n.methode.steps.length > 0) {
+      tags.push('<span class="notion-row-tag"><i class="fas fa-list-ol"></i> Méthode</span>');
+    }
+    if (n.exempleResolu && n.exempleResolu.enonce) {
+      tags.push('<span class="notion-row-tag"><i class="fas fa-check-circle"></i> Exemple</span>');
+    }
+    if (n.piegeBAC && n.piegeBAC.trap) {
+      tags.push('<span class="notion-row-tag"><i class="fas fa-triangle-exclamation"></i> Piège</span>');
+    }
+
+    return `
+      <button class="notion-row" data-notion-index="${i}">
+        <div class="notion-row-num">${i + 1}</div>
+        <div class="notion-row-body">
+          <div class="notion-row-title">${escapeHtml(n.notionTitle || 'Sans titre')}</div>
+          <div class="notion-row-tags">${tags.join('')}</div>
+        </div>
+        <i class="fas fa-chevron-right notion-row-arrow"></i>
+      </button>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.notion-row').forEach((row) => {
+    row.addEventListener('click', () => {
+      const idx = Number(row.dataset.notionIndex);
+      openNotionDetail(idx);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DÉTAIL D'UNE NOTION
+// ═══════════════════════════════════════════════════════════════
+function openNotionDetail(index) {
+  const notion = state.notions[index];
+  if (!notion) return;
+
+  state.currentNotion = notion;
+  state.currentNotionIndex = index;
+
+  $('notionDetailEyebrow').textContent = 'Notion ' + (index + 1);
+  $('notionDetailTitle').textContent = notion.notionTitle || 'Notion';
+  $('notionDetailMeta').textContent = state.chapter + ' · ' + (SUBJECTS[state.subject] || state.subject);
+
+  const content = $('notionDetailContent');
+  content.innerHTML = renderNotionContent(notion);
+
+  navigateTo('viewNotionDetail');
+}
+
+function renderNotionContent(n) {
+  let html = '';
+
+  if (n.comprendre && n.comprendre.trim()) {
+    html += `
+      <div class="block">
+        <div class="block-label"><i class="fas fa-lightbulb"></i> Comprendre</div>
+        <div class="block-text">${safeText(n.comprendre)}</div>
+      </div>
+    `;
+  }
+
+  if (Array.isArray(n.points_cles) && n.points_cles.length > 0) {
+    html += `
+      <div class="block">
+        <div class="block-label"><i class="fas fa-list-check"></i> Points clés</div>
+        <ul class="simple-list">
+          ${n.points_cles.map((p) => `<li>${safeText(p)}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  if (Array.isArray(n.termes) && n.termes.length > 0) {
+    const termesHtml = n.termes.map((t) => {
+      const term = t.terme || t.mot || '';
+      const def = t.definition || t.meaning || '';
+      if (!term) return '';
+      return `<li><strong>${safeText(term)}</strong> — ${safeText(def)}</li>`;
+    }).filter(Boolean).join('');
+
+    if (termesHtml) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-book"></i> Termes clés</div>
+          <ul class="simple-list">${termesHtml}</ul>
+        </div>
+      `;
+    }
+  }
+
+  if (Array.isArray(n.mecanismes) && n.mecanismes.length > 0) {
+    const mecaHtml = n.mecanismes.map((m) => {
+      const nom = m.nom || m.name || 'Mécanisme';
+      const etapes = Array.isArray(m.etapes) ? m.etapes : [];
+      const consequences = Array.isArray(m.consequences) ? m.consequences : [];
+
+      let inner = `<div class="mechanism-name"><i class="fas fa-cogs"></i> ${safeText(nom)}</div>`;
+
+      if (etapes.length > 0) {
+        inner += `<ol class="mechanism-steps">${etapes.map((e) => `<li>${safeText(e)}</li>`).join('')}</ol>`;
+      }
+
+      if (consequences.length > 0) {
+        inner += `
+          <div class="mechanism-consequences">
+            <div class="mechanism-consequences-title">Conséquences</div>
+            <ul>${consequences.map((c) => `<li>${safeText(c)}</li>`).join('')}</ul>
+          </div>
+        `;
+      }
+
+      return `<div class="mechanism">${inner}</div>`;
+    }).join('');
+
+    html += `
+      <div class="block">
+        <div class="block-label"><i class="fas fa-cogs"></i> Mécanismes</div>
+        ${mecaHtml}
+      </div>
+    `;
+  }
+
+  if (Array.isArray(n.dates_cles) && n.dates_cles.length > 0) {
+    const datesHtml = n.dates_cles.map((d) => {
+      const date = d.date || '';
+      const evt = d.evenement || d.event || '';
+      if (!date) return '';
+      return `<li><strong>${safeText(date)}</strong> — ${safeText(evt)}</li>`;
+    }).filter(Boolean).join('');
+
+    if (datesHtml) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-calendar"></i> Dates clés</div>
+          <ul class="simple-list">${datesHtml}</ul>
+        </div>
+      `;
+    }
+  }
+
+  if (Array.isArray(n.personnages) && n.personnages.length > 0) {
+    const persoHtml = n.personnages.map((p) => {
+      const nom = p.nom || p.name || '';
+      const role = p.role || '';
+      if (!nom) return '';
+      return `<li><strong>${safeText(nom)}</strong> — ${safeText(role)}</li>`;
+    }).filter(Boolean).join('');
+
+    if (persoHtml) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-user-tie"></i> Personnages clés</div>
+          <ul class="simple-list">${persoHtml}</ul>
+        </div>
+      `;
+    }
+  }
+
+  if (Array.isArray(n.lieux) && n.lieux.length > 0) {
+    const lieuxHtml = n.lieux.map((l) => {
+      const nom = l.nom || l.name || l.lieu || '';
+      const info = l.info || l.description || '';
+      if (!nom) return '';
+      return `<li><strong>${safeText(nom)}</strong> — ${safeText(info)}</li>`;
+    }).filter(Boolean).join('');
+
+    if (lieuxHtml) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-map-location-dot"></i> Lieux importants</div>
+          <ul class="simple-list">${lieuxHtml}</ul>
+        </div>
+      `;
+    }
+  }
+
+  if (Array.isArray(n.auteurs) && n.auteurs.length > 0) {
+    const auteursHtml = n.auteurs.map((a) => {
+      const nom = a.nom || a.name || '';
+      const idee = a.idee || a.these || '';
+      if (!nom) return '';
+      return `<li><strong>${safeText(nom)}</strong> — ${safeText(idee)}</li>`;
+    }).filter(Boolean).join('');
+
+    if (auteursHtml) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-user-graduate"></i> Auteurs clés</div>
+          <ul class="simple-list">${auteursHtml}</ul>
+        </div>
+      `;
+    }
+  }
+
+  if (Array.isArray(n.formules) && n.formules.length > 0) {
+    const formulesHtml = n.formules.map((f) => {
+      const latex = cleanLatex(f.latex || '');
+      if (!latex) return '';
+      return `
+        <div class="formula-item">
+          <div class="formula-latex">$$${safeText(latex)}$$</div>
+          ${f.condition ? `<div class="formula-condition">${safeText(f.condition)}</div>` : ''}
+        </div>
+      `;
+    }).filter(Boolean).join('');
+
+    if (formulesHtml) {
+      html += `
+        <div class="block">
+          <div class="block-label"><i class="fas fa-square-root-variable"></i> Formules clés</div>
+          <div class="formulas-list">${formulesHtml}</div>
+        </div>
+      `;
+    }
+  }
+
+  if (Array.isArray(n.proprietes) && n.proprietes.length > 0) {
+    html += `
+      <div class="block">
+        <div class="block-label"><i class="fas fa-list-ul"></i> Propriétés</div>
+        <ul class="simple-list">
+          ${n.proprietes.map((p) => `<li>${safeText(p)}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  let methodeSteps = [];
+  let methodeTitle = 'Méthode pas-à-pas';
+
+  if (n.methode && typeof n.methode === 'object' && !Array.isArray(n.methode)) {
+    methodeTitle = n.methode.title || methodeTitle;
+    methodeSteps = Array.isArray(n.methode.steps) ? n.methode.steps : [];
+  } else if (Array.isArray(n.methodes) && n.methodes.length > 0) {
+    methodeSteps = n.methodes;
+  }
+
+  if (methodeSteps.length > 0) {
+    html += `
+      <div class="block">
+        <div class="block-label"><i class="fas fa-list-ol"></i> ${escapeHtml(methodeTitle)}</div>
+        <ol class="method-steps">
+          ${methodeSteps.map((s) => `<li>${safeText(s)}</li>`).join('')}
+        </ol>
+      </div>
+    `;
+  }
+
+  if (n.exempleResolu && typeof n.exempleResolu === 'object') {
+    const ex = n.exempleResolu;
+    if (ex.enonce || (Array.isArray(ex.etapes) && ex.etapes.length > 0)) {
+      let exHtml = '<div class="block"><div class="block-label"><i class="fas fa-check-circle"></i> Exemple résolu</div>';
+      if (ex.enonce) exHtml += `<div class="example-enonce">${safeText(ex.enonce)}</div>`;
+      if (Array.isArray(ex.etapes) && ex.etapes.length > 0) {
+        exHtml += `<ol class="example-steps">${ex.etapes.map((e) => `<li>${safeText(e)}</li>`).join('')}</ol>`;
+      }
+      if (ex.conclusion) exHtml += `<div class="example-conclusion">${safeText(ex.conclusion)}</div>`;
+      exHtml += '</div>';
+      html += exHtml;
+    }
+  }
+
+  if (n.piegeBAC && (n.piegeBAC.trap || n.piegeBAC.solution)) {
+    html += `
+      <div class="block">
+        <div class="block-label"><i class="fas fa-triangle-exclamation"></i> Piège du BAC</div>
+        ${n.piegeBAC.trap ? `<div class="piege-trap">${safeText(n.piegeBAC.trap)}</div>` : ''}
+        ${n.piegeBAC.solution ? `<div class="piege-solution">${safeText(n.piegeBAC.solution)}</div>` : ''}
+      </div>
+    `;
+  }
+
+  if (n.astuce && n.astuce.trim()) {
+    html += `
+      <div class="block astuce">
+        <div class="block-label"><i class="fas fa-star"></i> Astuce</div>
+        <div class="block-text">${safeText(n.astuce)}</div>
+      </div>
+    `;
+  }
+
+  if (!html) {
+    html = `
+      <div class="block">
+        <div class="block-label"><i class="fas fa-info-circle"></i> Information</div>
+        <div class="block-text">Le contenu de cette notion n'est pas disponible.</div>
+      </div>
+    `;
+  }
+
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUPPRESSION D'UNE NOTION
+// ═══════════════════════════════════════════════════════════════
+async function deleteCurrentNotion() {
+  if (!state.currentNotion) return;
+
+  const confirmed = window.confirm('Supprimer cette notion ? Elle pourra être régénérée plus tard.');
+  if (!confirmed) return;
+
+  try {
+    await callApi({
+      action: 'deleteNotion',
+      subject: state.subject,
+      chapter: state.chapter,
+      notionId: state.currentNotion.notionId
+    });
+
+    showToast('Notion supprimée', 'success');
+    state.currentNotion = null;
+    await loadCahier();
+
+    window.history.replaceState({ view: 'viewHome' }, '', window.location.pathname + window.location.search);
+    showView('viewHome');
+
+  } catch (err) {
+    console.error('[Réviseur] deleteNotion error:', err);
+    showToast(err.message || 'Erreur de suppression', 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════════════════════════════
+async function generateQuiz() {
+  if (state.isGeneratingQuiz) return;
+  state.isGeneratingQuiz = true;
+
+  $('loadingTitle').textContent = 'Génération du quiz';
+  $('loadingMessage').textContent = 'L\'IA prépare 10 questions sur tes notions. ~10 secondes.';
+
+  navigateTo('viewLoading');
+
+  try {
+    const data = await callApi({
+      action: 'quiz',
+      subject: state.subject,
+      chapter: state.chapter,
+      count: 10
+    });
+
+    state.quiz = data.quiz || [];
+    state.quizAnswers = {};
+
+    if (state.quiz.length === 0) {
+      showToast('Aucune question générée. Réessaie.', 'error');
+      navigateTo('viewHome');
+      return;
+    }
+
+    renderQuiz();
+
+    try {
+      window.history.replaceState(
+        { view: 'viewQuiz' },
+        '',
+        window.location.pathname + window.location.search
+      );
+    } catch (e) {}
+    showView('viewQuiz');
+
+  } catch (err) {
+    console.error('[Réviseur] quiz error:', err);
+
+    if (err.status === 429 && err.code === 'FREE_REVISEUR_LIMIT') {
+      showPremiumPopup();
+      navigateTo('viewHome');
+    } else {
+      showToast(err.message || 'Erreur de génération du quiz', 'error');
+      navigateTo('viewHome');
+    }
+  } finally {
+    state.isGeneratingQuiz = false;
+  }
+}
+
+function renderQuiz() {
+  const container = $('quizContent');
+  container.innerHTML = '';
+
+  $('quizMeta').textContent = state.quiz.length + ' questions · ' + state.chapter;
+
+  state.quiz.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-question';
+    div.dataset.index = i;
+
+    const opts = (q.options || []).map((opt) => `
+      <button class="quiz-option" data-option="${escapeHtml(opt.id)}" data-qindex="${i}" type="button">
+        <span class="quiz-letter">${escapeHtml(opt.id)}</span>
+        <span>${safeText(opt.text)}</span>
+      </button>
+    `).join('');
+
+    div.innerHTML = `
+      <div class="quiz-q-header">
+        <div class="quiz-q-num">Question ${i + 1}</div>
+      </div>
+      <div class="quiz-q-text">${safeText(q.question)}</div>
+      <div class="quiz-options">${opts}</div>
+      <div class="quiz-explanation" id="expl-${i}"></div>
+    `;
+    container.appendChild(div);
   });
 
-  console.log('🚀 ARVEXA — Réviseur v7.2 — Multi-format + Historique mobile');
-  </script>
+  container.querySelectorAll('.quiz-option').forEach((opt) => {
+    opt.addEventListener('click', () => handleQuizAnswer(opt));
+  });
+
+  $('btnValidateQuiz').disabled = true;
+}
+
+function handleQuizAnswer(opt) {
+  const i = parseInt(opt.dataset.qindex);
+  if (state.quizAnswers[i]) return;
+
+  const q = state.quiz[i];
+  state.quizAnswers[i] = opt.dataset.option;
+
+  const question = document.querySelector(`.quiz-question[data-index="${i}"]`);
+  question.querySelectorAll('.quiz-option').forEach((o) => {
+    o.classList.add('disabled');
+    if (o.dataset.option === q.correctAnswer) {
+      o.classList.add('correct');
+    } else if (o.dataset.option === opt.dataset.option) {
+      o.classList.add('wrong');
+    }
+  });
+
+  const expl = document.getElementById('expl-' + i);
+  if (q.explanation) {
+    expl.innerHTML = `<strong>💡</strong> ${safeText(q.explanation)}`;
+    expl.classList.add('show');
+  }
+
+  const answered = Object.keys(state.quizAnswers).length;
+  $('btnValidateQuiz').disabled = answered < state.quiz.length;
+}
+
+function validateQuiz() {
+  let correct = 0;
+  state.quiz.forEach((q, i) => {
+    if (state.quizAnswers[i] === q.correctAnswer) correct++;
+  });
+
+  const total = state.quiz.length;
+  if (total === 0) return;
+
+  const score = Math.round((correct / total) * 20);
+  const percent = Math.round((correct / total) * 100);
+
+  $('metricCorrect').textContent = correct + '/' + total;
+  $('metricScore').textContent = score + '/20';
+  $('metricPercent').textContent = percent + '%';
+
+  let emoji, title, sub;
+  if (percent >= 90) { emoji = '🏆'; title = 'Excellent !'; sub = 'Chapitre maîtrisé !'; }
+  else if (percent >= 70) { emoji = '🎉'; title = 'Bravo !'; sub = 'Bonne progression.'; }
+  else if (percent >= 50) { emoji = '📚'; title = 'Pas mal'; sub = 'Continue à réviser.'; }
+  else { emoji = '💪'; title = 'Courage'; sub = 'Retravaille ce chapitre.'; }
+
+  $('quizResultEmoji').textContent = emoji;
+  $('quizResultTitle').textContent = title;
+  $('quizResultSub').textContent = sub;
+
+  navigateTo('viewQuizResults');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PREMIUM POPUP
+// ═══════════════════════════════════════════════════════════════
+function showPremiumPopup() {
+  $('premiumOverlay').classList.add('show');
+}
+function hidePremiumPopup() {
+  $('premiumOverlay').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EVENT LISTENERS
+// ═══════════════════════════════════════════════════════════════
+$('btnViewNotions').addEventListener('click', () => {
+  renderNotionsList();
+  navigateTo('viewNotions');
+});
+
+$('btnGenerate').addEventListener('click', () => {
+  if (state.generatedCount === 0) {
+    generateInitial();
+  } else {
+    generateMore();
+  }
+});
+
+$('btnQuiz').addEventListener('click', generateQuiz);
+
+$('backFromNotions').addEventListener('click', () => goBack());
+$('backFromNotionDetail').addEventListener('click', () => goBack());
+$('btnDeleteNotion').addEventListener('click', deleteCurrentNotion);
+$('backFromQuiz').addEventListener('click', () => goBack());
+$('btnValidateQuiz').addEventListener('click', validateQuiz);
+$('btnNewQuiz').addEventListener('click', () => generateQuiz());
+$('btnBackHomeFromResults').addEventListener('click', () => goBack());
+
+$('premiumClose').addEventListener('click', hidePremiumPopup);
+$('premiumOverlay').addEventListener('click', (e) => {
+  if (e.target === $('premiumOverlay')) hidePremiumPopup();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && $('premiumOverlay').classList.contains('show')) {
+    hidePremiumPopup();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// PRÉREMPLISSAGE
+// ═══════════════════════════════════════════════════════════════
+function prefillFromUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const urlSubject = params.get('subject');
+    const urlChapter = params.get('chapter');
+
+    if (urlSubject && SUBJECTS[urlSubject]) {
+      state.subject = urlSubject;
+      if (urlChapter && CHAPTERS[state.subject]?.includes(urlChapter)) {
+        state.chapter = urlChapter;
+      } else {
+        state.chapter = CHAPTERS[state.subject]?.[0] || 'Nombres complexes';
+      }
+      state.subjectType = SCIENTIFIC_SUBJECTS.has(urlSubject) ? 'scientific' : 'lesson';
+      return;
+    }
+
+    try {
+      const savedSubject = localStorage.getItem(STORAGE_KEY_SUBJECT);
+      const savedChapter = localStorage.getItem(STORAGE_KEY_CHAPTER);
+
+      if (savedSubject && SUBJECTS[savedSubject]) {
+        state.subject = savedSubject;
+        if (savedChapter && CHAPTERS[state.subject]?.includes(savedChapter)) {
+          state.chapter = savedChapter;
+          state.subjectType = SCIENTIFIC_SUBJECTS.has(savedSubject) ? 'scientific' : 'lesson';
+          return;
+        }
+      }
+    } catch (e) {}
+
+    state.subject = 'mathematiques';
+    state.chapter = 'Nombres complexes';
+    state.subjectType = 'scientific';
+  } catch (e) {
+    console.warn('[Réviseur] prefillFromUrl error:', e.message);
+    state.subject = 'mathematiques';
+    state.chapter = 'Nombres complexes';
+    state.subjectType = 'scientific';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ✅ C2/C3/C4 — AUTH ROBUSTE
+// ═══════════════════════════════════════════════════════════════
+function redirectToLogin() {
+  if (isRedirecting) return;
+  isRedirecting = true;
+
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) {
+    try { authUnsubscribe(); } catch (e) {}
+    authUnsubscribe = null;
+  }
+
+  try {
+    const existing = sessionStorage.getItem('redirectAfterLogin')
+                  || sessionStorage.getItem('redirectAfterAuth');
+    if (!existing) {
+      sessionStorage.setItem('redirectAfterLogin',
+        window.location.pathname + window.location.search + window.location.hash);
+    }
+  } catch (e) {}
+
+  window.location.replace('login.html');
+}
+
+function initAuthGuard(onAuthenticated) {
+  if (authUnsubscribe) return;
+
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
+    if (isAuthResolved) {
+      if (user && user.uid !== currentUid) {
+        currentUid = user.uid;
+        saveSession(user);
+        onAuthenticated(user);
+      } else if (!user && currentUid) {
+        currentUid = null;
+        clearSession();
+        redirectToLogin();
+      }
+      return;
+    }
+
+    if (!user) {
+      if (graceTimer) return;
+      graceTimer = setTimeout(() => {
+        graceTimer = null;
+        if (isAuthResolved) return;
+        if (auth.currentUser) return;
+
+        const hasSession = localStorage.getItem(SESSION_KEY);
+        const hasUserData = localStorage.getItem(USER_DATA_KEY);
+
+        if ((hasSession || hasUserData) && !navigator.onLine) {
+          setTimeout(() => {
+            if (auth.currentUser) return;
+            if (!isAuthResolved) redirectToLogin();
+          }, 1500);
+          return;
+        }
+
+        if (hasSession && hasUserData) {
+          setTimeout(() => {
+            if (auth.currentUser) return;
+            if (!isAuthResolved) redirectToLogin();
+          }, 1500);
+          return;
+        }
+
+        redirectToLogin();
+      }, 600);
+      return;
+    }
+
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+
+    isAuthResolved = true;
+    currentUid = user.uid;
+    saveSession(user);
+    onAuthenticated(user);
+  });
+
+  maxTimer = setTimeout(() => {
+    if (isAuthResolved) return;
+    if (auth.currentUser) {
+      isAuthResolved = true;
+      currentUid = auth.currentUser.uid;
+      saveSession(auth.currentUser);
+      onAuthenticated(auth.currentUser);
+    } else {
+      redirectToLogin();
+    }
+  }, 5000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LANCER LA PROTECTION — ✅ C4 (blocked/paused)
+// ═══════════════════════════════════════════════════════════════
+initAuthGuard(async (user) => {
+  // ✅ C4 — vérification blocked/paused
+  try {
+    const userSnap = await getDoc(doc(db, 'users', user.uid));
+    if (userSnap.exists()) {
+      const userData = userSnap.data();
+
+      if (userData.accountStatus === 'blocked') {
+        try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
+        try { await signOut(auth); } catch (e) {}
+        window.location.replace('auth-choice.html');
+        return;
+      }
+
+      if (userData.accountStatus === 'paused') {
+        showToast('Ton compte est temporairement en pause. Contacte le support.', 'error');
+        // On laisse la page consultable mais la génération IA sera refusée côté backend
+      }
+
+      try {
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify({
+          ...userData,
+          _uid: user.uid,
+          _cachedAt: Date.now()
+        }));
+      } catch (e) {}
+    }
+  } catch (e) {
+    console.warn('[Réviseur] Vérification blocked/paused :', e.code || e.message);
+  }
+
+  state.user = user;
+  const conn = $('connectionState');
+  if (conn) {
+    conn.textContent = 'Connecté';
+    conn.classList.add('online');
+  }
+
+  prefillFromUrl();
+  initSubjectSelector();
+  initChapterSelector();
+
+  try {
+    window.history.replaceState(
+      { view: 'viewHome' },
+      '',
+      window.location.pathname + window.location.search
+    );
+  } catch (e) {
+    console.warn('[Réviseur] replaceState error:', e.message);
+  }
+
+  await loadCahier();
+  showView('viewHome');
+});
+
+// ✅ C9 — cleanup global
+window.addEventListener('beforeunload', () => {
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+});
+
+console.log('🚀 ARVEXA — Réviseur v7.3 — Corrections C1-C9 appliquées');
+</script>
 </body>
 </html>
