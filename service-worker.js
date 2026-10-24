@@ -1,16 +1,31 @@
 // ================================================================
 // SERVICE WORKER — ARVEXA School
-// Version : OFFLINE v1.1 — Mode hors ligne complet
+// Version : OFFLINE v2.2 — Navigation instantanée
 // ================================================================
 
-const SW_VERSION = 'arvexa-offline-v2.1';
+const SW_VERSION = 'arvexa-offline-v2.2';
 const CACHE_STATIC = `${SW_VERSION}-static`;
 const CACHE_HTML = `${SW_VERSION}-html`;
 
-// Fichiers critiques à précacher
+// ⚡ Toutes les pages HTML de l'app pour précache complet
 const PRECACHE = [
   './',
   './index.html',
+  './matiere.html',
+  './chapitre.html',
+  './lecture.html',
+  './profil.html',
+  './reviseur.html',
+  './exam.html',
+  './exam-history.html',
+  './abonnement.html',
+  './notifications.html',
+  './outils.html',
+  './formulaires.html',
+  './planificateur.html',
+  './tableau-periodique.html',
+  './arv-pilot.html',
+  './arv-progress.html',
   './offline.html',
   './manifest.json',
   './perf.css',
@@ -98,19 +113,35 @@ self.addEventListener('fetch', (event) => {
 });
 
 // ═══ STRATÉGIES ═══
-async function handleHTML(req) {
-  try {
-    const networkResp = await fetch(req);
-    if (networkResp && networkResp.ok) {
-      const cache = await caches.open(CACHE_HTML);
-      cache.put(req, networkResp.clone());
-    }
-    return networkResp;
-  } catch (e) {
-    const cache = await caches.open(CACHE_HTML);
-    const cached = await cache.match(req);
-    if (cached) return cached;
 
+// ⚡ HTML : STALE-WHILE-REVALIDATE
+// Sert immédiatement depuis le cache, met à jour en arrière-plan
+async function handleHTML(req) {
+  const cache = await caches.open(CACHE_HTML);
+  const cached = await cache.match(req);
+
+  // Lancer la mise à jour en arrière-plan (non bloquant)
+  const networkUpdate = fetch(req)
+    .then((response) => {
+      if (response && response.ok) {
+        cache.put(req, response.clone());
+      }
+      return response;
+    })
+    .catch(() => null);
+
+  // ⚡ Si on a du cache → réponse INSTANTANÉE + MAJ silencieuse
+  if (cached) {
+    networkUpdate.catch(() => {}); // fire-and-forget correct
+    return cached;
+  }
+
+  // Sinon → attendre le réseau (première visite)
+  try {
+    const response = await networkUpdate;
+    if (response) return response;
+    throw new Error('network failed');
+  } catch (e) {
     const staticCache = await caches.open(CACHE_STATIC);
     const cachedStatic = await staticCache.match(req);
     if (cachedStatic) return cachedStatic;
@@ -125,6 +156,7 @@ async function handleHTML(req) {
   }
 }
 
+// ⚡ Static : stale-while-revalidate (déjà correct)
 async function handleStatic(req) {
   const cache = await caches.open(CACHE_STATIC);
   const cached = await cache.match(req);
@@ -165,7 +197,7 @@ async function handleGeneric(req) {
   }
 }
 
-// ═══ HANDLER — Bouton "Télécharger tout hors ligne" ═══
+// ═══ HANDLERS MESSAGE ═══
 self.addEventListener('message', (event) => {
   const data = event.data || {};
   const port = event.ports && event.ports[0];
@@ -246,4 +278,4 @@ async function getStats(port) {
   }
 }
 
-console.log(`[SW] ${SW_VERSION} prêt — mode hors ligne actif`);
+console.log(`[SW] ${SW_VERSION} prêt — navigation instantanée active`);
