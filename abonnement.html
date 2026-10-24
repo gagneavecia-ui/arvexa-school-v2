@@ -1764,6 +1764,15 @@
 <script type="module">
 // ================================================================
 // ABONNEMENT — Version robuste anti-flash + notifications admin
+// Corrections appliquées :
+//  - C1 : redirectToLogin préserve redirectAfterLogin/redirectAfterAuth
+//  - C2 : performLogout → auth-choice.html + unsub onAuthStateChanged
+//  - C3 : gestion blocked/paused alignée sur index.html / profil.html
+//  - C4 : retry doux si doc users/{uid} absent + message clair
+//  - C5 : saveSession écrit aussi sessionStorage
+//  - C6 : clearSession supprime redirectAfterLogin/redirectAfterAuth
+//  - C7 : log explicite si setPersistence échoue
+//  - C8 : unsubscribe propre du listener auth
 // ================================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -1779,6 +1788,7 @@ import {
   persistentLocalCache,
   persistentSingleTabManager,
   doc,
+  getDoc,
   updateDoc,
   onSnapshot,
   serverTimestamp,
@@ -1809,9 +1819,12 @@ const db = initializeFirestore(app, {
   })
 });
 
+// ✅ C7 — Log explicite si persistance refusée
 try {
   await setPersistence(auth, browserLocalPersistence);
-} catch (e) {}
+} catch (e) {
+  console.warn('[Auth] Persistance locale indisponible sur abonnement.html :', e.code || e.message);
+}
 
 // ================================================================
 // CONFIG
@@ -1870,7 +1883,7 @@ const PAYMENT_METHODS = {
 };
 
 // ================================================================
-// SESSION / CACHE
+// SESSION / CACHE — ✅ C5/C6 alignements
 // ================================================================
 const SESSION_KEY = 'arvexa_session';
 const USER_DATA_KEY = 'arvexa_user_data';
@@ -1887,6 +1900,7 @@ function saveSession(user) {
       lastActive: Date.now()
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C5
     localStorage.setItem(LAST_UID_KEY, user.uid);
   } catch (e) {}
 }
@@ -1897,6 +1911,9 @@ function clearSession() {
     localStorage.removeItem(USER_DATA_KEY);
     localStorage.removeItem(LAST_UID_KEY);
     sessionStorage.removeItem(SESSION_KEY);
+    // ✅ C6 — alignement
+    sessionStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('redirectAfterAuth');
   } catch (e) {}
 }
 
@@ -1938,7 +1955,6 @@ const economyText = document.getElementById('economyText');
 const promoInput = document.getElementById('promoInput');
 const applyPromoBtn = document.getElementById('applyPromoBtn');
 const promoMessage = document.getElementById('promoMessage');
-const subscribeBtn = document.getElementById('subscribeBtn');
 
 const modal = document.getElementById('paymentModal');
 const closeModalBtn = document.getElementById('closeModal');
@@ -1971,6 +1987,8 @@ let currentUser = null;
 let isSubscribing = false;
 let unsubscribeUser = null;
 let currentUid = null;
+let authUnsubscribe = null;        // ✅ C8
+let missingDocInFlight = false;    // ✅ C4
 
 // ================================================================
 // UTILITAIRE — TIMESTAMP
@@ -2104,13 +2122,10 @@ function routeToScreen(data) {
   userData = data;
   const state = getUserState(data);
 
-  // ⚡ Si l'utilisateur a explicitement demandé à se réabonner,
-  //    on respecte son choix tant qu'il n'a pas entamé de nouvelle démarche.
   try {
     const renewIntent = localStorage.getItem(RENEW_FLAG_KEY);
     if (renewIntent === 'true' && state === 'expired') {
       showScreen('free');
-      // Préremplir les champs si on a les données
       if (data && fullNameInput) {
         const fullName = data.fullName || ((data.firstName || '') + ' ' + (data.lastName || '')).trim();
         if (fullName && !fullNameInput.value) fullNameInput.value = fullName;
@@ -2126,7 +2141,6 @@ function routeToScreen(data) {
       showScreen('pending');
       break;
     case 'premium':
-      // ⚡ Premium rétabli : on efface l'intention de renouvellement
       try { localStorage.removeItem(RENEW_FLAG_KEY); } catch (e) {}
       renderPremiumScreen(data);
       showScreen('premium');
@@ -2326,7 +2340,6 @@ async function applyPromoCode(code) {
     return false;
   }
 
-  // ⚡ Si le cache est vide, recharger depuis Firestore
   if (Object.keys(PROMO_CODES_CACHE).length === 0) {
     await loadPromoCodes();
   }
@@ -2414,7 +2427,6 @@ async function sendToWhatsApp() {
   const fullName = fullNameInput.value.trim();
   const whatsapp = whatsappInput.value.trim().replace(/\s/g, '');
   const display = getPrice();
-  const savings = getSavings();
   const planName = currentPlan === 'monthly' ? 'Mensuel' : 'Annuel';
   const requestId = generateRequestId();
 
@@ -2437,14 +2449,10 @@ async function sendToWhatsApp() {
   confirmBtn.classList.add('loading');
   confirmBtn.disabled = true;
 
-  const methodInfo = PAYMENT_METHODS[selectedPaymentMethod];
-
-  // ⚡ MESSAGE ULTRA COURT — juste pour démarrer la discussion
   let message = '👋 Bonjour ARVEXA School, je veux m\'abonner au Premium (' + planName + ') — ' + display.final.toLocaleString('fr-FR') + ' FCFA.\n';
   message += '🔖 Réf : ' + requestId + '\n';
   message += '👤 Nom : ' + fullName;
 
-  // 1) Sauvegarder en Firestore
   const saved = await saveSubscriptionRequest(fullName, whatsapp, display, requestId, selectedPaymentMethod);
   if (!saved) {
     isSubscribing = false;
@@ -2453,22 +2461,18 @@ async function sendToWhatsApp() {
     return;
   }
 
-  // 2) Notifier l'admin par push FCM
   notifyAdminPush(fullName, display, requestId, planName).catch((e) => {
     console.warn('Push admin failed:', e.message);
   });
 
-  // 3) Ouvrir WhatsApp (élève → admin)
   const encodedMessage = encodeURIComponent(message);
   const waUrl = 'https://wa.me/' + SUPPORT_WHATSAPP + '?text=' + encodedMessage;
   window.open(waUrl, '_blank', 'noopener,noreferrer');
 
-  // 4) Mettre à jour l'affichage vers l'écran "pending"
   setTimeout(() => {
     closeModal();
     isSubscribing = false;
 
-    // ⚡ L'utilisateur a entamé une nouvelle démarche, on efface l'intention de renouvellement
     try { localStorage.removeItem(RENEW_FLAG_KEY); } catch (e) {}
 
     if (userData) {
@@ -2491,7 +2495,6 @@ async function sendToWhatsApp() {
 async function saveSubscriptionRequest(fullName, whatsapp, display, requestId, paymentMethod) {
   if (!currentUser) return false;
   try {
-    // 1) Mise à jour du profil élève
     await updateDoc(doc(db, 'users', currentUser.uid), {
       subscriptionStatus: 'pending',
       subscriptionPlan: currentPlan,
@@ -2505,7 +2508,6 @@ async function saveSubscriptionRequest(fullName, whatsapp, display, requestId, p
       subscriptionPaymentMethod: paymentMethod
     });
 
-    // 2) Incrémenter le compteur d'utilisations du code promo
     if (appliedPromo && appliedPromo.code) {
       try {
         await updateDoc(doc(db, 'promoCodes', appliedPromo.code), {
@@ -2516,7 +2518,6 @@ async function saveSubscriptionRequest(fullName, whatsapp, display, requestId, p
       }
     }
 
-    // 3) Créer une notification pour l'admin (temps réel dans la console)
     try {
       await addDoc(collection(db, 'admin_notifications'), {
         kind: 'subscription_request',
@@ -2641,7 +2642,7 @@ modal.addEventListener('click', (e) => {
 // ================================================================
 const subscribeAutoBtn   = document.getElementById('subscribeAutoBtn');
 const subscribeManualBtn = document.getElementById('subscribeManualBtn');
-  
+
 // ================================================================
 // FLUX AUTOMATIQUE (SasPay)
 // ================================================================
@@ -2653,14 +2654,11 @@ subscribeAutoBtn.addEventListener('click', async () => {
   subscribeAutoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Redirection…</span>';
 
   try {
-    // 1. Calcul du prix final (avec réduction éventuelle)
-    const finalAmount = getPrice().final; 
-    
-    // 2. Récupération des infos utilisateur
+    const finalAmount = getPrice().final;
+
     const userEmail = currentUser.email || 'eleve@arvexaschool.com';
     const userName = userData?.fullName || userData?.firstName || 'Élève ARVEXA';
 
-    // 3. Appel à l'API Vercel
     const res = await fetch('/api/creer-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2670,11 +2668,10 @@ subscribeAutoBtn.addEventListener('click', async () => {
         promoCode: appliedPromo?.code || null,
         customerEmail: userEmail,
         customerName: userName,
-        clientAmount: finalAmount // ✅ ENVOIE LE MONTANT RÉDUIT AU SERVEUR
+        clientAmount: finalAmount
       })
     });
 
-    // 4. Lecture sécurisée de la réponse
     const textResponse = await res.text();
     let data;
     try {
@@ -2684,15 +2681,12 @@ subscribeAutoBtn.addEventListener('click', async () => {
       throw new Error('Erreur serveur. Vérifiez les logs Vercel.');
     }
 
-    // 5. Gestion des erreurs retournées par SasPay
     if (!res.ok || !data.ok) {
       const detail = data.sasPayRaw ? JSON.stringify(data.sasPayRaw) : data.error;
       throw new Error(detail || 'Erreur lors de la création du paiement.');
     }
 
-    // 6. Sauvegarde de la référence dans Firestore (pour le webhook)
     try {
-      const { updateDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
       await updateDoc(doc(db, 'users', currentUser.uid), {
         saspayCheckoutReference: data.reference,
         saspayCheckoutSessionId: data.sessionId || null,
@@ -2702,7 +2696,6 @@ subscribeAutoBtn.addEventListener('click', async () => {
       console.warn('Impossible de sauvegarder la référence SasPay :', e.message);
     }
 
-    // 7. Redirection vers la page de paiement SasPay
     window.location.href = data.checkoutUrl;
 
   } catch (err) {
@@ -2712,7 +2705,7 @@ subscribeAutoBtn.addEventListener('click', async () => {
     subscribeAutoBtn.innerHTML = originalHTML;
   }
 });
-  
+
 // ---------- FLUX MANUEL (WhatsApp + QR) ----------
 subscribeManualBtn.addEventListener('click', () => {
   if (!currentUser) { window.location.replace('login.html'); return; }
@@ -2736,23 +2729,35 @@ if (statut === 'succes') {
 
 confirmBtn.addEventListener('click', sendToWhatsApp);
 
-// ⚡ Bouton "Renouveler" — affiche l'écran d'abonnement classique
+// ⚡ Bouton "Renouveler"
 document.getElementById('renewBtn')?.addEventListener('click', () => {
   try { localStorage.setItem(RENEW_FLAG_KEY, 'true'); } catch (e) {}
   showScreen('free');
 });
 
 // ================================================================
-// DÉCONNEXION
+// DÉCONNEXION — ✅ C2/C8
 // ================================================================
 let isRedirecting = false;
 
 async function performLogout() {
   isRedirecting = true;
-  if (unsubscribeUser) unsubscribeUser();
+
+  // ✅ C8 — désabonnements propres
+  if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
+  if (authUnsubscribe) {
+    try { authUnsubscribe(); } catch (e) {}
+    authUnsubscribe = null;
+  }
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+
+  currentUid = null;
+  currentUser = null;
   clearSession();
   try { await signOut(auth); } catch (e) {}
-  window.location.replace('login.html');
+  // ✅ C2 — alignement sur index.html / profil.html
+  window.location.replace('auth-choice.html');
 }
 
 document.getElementById('logoutBtn').addEventListener('click', (e) => {
@@ -2779,7 +2784,33 @@ document.getElementById('profileBtn').addEventListener('click', () => {
 });
 
 // ================================================================
-// CHARGEMENT UTILISATEUR
+// ✅ C4 — Retry doux si doc users/{uid} absent
+// ================================================================
+async function handleMissingUserDoc(uid) {
+  if (missingDocInFlight) return;
+  missingDocInFlight = true;
+  try {
+    await new Promise((r) => setTimeout(r, 900));
+    if (!auth.currentUser || auth.currentUser.uid !== uid) return;
+    const retry = await getDoc(doc(db, 'users', uid));
+    if (retry.exists()) {
+      const data = retry.data();
+      saveUserDataToCache(data, uid);
+      routeToScreen(data);
+      return;
+    }
+    showScreen('free');
+    console.warn('[Abonnement] Profil introuvable pour', uid);
+  } catch (e) {
+    console.warn('[Abonnement] handleMissingUserDoc:', e.code || e.message);
+    showScreen('free');
+  } finally {
+    missingDocInFlight = false;
+  }
+}
+
+// ================================================================
+// CHARGEMENT UTILISATEUR — ✅ C3 (blocked/paused) + C4 (retry)
 // ================================================================
 function loadUserData(user) {
   if (unsubscribeUser) {
@@ -2793,6 +2824,26 @@ function loadUserData(user) {
     (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
+
+        // ✅ C3 — blocked : signOut tolérant + auth-choice.html
+        if (data.accountStatus === 'blocked') {
+          if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
+          clearSession();
+          try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
+          signOut(auth)
+            .catch((err) => console.warn('[Abonnement] signOut bloqué :', err.code || err.message))
+            .finally(() => { window.location.replace('auth-choice.html'); });
+          return;
+        }
+
+        // ✅ C3 — paused : ne pas déconnecter, message, rester sur la page
+        if (data.accountStatus === 'paused') {
+          saveUserDataToCache(data, user.uid);
+          routeToScreen(data);
+          // On laisse l'utilisateur sur son écran actuel (pending/premium/free/...)
+          return;
+        }
+
         saveUserDataToCache(data, user.uid);
         routeToScreen(data);
       } else {
@@ -2800,7 +2851,8 @@ function loadUserData(user) {
         if (cached) {
           routeToScreen(cached);
         } else {
-          showScreen('free');
+          // ✅ C4 — retry doux avant décision finale
+          handleMissingUserDoc(user.uid);
         }
       }
     },
@@ -2811,28 +2863,45 @@ function loadUserData(user) {
       } else {
         showScreen('free');
       }
+      console.warn('[Abonnement] onSnapshot users:', error.code || error.message);
     }
   );
 }
 
 // ================================================================
-// AUTH ROBUSTE — Anti-flash
+// AUTH ROBUSTE — ✅ C1/C8
 // ================================================================
 let isAuthResolved = false;
 let graceTimer = null;
 let maxTimer = null;
 
+// ✅ C1 — préserver les clés existantes
 function redirectToLogin() {
   if (isRedirecting) return;
   isRedirecting = true;
+
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) {
+    try { authUnsubscribe(); } catch (e) {}
+    authUnsubscribe = null;
+  }
+
   try {
-    sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+    const existing = sessionStorage.getItem('redirectAfterLogin')
+                  || sessionStorage.getItem('redirectAfterAuth');
+    if (!existing) {
+      sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search);
+    }
   } catch (e) {}
+
   window.location.replace('login.html');
 }
 
 function initAuthGuard(onAuthenticated) {
-  auth.onAuthStateChanged((user) => {
+  if (authUnsubscribe) return; // garde anti-double
+
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
     if (isAuthResolved) {
       if (user && user.uid !== currentUid) {
         currentUid = user.uid;
@@ -2849,8 +2918,9 @@ function initAuthGuard(onAuthenticated) {
     }
 
     if (!user) {
-      if (graceTimer) clearTimeout(graceTimer);
+      if (graceTimer) return;
       graceTimer = setTimeout(() => {
+        graceTimer = null;
         if (isAuthResolved) return;
         if (auth.currentUser) return;
 
@@ -2914,10 +2984,8 @@ initAuthGuard(async (user) => {
     showScreen('free');
   }
 
-  // ⚡ Charger les codes promo depuis Firestore
   await loadPromoCodes();
 
-  // Firestore en arrière-plan
   loadUserData(user);
 });
 
@@ -2926,7 +2994,14 @@ initAuthGuard(async (user) => {
 // ================================================================
 updateDisplay();
 
-console.log('🚀 ARVEXA — Abonnement (avec notifications admin + renouvellement corrigé)');
+// ✅ C8 — cleanup global
+window.addEventListener('beforeunload', () => {
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+});
+
+console.log('🚀 ARVEXA — Abonnement (version corrigée C1-C8)');
 </script>
 </body>
 </html>
