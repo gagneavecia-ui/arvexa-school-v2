@@ -357,635 +357,708 @@
   }
   </script>
 
-  <script type="module">
-  // ================================================================
-  // TABLEAU PÉRIODIQUE — Version robuste anti-flash
-  // ================================================================
+ <script type="module">
+// ================================================================
+// TABLEAU PÉRIODIQUE — Version robuste anti-flash
+// Corrections appliquées :
+//  - C1 : redirectToLogin préserve redirectAfterLogin/redirectAfterAuth + URL complète
+//  - C2 : saveSession écrit aussi sessionStorage
+//  - C3 : clearSession supprime redirectAfterLogin/redirectAfterAuth
+//  - C4 : log explicite si setPersistence échoue
+//  - C5 : unsubscribe propre du listener auth
+//  - C6 : renderTable + setupSwipeToClose appelés IMMÉDIATEMENT (pas dans onUser)
+//  - C7 : gestion blocked/paused via getDoc users/{uid}
+//  - C8 : imports signOut + getDoc pour C7
+// ================================================================
 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import {
-    getAuth,
-    onAuthStateChanged,
-    setPersistence,
-    browserLocalPersistence
-  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-  import {
-    initializeFirestore,
-    persistentLocalCache,
-    persistentSingleTabManager,
-    doc,
-    getDoc,
-    onSnapshot
-  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-  // ================================================================
-  // CONFIG FIREBASE
-  // ================================================================
-  const firebaseConfig = {
-    apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
-    authDomain: "arvexa-fbf10.firebaseapp.com",
-    projectId: "arvexa-fbf10",
-    storageBucket: "arvexa-fbf10.firebasestorage.app",
-    messagingSenderId: "920108330053",
-    appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
-  };
+// ================================================================
+// CONFIG FIREBASE
+// ================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
+  authDomain: "arvexa-fbf10.firebaseapp.com",
+  projectId: "arvexa-fbf10",
+  storageBucket: "arvexa-fbf10.firebasestorage.app",
+  messagingSenderId: "920108330053",
+  appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-  const db = initializeFirestore(app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentSingleTabManager()
-    })
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentSingleTabManager()
+  })
+});
+
+// ✅ C4 — Log explicite si persistance refusée
+try {
+  await setPersistence(auth, browserLocalPersistence);
+} catch (e) {
+  console.warn('[Auth] Persistance locale indisponible sur tableau-periodique.html :', e.code || e.message);
+}
+
+// ================================================================
+// SESSION / CACHE — ✅ C2/C3 alignements
+// ================================================================
+const SESSION_KEY = 'arvexa_session';
+const USER_DATA_KEY = 'arvexa_user_data';
+const LAST_UID_KEY = 'arvexa_last_uid';
+
+function saveSession(user) {
+  if (!user) return;
+  try {
+    const data = {
+      uid: user.uid,
+      email: user.email,
+      lastActive: Date.now()
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C2
+    localStorage.setItem(LAST_UID_KEY, user.uid);
+  } catch (e) {}
+}
+
+function clearSession() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(USER_DATA_KEY);
+    localStorage.removeItem(LAST_UID_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    // ✅ C3 — alignement
+    sessionStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('redirectAfterAuth');
+  } catch (e) {}
+}
+
+// ================================================================
+// DONNÉES — 118 ÉLÉMENTS
+// ================================================================
+const ELEMENTS = [
+  {z:1,s:"H",n:"Hydrogène",m:"1,008",c:"non-metal",en:2.2,e:"gaz",cf:"1s¹",ox:"+1, -1",b:true,gc:1,gr:1},
+  {z:2,s:"He",n:"Hélium",m:"4,003",c:"gaz-noble",en:null,e:"gaz",cf:"1s²",ox:"0",b:true,gc:18,gr:1},
+  {z:3,s:"Li",n:"Lithium",m:"6,941",c:"alcalin",en:0.98,e:"solide",cf:"[He] 2s¹",ox:"+1",b:true,gc:1,gr:2},
+  {z:4,s:"Be",n:"Béryllium",m:"9,012",c:"alcalino-terreux",en:1.57,e:"solide",cf:"[He] 2s²",ox:"+2",b:false,gc:2,gr:2},
+  {z:5,s:"B",n:"Bore",m:"10,81",c:"metalloide",en:2.04,e:"solide",cf:"[He] 2s² 2p¹",ox:"+3",b:true,gc:13,gr:2},
+  {z:6,s:"C",n:"Carbone",m:"12,01",c:"non-metal",en:2.55,e:"solide",cf:"[He] 2s² 2p²",ox:"+4, -4, +2",b:true,gc:14,gr:2},
+  {z:7,s:"N",n:"Azote",m:"14,01",c:"non-metal",en:3.04,e:"gaz",cf:"[He] 2s² 2p³",ox:"-3, +5, +4, +2",b:true,gc:15,gr:2},
+  {z:8,s:"O",n:"Oxygène",m:"16,00",c:"non-metal",en:3.44,e:"gaz",cf:"[He] 2s² 2p⁴",ox:"-2",b:true,gc:16,gr:2},
+  {z:9,s:"F",n:"Fluor",m:"19,00",c:"halogene",en:3.98,e:"gaz",cf:"[He] 2s² 2p⁵",ox:"-1",b:true,gc:17,gr:2},
+  {z:10,s:"Ne",n:"Néon",m:"20,18",c:"gaz-noble",en:null,e:"gaz",cf:"[He] 2s² 2p⁶",ox:"0",b:false,gc:18,gr:2},
+  {z:11,s:"Na",n:"Sodium",m:"22,99",c:"alcalin",en:0.93,e:"solide",cf:"[Ne] 3s¹",ox:"+1",b:true,gc:1,gr:3},
+  {z:12,s:"Mg",n:"Magnésium",m:"24,31",c:"alcalino-terreux",en:1.31,e:"solide",cf:"[Ne] 3s²",ox:"+2",b:true,gc:2,gr:3},
+  {z:13,s:"Al",n:"Aluminium",m:"26,98",c:"pauvre",en:1.61,e:"solide",cf:"[Ne] 3s² 3p¹",ox:"+3",b:true,gc:13,gr:3},
+  {z:14,s:"Si",n:"Silicium",m:"28,09",c:"metalloide",en:1.9,e:"solide",cf:"[Ne] 3s² 3p²",ox:"+4, -4",b:true,gc:14,gr:3},
+  {z:15,s:"P",n:"Phosphore",m:"30,97",c:"non-metal",en:2.19,e:"solide",cf:"[Ne] 3s² 3p³",ox:"-3, +5, +3",b:true,gc:15,gr:3},
+  {z:16,s:"S",n:"Soufre",m:"32,07",c:"non-metal",en:2.58,e:"solide",cf:"[Ne] 3s² 3p⁴",ox:"-2, +6, +4, +2",b:true,gc:16,gr:3},
+  {z:17,s:"Cl",n:"Chlore",m:"35,45",c:"halogene",en:3.16,e:"gaz",cf:"[Ne] 3s² 3p⁵",ox:"-1, +5, +7, +1",b:true,gc:17,gr:3},
+  {z:18,s:"Ar",n:"Argon",m:"39,95",c:"gaz-noble",en:null,e:"gaz",cf:"[Ne] 3s² 3p⁶",ox:"0",b:false,gc:18,gr:3},
+  {z:19,s:"K",n:"Potassium",m:"39,10",c:"alcalin",en:0.82,e:"solide",cf:"[Ar] 4s¹",ox:"+1",b:true,gc:1,gr:4},
+  {z:20,s:"Ca",n:"Calcium",m:"40,08",c:"alcalino-terreux",en:1.0,e:"solide",cf:"[Ar] 4s²",ox:"+2",b:true,gc:2,gr:4},
+  {z:21,s:"Sc",n:"Scandium",m:"44,96",c:"transition",en:1.36,e:"solide",cf:"[Ar] 3d¹ 4s²",ox:"+3",b:false,gc:3,gr:4},
+  {z:22,s:"Ti",n:"Titane",m:"47,87",c:"transition",en:1.54,e:"solide",cf:"[Ar] 3d² 4s²",ox:"+4, +3",b:false,gc:4,gr:4},
+  {z:23,s:"V",n:"Vanadium",m:"50,94",c:"transition",en:1.63,e:"solide",cf:"[Ar] 3d³ 4s²",ox:"+5, +4, +3, +2",b:false,gc:5,gr:4},
+  {z:24,s:"Cr",n:"Chrome",m:"52,00",c:"transition",en:1.66,e:"solide",cf:"[Ar] 3d⁵ 4s¹",ox:"+6, +3, +2",b:true,gc:6,gr:4},
+  {z:25,s:"Mn",n:"Manganèse",m:"54,94",c:"transition",en:1.55,e:"solide",cf:"[Ar] 3d⁵ 4s²",ox:"+7, +4, +2",b:true,gc:7,gr:4},
+  {z:26,s:"Fe",n:"Fer",m:"55,85",c:"transition",en:1.83,e:"solide",cf:"[Ar] 3d⁶ 4s²",ox:"+3, +2",b:true,gc:8,gr:4},
+  {z:27,s:"Co",n:"Cobalt",m:"58,93",c:"transition",en:1.88,e:"solide",cf:"[Ar] 3d⁷ 4s²",ox:"+3, +2",b:false,gc:9,gr:4},
+  {z:28,s:"Ni",n:"Nickel",m:"58,69",c:"transition",en:1.91,e:"solide",cf:"[Ar] 3d⁸ 4s²",ox:"+2, +3",b:false,gc:10,gr:4},
+  {z:29,s:"Cu",n:"Cuivre",m:"63,55",c:"transition",en:1.9,e:"solide",cf:"[Ar] 3d¹⁰ 4s¹",ox:"+2, +1",b:true,gc:11,gr:4},
+  {z:30,s:"Zn",n:"Zinc",m:"65,38",c:"transition",en:1.65,e:"solide",cf:"[Ar] 3d¹⁰ 4s²",ox:"+2",b:true,gc:12,gr:4},
+  {z:31,s:"Ga",n:"Gallium",m:"69,72",c:"pauvre",en:1.81,e:"solide",cf:"[Ar] 3d¹⁰ 4s² 4p¹",ox:"+3",b:false,gc:13,gr:4},
+  {z:32,s:"Ge",n:"Germanium",m:"72,63",c:"metalloide",en:2.01,e:"solide",cf:"[Ar] 3d¹⁰ 4s² 4p²",ox:"+4, +2",b:false,gc:14,gr:4},
+  {z:33,s:"As",n:"Arsenic",m:"74,92",c:"metalloide",en:2.18,e:"solide",cf:"[Ar] 3d¹⁰ 4s² 4p³",ox:"+5, +3, -3",b:false,gc:15,gr:4},
+  {z:34,s:"Se",n:"Sélénium",m:"78,97",c:"non-metal",en:2.55,e:"solide",cf:"[Ar] 3d¹⁰ 4s² 4p⁴",ox:"-2, +6, +4",b:true,gc:16,gr:4},
+  {z:35,s:"Br",n:"Brome",m:"79,90",c:"halogene",en:2.96,e:"liquide",cf:"[Ar] 3d¹⁰ 4s² 4p⁵",ox:"-1, +5, +1",b:true,gc:17,gr:4},
+  {z:36,s:"Kr",n:"Krypton",m:"83,80",c:"gaz-noble",en:3.0,e:"gaz",cf:"[Ar] 3d¹⁰ 4s² 4p⁶",ox:"0",b:false,gc:18,gr:4},
+  {z:37,s:"Rb",n:"Rubidium",m:"85,47",c:"alcalin",en:0.82,e:"solide",cf:"[Kr] 5s¹",ox:"+1",b:false,gc:1,gr:5},
+  {z:38,s:"Sr",n:"Strontium",m:"87,62",c:"alcalino-terreux",en:0.95,e:"solide",cf:"[Kr] 5s²",ox:"+2",b:false,gc:2,gr:5},
+  {z:39,s:"Y",n:"Yttrium",m:"88,91",c:"transition",en:1.22,e:"solide",cf:"[Kr] 4d¹ 5s²",ox:"+3",b:false,gc:3,gr:5},
+  {z:40,s:"Zr",n:"Zirconium",m:"91,22",c:"transition",en:1.33,e:"solide",cf:"[Kr] 4d² 5s²",ox:"+4",b:false,gc:4,gr:5},
+  {z:41,s:"Nb",n:"Niobium",m:"92,91",c:"transition",en:1.6,e:"solide",cf:"[Kr] 4d⁴ 5s¹",ox:"+5",b:false,gc:5,gr:5},
+  {z:42,s:"Mo",n:"Molybdène",m:"95,95",c:"transition",en:2.16,e:"solide",cf:"[Kr] 4d⁵ 5s¹",ox:"+6, +4",b:false,gc:6,gr:5},
+  {z:43,s:"Tc",n:"Technétium",m:"98,00",c:"transition",en:1.9,e:"solide",cf:"[Kr] 4d⁵ 5s²",ox:"+7",b:false,gc:7,gr:5},
+  {z:44,s:"Ru",n:"Ruthénium",m:"101,1",c:"transition",en:2.2,e:"solide",cf:"[Kr] 4d⁷ 5s¹",ox:"+8, +4, +3",b:false,gc:8,gr:5},
+  {z:45,s:"Rh",n:"Rhodium",m:"102,9",c:"transition",en:2.28,e:"solide",cf:"[Kr] 4d⁸ 5s¹",ox:"+3",b:false,gc:9,gr:5},
+  {z:46,s:"Pd",n:"Palladium",m:"106,4",c:"transition",en:2.2,e:"solide",cf:"[Kr] 4d¹⁰",ox:"+2, +4",b:false,gc:10,gr:5},
+  {z:47,s:"Ag",n:"Argent",m:"107,9",c:"transition",en:1.93,e:"solide",cf:"[Kr] 4d¹⁰ 5s¹",ox:"+1",b:true,gc:11,gr:5},
+  {z:48,s:"Cd",n:"Cadmium",m:"112,4",c:"transition",en:1.69,e:"solide",cf:"[Kr] 4d¹⁰ 5s²",ox:"+2",b:false,gc:12,gr:5},
+  {z:49,s:"In",n:"Indium",m:"114,8",c:"pauvre",en:1.78,e:"solide",cf:"[Kr] 4d¹⁰ 5s² 5p¹",ox:"+3",b:false,gc:13,gr:5},
+  {z:50,s:"Sn",n:"Étain",m:"118,7",c:"pauvre",en:1.96,e:"solide",cf:"[Kr] 4d¹⁰ 5s² 5p²",ox:"+4, +2",b:true,gc:14,gr:5},
+  {z:51,s:"Sb",n:"Antimoine",m:"121,8",c:"metalloide",en:2.05,e:"solide",cf:"[Kr] 4d¹⁰ 5s² 5p³",ox:"+5, +3, -3",b:false,gc:15,gr:5},
+  {z:52,s:"Te",n:"Tellure",m:"127,6",c:"metalloide",en:2.1,e:"solide",cf:"[Kr] 4d¹⁰ 5s² 5p⁴",ox:"-2, +6, +4",b:false,gc:16,gr:5},
+  {z:53,s:"I",n:"Iode",m:"126,9",c:"halogene",en:2.66,e:"solide",cf:"[Kr] 4d¹⁰ 5s² 5p⁵",ox:"-1, +7, +5",b:true,gc:17,gr:5},
+  {z:54,s:"Xe",n:"Xénon",m:"131,3",c:"gaz-noble",en:2.6,e:"gaz",cf:"[Kr] 4d¹⁰ 5s² 5p⁶",ox:"+8, +6, +4",b:false,gc:18,gr:5},
+  {z:55,s:"Cs",n:"Césium",m:"132,9",c:"alcalin",en:0.79,e:"solide",cf:"[Xe] 6s¹",ox:"+1",b:false,gc:1,gr:6},
+  {z:56,s:"Ba",n:"Baryum",m:"137,3",c:"alcalino-terreux",en:0.89,e:"solide",cf:"[Xe] 6s²",ox:"+2",b:true,gc:2,gr:6},
+  {z:57,s:"La",n:"Lanthane",m:"138,9",c:"lanthanide",en:1.1,e:"solide",cf:"[Xe] 5d¹ 6s²",ox:"+3",b:false,gc:3,gr:6},
+  {z:72,s:"Hf",n:"Hafnium",m:"178,5",c:"transition",en:1.3,e:"solide",cf:"[Xe] 4f¹⁴ 5d² 6s²",ox:"+4",b:false,gc:4,gr:6},
+  {z:73,s:"Ta",n:"Tantale",m:"180,9",c:"transition",en:1.5,e:"solide",cf:"[Xe] 4f¹⁴ 5d³ 6s²",ox:"+5",b:false,gc:5,gr:6},
+  {z:74,s:"W",n:"Tungstène",m:"183,8",c:"transition",en:2.36,e:"solide",cf:"[Xe] 4f¹⁴ 5d⁴ 6s²",ox:"+6",b:false,gc:6,gr:6},
+  {z:75,s:"Re",n:"Rhénium",m:"186,2",c:"transition",en:1.9,e:"solide",cf:"[Xe] 4f¹⁴ 5d⁵ 6s²",ox:"+7, +4",b:false,gc:7,gr:6},
+  {z:76,s:"Os",n:"Osmium",m:"190,2",c:"transition",en:2.2,e:"solide",cf:"[Xe] 4f¹⁴ 5d⁶ 6s²",ox:"+8, +4",b:false,gc:8,gr:6},
+  {z:77,s:"Ir",n:"Iridium",m:"192,2",c:"transition",en:2.2,e:"solide",cf:"[Xe] 4f¹⁴ 5d⁷ 6s²",ox:"+4, +3",b:false,gc:9,gr:6},
+  {z:78,s:"Pt",n:"Platine",m:"195,1",c:"transition",en:2.28,e:"solide",cf:"[Xe] 4f¹⁴ 5d⁹ 6s¹",ox:"+4, +2",b:true,gc:10,gr:6},
+  {z:79,s:"Au",n:"Or",m:"197,0",c:"transition",en:2.54,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s¹",ox:"+3, +1",b:true,gc:11,gr:6},
+  {z:80,s:"Hg",n:"Mercure",m:"200,6",c:"transition",en:2.0,e:"liquide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s²",ox:"+2, +1",b:true,gc:12,gr:6},
+  {z:81,s:"Tl",n:"Thallium",m:"204,4",c:"pauvre",en:1.62,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹",ox:"+3, +1",b:false,gc:13,gr:6},
+  {z:82,s:"Pb",n:"Plomb",m:"207,2",c:"pauvre",en:2.33,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²",ox:"+4, +2",b:true,gc:14,gr:6},
+  {z:83,s:"Bi",n:"Bismuth",m:"209,0",c:"pauvre",en:2.02,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³",ox:"+3",b:false,gc:15,gr:6},
+  {z:84,s:"Po",n:"Polonium",m:"209,0",c:"metalloide",en:2.0,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴",ox:"+4, +2, -2",b:false,gc:16,gr:6},
+  {z:85,s:"At",n:"Astate",m:"210,0",c:"halogene",en:2.2,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵",ox:"-1, +7",b:false,gc:17,gr:6},
+  {z:86,s:"Rn",n:"Radon",m:"222,0",c:"gaz-noble",en:null,e:"gaz",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶",ox:"0",b:false,gc:18,gr:6},
+  {z:87,s:"Fr",n:"Francium",m:"223,0",c:"alcalin",en:0.7,e:"solide",cf:"[Rn] 7s¹",ox:"+1",b:false,gc:1,gr:7},
+  {z:88,s:"Ra",n:"Radium",m:"226,0",c:"alcalino-terreux",en:0.9,e:"solide",cf:"[Rn] 7s²",ox:"+2",b:false,gc:2,gr:7},
+  {z:89,s:"Ac",n:"Actinium",m:"227,0",c:"actinide",en:1.1,e:"solide",cf:"[Rn] 6d¹ 7s²",ox:"+3",b:false,gc:3,gr:7},
+  {z:104,s:"Rf",n:"Rutherfordium",m:"267,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d² 7s²",ox:"+4",b:false,gc:4,gr:7},
+  {z:105,s:"Db",n:"Dubnium",m:"268,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d³ 7s²",ox:"+5",b:false,gc:5,gr:7},
+  {z:106,s:"Sg",n:"Seaborgium",m:"269,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d⁴ 7s²",ox:"+6",b:false,gc:6,gr:7},
+  {z:107,s:"Bh",n:"Bohrium",m:"270,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d⁵ 7s²",ox:"+7",b:false,gc:7,gr:7},
+  {z:108,s:"Hs",n:"Hassium",m:"277,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d⁶ 7s²",ox:"+8",b:false,gc:8,gr:7},
+  {z:109,s:"Mt",n:"Meitnérium",m:"278,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d⁷ 7s²",ox:"Prévue",b:false,gc:9,gr:7},
+  {z:110,s:"Ds",n:"Darmstadtium",m:"281,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d⁸ 7s²",ox:"Prévue",b:false,gc:10,gr:7},
+  {z:111,s:"Rg",n:"Roentgenium",m:"282,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d⁹ 7s²",ox:"Prévue",b:false,gc:11,gr:7},
+  {z:112,s:"Cn",n:"Copernicium",m:"285,0",c:"transition",en:null,e:"liquide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s²",ox:"Prévue",b:false,gc:12,gr:7},
+  {z:113,s:"Nh",n:"Nihonium",m:"286,0",c:"pauvre",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s² 7p¹",ox:"Prévue",b:false,gc:13,gr:7},
+  {z:114,s:"Fl",n:"Flérovium",m:"289,0",c:"pauvre",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s² 7p²",ox:"Prévue",b:false,gc:14,gr:7},
+  {z:115,s:"Mc",n:"Moscovium",m:"290,0",c:"pauvre",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s² 7p³",ox:"Prévue",b:false,gc:15,gr:7},
+  {z:116,s:"Lv",n:"Livermorium",m:"293,0",c:"pauvre",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s² 7p⁴",ox:"Prévue",b:false,gc:16,gr:7},
+  {z:117,s:"Ts",n:"Ténnessine",m:"294,0",c:"halogene",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s² 7p⁵",ox:"Prévue",b:false,gc:17,gr:7},
+  {z:118,s:"Og",n:"Oganesson",m:"294,0",c:"gaz-noble",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s² 7p⁶",ox:"Prévue",b:false,gc:18,gr:7},
+  {z:58,s:"Ce",n:"Cérium",m:"140,1",c:"lanthanide",en:1.12,e:"solide",cf:"[Xe] 4f¹ 5d¹ 6s²",ox:"+4, +3",b:false,gc:4,gr:9},
+  {z:59,s:"Pr",n:"Praséodyme",m:"140,9",c:"lanthanide",en:1.13,e:"solide",cf:"[Xe] 4f³ 6s²",ox:"+3",b:false,gc:5,gr:9},
+  {z:60,s:"Nd",n:"Néodyme",m:"144,2",c:"lanthanide",en:1.14,e:"solide",cf:"[Xe] 4f⁴ 6s²",ox:"+3",b:false,gc:6,gr:9},
+  {z:61,s:"Pm",n:"Prométhium",m:"145,0",c:"lanthanide",en:null,e:"solide",cf:"[Xe] 4f⁵ 6s²",ox:"+3",b:false,gc:7,gr:9},
+  {z:62,s:"Sm",n:"Samarium",m:"150,4",c:"lanthanide",en:1.17,e:"solide",cf:"[Xe] 4f⁶ 6s²",ox:"+3, +2",b:false,gc:8,gr:9},
+  {z:63,s:"Eu",n:"Europium",m:"152,0",c:"lanthanide",en:null,e:"solide",cf:"[Xe] 4f⁷ 6s²",ox:"+3, +2",b:false,gc:9,gr:9},
+  {z:64,s:"Gd",n:"Gadolinium",m:"157,3",c:"lanthanide",en:1.2,e:"solide",cf:"[Xe] 4f⁷ 5d¹ 6s²",ox:"+3",b:false,gc:10,gr:9},
+  {z:65,s:"Tb",n:"Terbium",m:"158,9",c:"lanthanide",en:null,e:"solide",cf:"[Xe] 4f⁹ 6s²",ox:"+3",b:false,gc:11,gr:9},
+  {z:66,s:"Dy",n:"Dysprosium",m:"162,5",c:"lanthanide",en:1.22,e:"solide",cf:"[Xe] 4f¹⁰ 6s²",ox:"+3",b:false,gc:12,gr:9},
+  {z:67,s:"Ho",n:"Holmium",m:"164,9",c:"lanthanide",en:1.23,e:"solide",cf:"[Xe] 4f¹¹ 6s²",ox:"+3",b:false,gc:13,gr:9},
+  {z:68,s:"Er",n:"Erbium",m:"167,3",c:"lanthanide",en:1.24,e:"solide",cf:"[Xe] 4f¹² 6s²",ox:"+3",b:false,gc:14,gr:9},
+  {z:69,s:"Tm",n:"Thulium",m:"168,9",c:"lanthanide",en:1.25,e:"solide",cf:"[Xe] 4f¹³ 6s²",ox:"+3",b:false,gc:15,gr:9},
+  {z:70,s:"Yb",n:"Ytterbium",m:"173,0",c:"lanthanide",en:null,e:"solide",cf:"[Xe] 4f¹⁴ 6s²",ox:"+3, +2",b:false,gc:16,gr:9},
+  {z:71,s:"Lu",n:"Lutétium",m:"175,0",c:"lanthanide",en:1.27,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹ 6s²",ox:"+3",b:false,gc:17,gr:9},
+  {z:90,s:"Th",n:"Thorium",m:"232,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 6d² 7s²",ox:"+4",b:false,gc:4,gr:10},
+  {z:91,s:"Pa",n:"Protactinium",m:"231,0",c:"actinide",en:1.5,e:"solide",cf:"[Rn] 5f² 6d¹ 7s²",ox:"+5",b:false,gc:5,gr:10},
+  {z:92,s:"U",n:"Uranium",m:"238,0",c:"actinide",en:1.38,e:"solide",cf:"[Rn] 5f³ 6d¹ 7s²",ox:"+6, +4",b:false,gc:6,gr:10},
+  {z:93,s:"Np",n:"Neptunium",m:"237,0",c:"actinide",en:1.36,e:"solide",cf:"[Rn] 5f⁴ 6d¹ 7s²",ox:"+6, +5, +4",b:false,gc:7,gr:10},
+  {z:94,s:"Pu",n:"Plutonium",m:"244,0",c:"actinide",en:1.28,e:"solide",cf:"[Rn] 5f⁶ 7s²",ox:"+6, +4",b:false,gc:8,gr:10},
+  {z:95,s:"Am",n:"Américium",m:"243,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f⁷ 7s²",ox:"+6, +5, +3",b:false,gc:9,gr:10},
+  {z:96,s:"Cm",n:"Curium",m:"247,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f⁷ 6d¹ 7s²",ox:"+4, +3",b:false,gc:10,gr:10},
+  {z:97,s:"Bk",n:"Berkélium",m:"247,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f⁹ 7s²",ox:"+4, +3",b:false,gc:11,gr:10},
+  {z:98,s:"Cf",n:"Californium",m:"251,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f¹⁰ 7s²",ox:"+4, +3",b:false,gc:12,gr:10},
+  {z:99,s:"Es",n:"Einsteinium",m:"252,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f¹¹ 7s²",ox:"+3",b:false,gc:13,gr:10},
+  {z:100,s:"Fm",n:"Fermium",m:"257,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f¹² 7s²",ox:"+3",b:false,gc:14,gr:10},
+  {z:101,s:"Md",n:"Mendélévium",m:"258,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f¹³ 7s²",ox:"+3",b:false,gc:15,gr:10},
+  {z:102,s:"No",n:"Nobélium",m:"259,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f¹⁴ 7s²",ox:"+3",b:false,gc:16,gr:10},
+  {z:103,s:"Lr",n:"Lawrencium",m:"266,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f¹⁴ 7s² 7p¹",ox:"+3",b:false,gc:17,gr:10}
+];
+
+const CAT_INFO = {
+  'alcalin': { nom: 'Métaux alcalins', couleur: '#E74C3C' },
+  'alcalino-terreux': { nom: 'Métaux alcalino-terreux', couleur: '#E67E22' },
+  'transition': { nom: 'Métaux de transition', couleur: '#3498DB' },
+  'pauvre': { nom: 'Métaux pauvres', couleur: '#1ABC9C' },
+  'metalloide': { nom: 'Métalloïdes', couleur: '#27AE60' },
+  'non-metal': { nom: 'Non-métaux', couleur: '#F1C40F' },
+  'halogene': { nom: 'Halogènes', couleur: '#00BCD4' },
+  'gaz-noble': { nom: 'Gaz nobles', couleur: '#9B59B6' },
+  'lanthanide': { nom: 'Lanthanides', couleur: '#E91E8C' },
+  'actinide': { nom: 'Actinides', couleur: '#FF7043' }
+};
+
+const ETAT_LABELS = { solide: 'Solide', liquide: 'Liquide', gaz: 'Gaz' };
+
+// ================================================================
+// ÉTAT
+// ================================================================
+let bacMode = false;
+let currentEl = null;
+let activeCatFilter = null;
+let currentUid = null;
+let isRedirecting = false;
+let isAuthResolved = false;
+let graceTimer = null;
+let maxTimer = null;
+let authUnsubscribe = null;   // ✅ C5
+
+// ================================================================
+// DOM
+// ================================================================
+const ptable = document.getElementById('ptable');
+const detailPanel = document.getElementById('detailPanel');
+const detailOverlay = document.getElementById('detailOverlay');
+const detailContent = document.getElementById('detailContent');
+const detailClose = document.getElementById('detailClose');
+const searchInput = document.getElementById('searchInput');
+const bacToggle = document.getElementById('bacToggle');
+
+// ================================================================
+// RENDER TABLE
+// ================================================================
+function renderTable() {
+  let html = '<div class="la-ac-label">57-71</div><div class="la-ac-label">89-103</div>';
+  ELEMENTS.forEach((el) => {
+    html += `<div class="el" data-cat="${el.c}" data-z="${el.z}" data-bac="${el.b}"
+      style="grid-column:${el.gc};grid-row:${el.gr}"
+      onclick="window.openDetail(${el.z})">
+      <span class="el-z">${el.z}</span>
+      <span class="el-sym">${el.s}</span>
+      <span class="el-nom">${el.n}</span>
+      <span class="el-masse">${el.m}</span>
+    </div>`;
   });
+  ptable.innerHTML = html;
+}
+
+// ================================================================
+// SEARCH
+// ================================================================
+searchInput.addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  document.querySelectorAll('.el').forEach(cell => {
+    const z = cell.dataset.z;
+    const el = ELEMENTS.find(e => e.z == z);
+    if (!el) return;
+    if (!q) {
+      cell.classList.remove('search-hidden');
+      return;
+    }
+    const match = el.s.toLowerCase().includes(q) ||
+                  el.n.toLowerCase().includes(q) ||
+                  el.z.toString().includes(q);
+    cell.classList.toggle('search-hidden', !match);
+  });
+});
+
+// ================================================================
+// BAC MODE
+// ================================================================
+bacToggle.addEventListener('click', () => {
+  bacMode = !bacMode;
+  bacToggle.classList.toggle('active', bacMode);
+  document.querySelectorAll('.el').forEach(cell => {
+    const isBac = cell.dataset.bac === 'true';
+    cell.classList.toggle('bac-mode-dim', bacMode && !isBac);
+    cell.classList.toggle('bac-highlight', bacMode && isBac);
+  });
+  document.querySelectorAll('.legend-item').forEach(item => {
+    item.classList.toggle('dimmed', bacMode);
+  });
+});
+
+// ================================================================
+// LEGEND FILTER
+// ================================================================
+document.querySelectorAll('.legend-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const cat = item.dataset.cat;
+    if (activeCatFilter === cat) {
+      activeCatFilter = null;
+      document.querySelectorAll('.el').forEach(c => c.classList.remove('search-hidden'));
+      document.querySelectorAll('.legend-item').forEach(l => l.classList.remove('dimmed'));
+    } else {
+      activeCatFilter = cat;
+      document.querySelectorAll('.legend-item').forEach(l => l.classList.toggle('dimmed', l.dataset.cat !== cat));
+      document.querySelectorAll('.el').forEach(c => {
+        c.classList.toggle('search-hidden', c.dataset.cat !== cat);
+      });
+    }
+    searchInput.value = '';
+  });
+});
+
+// ================================================================
+// DETAIL PANEL
+// ================================================================
+window.openDetail = function(z) {
+  const el = ELEMENTS.find(e => e.z === z);
+  if (!el) return;
+  currentEl = el;
+
+  const cat = CAT_INFO[el.c] || { nom: 'Inconnu', couleur: '#607D8B' };
+  const enText = el.en !== null ? el.en.toFixed(2).replace('.', ',') : '—';
+  const etatIcon = el.e === 'gaz' ? 'fa-wind' : el.e === 'liquide' ? 'fa-droplet' : 'fa-cube';
+
+  detailContent.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-big-sym" style="background:${cat.couleur}22;color:${cat.couleur};border-color:${cat.couleur}33">${el.s}</div>
+      <div class="detail-info">
+        <div class="detail-nom">${el.n}</div>
+        <div class="detail-cat" style="background:${cat.couleur}18;color:${cat.couleur}">
+          <span class="cat-dot" style="background:${cat.couleur}"></span>
+          ${cat.nom}
+        </div>
+      </div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-card">
+        <span class="dc-label">Numéro atomique (Z)</span>
+        <span class="dc-value accent">${el.z}</span>
+      </div>
+      <div class="detail-card">
+        <span class="dc-label">Masse molaire</span>
+        <span class="dc-value">${el.m} g/mol</span>
+      </div>
+      <div class="detail-card">
+        <span class="dc-label">Électronégativité</span>
+        <span class="dc-value">${enText}</span>
+      </div>
+      <div class="detail-card">
+        <span class="dc-label">État physique</span>
+        <span class="dc-value"><i class="fas ${etatIcon}" style="margin-right:6px;opacity:.6"></i>${ETAT_LABELS[el.e] || el.e}</span>
+      </div>
+      <div class="detail-card wide">
+        <span class="dc-label">Configuration électronique</span>
+        <span class="dc-value small" style="font-family:'Playfair Display',serif;color:var(--accent-bright)">${el.cf}</span>
+      </div>
+      <div class="detail-card">
+        <span class="dc-label">Oxydation courante</span>
+        <span class="dc-value small">${el.ox}</span>
+      </div>
+      <div class="detail-card">
+        <span class="dc-label">Position</span>
+        <span class="dc-value small">Période ${el.gr <= 7 ? el.gr : (el.gr === 9 ? '6' : '7')} · Groupe ${el.gc}</span>
+      </div>
+    </div>
+    <div class="detail-nav">
+      <button onclick="window.navElement(-1)"><i class="fas fa-chevron-left"></i> Précédent</button>
+      <button onclick="window.navElement(1)">Suivant <i class="fas fa-chevron-right"></i></button>
+    </div>
+  `;
+
+  detailOverlay.classList.add('open');
+  detailPanel.classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeDetail = function() {
+  detailPanel.classList.remove('open');
+  detailOverlay.classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+window.navElement = function(dir) {
+  if (!currentEl) return;
+  const sorted = ELEMENTS.filter(e => e.z < 104).sort((a,b) => a.z - b.z);
+  const idx = sorted.findIndex(e => e.z === currentEl.z);
+  const newIdx = idx + dir;
+  if (newIdx >= 0 && newIdx < sorted.length) {
+    window.openDetail(sorted[newIdx].z);
+  }
+};
+
+// Close button
+detailClose.addEventListener('click', window.closeDetail);
+detailOverlay.addEventListener('click', window.closeDetail);
+
+// Keyboard nav
+document.addEventListener('keydown', (e) => {
+  if (!currentEl) return;
+  if (e.key === 'Escape') window.closeDetail();
+  if (e.key === 'ArrowLeft') window.navElement(-1);
+  if (e.key === 'ArrowRight') window.navElement(1);
+});
+
+// ================================================================
+// SWIPE TO CLOSE
+// ================================================================
+let swipeAlreadySetup = false;
+function setupSwipeToClose() {
+  if (swipeAlreadySetup) return;  // ✅ évite le double-binding
+  swipeAlreadySetup = true;
+
+  let startY = 0;
+  let currentY = 0;
+  let isDragging = false;
+  let startTime = 0;
+
+  detailPanel.addEventListener('touchstart', (e) => {
+    const rect = detailPanel.getBoundingClientRect();
+    const touchY = e.touches[0].clientY;
+
+    if (touchY - rect.top < 120) {
+      startY = touchY;
+      currentY = touchY;
+      startTime = Date.now();
+      isDragging = true;
+      detailPanel.classList.add('dragging');
+      if (navigator.vibrate) navigator.vibrate(5);
+    }
+  }, { passive: true });
+
+  detailPanel.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+
+    if (diff > 0) {
+      detailPanel.style.transform = `translateY(${diff}px)`;
+      const opacity = Math.max(0.1, 1 - diff / 400);
+      detailOverlay.style.background = `rgba(0,0,0,${0.75 * opacity})`;
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  detailPanel.addEventListener('touchend', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    detailPanel.classList.remove('dragging');
+
+    const diff = currentY - startY;
+    const duration = Date.now() - startTime;
+    const velocity = diff / duration;
+
+    detailOverlay.style.background = '';
+
+    if (diff > 100 || (velocity > 0.5 && diff > 30)) {
+      detailPanel.style.transition = 'transform 0.3s cubic-bezier(0.25,1,0.5,1)';
+      detailPanel.style.transform = `translateY(100%)`;
+
+      setTimeout(() => {
+        detailPanel.classList.remove('open');
+        detailOverlay.classList.remove('open');
+        detailPanel.style.transform = '';
+        detailPanel.style.transition = '';
+        document.body.style.overflow = '';
+      }, 300);
+    } else {
+      detailPanel.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      detailPanel.style.transform = '';
+      setTimeout(() => { detailPanel.style.transition = ''; }, 400);
+    }
+
+    startY = 0;
+    currentY = 0;
+  }, { passive: true });
+
+  detailPanel.addEventListener('touchcancel', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    detailPanel.classList.remove('dragging');
+    detailPanel.style.transform = '';
+    detailOverlay.style.background = '';
+  }, { passive: true });
+
+  // Souris (desktop)
+  let mouseDownY = 0;
+  let isMouseDragging = false;
+
+  detailPanel.addEventListener('mousedown', (e) => {
+    const rect = detailPanel.getBoundingClientRect();
+    if (e.clientY - rect.top < 40) {
+      mouseDownY = e.clientY;
+      isMouseDragging = true;
+      detailPanel.classList.add('dragging');
+      detailPanel.style.cursor = 'grabbing';
+      e.preventDefault();
+    }
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isMouseDragging) return;
+    const diff = e.clientY - mouseDownY;
+    if (diff > 0) {
+      detailPanel.style.transition = 'none';
+      detailPanel.style.transform = `translateY(${diff}px)`;
+      const opacity = Math.max(0.1, 1 - diff / 400);
+      detailOverlay.style.background = `rgba(0,0,0,${0.75 * opacity})`;
+    }
+  });
+
+  document.addEventListener('mouseup', (e) => {
+    if (!isMouseDragging) return;
+    isMouseDragging = false;
+    detailPanel.classList.remove('dragging');
+    detailPanel.style.cursor = '';
+
+    const diff = e.clientY - mouseDownY;
+    detailPanel.style.transition = 'transform 0.3s cubic-bezier(0.25,1,0.5,1)';
+    detailOverlay.style.background = '';
+
+    if (diff > 100) {
+      detailPanel.style.transform = `translateY(100%)`;
+      setTimeout(() => {
+        detailPanel.classList.remove('open');
+        detailOverlay.classList.remove('open');
+        detailPanel.style.transform = '';
+        detailPanel.style.transition = '';
+        document.body.style.overflow = '';
+      }, 300);
+    } else {
+      detailPanel.style.transform = '';
+      setTimeout(() => { detailPanel.style.transition = ''; }, 300);
+    }
+    mouseDownY = 0;
+  });
+}
+
+// ================================================================
+// ✅ C6 — Rendu IMMÉDIAT (indépendant de Firebase)
+// ================================================================
+renderTable();
+setupSwipeToClose();
+
+// ================================================================
+// AUTH ROBUSTE — ✅ C1/C5/C7
+// ================================================================
+// ✅ C1 — préserver les clés existantes + URL complète
+function redirectToLogin() {
+  if (isRedirecting) return;
+  isRedirecting = true;
+
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) {
+    try { authUnsubscribe(); } catch (e) {}
+    authUnsubscribe = null;
+  }
 
   try {
-    await setPersistence(auth, browserLocalPersistence);
+    const existing = sessionStorage.getItem('redirectAfterLogin')
+                  || sessionStorage.getItem('redirectAfterAuth');
+    if (!existing) {
+      sessionStorage.setItem('redirectAfterLogin',
+        window.location.pathname + window.location.search + window.location.hash);
+    }
   } catch (e) {}
 
-  // ================================================================
-  // SESSION / CACHE
-  // ================================================================
-  const SESSION_KEY = 'arvexa_session';
-  const USER_DATA_KEY = 'arvexa_user_data';
-  const LAST_UID_KEY = 'arvexa_last_uid';
+  window.location.replace('login.html');
+}
 
-  function saveSession(user) {
-    if (!user) return;
-    try {
-      const data = {
-        uid: user.uid,
-        email: user.email,
-        lastActive: Date.now()
-      };
-      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
-      localStorage.setItem(LAST_UID_KEY, user.uid);
-    } catch (e) {}
-  }
+function initAuthGuard(onAuthenticated) {
+  if (authUnsubscribe) return;  // garde anti-double
 
-  function clearSession() {
-    try {
-      localStorage.removeItem(SESSION_KEY);
-      localStorage.removeItem(USER_DATA_KEY);
-      localStorage.removeItem(LAST_UID_KEY);
-      sessionStorage.removeItem(SESSION_KEY);
-    } catch (e) {}
-  }
-
-  // ================================================================
-  // DONNÉES — 118 ÉLÉMENTS
-  // ================================================================
-  const ELEMENTS = [
-    {z:1,s:"H",n:"Hydrogène",m:"1,008",c:"non-metal",en:2.2,e:"gaz",cf:"1s¹",ox:"+1, -1",b:true,gc:1,gr:1},
-    {z:2,s:"He",n:"Hélium",m:"4,003",c:"gaz-noble",en:null,e:"gaz",cf:"1s²",ox:"0",b:true,gc:18,gr:1},
-    {z:3,s:"Li",n:"Lithium",m:"6,941",c:"alcalin",en:0.98,e:"solide",cf:"[He] 2s¹",ox:"+1",b:true,gc:1,gr:2},
-    {z:4,s:"Be",n:"Béryllium",m:"9,012",c:"alcalino-terreux",en:1.57,e:"solide",cf:"[He] 2s²",ox:"+2",b:false,gc:2,gr:2},
-    {z:5,s:"B",n:"Bore",m:"10,81",c:"metalloide",en:2.04,e:"solide",cf:"[He] 2s² 2p¹",ox:"+3",b:true,gc:13,gr:2},
-    {z:6,s:"C",n:"Carbone",m:"12,01",c:"non-metal",en:2.55,e:"solide",cf:"[He] 2s² 2p²",ox:"+4, -4, +2",b:true,gc:14,gr:2},
-    {z:7,s:"N",n:"Azote",m:"14,01",c:"non-metal",en:3.04,e:"gaz",cf:"[He] 2s² 2p³",ox:"-3, +5, +4, +2",b:true,gc:15,gr:2},
-    {z:8,s:"O",n:"Oxygène",m:"16,00",c:"non-metal",en:3.44,e:"gaz",cf:"[He] 2s² 2p⁴",ox:"-2",b:true,gc:16,gr:2},
-    {z:9,s:"F",n:"Fluor",m:"19,00",c:"halogene",en:3.98,e:"gaz",cf:"[He] 2s² 2p⁵",ox:"-1",b:true,gc:17,gr:2},
-    {z:10,s:"Ne",n:"Néon",m:"20,18",c:"gaz-noble",en:null,e:"gaz",cf:"[He] 2s² 2p⁶",ox:"0",b:false,gc:18,gr:2},
-    {z:11,s:"Na",n:"Sodium",m:"22,99",c:"alcalin",en:0.93,e:"solide",cf:"[Ne] 3s¹",ox:"+1",b:true,gc:1,gr:3},
-    {z:12,s:"Mg",n:"Magnésium",m:"24,31",c:"alcalino-terreux",en:1.31,e:"solide",cf:"[Ne] 3s²",ox:"+2",b:true,gc:2,gr:3},
-    {z:13,s:"Al",n:"Aluminium",m:"26,98",c:"pauvre",en:1.61,e:"solide",cf:"[Ne] 3s² 3p¹",ox:"+3",b:true,gc:13,gr:3},
-    {z:14,s:"Si",n:"Silicium",m:"28,09",c:"metalloide",en:1.9,e:"solide",cf:"[Ne] 3s² 3p²",ox:"+4, -4",b:true,gc:14,gr:3},
-    {z:15,s:"P",n:"Phosphore",m:"30,97",c:"non-metal",en:2.19,e:"solide",cf:"[Ne] 3s² 3p³",ox:"-3, +5, +3",b:true,gc:15,gr:3},
-    {z:16,s:"S",n:"Soufre",m:"32,07",c:"non-metal",en:2.58,e:"solide",cf:"[Ne] 3s² 3p⁴",ox:"-2, +6, +4, +2",b:true,gc:16,gr:3},
-    {z:17,s:"Cl",n:"Chlore",m:"35,45",c:"halogene",en:3.16,e:"gaz",cf:"[Ne] 3s² 3p⁵",ox:"-1, +5, +7, +1",b:true,gc:17,gr:3},
-    {z:18,s:"Ar",n:"Argon",m:"39,95",c:"gaz-noble",en:null,e:"gaz",cf:"[Ne] 3s² 3p⁶",ox:"0",b:false,gc:18,gr:3},
-    {z:19,s:"K",n:"Potassium",m:"39,10",c:"alcalin",en:0.82,e:"solide",cf:"[Ar] 4s¹",ox:"+1",b:true,gc:1,gr:4},
-    {z:20,s:"Ca",n:"Calcium",m:"40,08",c:"alcalino-terreux",en:1.0,e:"solide",cf:"[Ar] 4s²",ox:"+2",b:true,gc:2,gr:4},
-    {z:21,s:"Sc",n:"Scandium",m:"44,96",c:"transition",en:1.36,e:"solide",cf:"[Ar] 3d¹ 4s²",ox:"+3",b:false,gc:3,gr:4},
-    {z:22,s:"Ti",n:"Titane",m:"47,87",c:"transition",en:1.54,e:"solide",cf:"[Ar] 3d² 4s²",ox:"+4, +3",b:false,gc:4,gr:4},
-    {z:23,s:"V",n:"Vanadium",m:"50,94",c:"transition",en:1.63,e:"solide",cf:"[Ar] 3d³ 4s²",ox:"+5, +4, +3, +2",b:false,gc:5,gr:4},
-    {z:24,s:"Cr",n:"Chrome",m:"52,00",c:"transition",en:1.66,e:"solide",cf:"[Ar] 3d⁵ 4s¹",ox:"+6, +3, +2",b:true,gc:6,gr:4},
-    {z:25,s:"Mn",n:"Manganèse",m:"54,94",c:"transition",en:1.55,e:"solide",cf:"[Ar] 3d⁵ 4s²",ox:"+7, +4, +2",b:true,gc:7,gr:4},
-    {z:26,s:"Fe",n:"Fer",m:"55,85",c:"transition",en:1.83,e:"solide",cf:"[Ar] 3d⁶ 4s²",ox:"+3, +2",b:true,gc:8,gr:4},
-    {z:27,s:"Co",n:"Cobalt",m:"58,93",c:"transition",en:1.88,e:"solide",cf:"[Ar] 3d⁷ 4s²",ox:"+3, +2",b:false,gc:9,gr:4},
-    {z:28,s:"Ni",n:"Nickel",m:"58,69",c:"transition",en:1.91,e:"solide",cf:"[Ar] 3d⁸ 4s²",ox:"+2, +3",b:false,gc:10,gr:4},
-    {z:29,s:"Cu",n:"Cuivre",m:"63,55",c:"transition",en:1.9,e:"solide",cf:"[Ar] 3d¹⁰ 4s¹",ox:"+2, +1",b:true,gc:11,gr:4},
-    {z:30,s:"Zn",n:"Zinc",m:"65,38",c:"transition",en:1.65,e:"solide",cf:"[Ar] 3d¹⁰ 4s²",ox:"+2",b:true,gc:12,gr:4},
-    {z:31,s:"Ga",n:"Gallium",m:"69,72",c:"pauvre",en:1.81,e:"solide",cf:"[Ar] 3d¹⁰ 4s² 4p¹",ox:"+3",b:false,gc:13,gr:4},
-    {z:32,s:"Ge",n:"Germanium",m:"72,63",c:"metalloide",en:2.01,e:"solide",cf:"[Ar] 3d¹⁰ 4s² 4p²",ox:"+4, +2",b:false,gc:14,gr:4},
-    {z:33,s:"As",n:"Arsenic",m:"74,92",c:"metalloide",en:2.18,e:"solide",cf:"[Ar] 3d¹⁰ 4s² 4p³",ox:"+5, +3, -3",b:false,gc:15,gr:4},
-    {z:34,s:"Se",n:"Sélénium",m:"78,97",c:"non-metal",en:2.55,e:"solide",cf:"[Ar] 3d¹⁰ 4s² 4p⁴",ox:"-2, +6, +4",b:true,gc:16,gr:4},
-    {z:35,s:"Br",n:"Brome",m:"79,90",c:"halogene",en:2.96,e:"liquide",cf:"[Ar] 3d¹⁰ 4s² 4p⁵",ox:"-1, +5, +1",b:true,gc:17,gr:4},
-    {z:36,s:"Kr",n:"Krypton",m:"83,80",c:"gaz-noble",en:3.0,e:"gaz",cf:"[Ar] 3d¹⁰ 4s² 4p⁶",ox:"0",b:false,gc:18,gr:4},
-    {z:37,s:"Rb",n:"Rubidium",m:"85,47",c:"alcalin",en:0.82,e:"solide",cf:"[Kr] 5s¹",ox:"+1",b:false,gc:1,gr:5},
-    {z:38,s:"Sr",n:"Strontium",m:"87,62",c:"alcalino-terreux",en:0.95,e:"solide",cf:"[Kr] 5s²",ox:"+2",b:false,gc:2,gr:5},
-    {z:39,s:"Y",n:"Yttrium",m:"88,91",c:"transition",en:1.22,e:"solide",cf:"[Kr] 4d¹ 5s²",ox:"+3",b:false,gc:3,gr:5},
-    {z:40,s:"Zr",n:"Zirconium",m:"91,22",c:"transition",en:1.33,e:"solide",cf:"[Kr] 4d² 5s²",ox:"+4",b:false,gc:4,gr:5},
-    {z:41,s:"Nb",n:"Niobium",m:"92,91",c:"transition",en:1.6,e:"solide",cf:"[Kr] 4d⁴ 5s¹",ox:"+5",b:false,gc:5,gr:5},
-    {z:42,s:"Mo",n:"Molybdène",m:"95,95",c:"transition",en:2.16,e:"solide",cf:"[Kr] 4d⁵ 5s¹",ox:"+6, +4",b:false,gc:6,gr:5},
-    {z:43,s:"Tc",n:"Technétium",m:"98,00",c:"transition",en:1.9,e:"solide",cf:"[Kr] 4d⁵ 5s²",ox:"+7",b:false,gc:7,gr:5},
-    {z:44,s:"Ru",n:"Ruthénium",m:"101,1",c:"transition",en:2.2,e:"solide",cf:"[Kr] 4d⁷ 5s¹",ox:"+8, +4, +3",b:false,gc:8,gr:5},
-    {z:45,s:"Rh",n:"Rhodium",m:"102,9",c:"transition",en:2.28,e:"solide",cf:"[Kr] 4d⁸ 5s¹",ox:"+3",b:false,gc:9,gr:5},
-    {z:46,s:"Pd",n:"Palladium",m:"106,4",c:"transition",en:2.2,e:"solide",cf:"[Kr] 4d¹⁰",ox:"+2, +4",b:false,gc:10,gr:5},
-    {z:47,s:"Ag",n:"Argent",m:"107,9",c:"transition",en:1.93,e:"solide",cf:"[Kr] 4d¹⁰ 5s¹",ox:"+1",b:true,gc:11,gr:5},
-    {z:48,s:"Cd",n:"Cadmium",m:"112,4",c:"transition",en:1.69,e:"solide",cf:"[Kr] 4d¹⁰ 5s²",ox:"+2",b:false,gc:12,gr:5},
-    {z:49,s:"In",n:"Indium",m:"114,8",c:"pauvre",en:1.78,e:"solide",cf:"[Kr] 4d¹⁰ 5s² 5p¹",ox:"+3",b:false,gc:13,gr:5},
-    {z:50,s:"Sn",n:"Étain",m:"118,7",c:"pauvre",en:1.96,e:"solide",cf:"[Kr] 4d¹⁰ 5s² 5p²",ox:"+4, +2",b:true,gc:14,gr:5},
-    {z:51,s:"Sb",n:"Antimoine",m:"121,8",c:"metalloide",en:2.05,e:"solide",cf:"[Kr] 4d¹⁰ 5s² 5p³",ox:"+5, +3, -3",b:false,gc:15,gr:5},
-    {z:52,s:"Te",n:"Tellure",m:"127,6",c:"metalloide",en:2.1,e:"solide",cf:"[Kr] 4d¹⁰ 5s² 5p⁴",ox:"-2, +6, +4",b:false,gc:16,gr:5},
-    {z:53,s:"I",n:"Iode",m:"126,9",c:"halogene",en:2.66,e:"solide",cf:"[Kr] 4d¹⁰ 5s² 5p⁵",ox:"-1, +7, +5",b:true,gc:17,gr:5},
-    {z:54,s:"Xe",n:"Xénon",m:"131,3",c:"gaz-noble",en:2.6,e:"gaz",cf:"[Kr] 4d¹⁰ 5s² 5p⁶",ox:"+8, +6, +4",b:false,gc:18,gr:5},
-    {z:55,s:"Cs",n:"Césium",m:"132,9",c:"alcalin",en:0.79,e:"solide",cf:"[Xe] 6s¹",ox:"+1",b:false,gc:1,gr:6},
-    {z:56,s:"Ba",n:"Baryum",m:"137,3",c:"alcalino-terreux",en:0.89,e:"solide",cf:"[Xe] 6s²",ox:"+2",b:true,gc:2,gr:6},
-    {z:57,s:"La",n:"Lanthane",m:"138,9",c:"lanthanide",en:1.1,e:"solide",cf:"[Xe] 5d¹ 6s²",ox:"+3",b:false,gc:3,gr:6},
-    {z:72,s:"Hf",n:"Hafnium",m:"178,5",c:"transition",en:1.3,e:"solide",cf:"[Xe] 4f¹⁴ 5d² 6s²",ox:"+4",b:false,gc:4,gr:6},
-    {z:73,s:"Ta",n:"Tantale",m:"180,9",c:"transition",en:1.5,e:"solide",cf:"[Xe] 4f¹⁴ 5d³ 6s²",ox:"+5",b:false,gc:5,gr:6},
-    {z:74,s:"W",n:"Tungstène",m:"183,8",c:"transition",en:2.36,e:"solide",cf:"[Xe] 4f¹⁴ 5d⁴ 6s²",ox:"+6",b:false,gc:6,gr:6},
-    {z:75,s:"Re",n:"Rhénium",m:"186,2",c:"transition",en:1.9,e:"solide",cf:"[Xe] 4f¹⁴ 5d⁵ 6s²",ox:"+7, +4",b:false,gc:7,gr:6},
-    {z:76,s:"Os",n:"Osmium",m:"190,2",c:"transition",en:2.2,e:"solide",cf:"[Xe] 4f¹⁴ 5d⁶ 6s²",ox:"+8, +4",b:false,gc:8,gr:6},
-    {z:77,s:"Ir",n:"Iridium",m:"192,2",c:"transition",en:2.2,e:"solide",cf:"[Xe] 4f¹⁴ 5d⁷ 6s²",ox:"+4, +3",b:false,gc:9,gr:6},
-    {z:78,s:"Pt",n:"Platine",m:"195,1",c:"transition",en:2.28,e:"solide",cf:"[Xe] 4f¹⁴ 5d⁹ 6s¹",ox:"+4, +2",b:true,gc:10,gr:6},
-    {z:79,s:"Au",n:"Or",m:"197,0",c:"transition",en:2.54,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s¹",ox:"+3, +1",b:true,gc:11,gr:6},
-    {z:80,s:"Hg",n:"Mercure",m:"200,6",c:"transition",en:2.0,e:"liquide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s²",ox:"+2, +1",b:true,gc:12,gr:6},
-    {z:81,s:"Tl",n:"Thallium",m:"204,4",c:"pauvre",en:1.62,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹",ox:"+3, +1",b:false,gc:13,gr:6},
-    {z:82,s:"Pb",n:"Plomb",m:"207,2",c:"pauvre",en:2.33,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²",ox:"+4, +2",b:true,gc:14,gr:6},
-    {z:83,s:"Bi",n:"Bismuth",m:"209,0",c:"pauvre",en:2.02,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³",ox:"+3",b:false,gc:15,gr:6},
-    {z:84,s:"Po",n:"Polonium",m:"209,0",c:"metalloide",en:2.0,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴",ox:"+4, +2, -2",b:false,gc:16,gr:6},
-    {z:85,s:"At",n:"Astate",m:"210,0",c:"halogene",en:2.2,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵",ox:"-1, +7",b:false,gc:17,gr:6},
-    {z:86,s:"Rn",n:"Radon",m:"222,0",c:"gaz-noble",en:null,e:"gaz",cf:"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶",ox:"0",b:false,gc:18,gr:6},
-    {z:87,s:"Fr",n:"Francium",m:"223,0",c:"alcalin",en:0.7,e:"solide",cf:"[Rn] 7s¹",ox:"+1",b:false,gc:1,gr:7},
-    {z:88,s:"Ra",n:"Radium",m:"226,0",c:"alcalino-terreux",en:0.9,e:"solide",cf:"[Rn] 7s²",ox:"+2",b:false,gc:2,gr:7},
-    {z:89,s:"Ac",n:"Actinium",m:"227,0",c:"actinide",en:1.1,e:"solide",cf:"[Rn] 6d¹ 7s²",ox:"+3",b:false,gc:3,gr:7},
-    {z:104,s:"Rf",n:"Rutherfordium",m:"267,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d² 7s²",ox:"+4",b:false,gc:4,gr:7},
-    {z:105,s:"Db",n:"Dubnium",m:"268,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d³ 7s²",ox:"+5",b:false,gc:5,gr:7},
-    {z:106,s:"Sg",n:"Seaborgium",m:"269,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d⁴ 7s²",ox:"+6",b:false,gc:6,gr:7},
-    {z:107,s:"Bh",n:"Bohrium",m:"270,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d⁵ 7s²",ox:"+7",b:false,gc:7,gr:7},
-    {z:108,s:"Hs",n:"Hassium",m:"277,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d⁶ 7s²",ox:"+8",b:false,gc:8,gr:7},
-    {z:109,s:"Mt",n:"Meitnérium",m:"278,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d⁷ 7s²",ox:"Prévue",b:false,gc:9,gr:7},
-    {z:110,s:"Ds",n:"Darmstadtium",m:"281,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d⁸ 7s²",ox:"Prévue",b:false,gc:10,gr:7},
-    {z:111,s:"Rg",n:"Roentgenium",m:"282,0",c:"transition",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 6d⁹ 7s²",ox:"Prévue",b:false,gc:11,gr:7},
-    {z:112,s:"Cn",n:"Copernicium",m:"285,0",c:"transition",en:null,e:"liquide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s²",ox:"Prévue",b:false,gc:12,gr:7},
-    {z:113,s:"Nh",n:"Nihonium",m:"286,0",c:"pauvre",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s² 7p¹",ox:"Prévue",b:false,gc:13,gr:7},
-    {z:114,s:"Fl",n:"Flérovium",m:"289,0",c:"pauvre",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s² 7p²",ox:"Prévue",b:false,gc:14,gr:7},
-    {z:115,s:"Mc",n:"Moscovium",m:"290,0",c:"pauvre",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s² 7p³",ox:"Prévue",b:false,gc:15,gr:7},
-    {z:116,s:"Lv",n:"Livermorium",m:"293,0",c:"pauvre",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s² 7p⁴",ox:"Prévue",b:false,gc:16,gr:7},
-    {z:117,s:"Ts",n:"Ténnessine",m:"294,0",c:"halogene",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s² 7p⁵",ox:"Prévue",b:false,gc:17,gr:7},
-    {z:118,s:"Og",n:"Oganesson",m:"294,0",c:"gaz-noble",en:null,e:"solide",cf:"[Rn] 5f¹⁴ 5d¹⁰ 7s² 7p⁶",ox:"Prévue",b:false,gc:18,gr:7},
-    {z:58,s:"Ce",n:"Cérium",m:"140,1",c:"lanthanide",en:1.12,e:"solide",cf:"[Xe] 4f¹ 5d¹ 6s²",ox:"+4, +3",b:false,gc:4,gr:9},
-    {z:59,s:"Pr",n:"Praséodyme",m:"140,9",c:"lanthanide",en:1.13,e:"solide",cf:"[Xe] 4f³ 6s²",ox:"+3",b:false,gc:5,gr:9},
-    {z:60,s:"Nd",n:"Néodyme",m:"144,2",c:"lanthanide",en:1.14,e:"solide",cf:"[Xe] 4f⁴ 6s²",ox:"+3",b:false,gc:6,gr:9},
-    {z:61,s:"Pm",n:"Prométhium",m:"145,0",c:"lanthanide",en:null,e:"solide",cf:"[Xe] 4f⁵ 6s²",ox:"+3",b:false,gc:7,gr:9},
-    {z:62,s:"Sm",n:"Samarium",m:"150,4",c:"lanthanide",en:1.17,e:"solide",cf:"[Xe] 4f⁶ 6s²",ox:"+3, +2",b:false,gc:8,gr:9},
-    {z:63,s:"Eu",n:"Europium",m:"152,0",c:"lanthanide",en:null,e:"solide",cf:"[Xe] 4f⁷ 6s²",ox:"+3, +2",b:false,gc:9,gr:9},
-    {z:64,s:"Gd",n:"Gadolinium",m:"157,3",c:"lanthanide",en:1.2,e:"solide",cf:"[Xe] 4f⁷ 5d¹ 6s²",ox:"+3",b:false,gc:10,gr:9},
-    {z:65,s:"Tb",n:"Terbium",m:"158,9",c:"lanthanide",en:null,e:"solide",cf:"[Xe] 4f⁹ 6s²",ox:"+3",b:false,gc:11,gr:9},
-    {z:66,s:"Dy",n:"Dysprosium",m:"162,5",c:"lanthanide",en:1.22,e:"solide",cf:"[Xe] 4f¹⁰ 6s²",ox:"+3",b:false,gc:12,gr:9},
-    {z:67,s:"Ho",n:"Holmium",m:"164,9",c:"lanthanide",en:1.23,e:"solide",cf:"[Xe] 4f¹¹ 6s²",ox:"+3",b:false,gc:13,gr:9},
-    {z:68,s:"Er",n:"Erbium",m:"167,3",c:"lanthanide",en:1.24,e:"solide",cf:"[Xe] 4f¹² 6s²",ox:"+3",b:false,gc:14,gr:9},
-    {z:69,s:"Tm",n:"Thulium",m:"168,9",c:"lanthanide",en:1.25,e:"solide",cf:"[Xe] 4f¹³ 6s²",ox:"+3",b:false,gc:15,gr:9},
-    {z:70,s:"Yb",n:"Ytterbium",m:"173,0",c:"lanthanide",en:null,e:"solide",cf:"[Xe] 4f¹⁴ 6s²",ox:"+3, +2",b:false,gc:16,gr:9},
-    {z:71,s:"Lu",n:"Lutétium",m:"175,0",c:"lanthanide",en:1.27,e:"solide",cf:"[Xe] 4f¹⁴ 5d¹ 6s²",ox:"+3",b:false,gc:17,gr:9},
-    {z:90,s:"Th",n:"Thorium",m:"232,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 6d² 7s²",ox:"+4",b:false,gc:4,gr:10},
-    {z:91,s:"Pa",n:"Protactinium",m:"231,0",c:"actinide",en:1.5,e:"solide",cf:"[Rn] 5f² 6d¹ 7s²",ox:"+5",b:false,gc:5,gr:10},
-    {z:92,s:"U",n:"Uranium",m:"238,0",c:"actinide",en:1.38,e:"solide",cf:"[Rn] 5f³ 6d¹ 7s²",ox:"+6, +4",b:false,gc:6,gr:10},
-    {z:93,s:"Np",n:"Neptunium",m:"237,0",c:"actinide",en:1.36,e:"solide",cf:"[Rn] 5f⁴ 6d¹ 7s²",ox:"+6, +5, +4",b:false,gc:7,gr:10},
-    {z:94,s:"Pu",n:"Plutonium",m:"244,0",c:"actinide",en:1.28,e:"solide",cf:"[Rn] 5f⁶ 7s²",ox:"+6, +4",b:false,gc:8,gr:10},
-    {z:95,s:"Am",n:"Américium",m:"243,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f⁷ 7s²",ox:"+6, +5, +3",b:false,gc:9,gr:10},
-    {z:96,s:"Cm",n:"Curium",m:"247,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f⁷ 6d¹ 7s²",ox:"+4, +3",b:false,gc:10,gr:10},
-    {z:97,s:"Bk",n:"Berkélium",m:"247,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f⁹ 7s²",ox:"+4, +3",b:false,gc:11,gr:10},
-    {z:98,s:"Cf",n:"Californium",m:"251,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f¹⁰ 7s²",ox:"+4, +3",b:false,gc:12,gr:10},
-    {z:99,s:"Es",n:"Einsteinium",m:"252,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f¹¹ 7s²",ox:"+3",b:false,gc:13,gr:10},
-    {z:100,s:"Fm",n:"Fermium",m:"257,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f¹² 7s²",ox:"+3",b:false,gc:14,gr:10},
-    {z:101,s:"Md",n:"Mendélévium",m:"258,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f¹³ 7s²",ox:"+3",b:false,gc:15,gr:10},
-    {z:102,s:"No",n:"Nobélium",m:"259,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f¹⁴ 7s²",ox:"+3",b:false,gc:16,gr:10},
-    {z:103,s:"Lr",n:"Lawrencium",m:"266,0",c:"actinide",en:1.3,e:"solide",cf:"[Rn] 5f¹⁴ 7s² 7p¹",ox:"+3",b:false,gc:17,gr:10}
-  ];
-
-  const CAT_INFO = {
-    'alcalin': { nom: 'Métaux alcalins', couleur: '#E74C3C' },
-    'alcalino-terreux': { nom: 'Métaux alcalino-terreux', couleur: '#E67E22' },
-    'transition': { nom: 'Métaux de transition', couleur: '#3498DB' },
-    'pauvre': { nom: 'Métaux pauvres', couleur: '#1ABC9C' },
-    'metalloide': { nom: 'Métalloïdes', couleur: '#27AE60' },
-    'non-metal': { nom: 'Non-métaux', couleur: '#F1C40F' },
-    'halogene': { nom: 'Halogènes', couleur: '#00BCD4' },
-    'gaz-noble': { nom: 'Gaz nobles', couleur: '#9B59B6' },
-    'lanthanide': { nom: 'Lanthanides', couleur: '#E91E8C' },
-    'actinide': { nom: 'Actinides', couleur: '#FF7043' }
-  };
-
-  const ETAT_LABELS = { solide: 'Solide', liquide: 'Liquide', gaz: 'Gaz' };
-
-  // ================================================================
-  // ÉTAT
-  // ================================================================
-  let bacMode = false;
-  let currentEl = null;
-  let activeCatFilter = null;
-  let currentUid = null;
-  let isRedirecting = false;
-  let isAuthResolved = false;
-  let graceTimer = null;
-  let maxTimer = null;
-
-  // ================================================================
-  // DOM
-  // ================================================================
-  const ptable = document.getElementById('ptable');
-  const detailPanel = document.getElementById('detailPanel');
-  const detailOverlay = document.getElementById('detailOverlay');
-  const detailContent = document.getElementById('detailContent');
-  const detailClose = document.getElementById('detailClose');
-  const searchInput = document.getElementById('searchInput');
-  const bacToggle = document.getElementById('bacToggle');
-
-  // ================================================================
-  // RENDER TABLE
-  // ================================================================
-  function renderTable() {
-    let html = '<div class="la-ac-label">57-71</div><div class="la-ac-label">89-103</div>';
-    ELEMENTS.forEach((el) => {
-      html += `<div class="el" data-cat="${el.c}" data-z="${el.z}" data-bac="${el.b}"
-        style="grid-column:${el.gc};grid-row:${el.gr}"
-        onclick="window.openDetail(${el.z})">
-        <span class="el-z">${el.z}</span>
-        <span class="el-sym">${el.s}</span>
-        <span class="el-nom">${el.n}</span>
-        <span class="el-masse">${el.m}</span>
-      </div>`;
-    });
-    ptable.innerHTML = html;
-  }
-
-  // ================================================================
-  // SEARCH
-  // ================================================================
-  searchInput.addEventListener('input', function() {
-    const q = this.value.trim().toLowerCase();
-    document.querySelectorAll('.el').forEach(cell => {
-      const z = cell.dataset.z;
-      const el = ELEMENTS.find(e => e.z == z);
-      if (!el) return;
-      if (!q) {
-        cell.classList.remove('search-hidden');
-        return;
-      }
-      const match = el.s.toLowerCase().includes(q) ||
-                    el.n.toLowerCase().includes(q) ||
-                    el.z.toString().includes(q);
-      cell.classList.toggle('search-hidden', !match);
-    });
-  });
-
-  // ================================================================
-  // BAC MODE
-  // ================================================================
-  bacToggle.addEventListener('click', () => {
-    bacMode = !bacMode;
-    bacToggle.classList.toggle('active', bacMode);
-    document.querySelectorAll('.el').forEach(cell => {
-      const isBac = cell.dataset.bac === 'true';
-      cell.classList.toggle('bac-mode-dim', bacMode && !isBac);
-      cell.classList.toggle('bac-highlight', bacMode && isBac);
-    });
-    document.querySelectorAll('.legend-item').forEach(item => {
-      item.classList.toggle('dimmed', bacMode);
-    });
-  });
-
-  // ================================================================
-  // LEGEND FILTER
-  // ================================================================
-  document.querySelectorAll('.legend-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const cat = item.dataset.cat;
-      if (activeCatFilter === cat) {
-        activeCatFilter = null;
-        document.querySelectorAll('.el').forEach(c => c.classList.remove('search-hidden'));
-        document.querySelectorAll('.legend-item').forEach(l => l.classList.remove('dimmed'));
-      } else {
-        activeCatFilter = cat;
-        document.querySelectorAll('.legend-item').forEach(l => l.classList.toggle('dimmed', l.dataset.cat !== cat));
-        document.querySelectorAll('.el').forEach(c => {
-          c.classList.toggle('search-hidden', c.dataset.cat !== cat);
-        });
-      }
-      searchInput.value = '';
-    });
-  });
-
-  // ================================================================
-  // DETAIL PANEL
-  // ================================================================
-  window.openDetail = function(z) {
-    const el = ELEMENTS.find(e => e.z === z);
-    if (!el) return;
-    currentEl = el;
-
-    const cat = CAT_INFO[el.c] || { nom: 'Inconnu', couleur: '#607D8B' };
-    const enText = el.en !== null ? el.en.toFixed(2).replace('.', ',') : '—';
-    const etatIcon = el.e === 'gaz' ? 'fa-wind' : el.e === 'liquide' ? 'fa-droplet' : 'fa-cube';
-
-    detailContent.innerHTML = `
-      <div class="detail-header">
-        <div class="detail-big-sym" style="background:${cat.couleur}22;color:${cat.couleur};border-color:${cat.couleur}33">${el.s}</div>
-        <div class="detail-info">
-          <div class="detail-nom">${el.n}</div>
-          <div class="detail-cat" style="background:${cat.couleur}18;color:${cat.couleur}">
-            <span class="cat-dot" style="background:${cat.couleur}"></span>
-            ${cat.nom}
-          </div>
-        </div>
-      </div>
-      <div class="detail-grid">
-        <div class="detail-card">
-          <span class="dc-label">Numéro atomique (Z)</span>
-          <span class="dc-value accent">${el.z}</span>
-        </div>
-        <div class="detail-card">
-          <span class="dc-label">Masse molaire</span>
-          <span class="dc-value">${el.m} g/mol</span>
-        </div>
-        <div class="detail-card">
-          <span class="dc-label">Électronégativité</span>
-          <span class="dc-value">${enText}</span>
-        </div>
-        <div class="detail-card">
-          <span class="dc-label">État physique</span>
-          <span class="dc-value"><i class="fas ${etatIcon}" style="margin-right:6px;opacity:.6"></i>${ETAT_LABELS[el.e] || el.e}</span>
-        </div>
-        <div class="detail-card wide">
-          <span class="dc-label">Configuration électronique</span>
-          <span class="dc-value small" style="font-family:'Playfair Display',serif;color:var(--accent-bright)">${el.cf}</span>
-        </div>
-        <div class="detail-card">
-          <span class="dc-label">Oxydation courante</span>
-          <span class="dc-value small">${el.ox}</span>
-        </div>
-        <div class="detail-card">
-          <span class="dc-label">Position</span>
-          <span class="dc-value small">Période ${el.gr <= 7 ? el.gr : (el.gr === 9 ? '6' : '7')} · Groupe ${el.gc}</span>
-        </div>
-      </div>
-      <div class="detail-nav">
-        <button onclick="window.navElement(-1)"><i class="fas fa-chevron-left"></i> Précédent</button>
-        <button onclick="window.navElement(1)">Suivant <i class="fas fa-chevron-right"></i></button>
-      </div>
-    `;
-
-    detailOverlay.classList.add('open');
-    detailPanel.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  };
-
-  window.closeDetail = function() {
-    detailPanel.classList.remove('open');
-    detailOverlay.classList.remove('open');
-    document.body.style.overflow = '';
-  };
-
-  window.navElement = function(dir) {
-    if (!currentEl) return;
-    const sorted = ELEMENTS.filter(e => e.z < 104).sort((a,b) => a.z - b.z);
-    const idx = sorted.findIndex(e => e.z === currentEl.z);
-    const newIdx = idx + dir;
-    if (newIdx >= 0 && newIdx < sorted.length) {
-      window.openDetail(sorted[newIdx].z);
-    }
-  };
-
-  // Close button
-  detailClose.addEventListener('click', window.closeDetail);
-  detailOverlay.addEventListener('click', window.closeDetail);
-
-  // Keyboard nav
-  document.addEventListener('keydown', (e) => {
-    if (!currentEl) return;
-    if (e.key === 'Escape') window.closeDetail();
-    if (e.key === 'ArrowLeft') window.navElement(-1);
-    if (e.key === 'ArrowRight') window.navElement(1);
-  });
-
-  // ================================================================
-  // SWIPE TO CLOSE (drag handle amélioré)
-  // ================================================================
-  function setupSwipeToClose() {
-    let startY = 0;
-    let currentY = 0;
-    let isDragging = false;
-    let startTime = 0;
-
-    // ---- Support tactile (mobile) ----
-    detailPanel.addEventListener('touchstart', (e) => {
-      const rect = detailPanel.getBoundingClientRect();
-      const touchY = e.touches[0].clientY;
-
-      // Zone tactile élargie : 120px au lieu de 80px
-      if (touchY - rect.top < 120) {
-        startY = touchY;
-        currentY = touchY;
-        startTime = Date.now();
-        isDragging = true;
-        detailPanel.classList.add('dragging');
-        if (navigator.vibrate) navigator.vibrate(5);
-      }
-    }, { passive: true });
-
-    detailPanel.addEventListener('touchmove', (e) => {
-      if (!isDragging) return;
-      currentY = e.touches[0].clientY;
-      const diff = currentY - startY;
-
-      if (diff > 0) {
-        detailPanel.style.transform = `translateY(${diff}px)`;
-
-        // Réduire l'opacité de l'overlay
-        const opacity = Math.max(0.1, 1 - diff / 400);
-        detailOverlay.style.background = `rgba(0,0,0,${0.75 * opacity})`;
-
-        e.preventDefault();
-      }
-    }, { passive: false });
-
-    detailPanel.addEventListener('touchend', () => {
-      if (!isDragging) return;
-      isDragging = false;
-      detailPanel.classList.remove('dragging');
-
-      const diff = currentY - startY;
-      const duration = Date.now() - startTime;
-      const velocity = diff / duration;
-
-      detailOverlay.style.background = '';
-
-      if (diff > 100 || (velocity > 0.5 && diff > 30)) {
-        // Fermeture
-        detailPanel.style.transition = 'transform 0.3s cubic-bezier(0.25,1,0.5,1)';
-        detailPanel.style.transform = `translateY(100%)`;
-
-        setTimeout(() => {
-          detailPanel.classList.remove('open');
-          detailOverlay.classList.remove('open');
-          detailPanel.style.transform = '';
-          detailPanel.style.transition = '';
-          document.body.style.overflow = '';
-        }, 300);
-      } else {
-        // Rebond
-        detailPanel.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
-        detailPanel.style.transform = '';
-        setTimeout(() => { detailPanel.style.transition = ''; }, 400);
-      }
-
-      startY = 0;
-      currentY = 0;
-    }, { passive: true });
-
-    detailPanel.addEventListener('touchcancel', () => {
-      if (!isDragging) return;
-      isDragging = false;
-      detailPanel.classList.remove('dragging');
-      detailPanel.style.transform = '';
-      detailOverlay.style.background = '';
-    }, { passive: true });
-
-    // ---- Support souris (desktop) ----
-    let mouseDownY = 0;
-    let isMouseDragging = false;
-
-    detailPanel.addEventListener('mousedown', (e) => {
-      const rect = detailPanel.getBoundingClientRect();
-      if (e.clientY - rect.top < 40) {
-        mouseDownY = e.clientY;
-        isMouseDragging = true;
-        detailPanel.classList.add('dragging');
-        detailPanel.style.cursor = 'grabbing';
-        e.preventDefault();
-      }
-    });
-
-    document.addEventListener('mousemove', (e) => {
-      if (!isMouseDragging) return;
-      const diff = e.clientY - mouseDownY;
-      if (diff > 0) {
-        detailPanel.style.transition = 'none';
-        detailPanel.style.transform = `translateY(${diff}px)`;
-
-        const opacity = Math.max(0.1, 1 - diff / 400);
-        detailOverlay.style.background = `rgba(0,0,0,${0.75 * opacity})`;
-      }
-    });
-
-    document.addEventListener('mouseup', (e) => {
-      if (!isMouseDragging) return;
-      isMouseDragging = false;
-      detailPanel.classList.remove('dragging');
-      detailPanel.style.cursor = '';
-
-      const diff = e.clientY - mouseDownY;
-      detailPanel.style.transition = 'transform 0.3s cubic-bezier(0.25,1,0.5,1)';
-      detailOverlay.style.background = '';
-
-      if (diff > 100) {
-        detailPanel.style.transform = `translateY(100%)`;
-        setTimeout(() => {
-          detailPanel.classList.remove('open');
-          detailOverlay.classList.remove('open');
-          detailPanel.style.transform = '';
-          detailPanel.style.transition = '';
-          document.body.style.overflow = '';
-        }, 300);
-      } else {
-        detailPanel.style.transform = '';
-        setTimeout(() => { detailPanel.style.transition = ''; }, 300);
-      }
-      mouseDownY = 0;
-    });
-  }
-
-  // ================================================================
-  // AUTH ROBUSTE — Anti-flash
-  // ================================================================
-  function redirectToLogin() {
-    if (isRedirecting) return;
-    isRedirecting = true;
-    try {
-      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
-    } catch (e) {}
-    window.location.replace('login.html');
-  }
-
-  function initAuthGuard(onAuthenticated) {
-    auth.onAuthStateChanged((user) => {
-      if (isAuthResolved) {
-        if (user && user.uid !== currentUid) {
-          currentUid = user.uid;
-          saveSession(user);
-          onAuthenticated(user);
-        } else if (!user && currentUid) {
-          currentUid = null;
-          clearSession();
-          redirectToLogin();
-        }
-        return;
-      }
-
-      if (!user) {
-        if (graceTimer) clearTimeout(graceTimer);
-        graceTimer = setTimeout(() => {
-          if (isAuthResolved) return;
-          if (auth.currentUser) return;
-
-          const hasSession = localStorage.getItem(SESSION_KEY);
-          const hasUserData = localStorage.getItem(USER_DATA_KEY);
-
-          if ((hasSession || hasUserData) && !navigator.onLine) {
-            setTimeout(() => {
-              if (auth.currentUser) return;
-              if (!isAuthResolved) redirectToLogin();
-            }, 1500);
-            return;
-          }
-
-          if (hasSession && hasUserData) {
-            setTimeout(() => {
-              if (auth.currentUser) return;
-              if (!isAuthResolved) redirectToLogin();
-            }, 1500);
-            return;
-          }
-
-          redirectToLogin();
-        }, 600);
-        return;
-      }
-
-      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-      if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-
-      isAuthResolved = true;
-      currentUid = user.uid;
-      saveSession(user);
-      onAuthenticated(user);
-    });
-
-    maxTimer = setTimeout(() => {
-      if (isAuthResolved) return;
-      if (auth.currentUser) {
-        isAuthResolved = true;
-        currentUid = auth.currentUser.uid;
-        saveSession(auth.currentUser);
-        onAuthenticated(auth.currentUser);
-      } else {
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
+    if (isAuthResolved) {
+      if (user && user.uid !== currentUid) {
+        currentUid = user.uid;
+        saveSession(user);
+        onAuthenticated(user);
+      } else if (!user && currentUid) {
+        currentUid = null;
+        clearSession();
         redirectToLogin();
       }
-    }, 5000);
-  }
+      return;
+    }
 
-  // ================================================================
-  // LANCER LA PROTECTION
-  // ================================================================
-  initAuthGuard(async (user) => {
-    renderTable();
-    setupSwipeToClose();
+    if (!user) {
+      if (graceTimer) return;
+      graceTimer = setTimeout(() => {
+        graceTimer = null;
+        if (isAuthResolved) return;
+        if (auth.currentUser) return;
+
+        const hasSession = localStorage.getItem(SESSION_KEY);
+        const hasUserData = localStorage.getItem(USER_DATA_KEY);
+
+        if ((hasSession || hasUserData) && !navigator.onLine) {
+          setTimeout(() => {
+            if (auth.currentUser) return;
+            if (!isAuthResolved) redirectToLogin();
+          }, 1500);
+          return;
+        }
+
+        if (hasSession && hasUserData) {
+          setTimeout(() => {
+            if (auth.currentUser) return;
+            if (!isAuthResolved) redirectToLogin();
+          }, 1500);
+          return;
+        }
+
+        redirectToLogin();
+      }, 600);
+      return;
+    }
+
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+
+    isAuthResolved = true;
+    currentUid = user.uid;
+    saveSession(user);
+    onAuthenticated(user);
   });
 
-  console.log('🚀 ARVEXA — Tableau périodique (avec session robuste)');
-  </script>
+  maxTimer = setTimeout(() => {
+    if (isAuthResolved) return;
+    if (auth.currentUser) {
+      isAuthResolved = true;
+      currentUid = auth.currentUser.uid;
+      saveSession(auth.currentUser);
+      onAuthenticated(auth.currentUser);
+    } else {
+      redirectToLogin();
+    }
+  }, 5000);
+}
+
+// ================================================================
+// LANCER LA PROTECTION — ✅ C7 (blocked/paused)
+// ================================================================
+initAuthGuard(async (user) => {
+  // ✅ C7 — vérification blocked/paused (le rendu est déjà fait)
+  try {
+    const userSnap = await getDoc(doc(db, 'users', user.uid));
+    if (userSnap.exists()) {
+      const data = userSnap.data();
+
+      if (data.accountStatus === 'blocked') {
+        try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
+        try { await signOut(auth); } catch (e) {}
+        window.location.replace('auth-choice.html');
+        return;
+      }
+
+      if (data.accountStatus === 'paused') {
+        // Message discret via alerte non bloquante (pas de toast ici)
+        console.warn('[Tableau] Compte en pause');
+        // On laisse la page fonctionner (outil statique non sensible)
+      }
+
+      // Cache du profil pour les autres pages
+      try {
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify({
+          ...data,
+          _uid: user.uid,
+          _cachedAt: Date.now()
+        }));
+      } catch (e) {}
+    }
+  } catch (e) {
+    console.warn('[Tableau] Impossible de vérifier le statut :', e.code || e.message);
+  }
+});
+
+// ✅ C5 — cleanup global
+window.addEventListener('beforeunload', () => {
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+});
+
+console.log('🚀 ARVEXA — Tableau périodique (version corrigée C1-C8)');
+</script>
 </body>
 </html>
