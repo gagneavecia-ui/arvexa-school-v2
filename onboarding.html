@@ -641,6 +641,7 @@
     .toast i { font-size: 15px; flex-shrink: 0; }
     .toast.success i { color: var(--success-light); }
     .toast.error i { color: var(--danger); }
+    .toast a { color: var(--accent-bright); font-weight: 600; text-decoration: underline; }
 
     @keyframes toastIn {
       from { opacity: 0; transform: translateY(-20px); }
@@ -838,6 +839,16 @@
   <script type="module">
   // ================================================================
   // ONBOARDING — Version robuste anti-flash
+  // Corrections appliquées :
+  //  - C1 : redirectToLogin préserve redirectAfterLogin/redirectAfterAuth existants
+  //  - C2 : Retry doux avant redirection si doc users/{uid} absent (pas de boucle register)
+  //  - C3 : Respect de ?redirect= (query) ET sessionStorage pour la cible post-onboarding
+  //  - C4 : Unsubscribe propre du listener auth
+  //  - C5 : Log explicite si setPersistence échoue
+  //  - C6 : saveSession écrit aussi sessionStorage
+  //  - C7 : clearSession supprime aussi redirectAfterLogin/redirectAfterAuth
+  //  - C8 : Nettoyage des timers dans redirectToLogin
+  //  - C9 : Gestion blocked/paused (cohérence avec index.html)
   // ================================================================
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -845,7 +856,8 @@
     getAuth,
     onAuthStateChanged,
     setPersistence,
-    browserLocalPersistence
+    browserLocalPersistence,
+    signOut
   } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
   import {
     initializeFirestore,
@@ -879,9 +891,12 @@
     })
   });
 
+  // ✅ C5 — Log explicite si persistance refusée
   try {
     await setPersistence(auth, browserLocalPersistence);
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[Auth] Persistance locale indisponible sur onboarding.html :', e.code || e.message);
+  }
 
   // ================================================================
   // HELPERS
@@ -913,9 +928,54 @@
   const toastContainer = $('toastContainer');
 
   // ================================================================
+  // ✅ C3 — Cible de redirection : query ?redirect= + sessionStorage
+  // Anti-boucle aligné sur auth-choice.html / login.html
+  // ================================================================
+  const FORBIDDEN_TARGETS = [
+    'auth-choice.html',
+    'login.html',
+    'register.html',
+    'onboarding.html',
+    'forgot-password.html'
+  ];
+
+  function resolveTarget() {
+    let raw = null;
+
+    // Priorité 1 : query string ?redirect=
+    try {
+      const params = new URLSearchParams(window.location.search);
+      raw = params.get('redirect');
+    } catch (e) {}
+
+    // Priorité 2 : sessionStorage
+    if (!raw) {
+      try {
+        raw = sessionStorage.getItem('redirectAfterLogin')
+           || sessionStorage.getItem('redirectAfterAuth')
+           || null;
+      } catch (e) {}
+    }
+
+    if (!raw || typeof raw !== 'string') return 'index.html';
+
+    const lower = raw.toLowerCase();
+    for (const forbidden of FORBIDDEN_TARGETS) {
+      if (lower.includes(forbidden)) return 'index.html';
+    }
+    if (/^https?:\/\//i.test(raw)) return 'index.html';
+    if (/^javascript:/i.test(raw)) return 'index.html';
+    if (raw.startsWith('//')) return 'index.html';
+
+    return raw;
+  }
+
+  const FINAL_TARGET = resolveTarget();
+
+  // ================================================================
   // TOAST
   // ================================================================
-  function showToast(message, type = 'success', duration = 4000) {
+  function showToast(message, type = 'success', duration = 4000, allowHtml = false) {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
 
@@ -923,7 +983,15 @@
       ? '<i class="fas fa-check-circle"></i>'
       : '<i class="fas fa-exclamation-circle"></i>';
 
-    toast.innerHTML = `${icon}<span>${message}</span>`;
+    const span = document.createElement('span');
+    if (allowHtml) {
+      span.innerHTML = message;
+    } else {
+      span.textContent = message;
+    }
+
+    toast.innerHTML = icon;
+    toast.appendChild(span);
     toastContainer.appendChild(toast);
 
     setTimeout(() => {
@@ -962,7 +1030,7 @@
   }
 
   // ================================================================
-  // CACHE LOCAL
+  // CACHE LOCAL — ✅ C6/C7 alignement sur index.html
   // ================================================================
   const USER_DATA_KEY = 'arvexa_user_data';
   const SESSION_KEY = 'arvexa_session';
@@ -1002,6 +1070,7 @@
         lastActive: Date.now()
       };
       localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C6
       localStorage.setItem(LAST_UID_KEY, user.uid);
     } catch (e) {}
   }
@@ -1012,6 +1081,9 @@
       localStorage.removeItem(USER_DATA_KEY);
       localStorage.removeItem(LAST_UID_KEY);
       sessionStorage.removeItem(SESSION_KEY);
+      // ✅ C7 — alignement avec index.html / login.html
+      sessionStorage.removeItem('redirectAfterLogin');
+      sessionStorage.removeItem('redirectAfterAuth');
     } catch (e) {}
   }
 
@@ -1044,6 +1116,7 @@
 
   // ================================================================
   // CHARGEMENT DES DONNÉES
+  // ✅ C2 : retry doux si doc absent + C9 : gestion blocked/paused
   // ================================================================
   async function loadUserData(user) {
     if (!user) return;
@@ -1055,48 +1128,98 @@
       renderUserData(cached);
     }
 
-    // 2. Firestore
-    try {
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
+    // 2. Firestore avec retry doux (propagation post-inscription)
+    let attempts = 0;
+    const maxAttempts = 3;
+    let lastErr = null;
 
-      if (!userDoc.exists()) {
-        showToast('Profil introuvable. Redirection...', 'error');
-        setTimeout(() => {
-          window.location.replace('register.html');
-        }, 1500);
-        return;
+    while (attempts < maxAttempts) {
+      attempts++;
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+
+          // ✅ C9 — blocked/paused cohérence avec index.html
+          if (data.accountStatus === 'blocked') {
+            try {
+              sessionStorage.setItem('arvexa_account_blocked', '1');
+            } catch (e) {}
+            clearSession();
+            try { await signOut(auth); } catch (e) {}
+            window.location.replace('auth-choice.html');
+            return;
+          }
+
+          if (data.accountStatus === 'paused') {
+            showToast('Ton compte est temporairement en pause. Contacte le support.', 'error', 8000);
+            // On laisse l'utilisateur sur la page avec les infos en cache
+            if (cached) renderUserData(cached);
+            return;
+          }
+
+          state.userData = data;
+          saveUserDataToCache(data, user.uid);
+
+          // Déjà onboardé → redirection vers la cible résolue
+          if (data.onboardingCompleted === true) {
+            window.location.replace(FINAL_TARGET);
+            return;
+          }
+
+          renderUserData(data);
+          return; // Succès : on sort
+        }
+
+        // Doc absent — retry avec attente progressive (300, 700, 1200 ms)
+        if (attempts < maxAttempts) {
+          await new Promise((r) => setTimeout(r, attempts === 1 ? 300 : (attempts === 2 ? 700 : 1200)));
+        }
+      } catch (err) {
+        lastErr = err;
+        console.warn(`[Onboarding] getDoc tentative ${attempts}/${maxAttempts} :`, err.code || err.message);
+        if (attempts < maxAttempts) {
+          await new Promise((r) => setTimeout(r, attempts * 500));
+        }
       }
+    }
 
-      const data = userDoc.data();
-      state.userData = data;
-      saveUserDataToCache(data, user.uid);
+    // 3. Après maxAttempts : doc toujours absent → message + lien login (pas register !)
+    if (!cached) {
+      // Aucun cache non plus : afficher un message et proposer login
+      showToast(
+        'Ton profil est introuvable. '
+        + '<a href="login.html">Se reconnecter</a>',
+        'error',
+        10000,
+        true
+      );
+      // On laisse l'utilisateur avec un bouton désactivé
+      if (startBtn) startBtn.disabled = true;
+    } else {
+      // On a un cache : on l'affiche, mais on prévient
+      renderUserData(cached);
+      showToast('Impossible d\'actualiser ton profil. Vérifie ta connexion.', 'error', 6000);
+    }
 
-      // Déjà onboardé → redirection
-      if (data.onboardingCompleted === true) {
-        window.location.replace('index.html');
-        return;
-      }
-
-      renderUserData(data);
-
-    } catch (error) {
-      console.error('Erreur Firestore:', error);
-      showToast('Erreur de chargement. Vérifie ta connexion.', 'error', 6000);
-
-      if (cached) {
-        renderUserData(cached);
-      }
+    if (lastErr) {
+      console.error('[Onboarding] Erreur finale loadUserData :', lastErr);
     }
   }
 
   // ================================================================
   // BOUTON START
+  // ✅ C3 : redirection vers FINAL_TARGET
   // ================================================================
   async function handleStart() {
     if (state.isSubmitting) return;
     if (!state.user) {
       showToast('Session expirée. Reconnecte-toi.', 'error');
       setTimeout(() => {
+        try {
+          sessionStorage.setItem('redirectAfterLogin', 'onboarding.html');
+        } catch (e) {}
         window.location.replace('login.html');
       }, 1500);
       return;
@@ -1121,7 +1244,7 @@
       showToast('🎉 Bienvenue sur ARVEXA School !', 'success');
 
       setTimeout(() => {
-        window.location.replace('index.html');
+        window.location.replace(FINAL_TARGET);
       }, 900);
 
     } catch (error) {
@@ -1137,26 +1260,46 @@
   }
 
   // ================================================================
-  // AUTH ROBUSTE — Anti-flash
+  // AUTH ROBUSTE — ✅ C1/C4/C8
   // ================================================================
   let isRedirecting = false;
   let isAuthResolved = false;
   let graceTimer = null;
   let maxTimer = null;
+  let authUnsubscribe = null;
 
+  // ✅ C1 — Préserver les clés redirectAfterLogin/redirectAfterAuth existantes
   function redirectToLogin() {
     if (isRedirecting) return;
     isRedirecting = true;
+
+    // ✅ C8 — Nettoyage des timers
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+    // ✅ C4 — Unsubscribe
+    if (authUnsubscribe) {
+      try { authUnsubscribe(); } catch (e) {}
+      authUnsubscribe = null;
+    }
+
+    // ✅ C1 — Ne PAS écraser une clé existante
     try {
-      sessionStorage.setItem('redirectAfterLogin', 'onboarding.html');
+      const existing = sessionStorage.getItem('redirectAfterLogin')
+                    || sessionStorage.getItem('redirectAfterAuth');
+      if (!existing) {
+        sessionStorage.setItem('redirectAfterLogin', 'onboarding.html');
+      }
     } catch (e) {}
+
     window.location.replace('login.html');
   }
 
   function initAuthGuard(onAuthenticated) {
-    auth.onAuthStateChanged((user) => {
+    if (authUnsubscribe) return; // garde anti-double
+
+    authUnsubscribe = onAuthStateChanged(auth, (user) => {
       if (isAuthResolved) {
-        // Changements ultérieurs (rare sur cette page)
+        // Changements ultérieurs
         if (user && user.uid !== state.currentUid) {
           state.currentUid = user.uid;
           state.user = user;
@@ -1171,10 +1314,11 @@
         return;
       }
 
-      // Premier check : user null → attendre
+      // Premier check : user null → attendre (grâce)
       if (!user) {
-        if (graceTimer) clearTimeout(graceTimer);
+        if (graceTimer) return;
         graceTimer = setTimeout(() => {
+          graceTimer = null;
           if (isAuthResolved) return;
           if (auth.currentUser) return;
 
@@ -1240,7 +1384,14 @@
   // ================================================================
   startBtn.addEventListener('click', handleStart);
 
-  console.log('🚀 ARVEXA School — Onboarding (avec session robuste)');
+  // ✅ C4 — Cleanup à la destruction
+  window.addEventListener('beforeunload', () => {
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+    if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+  });
+
+  console.log('🚀 ARVEXA School — Onboarding (version corrigée C1-C9)');
   </script>
 </body>
 </html>
