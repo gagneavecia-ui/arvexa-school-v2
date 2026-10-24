@@ -468,7 +468,15 @@ button:focus-visible {
        ============================================================ -->
   <script type="module">
     // ================================================================
-    // AUTH-CHOICE — Redirection intelligente
+    // AUTH-CHOICE — Redirection intelligente (version corrigée)
+    // Corrections :
+    //   C1 : Grâce initiale 800 ms sur null transitoire
+    //   C2 : Suppression de getDoc avant redirection (un user auth. = index.html)
+    //   C3 : Anti-boucle sur la cible de redirection
+    //   C4 : Lecture des deux clés redirectAfterLogin / redirectAfterAuth
+    //   C5 : Unsubscribe dès décision prise
+    //   C6 : Log explicite si browserLocalPersistence refusée
+    //   C7 : Plus de getFirestore dans ce fichier
     // ================================================================
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js';
     import {
@@ -489,43 +497,114 @@ button:focus-visible {
 
     const auth = getAuth(app);
 
+    // ✅ C6 — Log explicite si persistance refusée
     try {
       await setPersistence(auth, browserLocalPersistence);
-    } catch (e) {}
+    } catch (e) {
+      console.warn('[Auth] Persistance locale indisponible sur auth-choice.html :', e.code || e.message);
+    }
 
-    // Redirection demandée — on lit la clé utilisée partout ailleurs
-const redirect = sessionStorage.getItem('redirectAfterLogin') || 'index.html';
-const target = encodeURIComponent(redirect);
+    // ================================================================
+    // ✅ C4 — Lecture des deux clés de redirection + C3 anti-boucle
+    // ================================================================
+    const FORBIDDEN_TARGETS = ['auth-choice.html', 'login.html', 'register.html', 'forgot-password.html'];
 
-document.getElementById('registerLink').href = `register.html?redirect=${target}`;
-document.getElementById('loginLink').href = `login.html?redirect=${target}`;
+    function safeGetRedirect() {
+      let raw = null;
+      try {
+        raw = sessionStorage.getItem('redirectAfterLogin')
+           || sessionStorage.getItem('redirectAfterAuth')
+           || null;
+      } catch (e) { /* sessionStorage indisponible */ }
 
-// Vérifier la session
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    try {
-      const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
-      const db = getFirestore(app);
-      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (!raw || typeof raw !== 'string') return 'index.html';
 
-      if (!snap.exists()) {
-        document.getElementById('loading').hidden = true;
-        document.getElementById('choice').hidden = false;
+      // Interdire les cibles qui provoqueraient une boucle
+      const lower = raw.toLowerCase();
+      for (const forbidden of FORBIDDEN_TARGETS) {
+        if (lower.includes(forbidden)) return 'index.html';
+      }
+      // Interdire les URL absolues externes (open redirect)
+      if (/^https?:\/\//i.test(raw)) return 'index.html';
+      // Interdire les javascript:
+      if (/^javascript:/i.test(raw)) return 'index.html';
+
+      return raw;
+    }
+
+    const redirectTarget = safeGetRedirect();
+    const redirectEncoded = encodeURIComponent(redirectTarget);
+
+    document.getElementById('registerLink').href = `register.html?redirect=${redirectEncoded}`;
+    document.getElementById('loginLink').href = `login.html?redirect=${redirectEncoded}`;
+
+    // ================================================================
+    // ✅ C1/C2/C5 — Garde avec grâce initiale + unsubscribe propre
+    // ================================================================
+    const loadingEl = document.getElementById('loading');
+    const choiceEl = document.getElementById('choice');
+
+    let unsubscribeAuth = null;
+    let graceTimer = null;
+    let decisionMade = false;
+
+    function showChoice() {
+      if (decisionMade) return;
+      decisionMade = true;
+      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+      if (unsubscribeAuth) {
+        try { unsubscribeAuth(); } catch (e) {}
+        unsubscribeAuth = null;
+      }
+      loadingEl.hidden = true;
+      choiceEl.hidden = false;
+    }
+
+    function redirectToApp(user) {
+      if (decisionMade) return;
+      decisionMade = true;
+      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+      if (unsubscribeAuth) {
+        try { unsubscribeAuth(); } catch (e) {}
+        unsubscribeAuth = null;
+      }
+      // ✅ C2 — Aucun getDoc ici. index.html gère l'absence du doc via retry.
+      try { sessionStorage.removeItem('redirectAfterAuth'); } catch (e) {}
+      // Ne PAS supprimer redirectAfterLogin ici : login.html / register.html
+      // peuvent encore en avoir besoin si l'utilisateur revient.
+      window.location.replace(redirectTarget);
+    }
+
+    unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (decisionMade) return;
+
+      if (user) {
+        // Utilisateur confirmé → redirection immédiate
+        redirectToApp(user);
         return;
       }
 
-      sessionStorage.removeItem('redirectAfterLogin');
-      window.location.replace(redirect);
-    } catch (e) {
-      document.getElementById('loading').hidden = true;
-      document.getElementById('choice').hidden = false;
-    }
-    return;
-  }
+      // user === null : on attend un court délai avant d'afficher le choix.
+      // Si un user est restauré entre-temps, on annule.
+      if (graceTimer) return;
+      graceTimer = setTimeout(() => {
+        graceTimer = null;
+        if (decisionMade) return;
+        // Rattrapage : un user est apparu entre-temps ?
+        if (auth.currentUser) {
+          redirectToApp(auth.currentUser);
+          return;
+        }
+        // Vraiment pas d'utilisateur → afficher le choix
+        showChoice();
+      }, 800);
+    });
 
-  document.getElementById('loading').hidden = true;
-  document.getElementById('choice').hidden = false;
-});
+    // Hygiène : cleanup à la destruction
+    window.addEventListener('beforeunload', () => {
+      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+      if (unsubscribeAuth) { try { unsubscribeAuth(); } catch (e) {} unsubscribeAuth = null; }
+    });
   </script>
 </body>
 </html>
