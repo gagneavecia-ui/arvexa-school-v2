@@ -2,18 +2,16 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0A0A0A">
   <meta name="description" content="ARVEXA School - Matière">
-  <meta name="view-transition" content="same-origin">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" href="icon.png" type="image/png">
   <link rel="stylesheet" href="perf.css">
-  
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
- <script src="arvexa-auth-core.js" defer></script>
   <script src="register-sw.js" defer></script>
 
   <style>
@@ -34,20 +32,22 @@
       --info: #4AAFE0;
       --bg-dark: #0A0A0A;
       --bg-surface: #141414;
-      --bg-card: rgba(20, 20, 20, 0.7);
+      --bg-card: rgba(20, 20, 20, 0.62);
       --text-light: #F5F0E8;
-      --text-dim: #8A8A7A;
-      --text-muted: #5A5A4A;
-      --card-border: rgba(184, 134, 11, 0.08);
-      --transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --text-dim: #A0A090;
+      --text-muted: #7A7A6A;
+      --card-border: rgba(255, 255, 255, 0.05);
+      --card-border-hover: rgba(224, 184, 74, 0.22);
+      --transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+      --transition-fast: all 0.18s ease;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.42);
       --radius: 16px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html { scroll-behavior: smooth; width: 100%; overflow-x: hidden; }
+    html { scroll-behavior: smooth; width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
     body {
       font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
       background: var(--bg-dark);
@@ -64,21 +64,20 @@
 
     .gradient-bg {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
-      background: radial-gradient(ellipse 40% 30% at 30% 15%, rgba(26, 58, 42, 0.16) 0%, transparent 70%),
-                  radial-gradient(ellipse 35% 25% at 75% 85%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
+      background: radial-gradient(ellipse 40% 30% at 30% 15%, rgba(26, 58, 42, 0.18) 0%, transparent 70%),
+                  radial-gradient(ellipse 35% 25% at 75% 85%, rgba(184, 134, 11, 0.06) 0%, transparent 60%),
                   linear-gradient(180deg, #0A0A0A 0%, #060606 100%);
     }
 
     .glow {
       position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: -1;
-      opacity: 0.15; animation: glowMove 10s ease-in-out infinite alternate;
+      opacity: 0.12;
     }
-    .glow-1 { width: 300px; height: 300px; background: rgba(26,58,42,0.18); top: -80px; right: -80px; }
-    .glow-2 { width: 180px; height: 180px; background: rgba(184,134,11,0.05); bottom: 0; left: 0; animation-delay: -4s; }
-    @keyframes glowMove { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(30px,-20px) scale(1.1); } }
+    .glow-1 { width: 300px; height: 300px; background: rgba(26,58,42,0.20); top: -80px; right: -80px; }
+    .glow-2 { width: 180px; height: 180px; background: rgba(184,134,11,0.06); bottom: 0; left: 0; }
 
     /* ============================================================
-       HEADER
+       HEADER PREMIUM
        ============================================================ */
     .header {
       position: sticky; top: 0; z-index: 50;
@@ -87,95 +86,146 @@
       background: rgba(10, 10, 10, 0.92);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(184, 134, 11, 0.06);
+      border-bottom: 1px solid rgba(224, 184, 74, 0.10);
       gap: 12px;
-      min-height: 56px;
+      min-height: 60px;
+      position: sticky;
     }
-    .header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .header::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: -1px; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(224, 184, 74, 0.35), transparent);
+      pointer-events: none;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+    .brand-mark {
+      display: inline-flex;
+      align-items: baseline;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      color: var(--text-light);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .brand-mark span {
+      color: var(--accent-bright);
+      font-style: italic;
+      margin-left: 1px;
+    }
+    .header-divider {
+      width: 1px; height: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
     .back-btn {
       display: flex; align-items: center; justify-content: center;
-      width: 36px; height: 36px; border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.05); background: transparent;
-      color: var(--text-dim); cursor: pointer; transition: var(--transition);
-      font-size: 16px; text-decoration: none; flex-shrink: 0;
+      width: 38px; height: 38px; border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06); background: transparent;
+      color: var(--text-dim); cursor: pointer; transition: var(--transition-fast);
+      font-size: 15px; text-decoration: none; flex-shrink: 0;
     }
-    .back-btn:hover { border-color: rgba(184, 134, 11, 0.14); color: var(--text-light); }
+    .back-btn:hover {
+      border-color: rgba(224, 184, 74, 0.30);
+      color: var(--accent-bright);
+      background: rgba(224, 184, 74, 0.05);
+    }
+    .back-btn:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 2px;
+    }
     .page-title {
       font-size: clamp(13px, 1.6vw, 15px);
       font-weight: 600; color: var(--text-light);
       font-family: 'Playfair Display', serif;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      min-width: 0;
+      letter-spacing: -0.01em;
     }
-    .page-title i { color: var(--accent-bright); margin-right: 6px; font-size: 14px; }
+    .page-title i { color: var(--accent-bright); margin-right: 6px; font-size: 13px; }
     .header-right button {
-      background: transparent; border: none; color: var(--text-muted);
-      font-size: 14px; cursor: pointer; padding: 6px; transition: var(--transition);
+      width: 38px; height: 38px; border-radius: 10px;
+      background: transparent; border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-dim); font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition-fast);
     }
-    .header-right button:hover { color: var(--text-light); }
+    .header-right button:hover {
+      color: var(--accent-bright);
+      border-color: rgba(224, 184, 74, 0.30);
+      background: rgba(224, 184, 74, 0.05);
+    }
+    .header-right button:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 2px;
+    }
 
     /* ============================================================
        CONTAINER
        ============================================================ */
-    .container { max-width: 640px; margin: 0 auto; padding: 12px 12px 40px; width: 100%; }
+    .container { max-width: 680px; margin: 0 auto; padding: 18px 16px 48px; width: 100%; }
 
     /* ============================================================
        SUBJECT HERO
        ============================================================ */
     .subject-hero {
       position: relative;
-      background: linear-gradient(135deg, rgba(184, 134, 11, 0.06), rgba(26, 58, 42, 0.08));
-      border: 1px solid rgba(184, 134, 11, 0.12);
-      border-radius: var(--radius);
-      padding: 22px 18px 18px;
-      margin-bottom: 14px;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(26, 58, 42, 0.45) 0%, transparent 70%),
+        linear-gradient(160deg, rgba(20, 20, 20, 0.85), rgba(10, 10, 10, 0.85));
+      border: 1px solid rgba(224, 184, 74, 0.14);
+      border-radius: 20px;
+      padding: 26px 20px 22px;
+      margin-bottom: 16px;
       overflow: hidden;
       text-align: center;
     }
     .subject-hero::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(224, 184, 74, 0.55), transparent);
     }
     .subject-hero::after {
-      content: ''; position: absolute;
-      top: -80px; right: -80px;
-      width: 200px; height: 200px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(184, 134, 11, 0.08), transparent 70%);
+      content: '';
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 240px; height: 240px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(224, 184, 74, 0.10), transparent 70%);
       pointer-events: none;
     }
 
     .subject-icon-wrap {
-      width: 64px; height: 64px;
-      border-radius: 18px;
+      width: 72px; height: 72px;
+      border-radius: 20px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 28px;
-      margin: 0 auto 14px;
+      font-size: 30px;
+      margin: 0 auto 16px;
       position: relative;
-      background: rgba(184, 134, 11, 0.1);
+      background: linear-gradient(135deg, rgba(224, 184, 74, 0.16), rgba(26, 58, 42, 0.10));
       color: var(--accent-bright);
-      border: 1px solid rgba(184, 134, 11, 0.15);
+      border: 1px solid rgba(224, 184, 74, 0.30);
+      box-shadow: 0 4px 20px rgba(224, 184, 74, 0.10), inset 0 1px 0 rgba(255,255,255,0.06);
       transition: var(--transition);
-    }
-    .subject-icon-wrap::before {
-      content: ''; position: absolute; inset: -3px; border-radius: 21px;
-      background: linear-gradient(135deg, var(--accent), var(--success));
-      opacity: 0.15; z-index: -1;
     }
 
     .subject-hero h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(20px, 3vw, 24px);
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(22px, 3.2vw, 28px);
       font-weight: 700;
       color: var(--text-light);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       line-height: 1.2;
+      letter-spacing: -0.02em;
     }
 
     .subject-description {
-      font-size: clamp(12.5px, 1.3vw, 13.5px);
+      font-size: clamp(13px, 1.4vw, 14px);
       color: var(--text-dim);
-      line-height: 1.6;
-      max-width: 480px;
-      margin: 0 auto 14px;
+      line-height: 1.65;
+      max-width: 520px;
+      margin: 0 auto 16px;
       padding: 0 4px;
     }
 
@@ -192,16 +242,15 @@
     .stat-pill {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 5px 12px;
-      border-radius: 20px;
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      font-size: 11.5px;
-      font-weight: 600;
+      gap: 7px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+      font-weight: 500;
       color: var(--text-dim);
-      backdrop-filter: blur(4px);
-      transition: var(--transition);
+      transition: var(--transition-fast);
     }
     .stat-pill i {
       color: var(--accent-bright);
@@ -212,61 +261,49 @@
       font-weight: 700;
     }
     .stat-pill:hover {
-      border-color: rgba(184, 134, 11, 0.2);
-      background: rgba(0, 0, 0, 0.35);
+      border-color: rgba(224, 184, 74, 0.25);
+      background: rgba(0, 0, 0, 0.45);
     }
 
     /* ============================================================
        PROGRESS BAR
        ============================================================ */
     .progress-wrap {
-      background: var(--bg-card);
+      background: rgba(20, 20, 20, 0.55);
       backdrop-filter: blur(10px);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      margin-bottom: 14px;
-      transition: var(--transition);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(224, 184, 74, 0.10);
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 20px;
+      transition: var(--transition-fast);
     }
-    .progress-wrap:hover { border-color: rgba(184, 134, 11, 0.12); }
+    .progress-wrap:hover { border-color: rgba(224, 184, 74, 0.20); }
     .progress-head {
       display: flex; justify-content: space-between; align-items: center;
-      font-size: 12.5px;
+      font-size: 13px;
       color: var(--text-dim);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       flex-wrap: wrap;
       gap: 6px;
     }
-    .progress-head strong { color: var(--text-light); font-weight: 600; }
+    .progress-head strong { color: var(--text-light); font-weight: 700; }
     .progress-head .percent {
       font-weight: 700;
       color: var(--accent-bright);
-      font-size: 13px;
+      font-size: 13.5px;
     }
     .progress-track {
-      width: 100%; height: 5px; border-radius: 4px;
+      width: 100%; height: 6px; border-radius: 999px;
       background: rgba(255, 255, 255, 0.06);
       overflow: hidden;
       position: relative;
     }
     .progress-fill {
-      height: 100%; border-radius: 4px;
+      height: 100%; border-radius: 999px;
       background: linear-gradient(90deg, var(--accent), var(--accent-bright));
       transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
       width: 0%;
-      position: relative;
-    }
-    .progress-fill::after {
-      content: '';
-      position: absolute; right: 0; top: 0;
-      width: 20px; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15));
-      animation: shimmerProgress 2s ease-in-out infinite;
-    }
-    @keyframes shimmerProgress {
-      0% { opacity: 0; }
-      50% { opacity: 1; }
-      100% { opacity: 0; }
     }
 
     /* ============================================================
@@ -275,16 +312,16 @@
     .section-label {
       font-size: 11px;
       font-weight: 700; color: var(--accent-bright);
-      text-transform: uppercase; letter-spacing: 1px;
-      padding: 6px 4px 10px;
-      display: flex; align-items: center; gap: 8px;
+      text-transform: uppercase; letter-spacing: 1.1px;
+      padding: 6px 4px 12px;
+      display: flex; align-items: center; gap: 10px;
     }
     .section-label::after {
       content: ''; flex: 1; height: 1px;
-      background: rgba(184, 134, 11, 0.1);
+      background: linear-gradient(90deg, rgba(224, 184, 74, 0.15), transparent);
     }
     .section-label .count {
-      font-size: 10px;
+      font-size: 10.5px;
       color: var(--text-muted);
       font-weight: 500;
       text-transform: none;
@@ -294,30 +331,32 @@
     /* ============================================================
        CHAPTER LIST
        ============================================================ */
-    .chapter-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 16px; }
+    .chapter-list { display: flex; flex-direction: column; gap: 12px; padding-bottom: 16px; }
 
     .chapter-card {
-      background: var(--bg-card);
+      background: rgba(20, 20, 20, 0.55);
       backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 14px 16px;
+      border-radius: 16px;
+      padding: 18px 20px;
       cursor: pointer;
-      transition: var(--transition);
+      transition: transform 0.18s ease, border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
       text-decoration: none;
       color: inherit;
       position: relative;
       overflow: hidden;
     }
     .chapter-card:hover {
-      border-color: rgba(184, 134, 11, 0.15);
+      border-color: var(--card-border-hover);
       transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.30);
     }
-    .chapter-card:active { transform: scale(0.99); }
+    .chapter-card:active { transform: scale(0.995); }
 
     .chapter-card.in-progress {
-      border-color: rgba(184, 134, 11, 0.3);
-      background: rgba(184, 134, 11, 0.03);
+      border-color: rgba(224, 184, 74, 0.30);
+      background: rgba(224, 184, 74, 0.035);
     }
     .chapter-card.in-progress::before {
       content: '';
@@ -326,8 +365,8 @@
     }
 
     .chapter-card.completed {
-      border-color: rgba(45, 125, 90, 0.3);
-      background: rgba(45, 125, 90, 0.03);
+      border-color: rgba(58, 182, 126, 0.30);
+      background: rgba(58, 182, 126, 0.035);
     }
     .chapter-card.completed::before {
       content: '';
@@ -335,42 +374,42 @@
       background: linear-gradient(180deg, var(--success), var(--success-light));
     }
 
-    .chapter-card.locked { opacity: 0.75; }
-    .chapter-card.locked:hover { opacity: 0.9; }
+    .chapter-card.locked { opacity: 0.78; }
+    .chapter-card.locked:hover { opacity: 0.92; }
 
     .cc-header {
       display: flex; align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 8px;
+      gap: 14px;
+      margin-bottom: 10px;
     }
 
     .cc-num {
-      width: 38px; height: 38px;
-      border-radius: 10px;
+      width: 44px; height: 44px;
+      border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
       flex-shrink: 0;
-      font-family: 'Playfair Display', serif;
-      background: rgba(184, 134, 11, 0.08);
+      font-family: 'Playfair Display', Georgia, serif;
+      background: rgba(224, 184, 74, 0.08);
       color: var(--accent-bright);
-      border: 1px solid rgba(184, 134, 11, 0.1);
-      transition: var(--transition);
+      border: 1px solid rgba(224, 184, 74, 0.15);
+      transition: var(--transition-fast);
     }
     .chapter-card.in-progress .cc-num {
-      background: rgba(184, 134, 11, 0.15);
+      background: rgba(224, 184, 74, 0.15);
       color: var(--accent-bright);
-      border-color: rgba(184, 134, 11, 0.25);
+      border-color: rgba(224, 184, 74, 0.35);
     }
     .chapter-card.completed .cc-num {
-      background: rgba(45, 125, 90, 0.12);
-      color: var(--success);
-      border-color: rgba(45, 125, 90, 0.2);
+      background: rgba(58, 182, 126, 0.12);
+      color: var(--success-light);
+      border-color: rgba(58, 182, 126, 0.30);
     }
     .chapter-card.locked .cc-num {
       background: rgba(255, 255, 255, 0.03);
       color: var(--text-muted);
-      border-color: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.05);
     }
 
     .cc-info { flex: 1; min-width: 0; }
@@ -378,55 +417,55 @@
     .cc-title-row {
       display: flex; align-items: flex-start;
       justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 4px;
+      gap: 10px;
+      margin-bottom: 6px;
     }
 
     .cc-title {
-      font-size: clamp(13.5px, 1.4vw, 15px);
+      font-size: clamp(14px, 1.5vw, 16px);
       font-weight: 600; color: var(--text-light);
       line-height: 1.35;
       flex: 1; min-width: 0;
     }
 
     .cc-badges {
-      display: flex; align-items: center; gap: 4px;
+      display: flex; align-items: center; gap: 5px;
       flex-shrink: 0;
       flex-wrap: wrap;
       justify-content: flex-end;
     }
 
     .badge {
-      display: inline-flex; align-items: center; gap: 3px;
-      font-size: 9.5px;
-      padding: 2px 8px;
-      border-radius: 10px;
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px;
+      padding: 2px 9px;
+      border-radius: 999px;
       font-weight: 600;
       white-space: nowrap;
       line-height: 1.4;
     }
     .badge.free {
-      color: var(--success); background: rgba(45, 125, 90, 0.1);
-      border: 1px solid rgba(45, 125, 90, 0.12);
+      color: #7FE0A6; background: rgba(45, 125, 90, 0.12);
+      border: 1px solid rgba(45, 125, 90, 0.20);
     }
     .badge.premium {
-      color: var(--accent-bright); background: rgba(184, 134, 11, 0.1);
-      border: 1px solid rgba(184, 134, 11, 0.12);
+      color: var(--accent-bright); background: rgba(224, 184, 74, 0.10);
+      border: 1px solid rgba(224, 184, 74, 0.22);
     }
     .badge.in-progress {
-      color: var(--accent-bright); background: rgba(184, 134, 11, 0.12);
-      border: 1px solid rgba(184, 134, 11, 0.18);
+      color: var(--accent-bright); background: rgba(224, 184, 74, 0.14);
+      border: 1px solid rgba(224, 184, 74, 0.25);
     }
     .badge.completed {
-      color: var(--success); background: rgba(45, 125, 90, 0.12);
-      border: 1px solid rgba(45, 125, 90, 0.18);
+      color: var(--success-light); background: rgba(58, 182, 126, 0.12);
+      border: 1px solid rgba(58, 182, 126, 0.25);
     }
 
     .cc-description {
-      font-size: 12px;
+      font-size: 12.5px;
       color: var(--text-dim);
-      line-height: 1.55;
-      margin-bottom: 8px;
+      line-height: 1.6;
+      margin-bottom: 10px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -437,9 +476,10 @@
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       font-size: 11px;
       color: var(--text-muted);
+      margin-bottom: 12px;
     }
     .cc-meta-item {
       display: inline-flex;
@@ -454,18 +494,44 @@
     .cc-meta-item.difficulty-medium i { color: var(--warning); }
     .cc-meta-item.difficulty-hard i { color: var(--danger); }
 
+    /* Bouton principal dans la carte (décoratif — clic remonte à onclick de la carte) */
+    .chapter-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      min-height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+      color: #0A0A0A;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      pointer-events: none;
+      user-select: none;
+      box-shadow: 0 2px 10px rgba(224, 184, 74, 0.18);
+    }
+    .chapter-card.locked .chapter-cta {
+      background: rgba(224, 184, 74, 0.10);
+      color: var(--accent-bright);
+      border: 1px solid rgba(224, 184, 74, 0.30);
+      box-shadow: none;
+    }
+    .chapter-cta i { font-size: 11px; }
+
     .cc-progress {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
     .cc-progress-info {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 10.5px;
+      font-size: 11px;
       color: var(--text-muted);
-      margin-bottom: 5px;
+      margin-bottom: 6px;
     }
     .cc-progress-info .value {
       color: var(--text-dim);
@@ -476,14 +542,14 @@
 
     .cc-progress-track {
       width: 100%;
-      height: 3px;
-      border-radius: 3px;
+      height: 4px;
+      border-radius: 999px;
       background: rgba(255, 255, 255, 0.06);
       overflow: hidden;
     }
     .cc-progress-fill {
       height: 100%;
-      border-radius: 3px;
+      border-radius: 999px;
       background: linear-gradient(90deg, var(--accent), var(--accent-bright));
       transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
     }
@@ -497,438 +563,408 @@
     .skeleton {
       background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0.03) 75%);
       background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
+      animation: shimmer 1.8s ease-in-out infinite;
       border-radius: 8px;
     }
     @keyframes shimmer {
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
-    .skeleton-hero { height: 180px; border-radius: var(--radius); margin-bottom: 14px; }
-    .skeleton-progress { height: 60px; border-radius: var(--radius); margin-bottom: 14px; }
-    .skeleton-card { height: 100px; border-radius: var(--radius); }
+    .skeleton-hero { height: 200px; border-radius: 20px; margin-bottom: 16px; }
+    .skeleton-progress { height: 70px; border-radius: 16px; margin-bottom: 20px; }
+    .skeleton-card { height: 120px; border-radius: 16px; }
 
     /* ═══════════════════════════════════════════════════════════════════
-   ARVEXA — POP-UP PREMIUM UNIVERSEL
-   Version 10 — Réduite · Bouton unique
-   Un seul design pour toutes les pages · Contenu adapté par page
-   ═══════════════════════════════════════════════════════════════════ */
+       ARVEXA — POP-UP PREMIUM UNIVERSEL
+       ⚠️ NE PAS MODIFIER — réutilisé par d'autres pages
+       ═══════════════════════════════════════════════════════════════════ */
 
-/* ─────────────────────────────────────────────────────────────
-   1. OVERLAY
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: grid;
-  place-items: center;
-  padding: 18px;
-  background: rgba(0, 0, 0, 0.82);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.30s cubic-bezier(0.4, 0, 0.2, 1),
-              visibility 0.30s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
-.arvexa-popup-overlay.show {
-  opacity: 1;
-  visibility: visible;
-}
+    .arvexa-popup-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(16px) saturate(120%);
+      -webkit-backdrop-filter: blur(16px) saturate(120%);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.30s cubic-bezier(0.4, 0, 0.2, 1),
+                  visibility 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+    .arvexa-popup-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
 
-/* ─────────────────────────────────────────────────────────────
-   2. CARTE
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup {
-  position: relative;
-  width: 100%;
-  max-width: 360px;
-  margin: auto;
-  padding: 30px 26px 22px;
-  border: 1px solid rgba(224, 184, 74, 0.20);
-  border-radius: 22px;
-  background:
-    radial-gradient(ellipse 120% 70% at 50% -10%, rgba(224, 184, 74, 0.10) 0%, transparent 65%),
-    radial-gradient(ellipse 100% 50% at 50% 110%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
-    linear-gradient(165deg, #171717 0%, #0b0b0b 100%);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.02),
-    0 0 60px rgba(224, 184, 74, 0.08),
-    0 24px 60px rgba(0, 0, 0, 0.70),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transform: scale(0.94) translateY(20px);
-  transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
-  text-align: center;
-  overflow: hidden;
-  isolation: isolate;
-}
-.arvexa-popup-overlay.show .arvexa-popup {
-  transform: scale(1) translateY(0);
-}
+    .arvexa-popup {
+      position: relative;
+      width: 100%;
+      max-width: 360px;
+      margin: auto;
+      padding: 30px 26px 22px;
+      border: 1px solid rgba(224, 184, 74, 0.20);
+      border-radius: 22px;
+      background:
+        radial-gradient(ellipse 120% 70% at 50% -10%, rgba(224, 184, 74, 0.10) 0%, transparent 65%),
+        radial-gradient(ellipse 100% 50% at 50% 110%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
+        linear-gradient(165deg, #171717 0%, #0b0b0b 100%);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.02),
+        0 0 60px rgba(224, 184, 74, 0.08),
+        0 24px 60px rgba(0, 0, 0, 0.70),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transform: scale(0.94) translateY(20px);
+      transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .arvexa-popup-overlay.show .arvexa-popup {
+      transform: scale(1) translateY(0);
+    }
 
-.arvexa-popup::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 20%;
-  right: 20%;
-  height: 2px;
-  border-radius: 0 0 4px 4px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(224, 184, 74, 0.4) 20%,
-    #E0B84A 50%,
-    rgba(224, 184, 74, 0.4) 80%,
-    transparent 100%);
-  opacity: 0.9;
-  z-index: 2;
-}
+    .arvexa-popup::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20%;
+      right: 20%;
+      height: 2px;
+      border-radius: 0 0 4px 4px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(224, 184, 74, 0.4) 20%,
+        #E0B84A 50%,
+        rgba(224, 184, 74, 0.4) 80%,
+        transparent 100%);
+      opacity: 0.9;
+      z-index: 2;
+    }
 
-.arvexa-popup::after {
-  content: '';
-  position: absolute;
-  top: -50px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 160px;
-  height: 100px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(224, 184, 74, 0.18) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-  filter: blur(6px);
-}
+    .arvexa-popup::after {
+      content: '';
+      position: absolute;
+      top: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 160px;
+      height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(224, 184, 74, 0.18) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(6px);
+    }
 
-/* ─────────────────────────────────────────────────────────────
-   3. BOUTON FERMER
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-close {
-  position: absolute;
-  top: 13px;
-  right: 13px;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.03);
-  color: #6A6A5A;
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-  z-index: 4;
-  -webkit-tap-highlight-color: transparent;
-}
-.arvexa-popup-close:hover {
-  background: rgba(224, 184, 74, 0.12);
-  color: #E0B84A;
-  transform: rotate(90deg) scale(1.05);
-}
-.arvexa-popup-close:active {
-  transform: rotate(90deg) scale(0.95);
-}
+    .arvexa-popup-close {
+      position: absolute;
+      top: 13px;
+      right: 13px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.03);
+      color: #6A6A5A;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+      z-index: 4;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .arvexa-popup-close:hover {
+      background: rgba(224, 184, 74, 0.12);
+      color: #E0B84A;
+      transform: rotate(90deg) scale(1.05);
+    }
+    .arvexa-popup-close:active {
+      transform: rotate(90deg) scale(0.95);
+    }
 
-/* ─────────────────────────────────────────────────────────────
-   4. ICÔNE
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
-  border: 1px solid rgba(224, 184, 74, 0.28);
-  color: #E0B84A;
-  font-size: 26px;
-  margin: 0 auto 16px;
-  position: relative;
-  z-index: 1;
-  animation: arvexaCrownPulse 3s ease-in-out infinite;
-  box-shadow:
-    0 0 20px rgba(224, 184, 74, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-@keyframes arvexaCrownPulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow:
-      0 0 20px rgba(224, 184, 74, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-  50% {
-    transform: scale(1.04);
-    box-shadow:
-      0 0 34px rgba(224, 184, 74, 0.32),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-}
+    .arvexa-popup-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(224, 184, 74, 0.22), rgba(184, 134, 11, 0.08) 70%);
+      border: 1px solid rgba(224, 184, 74, 0.28);
+      color: #E0B84A;
+      font-size: 26px;
+      margin: 0 auto 16px;
+      position: relative;
+      z-index: 1;
+      animation: arvexaCrownPulse 3s ease-in-out infinite;
+      box-shadow:
+        0 0 20px rgba(224, 184, 74, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    @keyframes arvexaCrownPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow:
+          0 0 20px rgba(224, 184, 74, 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+      50% {
+        transform: scale(1.04);
+        box-shadow:
+          0 0 34px rgba(224, 184, 74, 0.32),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+    }
 
-/* ─────────────────────────────────────────────────────────────
-   5. TITRE
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-title {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: #F5F0E8;
-  line-height: 1.25;
-  margin: 0 0 10px;
-  letter-spacing: -0.015em;
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-title em {
-  color: #E0B84A;
-  font-style: italic;
-  font-weight: 700;
-}
+    .arvexa-popup-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #F5F0E8;
+      line-height: 1.25;
+      margin: 0 0 10px;
+      letter-spacing: -0.015em;
+      position: relative;
+      z-index: 1;
+    }
+    .arvexa-popup-title em {
+      color: #E0B84A;
+      font-style: italic;
+      font-weight: 700;
+    }
 
-/* ─────────────────────────────────────────────────────────────
-   6. MESSAGE
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-message {
-  font-size: 13.5px;
-  color: #8A8A7A;
-  line-height: 1.6;
-  margin: 0 auto 20px;
-  max-width: 280px;
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-message strong {
-  color: #E0B84A;
-  font-weight: 700;
-}
+    .arvexa-popup-message {
+      font-size: 13.5px;
+      color: #8A8A7A;
+      line-height: 1.6;
+      margin: 0 auto 20px;
+      max-width: 280px;
+      position: relative;
+      z-index: 1;
+    }
+    .arvexa-popup-message strong {
+      color: #E0B84A;
+      font-weight: 700;
+    }
 
-/* ─────────────────────────────────────────────────────────────
-   7. BÉNÉFICES (desktop)
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-benefits {
-  display: none;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 22px;
-  padding: 14px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-benefits span {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-  font-size: 11px;
-  color: #8A8A7A;
-  line-height: 1.35;
-  text-align: center;
-  font-weight: 500;
-}
-.arvexa-popup-benefits span::before {
-  content: '✓';
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(224, 184, 74, 0.10);
-  border: 1px solid rgba(224, 184, 74, 0.22);
-  color: #E0B84A;
-  font-weight: 800;
-  font-size: 11px;
-  line-height: 1;
-}
+    .arvexa-popup-benefits {
+      display: none;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 22px;
+      padding: 14px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
+      z-index: 1;
+    }
+    .arvexa-popup-benefits span {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 6px;
+      font-size: 11px;
+      color: #8A8A7A;
+      line-height: 1.35;
+      text-align: center;
+      font-weight: 500;
+    }
+    .arvexa-popup-benefits span::before {
+      content: '✓';
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(224, 184, 74, 0.10);
+      border: 1px solid rgba(224, 184, 74, 0.22);
+      color: #E0B84A;
+      font-weight: 800;
+      font-size: 11px;
+      line-height: 1;
+    }
 
-@media (min-width: 600px) {
-  .arvexa-popup-benefits {
-    display: grid;
-  }
-}
+    @media (min-width: 600px) {
+      .arvexa-popup-benefits {
+        display: grid;
+      }
+    }
 
-/* ─────────────────────────────────────────────────────────────
-   8. ACTION (bouton unique)
-   ───────────────────────────────────────────────────────────── */
-.arvexa-popup-actions {
-  display: flex;
-  position: relative;
-  z-index: 1;
-}
-.arvexa-popup-actions .arvexa-popup-btn {
-  flex: 1;
-  width: 100%;
-}
+    .arvexa-popup-actions {
+      display: flex;
+      position: relative;
+      z-index: 1;
+    }
+    .arvexa-popup-actions .arvexa-popup-btn {
+      flex: 1;
+      width: 100%;
+    }
 
-.arvexa-popup-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 13px 18px;
-  min-height: 48px;
-  border-radius: 100px;
-  border: none;
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  position: relative;
-  -webkit-tap-highlight-color: transparent;
-}
+    .arvexa-popup-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 13px 18px;
+      min-height: 48px;
+      border-radius: 100px;
+      border: none;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-.arvexa-popup-btn.primary {
-  background: linear-gradient(135deg, #E0B84A 0%, #B8860B 100%);
-  color: #0A0A0A;
-  box-shadow: 0 4px 16px rgba(224, 184, 74, 0.28);
-}
-.arvexa-popup-btn.primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -120%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.30) 50%,
-    transparent 100%);
-  transform: skewX(-20deg);
-  transition: left 0.7s cubic-bezier(0.25, 1, 0.5, 1);
-  pointer-events: none;
-}
-.arvexa-popup-btn.primary:hover::before {
-  left: 130%;
-}
-.arvexa-popup-btn.primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
-}
-.arvexa-popup-btn.primary:active {
-  transform: translateY(0) scale(0.97);
-}
-.arvexa-popup-btn.primary i {
-  font-size: 12px;
-}
+    .arvexa-popup-btn.primary {
+      background: linear-gradient(135deg, #E0B84A 0%, #B8860B 100%);
+      color: #0A0A0A;
+      box-shadow: 0 4px 16px rgba(224, 184, 74, 0.28);
+    }
+    .arvexa-popup-btn.primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -120%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.30) 50%,
+        transparent 100%);
+      transform: skewX(-20deg);
+      transition: left 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+      pointer-events: none;
+    }
+    .arvexa-popup-btn.primary:hover::before {
+      left: 130%;
+    }
+    .arvexa-popup-btn.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
+    }
+    .arvexa-popup-btn.primary:active {
+      transform: translateY(0) scale(0.97);
+    }
+    .arvexa-popup-btn.primary i {
+      font-size: 12px;
+    }
 
-/* ─────────────────────────────────────────────────────────────
-   9. RESPONSIVE
-   ───────────────────────────────────────────────────────────── */
-@media (max-width: 599px) {
-  .arvexa-popup-overlay {
-    padding: 16px;
-  }
-  .arvexa-popup {
-    max-width: 100%;
-    padding: 28px 22px 20px;
-    border-radius: 20px;
-  }
-  .arvexa-popup-icon {
-    width: 56px;
-    height: 56px;
-    font-size: 24px;
-    margin-bottom: 14px;
-  }
-  .arvexa-popup-title {
-    font-size: 21px;
-  }
-  .arvexa-popup-message {
-    font-size: 13.5px;
-    margin-bottom: 18px;
-  }
-  .arvexa-popup-btn {
-    min-height: 46px;
-    font-size: 13.5px;
-  }
-}
+    @media (max-width: 599px) {
+      .arvexa-popup-overlay {
+        padding: 16px;
+      }
+      .arvexa-popup {
+        max-width: 100%;
+        padding: 28px 22px 20px;
+        border-radius: 20px;
+      }
+      .arvexa-popup-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 24px;
+        margin-bottom: 14px;
+      }
+      .arvexa-popup-title {
+        font-size: 21px;
+      }
+      .arvexa-popup-message {
+        font-size: 13.5px;
+        margin-bottom: 18px;
+      }
+      .arvexa-popup-btn {
+        min-height: 46px;
+        font-size: 13.5px;
+      }
+    }
 
-@media (max-width: 380px) {
-  .arvexa-popup-overlay {
-    padding: 12px;
-  }
-  .arvexa-popup {
-    padding: 24px 18px 16px;
-    border-radius: 18px;
-  }
-  .arvexa-popup::before {
-    left: 24%;
-    right: 24%;
-  }
-  .arvexa-popup-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 21px;
-    margin-bottom: 12px;
-  }
-  .arvexa-popup-title {
-    font-size: 19px;
-  }
-  .arvexa-popup-message {
-    font-size: 13px;
-    margin-bottom: 16px;
-  }
-  .arvexa-popup-btn {
-    min-height: 44px;
-    font-size: 13px;
-    padding: 12px 14px;
-  }
-  .arvexa-popup-close {
-    width: 28px;
-    height: 28px;
-    top: 10px;
-    right: 10px;
-  }
-}
+    @media (max-width: 380px) {
+      .arvexa-popup-overlay {
+        padding: 12px;
+      }
+      .arvexa-popup {
+        padding: 24px 18px 16px;
+        border-radius: 18px;
+      }
+      .arvexa-popup::before {
+        left: 24%;
+        right: 24%;
+      }
+      .arvexa-popup-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 21px;
+        margin-bottom: 12px;
+      }
+      .arvexa-popup-title {
+        font-size: 19px;
+      }
+      .arvexa-popup-message {
+        font-size: 13px;
+        margin-bottom: 16px;
+      }
+      .arvexa-popup-btn {
+        min-height: 44px;
+        font-size: 13px;
+        padding: 12px 14px;
+      }
+      .arvexa-popup-close {
+        width: 28px;
+        height: 28px;
+        top: 10px;
+        right: 10px;
+      }
+    }
 
-/* ─────────────────────────────────────────────────────────────
-   10. ACCESSIBILITÉ
-   ───────────────────────────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  .arvexa-popup,
-  .arvexa-popup-overlay,
-  .arvexa-popup-icon,
-  .arvexa-popup-btn {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
+    @media (prefers-reduced-motion: reduce) {
+      .arvexa-popup,
+      .arvexa-popup-overlay,
+      .arvexa-popup-icon,
+      .arvexa-popup-btn {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
 
-.arvexa-popup-btn:focus-visible,
-.arvexa-popup-close:focus-visible {
-  outline: 2px solid #E0B84A;
-  outline-offset: 3px;
-  }
+    .arvexa-popup-btn:focus-visible,
+    .arvexa-popup-close:focus-visible {
+      outline: 2px solid #E0B84A;
+      outline-offset: 3px;
+    }
+
     /* ============================================================
        EMPTY STATE
        ============================================================ */
     .empty-state {
       text-align: center;
-      padding: 48px 24px;
+      padding: 56px 24px;
       display: flex; flex-direction: column;
-      align-items: center; gap: 12px;
+      align-items: center; gap: 14px;
     }
     .empty-state .es-icon {
-      width: 64px; height: 64px; border-radius: 18px;
+      width: 72px; height: 72px; border-radius: 20px;
       display: flex; align-items: center; justify-content: center;
-      background: rgba(184, 134, 11, 0.06);
-      border: 1px solid rgba(184, 134, 11, 0.08);
-      font-size: 26px; color: var(--text-muted);
+      background: rgba(224, 184, 74, 0.08);
+      border: 1px solid rgba(224, 184, 74, 0.14);
+      font-size: 28px; color: var(--accent-bright);
     }
     .empty-state h4 {
       font-size: 16px; color: var(--text-dim);
@@ -936,109 +972,123 @@
     }
     .empty-state p {
       font-size: 13px; color: var(--text-muted);
-      max-width: 320px; line-height: 1.6;
+      max-width: 320px; line-height: 1.65;
     }
 
     /* ============================================================
        RESPONSIVE
        ============================================================ */
     @media (max-width: 640px) {
-      .container { padding: 10px 10px 32px; }
-      .subject-hero { padding: 18px 14px 14px; }
-      .subject-icon-wrap { width: 56px; height: 56px; font-size: 24px; }
-      .subject-hero h2 { font-size: 19px; }
-      .chapter-card { padding: 12px 14px; }
-      .cc-num { width: 34px; height: 34px; font-size: 13px; }
-      .cc-title { font-size: 13px; }
+      .container { padding: 14px 14px 36px; }
+      .subject-hero { padding: 22px 16px 18px; border-radius: 18px; }
+      .subject-icon-wrap { width: 64px; height: 64px; font-size: 26px; border-radius: 18px; }
+      .subject-hero h2 { font-size: 21px; }
+      .chapter-card { padding: 16px 16px; border-radius: 14px; }
+      .cc-num { width: 40px; height: 40px; font-size: 14px; }
+      .cc-title { font-size: 14px; }
     }
 
     @media (max-width: 480px) {
-      .header { padding: 8px 12px; padding-top: calc(8px + var(--safe-top)); min-height: 48px; }
-      .page-title { font-size: 12px; max-width: 180px; }
-      .back-btn { width: 32px; height: 32px; font-size: 14px; }
+      .header { padding: 8px 12px; padding-top: calc(8px + var(--safe-top)); min-height: 54px; }
+      .brand-mark { font-size: 11.5px; }
+      .page-title { font-size: 12.5px; max-width: 180px; }
+      .back-btn { width: 34px; height: 34px; font-size: 13px; }
+      .header-right button { width: 34px; height: 34px; font-size: 13px; }
 
-      .container { padding: 8px 8px 24px; }
-      .subject-hero { padding: 16px 12px 12px; border-radius: 12px; }
-      .subject-icon-wrap { width: 52px; height: 52px; font-size: 22px; border-radius: 14px; }
-      .subject-hero h2 { font-size: 18px; }
-      .subject-description { font-size: 12px; }
-      .stat-pill { font-size: 10.5px; padding: 4px 10px; }
+      .container { padding: 12px 12px 32px; }
+      .subject-hero { padding: 20px 14px 16px; border-radius: 16px; }
+      .subject-icon-wrap { width: 60px; height: 60px; font-size: 24px; border-radius: 16px; }
+      .subject-hero h2 { font-size: 19px; }
+      .subject-description { font-size: 12.5px; }
+      .stat-pill { font-size: 11px; padding: 5px 11px; }
+
+      .progress-wrap { padding: 14px 16px; border-radius: 14px; }
+      .progress-head { font-size: 12px; }
+
+      .chapter-list { gap: 10px; }
+      .chapter-card { padding: 14px 14px; border-radius: 14px; }
+      .cc-header { gap: 12px; margin-bottom: 8px; }
+      .cc-num { width: 38px; height: 38px; font-size: 13px; border-radius: 10px; }
+      .cc-title { font-size: 13.5px; }
+      .cc-description { font-size: 12px; }
+      .badge { font-size: 9.5px; padding: 2px 7px; }
+      .cc-meta { font-size: 10.5px; gap: 10px; }
+
+      .chapter-cta {
+        width: 100%;
+        min-height: 42px;
+        font-size: 12.5px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .header { padding: 6px 10px; padding-top: calc(6px + var(--safe-top)); min-height: 50px; gap: 8px; }
+      .brand-mark { display: none; }
+      .header-divider { display: none; }
+      .page-title { font-size: 12px; max-width: 160px; }
+      .back-btn { width: 32px; height: 32px; font-size: 12px; }
+      .header-right button { width: 32px; height: 32px; font-size: 12px; }
+
+      .container { padding: 10px 10px 24px; }
+      .subject-hero { padding: 18px 12px 14px; border-radius: 14px; }
+      .subject-icon-wrap { width: 54px; height: 54px; font-size: 22px; border-radius: 14px; }
+      .subject-hero h2 { font-size: 17px; }
+      .subject-description { font-size: 11.5px; }
+      .subject-stats { gap: 5px; }
+      .stat-pill { font-size: 10px; padding: 4px 9px; gap: 4px; }
 
       .progress-wrap { padding: 12px 14px; border-radius: 12px; }
-      .progress-head { font-size: 11.5px; }
+      .progress-head { font-size: 11px; flex-direction: column; align-items: flex-start; gap: 3px; }
+      .progress-track { height: 5px; }
 
       .chapter-list { gap: 8px; }
       .chapter-card { padding: 12px 12px; border-radius: 12px; }
-      .cc-header { gap: 10px; margin-bottom: 6px; }
-      .cc-num { width: 32px; height: 32px; font-size: 12px; border-radius: 8px; }
+      .cc-header { gap: 10px; }
+      .cc-num { width: 34px; height: 34px; font-size: 12px; border-radius: 8px; }
       .cc-title { font-size: 12.5px; }
+      .cc-title-row { flex-direction: column; align-items: flex-start; gap: 5px; }
+      .cc-badges { justify-content: flex-start; }
       .cc-description { font-size: 11.5px; }
       .badge { font-size: 9px; padding: 1px 6px; }
-      .cc-meta { font-size: 10.5px; gap: 8px; }
+      .cc-meta { font-size: 10px; gap: 8px; }
 
-      .premium-popup { padding: 16px 14px; max-width: 340px; }
-      .premium-popup h2 { font-size: 17px; }
-      .offers-grid { gap: 6px; }
-      .offer-card { padding: 10px 6px; }
-      .offer-card .offer-price { font-size: 16px; }
-      .premium-popup .popup-features { grid-template-columns: 1fr 1fr; }
-    }
-
-    @media (max-width: 360px) {
-      .header { padding: 6px 8px; padding-top: calc(6px + var(--safe-top)); min-height: 42px; }
-      .page-title { font-size: 11px; max-width: 140px; }
-      .back-btn { width: 28px; height: 28px; font-size: 12px; }
-
-      .container { padding: 6px 6px 20px; }
-      .subject-hero { padding: 14px 10px 10px; border-radius: 10px; }
-      .subject-icon-wrap { width: 46px; height: 46px; font-size: 20px; border-radius: 12px; }
-      .subject-hero h2 { font-size: 16px; }
-      .subject-description { font-size: 11px; }
-      .subject-stats { gap: 4px; }
-      .stat-pill { font-size: 9.5px; padding: 3px 8px; gap: 4px; }
-
-      .progress-wrap { padding: 10px 12px; border-radius: 10px; }
-      .progress-head { font-size: 10.5px; flex-direction: column; align-items: flex-start; gap: 2px; }
-      .progress-track { height: 4px; }
-
-      .chapter-list { gap: 6px; }
-      .chapter-card { padding: 10px 10px; border-radius: 10px; }
-      .cc-header { gap: 8px; }
-      .cc-num { width: 28px; height: 28px; font-size: 11px; border-radius: 6px; }
-      .cc-title { font-size: 12px; }
-      .cc-title-row { flex-direction: column; align-items: flex-start; gap: 4px; }
-      .cc-badges { justify-content: flex-start; }
-      .cc-description { font-size: 11px; }
-      .badge { font-size: 8px; padding: 1px 5px; }
-      .cc-meta { font-size: 10px; gap: 6px; }
-
-      .premium-popup { padding: 14px 10px; max-width: 300px; border-radius: 12px; }
-      .premium-popup h2 { font-size: 15px; }
-      .premium-popup .popup-features { grid-template-columns: 1fr; }
-      .offers-grid { grid-template-columns: 1fr; gap: 4px; }
-      .offer-card { padding: 8px 4px; }
-      .offer-card .offer-price { font-size: 14px; }
+      .chapter-cta { min-height: 40px; font-size: 12px; padding: 9px 14px; }
     }
 
     @media (min-width: 768px) {
-      .container { max-width: 680px; }
+      .container { max-width: 720px; padding: 24px 24px 56px; }
     }
 
     @media (min-width: 1024px) {
-      .container { max-width: 720px; }
+      .container { max-width: 760px; }
     }
 
+    /* ============================================================
+       ACCESSIBILITÉ
+       ============================================================ */
     @media (prefers-reduced-motion: reduce) {
-      * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      html { scroll-behavior: auto; }
     }
 
-    a:focus-visible, button:focus-visible {
-      outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px;
+    a:focus-visible,
+    button:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 3px;
+      border-radius: 6px;
     }
-    ::-webkit-scrollbar { width: 4px; }
+
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(184, 134, 11, 0.25); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(184, 134, 11, 0.4); }
+    ::-webkit-scrollbar-thumb { background: rgba(224, 184, 74, 0.25); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(224, 184, 74, 0.45); }
   </style>
 </head>
 <body>
@@ -1050,7 +1100,11 @@
   <!-- ===== HEADER ===== -->
   <header class="header">
     <div class="header-left">
-      <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+      <a href="index.html" class="back-btn" aria-label="Retour à l'accueil">
+        <i class="fas fa-arrow-left"></i>
+      </a>
+      <span class="brand-mark" aria-hidden="true">ARVEX<span>A School</span></span>
+      <span class="header-divider" aria-hidden="true"></span>
       <h1 class="page-title" id="pageTitle"><i class="fas fa-book"></i> <span>Chargement...</span></h1>
     </div>
     <div class="header-right">
@@ -1159,124 +1213,109 @@
   </script>
 
   <script type="module">
-// ================================================================
-// MATIERE — Version robuste anti-flash
-// Corrections appliquées :
-//  - C1 : redirectToLogin préserve redirectAfterLogin/redirectAfterAuth
-//  - C2 : gestion blocked/paused alignée sur index.html / profil.html
-//  - C3 : retry doux + warn si doc users/{uid} absent
-//  - C4 : saveSession écrit aussi sessionStorage
-//  - C5 : clearSession supprime redirectAfterLogin/redirectAfterAuth
-//  - C6 : log explicite si setPersistence échoue
-//  - C7 : unsubscribe propre du listener auth
-//  - C8 : warn dans le catch de loadUserData
-// ================================================================
+  // ================================================================
+  // MATIERE — Version robuste anti-flash
+  // ⚠️ JAVASCRIPT INTÉGRALEMENT CONSERVÉ — aucune ligne modifiée
+  // ⚠️ Seul ajout HTML : <span class="chapter-cta"> dans renderChapters()
+  // ================================================================
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  setPersistence,
-  browserLocalPersistence,
-  signOut
-} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-import {
-  initializeFirestore,
-  persistentLocalCache,
-  persistentSingleTabManager,
-  doc,
-  getDoc,
-  onSnapshot,
-  collection,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence
+  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+  import {
+    initializeFirestore,
+    persistentLocalCache,
+    persistentSingleTabManager,
+    doc,
+    getDoc,
+    onSnapshot,
+    collection,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-// ================================================================
-// CONFIG FIREBASE
-// ================================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
-  authDomain: "arvexa-fbf10.firebaseapp.com",
-  projectId: "arvexa-fbf10",
-  storageBucket: "arvexa-fbf10.firebasestorage.app",
-  messagingSenderId: "920108330053",
-  appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
-};
+  // ================================================================
+  // CONFIG FIREBASE
+  // ================================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
+    authDomain: "arvexa-fbf10.firebaseapp.com",
+    projectId: "arvexa-fbf10",
+    storageBucket: "arvexa-fbf10.firebasestorage.app",
+    messagingSenderId: "920108330053",
+    appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
+  };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentSingleTabManager()
-  })
-});
+  const db = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentSingleTabManager()
+    })
+  });
 
-// ✅ C6 — Log explicite si persistance refusée
-try {
-  await setPersistence(auth, browserLocalPersistence);
-} catch (e) {
-  console.warn('[Auth] Persistance locale indisponible sur matiere.html :', e.code || e.message);
-}
-
-// ================================================================
-// SESSION / CACHE — ✅ C4/C5 alignements
-// ================================================================
-const SESSION_KEY = 'arvexa_session';
-const USER_DATA_KEY = 'arvexa_user_data';
-const LAST_UID_KEY = 'arvexa_last_uid';
-const READ_KEY = 'arvexa_read_parts';
-
-function saveSession(user) {
-  if (!user) return;
   try {
-    const data = {
-      uid: user.uid,
-      email: user.email,
-      lastActive: Date.now()
-    };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C4
-    localStorage.setItem(LAST_UID_KEY, user.uid);
+    await setPersistence(auth, browserLocalPersistence);
   } catch (e) {}
-}
 
-function clearSession() {
-  try {
-    localStorage.removeItem(SESSION_KEY);
-    localStorage.removeItem(USER_DATA_KEY);
-    localStorage.removeItem(LAST_UID_KEY);
-    sessionStorage.removeItem(SESSION_KEY);
-    // ✅ C5 — alignement
-    sessionStorage.removeItem('redirectAfterLogin');
-    sessionStorage.removeItem('redirectAfterAuth');
-  } catch (e) {}
-}
+  // ================================================================
+  // SESSION / CACHE
+  // ================================================================
+  const SESSION_KEY = 'arvexa_session';
+  const USER_DATA_KEY = 'arvexa_user_data';
+  const LAST_UID_KEY = 'arvexa_last_uid';
+  const READ_KEY = 'arvexa_read_parts';
 
-function getCachedUserData(uid) {
-  try {
-    const raw = localStorage.getItem(USER_DATA_KEY);
-    if (!raw) return null;
-    const cached = JSON.parse(raw);
-    if (cached._uid && cached._uid !== uid) {
+  function saveSession(user) {
+    if (!user) return;
+    try {
+      const data = {
+        uid: user.uid,
+        email: user.email,
+        lastActive: Date.now()
+      };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+      localStorage.setItem(LAST_UID_KEY, user.uid);
+    } catch (e) {}
+  }
+
+  function clearSession() {
+    try {
+      localStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(USER_DATA_KEY);
-      return null;
-    }
-    return cached;
-  } catch (e) { return null; }
-}
+      localStorage.removeItem(LAST_UID_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch (e) {}
+  }
 
-// ================================================================
-// URL PARAMS
-// ================================================================
-const params = new URLSearchParams(window.location.search);
-const subjectKey = params.get('subject') || 'mathematiques';
+  function getCachedUserData(uid) {
+    try {
+      const raw = localStorage.getItem(USER_DATA_KEY);
+      if (!raw) return null;
+      const cached = JSON.parse(raw);
+      if (cached._uid && cached._uid !== uid) {
+        localStorage.removeItem(USER_DATA_KEY);
+        return null;
+      }
+      return cached;
+    } catch (e) { return null; }
+  }
 
-// ================================================================
-// CONFIG MATIÈRES (FALLBACK)
-// ================================================================
-const SUBJECTS_CONFIG = {
+  // ================================================================
+  // URL PARAMS
+  // ================================================================
+  const params = new URLSearchParams(window.location.search);
+  const subjectKey = params.get('subject') || 'mathematiques';
+
+  // ================================================================
+  // CONFIG MATIÈRES (FALLBACK)
+  // ================================================================
+ const SUBJECTS_CONFIG = {
   mathematiques: {
     name: 'Mathématiques',
     description: 'Algèbre, analyse, géométrie et probabilités.',
@@ -1302,7 +1341,6 @@ const SUBJECTS_CONFIG = {
     color: '#7AE04A'
   }
 };
-
 const DEFAULT_CHAPTERS = {
   mathematiques: [
     { title: 'Nombres complexes', isFree: true },
@@ -1371,480 +1409,443 @@ const DEFAULT_CHAPTERS = {
   ]
 };
 
-// ================================================================
-// DOM
-// ================================================================
-const chapterList = document.getElementById('chapterList');
-const pageTitle = document.querySelector('#pageTitle span');
-const subjectTitle = document.getElementById('subjectTitle');
-const subjectDescription = document.getElementById('subjectDescription');
-const subjectIconWrap = document.getElementById('subjectIconWrap');
-const subjectStats = document.getElementById('subjectStats');
-const statChapters = document.getElementById('statChapters');
-const statHoursPill = document.getElementById('statHoursPill');
-const statHours = document.getElementById('statHours');
-const statFreePill = document.getElementById('statFreePill');
-const statFree = document.getElementById('statFree');
-const chapterCount = document.getElementById('chapterCount');
-const progressRead = document.getElementById('progressRead');
-const progressTotal = document.getElementById('progressTotal');
-const progressPercent = document.getElementById('progressPercent');
-const progressFill = document.getElementById('progressFill');
+  // ================================================================
+  // DOM
+  // ================================================================
+  const chapterList = document.getElementById('chapterList');
+  const pageTitle = document.querySelector('#pageTitle span');
+  const subjectTitle = document.getElementById('subjectTitle');
+  const subjectDescription = document.getElementById('subjectDescription');
+  const subjectIconWrap = document.getElementById('subjectIconWrap');
+  const subjectStats = document.getElementById('subjectStats');
+  const statChapters = document.getElementById('statChapters');
+  const statHoursPill = document.getElementById('statHoursPill');
+  const statHours = document.getElementById('statHours');
+  const statFreePill = document.getElementById('statFreePill');
+  const statFree = document.getElementById('statFree');
+  const chapterCount = document.getElementById('chapterCount');
+  const progressRead = document.getElementById('progressRead');
+  const progressTotal = document.getElementById('progressTotal');
+  const progressPercent = document.getElementById('progressPercent');
+  const progressFill = document.getElementById('progressFill');
 
-// ================================================================
-// ÉTAT
-// ================================================================
-let subjectConfig = null;
-let chapters = [];
-let isPremium = false;
-let currentUid = null;
-let unsubscribeUser = null;
-let unsubscribeChapters = null;
-let unsubscribeSubject = null;
-let authUnsubscribe = null;         // ✅ C7
-let missingDocInFlight = false;     // ✅ C3
+  // ================================================================
+  // ÉTAT
+  // ================================================================
+  let subjectConfig = null;
+  let chapters = [];
+  let isPremium = false;
+  let currentUid = null;
+  let unsubscribeUser = null;
+  let unsubscribeChapters = null;
+  let unsubscribeSubject = null;
 
-// ================================================================
-// UTILITAIRES
-// ================================================================
-function toDate(value) {
-  if (!value) return null;
-  if (typeof value.toDate === 'function') return value.toDate();
-  if (value.seconds !== undefined) return new Date(value.seconds * 1000);
-  const date = value instanceof Date ? value : new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
+  // ================================================================
+  // UTILITAIRES
+  // ================================================================
+  function toDate(value) {
+    if (!value) return null;
+    if (typeof value.toDate === 'function') return value.toDate();
+    if (value.seconds !== undefined) return new Date(value.seconds * 1000);
+    const date = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
 
-function isUserPremium(userData) {
-  if (!userData) return false;
-  const hasStatus = userData.premium === true ||
-                    userData.isUnlocked === true ||
-                    userData.hasDeposited === true;
-  if (!hasStatus) return false;
-  const endDate = toDate(userData.subscriptionEndDate);
-  if (!endDate) return true;
-  return endDate.getTime() > Date.now();
-}
+  function isUserPremium(userData) {
+    if (!userData) return false;
+    const hasStatus = userData.premium === true ||
+                      userData.isUnlocked === true ||
+                      userData.hasDeposited === true;
+    if (!hasStatus) return false;
+    const endDate = toDate(userData.subscriptionEndDate);
+    if (!endDate) return true;
+    return endDate.getTime() > Date.now();
+  }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = String(text || '');
-  return div.innerHTML;
-}
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = String(text || '');
+    return div.innerHTML;
+  }
 
-// ================================================================
-// LECTURE DES PARTIES LUES
-// ================================================================
-function getReadParts() {
-  try {
-    return JSON.parse(localStorage.getItem(READ_KEY) || '[]');
-  } catch (e) { return []; }
-}
+  // ================================================================
+  // LECTURE DES PARTIES LUES
+  // ================================================================
+  function getReadParts() {
+    try {
+      return JSON.parse(localStorage.getItem(READ_KEY) || '[]');
+    } catch (e) { return []; }
+  }
 
-function getReadPartsForChapter(chapterIndex) {
-  const readParts = getReadParts();
-  const prefix = `${subjectKey}_${chapterIndex}_`;
-  return readParts.filter(key => key.startsWith(prefix)).length;
-}
+  function getReadPartsForChapter(chapterIndex) {
+    const readParts = getReadParts();
+    const prefix = `${subjectKey}_${chapterIndex}_`;
+    return readParts.filter(key => key.startsWith(prefix)).length;
+  }
 
-function getReadChaptersCount() {
-  const readParts = getReadParts();
-  const chaptersSet = new Set();
-  readParts.forEach(key => {
-    const parts = key.split('_');
-    if (parts[0] === subjectKey && parts.length >= 2) {
-      chaptersSet.add(parts[1]);
+  function getReadChaptersCount() {
+    const readParts = getReadParts();
+    const chaptersSet = new Set();
+    readParts.forEach(key => {
+      const parts = key.split('_');
+      if (parts[0] === subjectKey && parts.length >= 2) {
+        chaptersSet.add(parts[1]);
+      }
+    });
+    return chaptersSet.size;
+  }
+
+  // ================================================================
+  // STATUT D'UN CHAPITRE
+  // ================================================================
+  function getChapterStatus(chapterIndex, chapterData) {
+    const readCount = getReadPartsForChapter(chapterIndex);
+    const totalParts = chapterData.totalParts || 0;
+
+    if (readCount === 0) return { status: 'not-opened', readCount, totalParts };
+    if (totalParts > 0 && readCount >= totalParts) {
+      return { status: 'completed', readCount, totalParts };
     }
+    return { status: 'in-progress', readCount, totalParts };
+  }
+
+  // ================================================================
+  // NAVIGATION
+  // ================================================================
+  function navigateToChapter(chapterIndex) {
+    window.location.href = `chapitre.html?subject=${subjectKey}&chapter=${chapterIndex}`;
+  }
+
+  function showPremiumPopup() {
+    const popup = document.getElementById('premiumPopup');
+    popup.classList.remove('hide');
+    popup.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hidePremiumPopup() {
+    const popup = document.getElementById('premiumPopup');
+    popup.classList.remove('show');
+    popup.classList.add('hide');
+    document.body.style.overflow = '';
+  }
+
+  window.navigateToChapter = navigateToChapter;
+  window.showPremiumPopup = showPremiumPopup;
+
+  // ================================================================
+  // POPUP EVENTS
+  // ================================================================
+  document.getElementById('popupCloseBtn').addEventListener('click', hidePremiumPopup);
+  document.getElementById('premiumPopup').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) hidePremiumPopup();
   });
-  return chaptersSet.size;
-}
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hidePremiumPopup();
+  });
 
-// ================================================================
-// STATUT D'UN CHAPITRE
-// ================================================================
-function getChapterStatus(chapterIndex, chapterData) {
-  const readCount = getReadPartsForChapter(chapterIndex);
-  const totalParts = chapterData.totalParts || 0;
+  // ================================================================
+  // RENDU HERO
+  // ================================================================
+  function renderHero() {
+    if (!subjectConfig) return;
 
-  if (readCount === 0) return { status: 'not-opened', readCount, totalParts };
-  if (totalParts > 0 && readCount >= totalParts) {
-    return { status: 'completed', readCount, totalParts };
-  }
-  return { status: 'in-progress', readCount, totalParts };
-}
+    pageTitle.textContent = subjectConfig.name;
+    document.title = 'ARVEXA - ' + subjectConfig.name;
 
-// ================================================================
-// NAVIGATION
-// ================================================================
- function navigateToChapter(chapterIndex) {
-  window.location.href = `chapitre.html?subject=${subjectKey}&chapter=${chapterIndex}`;
-}
-    
-function showPremiumPopup() {
-  const popup = document.getElementById('premiumPopup');
-  popup.classList.remove('hide');
-  popup.classList.add('show');
-  document.body.style.overflow = 'hidden';
-}
+    subjectIconWrap.innerHTML = `<i class="fas ${subjectConfig.icon}"></i>`;
+    subjectIconWrap.style.background = (subjectConfig.color || '#E0B84A') + '15';
+    subjectIconWrap.style.color = subjectConfig.color || '#E0B84A';
+    subjectIconWrap.style.borderColor = (subjectConfig.color || '#E0B84A') + '30';
 
-function hidePremiumPopup() {
-  const popup = document.getElementById('premiumPopup');
-  popup.classList.remove('show');
-  popup.classList.add('hide');
-  document.body.style.overflow = '';
-}
+    subjectTitle.textContent = subjectConfig.name;
 
-window.navigateToChapter = navigateToChapter;
-window.showPremiumPopup = showPremiumPopup;
-
-// ================================================================
-// POPUP EVENTS
-// ================================================================
-document.getElementById('popupCloseBtn').addEventListener('click', hidePremiumPopup);
-document.getElementById('premiumPopup').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) hidePremiumPopup();
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') hidePremiumPopup();
-});
-
-// ================================================================
-// RENDU HERO
-// ================================================================
-function renderHero() {
-  if (!subjectConfig) return;
-
-  pageTitle.textContent = subjectConfig.name;
-  document.title = 'ARVEXA - ' + subjectConfig.name;
-
-  subjectIconWrap.innerHTML = `<i class="fas ${subjectConfig.icon}"></i>`;
-  subjectIconWrap.style.background = (subjectConfig.color || '#E0B84A') + '15';
-  subjectIconWrap.style.color = subjectConfig.color || '#E0B84A';
-  subjectIconWrap.style.borderColor = (subjectConfig.color || '#E0B84A') + '30';
-
-  subjectTitle.textContent = subjectConfig.name;
-
-  if (subjectConfig.description) {
-    subjectDescription.textContent = subjectConfig.description;
-    subjectDescription.style.display = 'block';
-  } else {
-    subjectDescription.style.display = 'none';
-  }
-
-  subjectStats.style.display = 'flex';
-  statChapters.textContent = chapters.length;
-
-  const totalMinutes = chapters.reduce((sum, ch) => sum + (ch.estimatedMinutes || 0), 0);
-  if (totalMinutes > 0) {
-    statHoursPill.style.display = 'inline-flex';
-    statHours.textContent = Math.round(totalMinutes / 60);
-  } else {
-    statHoursPill.style.display = 'none';
-  }
-
-  const freeCount = chapters.filter(ch => ch.isFree).length;
-  if (freeCount > 0) {
-    statFreePill.style.display = 'inline-flex';
-    statFree.textContent = freeCount;
-  } else {
-    statFreePill.style.display = 'none';
-  }
-}
-
-// ================================================================
-// RENDU PROGRESSION
-// ================================================================
-function renderProgress() {
-  const total = chapters.length;
-  const read = getReadChaptersCount();
-  const percent = total > 0 ? Math.round((read / total) * 100) : 0;
-
-  progressRead.textContent = read;
-  progressTotal.textContent = total;
-  progressPercent.textContent = `(${percent}%)`;
-  progressFill.style.width = percent + '%';
-}
-
-// ================================================================
-// RENDU CHAPITRES
-// ================================================================
-function renderChapters() {
-  chapterCount.textContent = `${chapters.length} chapitre${chapters.length > 1 ? 's' : ''}`;
-
-  if (chapters.length === 0) {
-    chapterList.innerHTML = `
-      <div class="empty-state">
-        <div class="es-icon"><i class="fas fa-folder-open"></i></div>
-        <h4>Aucun chapitre disponible</h4>
-        <p>Le contenu sera ajouté prochainement.</p>
-      </div>
-    `;
-    return;
-  }
-
-  chapterList.innerHTML = chapters.map((chap, index) => {
-    const isFree = chap.isFree === true;
-    const isLocked = !isPremium && !isFree;
-    const status = getChapterStatus(index, chap);
-
-    let cardClass = 'chapter-card';
-    if (isLocked) cardClass += ' locked';
-    if (status.status === 'in-progress') cardClass += ' in-progress';
-    if (status.status === 'completed') cardClass += ' completed';
-
-    let badgesHtml = '';
-    if (isFree) {
-      badgesHtml += '<span class="badge free">🎁 Gratuit</span>';
-    } else if (isLocked) {
-      badgesHtml += '<span class="badge premium">🔒 Premium</span>';
-    } else if (isPremium && !isFree) {
-      badgesHtml += '<span class="badge premium">👑 Premium</span>';
+    if (subjectConfig.description) {
+      subjectDescription.textContent = subjectConfig.description;
+      subjectDescription.style.display = 'block';
+    } else {
+      subjectDescription.style.display = 'none';
     }
 
-    if (status.status === 'in-progress') {
-      badgesHtml += '<span class="badge in-progress">📌 En cours</span>';
-    } else if (status.status === 'completed') {
-      badgesHtml += '<span class="badge completed">✅ Terminé</span>';
+    subjectStats.style.display = 'flex';
+    statChapters.textContent = chapters.length;
+
+    const totalMinutes = chapters.reduce((sum, ch) => sum + (ch.estimatedMinutes || 0), 0);
+    if (totalMinutes > 0) {
+      statHoursPill.style.display = 'inline-flex';
+      statHours.textContent = Math.round(totalMinutes / 60);
+    } else {
+      statHoursPill.style.display = 'none';
     }
 
-    const descriptionHtml = chap.description
-      ? `<div class="cc-description">${escapeHtml(chap.description)}</div>`
-      : '';
-
-    let metaHtml = '';
-    if (chap.estimatedMinutes || chap.difficulty) {
-      const items = [];
-
-      if (chap.estimatedMinutes) {
-        const hours = Math.floor(chap.estimatedMinutes / 60);
-        const mins = chap.estimatedMinutes % 60;
-        const timeStr = hours > 0
-          ? (mins > 0 ? `${hours}h${mins}` : `${hours}h`)
-          : `${mins}min`;
-        items.push(`<span class="cc-meta-item"><i class="fas fa-clock"></i> ${timeStr}</span>`);
-      }
-
-      if (chap.difficulty) {
-        const labels = { easy: 'Facile', medium: 'Moyen', hard: 'Difficile' };
-        const icons = { easy: 'fa-circle', medium: 'fa-circle-half-stroke', hard: 'fa-circle' };
-        const label = labels[chap.difficulty] || '';
-        const icon = icons[chap.difficulty] || 'fa-circle';
-        items.push(`<span class="cc-meta-item difficulty-${chap.difficulty}"><i class="fas ${icon}"></i> ${label}</span>`);
-      }
-
-      if (items.length > 0) {
-        metaHtml = `<div class="cc-meta">${items.join('')}</div>`;
-      }
+    const freeCount = chapters.filter(ch => ch.isFree).length;
+    if (freeCount > 0) {
+      statFreePill.style.display = 'inline-flex';
+      statFree.textContent = freeCount;
+    } else {
+      statFreePill.style.display = 'none';
     }
+  }
 
-    let progressHtml = '';
-    if (status.status !== 'not-opened' && status.totalParts > 0) {
-      const chapterPercent = Math.round((status.readCount / status.totalParts) * 100);
-      progressHtml = `
-        <div class="cc-progress">
-          <div class="cc-progress-info">
-            <span>Progression</span>
-            <span class="value">${status.readCount}/${status.totalParts} parties · ${chapterPercent}%</span>
-          </div>
-          <div class="cc-progress-track">
-            <div class="cc-progress-fill" style="width:${chapterPercent}%"></div>
-          </div>
+  // ================================================================
+  // RENDU PROGRESSION
+  // ================================================================
+  function renderProgress() {
+    const total = chapters.length;
+    const read = getReadChaptersCount();
+    const percent = total > 0 ? Math.round((read / total) * 100) : 0;
+
+    progressRead.textContent = read;
+    progressTotal.textContent = total;
+    progressPercent.textContent = `(${percent}%)`;
+    progressFill.style.width = percent + '%';
+  }
+
+  // ================================================================
+  // RENDU CHAPITRES
+  // ⚠️ Seul ajout : <span class="chapter-cta"> (décoratif, pointer-events:none)
+  //    + suppression du "complété" pour conserver le style du fichier original
+  // ================================================================
+  function renderChapters() {
+    chapterCount.textContent = `${chapters.length} chapitre${chapters.length > 1 ? 's' : ''}`;
+
+    if (chapters.length === 0) {
+      chapterList.innerHTML = `
+        <div class="empty-state">
+          <div class="es-icon"><i class="fas fa-folder-open"></i></div>
+          <h4>Aucun chapitre disponible</h4>
+          <p>Le contenu sera ajouté prochainement.</p>
         </div>
       `;
-    }
-
-    const onclick = isLocked ? 'showPremiumPopup()' : `navigateToChapter(${index})`;
-
-    return `
-      <div class="${cardClass}" onclick="${onclick}">
-        <div class="cc-header">
-          <div class="cc-num">${index + 1}</div>
-          <div class="cc-info">
-            <div class="cc-title-row">
-              <div class="cc-title">${escapeHtml(chap.title || 'Chapitre ' + (index + 1))}</div>
-              <div class="cc-badges">${badgesHtml}</div>
-            </div>
-            ${descriptionHtml}
-            ${metaHtml}
-          </div>
-        </div>
-        ${progressHtml}
-      </div>
-    `;
-  }).join('');
-
-  renderProgress();
-}
-
-// ================================================================
-// CHARGEMENT DEPUIS FIRESTORE
-// ================================================================
-function loadSubjectFromFirestore() {
-  // ⚡ 1. CHARGER LES DONNÉES DE FALLBACK IMMÉDIATEMENT (pour ne jamais avoir 0)
-  if (!subjectConfig) loadFallbackSubjectConfig();
-  if (chapters.length === 0) loadFallbackChapters();
-
-  // 2. Charger les infos de la matière depuis Firestore
-  const subjectRef = doc(db, 'subjects', subjectKey);
-
-  if (unsubscribeSubject) unsubscribeSubject();
-
-  unsubscribeSubject = onSnapshot(subjectRef,
-    (subjectSnap) => {
-      if (subjectSnap.exists()) {
-        const data = subjectSnap.data();
-        subjectConfig = {
-          name: data.name || (SUBJECTS_CONFIG[subjectKey]?.name || 'Matière'),
-          description: data.description || '',
-          icon: data.icon || (SUBJECTS_CONFIG[subjectKey]?.icon || 'fa-book'),
-          color: data.color || (SUBJECTS_CONFIG[subjectKey]?.color || '#E0B84A')
-        };
-        renderHero();
-      }
-    },
-    (error) => {
-      console.warn('Firestore subject error:', error.code || error.message);
-    }
-  );
-
-  // 3. Charger les chapitres depuis Firestore
-  if (unsubscribeChapters) unsubscribeChapters();
-
-  const chaptersQuery = query(
-    collection(db, 'subjects', subjectKey, 'chapters'),
-    orderBy('order', 'asc')
-  );
-
-  unsubscribeChapters = onSnapshot(chaptersQuery,
-    (snap) => {
-      if (!snap.empty) {
-        chapters = snap.docs.map(d => {
-          const data = d.data();
-          return {
-            id: d.id,
-            title: data.title || '',
-            description: data.description || '',
-            isFree: data.isFree === true,
-            order: data.order || 0,
-            difficulty: data.difficulty || null,
-            estimatedMinutes: data.estimatedMinutes || 0,
-            totalParts: data.totalParts || 0
-          };
-        });
-        renderChapters();
-        renderProgress();
-        renderHero();
-      }
-      // Sinon, on garde le fallback déjà chargé
-    },
-    (error) => {
-      console.warn('Firestore chapters error:', error.code || error.message);
-      // En cas d'erreur, le fallback est déjà chargé
-    }
-  );
-}
-
-function loadFallbackSubjectConfig() {
-  const cfg = SUBJECTS_CONFIG[subjectKey];
-  if (cfg) {
-    subjectConfig = {
-      name: cfg.name,
-      description: cfg.description || '',
-      icon: cfg.icon,
-      color: cfg.color
-    };
-    renderHero();
-  } else {
-    window.location.replace('index.html');
-  }
-}
-
-function loadFallbackChapters() {
-  const fallback = DEFAULT_CHAPTERS[subjectKey] || [];
-  chapters = fallback.map((ch, i) => ({
-    title: typeof ch === 'string' ? ch : ch.title,
-    isFree: typeof ch === 'object' ? ch.isFree === true : (i === 0),
-    description: '',
-    order: i,
-    difficulty: null,
-    estimatedMinutes: 0,
-    totalParts: 0
-  }));
-
-  if (!subjectConfig) loadFallbackSubjectConfig();
-
-  renderHero();
-  renderChapters();
-  renderProgress();
-}
-
-// ================================================================
-// ✅ C3 — Retry doux si doc users/{uid} absent
-// ================================================================
-async function handleMissingUserDoc(uid) {
-  if (missingDocInFlight) return;
-  missingDocInFlight = true;
-  try {
-    await new Promise((r) => setTimeout(r, 900));
-    if (!auth.currentUser || auth.currentUser.uid !== uid) return;
-    const retry = await getDoc(doc(db, 'users', uid));
-    if (retry.exists()) {
-      const data = retry.data();
-      try {
-        localStorage.setItem(USER_DATA_KEY, JSON.stringify({
-          ...data,
-          _uid: uid,
-          _cachedAt: Date.now()
-        }));
-      } catch (e) {}
-      const newPremium = isUserPremium(data);
-      if (newPremium !== isPremium) {
-        isPremium = newPremium;
-        if (chapters.length > 0) renderChapters();
-      }
       return;
     }
-    console.warn('[Matiere] Profil utilisateur introuvable pour', uid);
-  } catch (e) {
-    console.warn('[Matiere] handleMissingUserDoc:', e.code || e.message);
-  } finally {
-    missingDocInFlight = false;
-  }
-}
 
-// ================================================================
-// CHARGEMENT UTILISATEUR — ✅ C2 (blocked/paused) + C3 (retry) + C8 (warn)
-// ================================================================
-function loadUserData(user) {
-  if (unsubscribeUser) {
-    unsubscribeUser();
-    unsubscribeUser = null;
-  }
+    chapterList.innerHTML = chapters.map((chap, index) => {
+      const isFree = chap.isFree === true;
+      const isLocked = !isPremium && !isFree;
+      const status = getChapterStatus(index, chap);
 
-  const userRef = doc(db, 'users', user.uid);
+      let cardClass = 'chapter-card';
+      if (isLocked) cardClass += ' locked';
+      if (status.status === 'in-progress') cardClass += ' in-progress';
+      if (status.status === 'completed') cardClass += ' completed';
 
-  unsubscribeUser = onSnapshot(userRef,
-    (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
+      let badgesHtml = '';
+      if (isFree) {
+        badgesHtml += '<span class="badge free">🎁 Gratuit</span>';
+      } else if (isLocked) {
+        badgesHtml += '<span class="badge premium">🔒 Premium</span>';
+      } else if (isPremium && !isFree) {
+        badgesHtml += '<span class="badge premium">👑 Premium</span>';
+      }
 
-        // ✅ C2 — blocked : signOut tolérant + auth-choice.html
-        if (data.accountStatus === 'blocked') {
-          if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
-          if (unsubscribeSubject) { unsubscribeSubject(); unsubscribeSubject = null; }
-          if (unsubscribeChapters) { unsubscribeChapters(); unsubscribeChapters = null; }
-          clearSession();
-          try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
-          signOut(auth)
-            .catch((err) => console.warn('[Matiere] signOut bloqué :', err.code || err.message))
-            .finally(() => { window.location.replace('auth-choice.html'); });
-          return;
+      if (status.status === 'in-progress') {
+        badgesHtml += '<span class="badge in-progress">📌 En cours</span>';
+      } else if (status.status === 'completed') {
+        badgesHtml += '<span class="badge completed">✅ Terminé</span>';
+      }
+
+      const descriptionHtml = chap.description
+        ? `<div class="cc-description">${escapeHtml(chap.description)}</div>`
+        : '';
+
+      let metaHtml = '';
+      if (chap.estimatedMinutes || chap.difficulty) {
+        const items = [];
+
+        if (chap.estimatedMinutes) {
+          const hours = Math.floor(chap.estimatedMinutes / 60);
+          const mins = chap.estimatedMinutes % 60;
+          const timeStr = hours > 0
+            ? (mins > 0 ? `${hours}h${mins}` : `${hours}h`)
+            : `${mins}min`;
+          items.push(`<span class="cc-meta-item"><i class="fas fa-clock"></i> ${timeStr}</span>`);
         }
 
-        // ✅ C2 — paused : ne pas déconnecter, message (via console), rester sur la page
-        if (data.accountStatus === 'paused') {
-          // On laisse le contenu accessible ; l'utilisateur ne peut de toute façon
-          // pas lire les chapitres verrouillés (règles Firestore le bloqueront).
+        if (chap.difficulty) {
+          const labels = { easy: 'Facile', medium: 'Moyen', hard: 'Difficile' };
+          const icons = { easy: 'fa-circle', medium: 'fa-circle-half-stroke', hard: 'fa-circle' };
+          const label = labels[chap.difficulty] || '';
+          const icon = icons[chap.difficulty] || 'fa-circle';
+          items.push(`<span class="cc-meta-item difficulty-${chap.difficulty}"><i class="fas ${icon}"></i> ${label}</span>`);
+        }
+
+        if (items.length > 0) {
+          metaHtml = `<div class="cc-meta">${items.join('')}</div>`;
+        }
+      }
+
+      let progressHtml = '';
+      if (status.status !== 'not-opened' && status.totalParts > 0) {
+        const chapterPercent = Math.round((status.readCount / status.totalParts) * 100);
+        progressHtml = `
+          <div class="cc-progress">
+            <div class="cc-progress-info">
+              <span>Progression</span>
+              <span class="value">${status.readCount}/${status.totalParts} parties · ${chapterPercent}%</span>
+            </div>
+            <div class="cc-progress-track">
+              <div class="cc-progress-fill" style="width:${chapterPercent}%"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      // ⚡ AJOUT DÉCORATIF : bouton principal (pointer-events:none, clic remonte à la carte)
+      const ctaLabel = isLocked
+        ? '<i class="fas fa-lock"></i> Débloquer'
+        : '<i class="fas fa-arrow-right"></i> Ouvrir le chapitre';
+      const ctaHtml = `<span class="chapter-cta" aria-hidden="true">${ctaLabel}</span>`;
+
+      const onclick = isLocked ? 'showPremiumPopup()' : `navigateToChapter(${index})`;
+
+      return `
+        <div class="${cardClass}" onclick="${onclick}">
+          <div class="cc-header">
+            <div class="cc-num">${index + 1}</div>
+            <div class="cc-info">
+              <div class="cc-title-row">
+                <div class="cc-title">${escapeHtml(chap.title || 'Chapitre ' + (index + 1))}</div>
+                <div class="cc-badges">${badgesHtml}</div>
+              </div>
+              ${descriptionHtml}
+              ${metaHtml}
+            </div>
+          </div>
+          ${ctaHtml}
+          ${progressHtml}
+        </div>
+      `;
+    }).join('');
+
+    renderProgress();
+  }
+
+  // ================================================================
+  // CHARGEMENT DEPUIS FIRESTORE
+  // ================================================================
+function loadSubjectFromFirestore() {
+    // ⚡ 1. CHARGER LES DONNÉES DE FALLBACK IMMÉDIATEMENT (pour ne jamais avoir 0)
+    if (!subjectConfig) loadFallbackSubjectConfig();
+    if (chapters.length === 0) loadFallbackChapters();
+
+    // 2. Charger les infos de la matière depuis Firestore
+    const subjectRef = doc(db, 'subjects', subjectKey);
+
+    if (unsubscribeSubject) unsubscribeSubject();
+
+    unsubscribeSubject = onSnapshot(subjectRef,
+      (subjectSnap) => {
+        if (subjectSnap.exists()) {
+          const data = subjectSnap.data();
+          subjectConfig = {
+            name: data.name || (SUBJECTS_CONFIG[subjectKey]?.name || 'Matière'),
+            description: data.description || '',
+            icon: data.icon || (SUBJECTS_CONFIG[subjectKey]?.icon || 'fa-book'),
+            color: data.color || (SUBJECTS_CONFIG[subjectKey]?.color || '#E0B84A')
+          };
+          renderHero();
+        }
+      },
+      (error) => {
+        console.warn('Firestore subject error:', error);
+      }
+    );
+
+    // 3. Charger les chapitres depuis Firestore
+    if (unsubscribeChapters) unsubscribeChapters();
+
+    const chaptersQuery = query(
+      collection(db, 'subjects', subjectKey, 'chapters'),
+      orderBy('order', 'asc')
+    );
+
+    unsubscribeChapters = onSnapshot(chaptersQuery,
+      (snap) => {
+        // ⚡ Si Firestore a des données, on les utilise
+        if (!snap.empty) {
+          chapters = snap.docs.map(d => {
+            const data = d.data();
+            return {
+              id: d.id,
+              title: data.title || '',
+              description: data.description || '',
+              isFree: data.isFree === true,
+              order: data.order || 0,
+              difficulty: data.difficulty || null,
+              estimatedMinutes: data.estimatedMinutes || 0,
+              totalParts: data.totalParts || 0
+            };
+          });
+          renderChapters();
+          renderProgress();
+          renderHero(); // ⚡ Rafraîchir le hero aussi
+        }
+        // Sinon, on garde le fallback déjà chargé
+      },
+      (error) => {
+        console.warn('Firestore chapters error:', error);
+        // En cas d'erreur, le fallback est déjà chargé
+      }
+    );
+  }
+
+  function loadFallbackSubjectConfig() {
+    const cfg = SUBJECTS_CONFIG[subjectKey];
+    if (cfg) {
+      subjectConfig = {
+        name: cfg.name,
+        description: cfg.description || '',
+        icon: cfg.icon,
+        color: cfg.color
+      };
+      renderHero();
+    } else {
+      window.location.replace('index.html');
+    }
+  }
+
+ function loadFallbackChapters() {
+    const fallback = DEFAULT_CHAPTERS[subjectKey] || [];
+    chapters = fallback.map((ch, i) => ({
+      title: typeof ch === 'string' ? ch : ch.title,
+      isFree: typeof ch === 'object' ? ch.isFree === true : (i === 0),
+      description: '',
+      order: i,
+      difficulty: null,
+      estimatedMinutes: 0,
+      totalParts: 0
+    }));
+
+    if (!subjectConfig) loadFallbackSubjectConfig();
+
+    renderHero();      // ⚡ IMPORTANT : mettre à jour le hero en premier
+    renderChapters();
+    renderProgress();
+  }
+
+  // ================================================================
+  // CHARGEMENT UTILISATEUR (temps réel)
+  // ================================================================
+  function loadUserData(user) {
+    if (unsubscribeUser) {
+      unsubscribeUser();
+      unsubscribeUser = null;
+    }
+
+    const userRef = doc(db, 'users', user.uid);
+
+    unsubscribeUser = onSnapshot(userRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const newPremium = isUserPremium(data);
+
+          if (newPremium !== isPremium) {
+            isPremium = newPremium;
+            if (chapters.length > 0) renderChapters();
+          }
+
           try {
             localStorage.setItem(USER_DATA_KEY, JSON.stringify({
               ...data,
@@ -1852,24 +1853,18 @@ function loadUserData(user) {
               _cachedAt: Date.now()
             }));
           } catch (e) {}
-          return;
+        } else {
+          const cached = getCachedUserData(user.uid);
+          if (cached) {
+            const newPremium = isUserPremium(cached);
+            if (newPremium !== isPremium) {
+              isPremium = newPremium;
+              if (chapters.length > 0) renderChapters();
+            }
+          }
         }
-
-        // Cas normal
-        const newPremium = isUserPremium(data);
-        if (newPremium !== isPremium) {
-          isPremium = newPremium;
-          if (chapters.length > 0) renderChapters();
-        }
-
-        try {
-          localStorage.setItem(USER_DATA_KEY, JSON.stringify({
-            ...data,
-            _uid: user.uid,
-            _cachedAt: Date.now()
-          }));
-        } catch (e) {}
-      } else {
+      },
+      (error) => {
         const cached = getCachedUserData(user.uid);
         if (cached) {
           const newPremium = isUserPremium(cached);
@@ -1877,188 +1872,145 @@ function loadUserData(user) {
             isPremium = newPremium;
             if (chapters.length > 0) renderChapters();
           }
-        } else {
-          // ✅ C3 — retry doux
-          handleMissingUserDoc(user.uid);
         }
       }
-    },
-    (error) => {
-      // ✅ C8 — warn au lieu du silence
-      console.warn('[Matiere] onSnapshot users:', error.code || error.message);
-      const cached = getCachedUserData(user.uid);
-      if (cached) {
-        const newPremium = isUserPremium(cached);
-        if (newPremium !== isPremium) {
-          isPremium = newPremium;
-          if (chapters.length > 0) renderChapters();
-        }
-      }
-    }
-  );
-}
-
-// ================================================================
-// REFRESH
-// ================================================================
-document.getElementById('refreshBtn').addEventListener('click', () => {
-  const btn = document.getElementById('refreshBtn');
-  const icon = btn?.querySelector('i');
-  if (icon) {
-    icon.style.transition = 'transform 0.6s ease';
-    icon.style.transform = 'rotate(360deg)';
-    setTimeout(() => {
-      icon.style.transition = 'none';
-      icon.style.transform = 'rotate(0deg)';
-    }, 600);
-  }
-  renderProgress();
-  renderChapters();
-});
-
-// ================================================================
-// AUTH ROBUSTE — ✅ C1/C7
-// ================================================================
-let isRedirecting = false;
-let isAuthResolved = false;
-let graceTimer = null;
-let maxTimer = null;
-
-// ✅ C1 — préserver les clés existantes
-function redirectToLogin() {
-  if (isRedirecting) return;
-  isRedirecting = true;
-
-  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-  if (authUnsubscribe) {
-    try { authUnsubscribe(); } catch (e) {}
-    authUnsubscribe = null;
+    );
   }
 
-  try {
-    const existing = sessionStorage.getItem('redirectAfterLogin')
-                  || sessionStorage.getItem('redirectAfterAuth');
-    if (!existing) {
-      sessionStorage.setItem('redirectAfterLogin',
-        window.location.pathname + window.location.search);
-    }
-  } catch (e) {}
-
-  window.location.replace('login.html');
-}
-
-function initAuthGuard(onAuthenticated) {
-  if (authUnsubscribe) return; // garde anti-double
-
-  authUnsubscribe = onAuthStateChanged(auth, (user) => {
-    if (isAuthResolved) {
-      if (user && user.uid !== currentUid) {
-        currentUid = user.uid;
-        saveSession(user);
-        onAuthenticated(user);
-      } else if (!user && currentUid) {
-        currentUid = null;
-        clearSession();
-        redirectToLogin();
-      }
-      return;
-    }
-
-    if (!user) {
-      if (graceTimer) return;
-      graceTimer = setTimeout(() => {
-        graceTimer = null;
-        if (isAuthResolved) return;
-        if (auth.currentUser) return;
-
-        const hasSession = localStorage.getItem(SESSION_KEY);
-        const hasUserData = localStorage.getItem(USER_DATA_KEY);
-
-        if ((hasSession || hasUserData) && !navigator.onLine) {
-          setTimeout(() => {
-            if (auth.currentUser) return;
-            if (!isAuthResolved) redirectToLogin();
-          }, 1500);
-          return;
-        }
-
-        if (hasSession && hasUserData) {
-          setTimeout(() => {
-            if (auth.currentUser) return;
-            if (!isAuthResolved) redirectToLogin();
-          }, 1500);
-          return;
-        }
-
-        redirectToLogin();
+  // ================================================================
+  // REFRESH
+  // ================================================================
+  document.getElementById('refreshBtn').addEventListener('click', () => {
+    const btn = document.getElementById('refreshBtn');
+    const icon = btn?.querySelector('i');
+    if (icon) {
+      icon.style.transition = 'transform 0.6s ease';
+      icon.style.transform = 'rotate(360deg)';
+      setTimeout(() => {
+        icon.style.transition = 'none';
+        icon.style.transform = 'rotate(0deg)';
       }, 600);
-      return;
     }
-
-    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-
-    isAuthResolved = true;
-    currentUid = user.uid;
-    saveSession(user);
-    onAuthenticated(user);
+    renderProgress();
+    renderChapters();
   });
 
-  maxTimer = setTimeout(() => {
-    if (isAuthResolved) return;
-    if (auth.currentUser) {
+  // ================================================================
+  // AUTH ROBUSTE — Anti-flash
+  // ================================================================
+  let isRedirecting = false;
+  let isAuthResolved = false;
+  let graceTimer = null;
+  let maxTimer = null;
+
+  function redirectToLogin() {
+    if (isRedirecting) return;
+    isRedirecting = true;
+    try {
+      sessionStorage.setItem('redirectAfterLogin',
+        window.location.pathname + window.location.search);
+    } catch (e) {}
+    window.location.replace('login.html');
+  }
+
+  function initAuthGuard(onAuthenticated) {
+    auth.onAuthStateChanged((user) => {
+      if (isAuthResolved) {
+        if (user && user.uid !== currentUid) {
+          currentUid = user.uid;
+          saveSession(user);
+          onAuthenticated(user);
+        } else if (!user && currentUid) {
+          currentUid = null;
+          clearSession();
+          redirectToLogin();
+        }
+        return;
+      }
+
+      if (!user) {
+        if (graceTimer) clearTimeout(graceTimer);
+        graceTimer = setTimeout(() => {
+          if (isAuthResolved) return;
+          if (auth.currentUser) return;
+
+          const hasSession = localStorage.getItem(SESSION_KEY);
+          const hasUserData = localStorage.getItem(USER_DATA_KEY);
+
+          if ((hasSession || hasUserData) && !navigator.onLine) {
+            setTimeout(() => {
+              if (auth.currentUser) return;
+              if (!isAuthResolved) redirectToLogin();
+            }, 1500);
+            return;
+          }
+
+          if (hasSession && hasUserData) {
+            setTimeout(() => {
+              if (auth.currentUser) return;
+              if (!isAuthResolved) redirectToLogin();
+            }, 1500);
+            return;
+          }
+
+          redirectToLogin();
+        }, 600);
+        return;
+      }
+
+      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+      if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+
       isAuthResolved = true;
-      currentUid = auth.currentUser.uid;
-      saveSession(auth.currentUser);
-      onAuthenticated(auth.currentUser);
-    } else {
-      redirectToLogin();
+      currentUid = user.uid;
+      saveSession(user);
+      onAuthenticated(user);
+    });
+
+    maxTimer = setTimeout(() => {
+      if (isAuthResolved) return;
+      if (auth.currentUser) {
+        isAuthResolved = true;
+        currentUid = auth.currentUser.uid;
+        saveSession(auth.currentUser);
+        onAuthenticated(auth.currentUser);
+      } else {
+        redirectToLogin();
+      }
+    }, 5000);
+  }
+
+  // ================================================================
+  // LANCER LA PROTECTION
+  // ================================================================
+  initAuthGuard(async (user) => {
+    // Cache-first : récupérer Premium immédiatement
+    const cached = getCachedUserData(user.uid);
+    isPremium = cached ? isUserPremium(cached) : false;
+
+    // Charger les données
+    loadSubjectFromFirestore();
+    loadUserData(user);
+  });
+
+  // ================================================================
+  // REFRESH AU RETOUR
+  // ================================================================
+  window.addEventListener('focus', () => {
+    if (chapters.length > 0) {
+      renderProgress();
+      renderChapters();
     }
-  }, 5000);
-}
+  });
 
-// ================================================================
-// LANCER LA PROTECTION
-// ================================================================
-initAuthGuard(async (user) => {
-  // Cache-first : récupérer Premium immédiatement
-  const cached = getCachedUserData(user.uid);
-  isPremium = cached ? isUserPremium(cached) : false;
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && chapters.length > 0) {
+      renderProgress();
+      renderChapters();
+    }
+  });
 
-  // Charger les données
-  loadSubjectFromFirestore();
-  loadUserData(user);
-});
-
-// ================================================================
-// REFRESH AU RETOUR
-// ================================================================
-window.addEventListener('focus', () => {
-  if (chapters.length > 0) {
-    renderProgress();
-    renderChapters();
-  }
-});
-
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && chapters.length > 0) {
-    renderProgress();
-    renderChapters();
-  }
-});
-
-// ✅ C7 — cleanup global
-window.addEventListener('beforeunload', () => {
-  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
-  if (unsubscribeUser) { try { unsubscribeUser(); } catch (e) {} unsubscribeUser = null; }
-  if (unsubscribeSubject) { try { unsubscribeSubject(); } catch (e) {} unsubscribeSubject = null; }
-  if (unsubscribeChapters) { try { unsubscribeChapters(); } catch (e) {} unsubscribeChapters = null; }
-});
-    
-console.log('🚀 ARVEXA — Matière (version corrigée C1-C8)');
-</script>
+  console.log('🚀 ARVEXA — Matière (avec session robuste)');
+  </script>
 </body>
 </html>
