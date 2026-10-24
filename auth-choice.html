@@ -5,40 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0A0A0A">
   <meta name="robots" content="noindex">
-  <meta name="description" content="ARVEXA School — Choisis ton parcours">
+  <meta name="description" content="ARVEXA School — Plateforme éducative pour préparer le BAC. Cours, exercices, fiches de révision et suivi de progression.">
   <link rel="icon" href="icon.png" type="image/png">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="perf.css">
-  <title>ARVEXA | Accès</title>
+  <title>ARVEXA School — Prépare ton BAC, construis ton avenir</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
 
   <style>
     /* ============================================================
-       ROOT — Palette ARVEXA
+       ROOT — Identité ARVEXA
        ============================================================ */
     :root {
       color-scheme: dark;
       --accent: #B8860B;
       --accent-bright: #E0B84A;
-      --accent-dim: rgba(184, 134, 11, 0.08);
-      --success: #2D7D5A;
-      --success-light: #3AB67E;
+      --deep-green: #1A3A2A;
+      --deep-green-light: #2A5A3A;
       --bg-dark: #0A0A0A;
-      --bg-surface: #141414;
-      --bg-card: rgba(20, 20, 20, 0.7);
+      --bg-surface: #111111;
+      --bg-card: rgba(20, 20, 20, 0.55);
       --text-light: #F5F0E8;
       --text-dim: #8A8A7A;
       --text-muted: #5A5A4A;
-      --border-soft: rgba(255, 255, 255, 0.05);
-      --border-gold: rgba(184, 134, 11, 0.15);
-      --transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-      --font-serif: 'Playfair Display', Georgia, serif;
+      --border-soft: rgba(255, 255, 255, 0.06);
+      --border-gold: rgba(184, 134, 11, 0.18);
+      --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
       --safe-top: env(safe-area-inset-top, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --max-w: 1180px;
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     /* ============================================================
@@ -50,561 +56,1536 @@
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
-
     html {
-      scroll-behavior: smooth;
       width: 100%;
       overflow-x: hidden;
       -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px;
     }
-
     body {
       font-family: var(--font-body);
       background: var(--bg-dark);
       color: var(--text-light);
-      font-size: 15px;
-      line-height: 1.6;
+      font-size: 16px;
+      line-height: 1.65;
       min-height: 100vh;
       min-height: 100dvh;
       width: 100%;
       overflow-x: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: calc(var(--safe-top) + 24px) 24px calc(var(--safe-bottom) + 24px);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; }
+    button { font: inherit; }
+
+    :focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
 
     /* ============================================================
-       BACKGROUND
+       FOND GLOBAL — statique après séquence
        ============================================================ */
-    .bg-layer {
+    .site-bg {
       position: fixed;
       inset: 0;
       z-index: -3;
-      background:
-        radial-gradient(ellipse 40% 30% at 30% 20%, rgba(26, 58, 42, 0.18) 0%, transparent 70%),
-        radial-gradient(ellipse 30% 20% at 70% 80%, rgba(184, 134, 11, 0.05) 0%, transparent 60%),
-        linear-gradient(180deg, #0A0A0A 0%, #060606 100%);
-    }
-
-    .glow {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(90px);
       pointer-events: none;
+      background:
+        radial-gradient(ellipse 50% 35% at 18% 8%, rgba(26, 58, 42, 0.35) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 30% at 85% 90%, rgba(184, 134, 11, 0.09) 0%, transparent 65%),
+        linear-gradient(180deg, #0A0A0A 0%, #070707 55%, #0A0A0A 100%);
+      opacity: 0;
+      animation: fadeIn 1.1s ease-out 0s forwards;
+    }
+    .site-grid {
+      position: fixed;
+      inset: 0;
       z-index: -2;
-      opacity: 0.15;
-      animation: glowFloat 12s ease-in-out infinite alternate;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(224, 184, 74, 0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(224, 184, 74, 0.028) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: radial-gradient(ellipse 90% 75% at 50% 25%, black 0%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 90% 75% at 50% 25%, black 0%, transparent 80%);
+      opacity: 0;
+      animation: fadeIn 1.4s ease-out 0.2s forwards;
     }
-    .glow-1 {
-      width: 380px; height: 380px;
-      background: rgba(26, 58, 42, 0.25);
-      top: -100px; right: -100px;
-    }
-    .glow-2 {
-      width: 250px; height: 250px;
-      background: rgba(184, 134, 11, 0.08);
-      bottom: -60px; left: -60px;
-      animation-delay: -6s;
-    }
-
-    @keyframes glowFloat {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(40px, -30px) scale(1.15); }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
 
     /* ============================================================
-       CARD
+       UTILITAIRES
        ============================================================ */
-    .card {
-      position: relative;
-      width: min(100%, 480px);
-      background: var(--bg-card);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--border-soft);
-      border-radius: 20px;
-      padding: 32px 28px 28px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      overflow: hidden;
-      animation: cardEnter 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    .container {
+      width: 100%;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding-left: calc(var(--safe-left) + 20px);
+      padding-right: calc(var(--safe-right) + 20px);
     }
-
-    @keyframes cardEnter {
-      from { opacity: 0; transform: translateY(24px) scale(0.97); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--success), var(--accent));
-      background-size: 300% 100%;
-      animation: shimmerBorder 5s linear infinite;
-    }
-
-    @keyframes shimmerBorder {
-      0% { background-position: 0% 0%; }
-      100% { background-position: 300% 0%; }
-    }
-
-    /* ============================================================
-       HERO
-       ============================================================ */
-    .hero {
-      text-align: center;
-      margin-bottom: 28px;
-    }
-
-    .hero-icon {
+    .eyebrow {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      width: 72px;
-      height: 72px;
-      border-radius: 22px;
-      background: linear-gradient(135deg, rgba(184, 134, 11, 0.15), rgba(26, 58, 42, 0.1));
-      border: 1px solid rgba(184, 134, 11, 0.2);
-      font-size: 34px;
-      margin-bottom: 16px;
-      animation: iconFloat 3s ease-in-out infinite;
+      gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent-bright);
+    }
+    .eyebrow::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: currentColor;
+      opacity: 0.7;
+    }
+    .section {
+      padding: 72px 0;
       position: relative;
     }
-
-    .hero-icon::before {
-      content: '';
-      position: absolute;
-      inset: -2px;
-      border-radius: 24px;
-      background: linear-gradient(135deg, rgba(184, 134, 11, 0.3), transparent, rgba(45, 125, 90, 0.2));
-      z-index: -1;
-      filter: blur(8px);
-      opacity: 0.6;
+    .section-head {
+      max-width: 720px;
+      margin-bottom: 44px;
     }
-
-    @keyframes iconFloat {
-      0%, 100% { transform: translateY(0) rotate(-2deg); }
-      50% { transform: translateY(-8px) rotate(2deg); }
-    }
-
-    .hero-title {
+    .section-title {
       font-family: var(--font-serif);
-      font-size: clamp(24px, 5vw, 32px);
-      font-weight: 700;
-      line-height: 1.15;
-      letter-spacing: -0.02em;
+      font-size: clamp(1.55rem, 4.2vw, 2.4rem);
+      font-weight: 600;
+      line-height: 1.22;
+      letter-spacing: -0.01em;
       color: var(--text-light);
-      margin-bottom: 10px;
+      margin: 14px 0 12px;
     }
-
-    .hero-title em {
+    .section-title em {
       color: var(--accent-bright);
       font-style: italic;
     }
-
-    .hero-subtitle {
-      font-size: clamp(13px, 1.6vw, 14.5px);
+    .section-lede {
+      font-size: clamp(0.95rem, 2.4vw, 1.05rem);
       color: var(--text-dim);
-      line-height: 1.65;
-      max-width: 380px;
-      margin: 0 auto;
+      line-height: 1.7;
+      max-width: 640px;
     }
 
     /* ============================================================
-       ACTIONS
+       BOUTONS
        ============================================================ */
-    .actions {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 22px;
-    }
-
     .btn {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      padding: 15px 24px;
-      border-radius: 30px;
-      border: none;
+      gap: 8px;
+      min-height: 50px;
+      padding: 13px 24px;
+      border-radius: 999px;
       font-family: var(--font-body);
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-      cursor: pointer;
-      transition: var(--transition);
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
       text-decoration: none;
-      min-height: 54px;
-      position: relative;
-      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: transform 0.18s var(--ease-out), box-shadow 0.25s ease, background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+      touch-action: manipulation;
+      white-space: nowrap;
     }
+    .btn:active { transform: translateY(1px) scale(0.99); }
 
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-      transition: left 0.6s ease;
-    }
-
-    .btn:hover::before {
-      left: 100%;
-    }
-
-    .btn.primary {
+    .btn-primary {
       background: linear-gradient(135deg, var(--accent-bright), var(--accent));
       color: #0A0A0A;
-      box-shadow: 0 4px 20px rgba(184, 134, 11, 0.25);
+      box-shadow: 0 4px 18px rgba(184, 134, 11, 0.28);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 8px 28px rgba(184, 134, 11, 0.42);
     }
 
-    .btn.primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(184, 134, 11, 0.4);
-    }
-
-    .btn.primary:active {
-      transform: translateY(0) scale(0.98);
-    }
-
-    .btn.secondary {
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-dim);
-      border: 1px solid var(--border-soft);
-    }
-
-    .btn.secondary:hover {
-      background: rgba(255, 255, 255, 0.08);
+    .btn-ghost {
+      background: transparent;
       color: var(--text-light);
-      border-color: rgba(184, 134, 11, 0.2);
-      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+    .btn-ghost:hover {
+      border-color: rgba(224, 184, 74, 0.5);
+      background: rgba(224, 184, 74, 0.06);
     }
 
-    .btn.secondary:active {
-      transform: scale(0.98);
-    }
-
-    .btn i {
-      font-size: 14px;
+    .btn-sm {
+      min-height: 42px;
+      padding: 9px 18px;
+      font-size: 0.88rem;
     }
 
     /* ============================================================
-       ÉTAT DE CHARGEMENT
+       HEADER
        ============================================================ */
-    #loading {
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(10, 10, 10, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(184, 134, 11, 0.08);
+      padding-top: var(--safe-top);
+    }
+    .header-inner {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
       gap: 16px;
-      padding: 20px 0;
-      color: var(--text-dim);
-      font-size: 13.5px;
+      min-height: 64px;
+      padding-top: 10px;
+      padding-bottom: 10px;
     }
-
-    .spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid rgba(184, 134, 11, 0.15);
-      border-top-color: var(--accent-bright);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* ============================================================
-       FOOTER
-       ============================================================ */
-    .footer {
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border-soft);
-      text-align: center;
-      font-size: 11.5px;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-
-    .footer .brand {
+    .brand {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      text-decoration: none;
       font-family: var(--font-serif);
-      font-size: 14px;
       font-weight: 700;
+      font-size: 1.35rem;
+      letter-spacing: 0.02em;
       color: var(--text-light);
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
+      white-space: nowrap;
     }
-
-    .footer .brand span {
+    .brand .accent {
       background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
       background-size: 200% auto;
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
       font-style: italic;
-      animation: shimmer 4s linear infinite;
+      animation: shimmerText 6s linear 2;
     }
-
-    @keyframes shimmer {
-      0% { background-position: 0% center; }
+    @keyframes shimmerText {
+      0%   { background-position: 0% center; }
       100% { background-position: 200% center; }
     }
 
+    .nav-desktop {
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-desktop a {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s ease, background-color 0.2s ease;
+    }
+    .nav-desktop a:hover {
+      color: var(--text-light);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .header-actions {
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .burger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      background: transparent;
+      color: var(--text-light);
+      cursor: pointer;
+    }
+    .burger svg { width: 20px; height: 20px; }
+
+    /* Menu mobile */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(10, 10, 10, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: calc(var(--safe-top) + 16px) calc(var(--safe-right) + 20px) calc(var(--safe-bottom) + 24px) calc(var(--safe-left) + 20px);
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+    }
+    .mobile-nav.open { display: flex; }
+    .mobile-nav-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .mobile-nav a.nav-link {
+      padding: 14px 4px;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--text-light);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .mobile-nav a.nav-link:hover { color: var(--accent-bright); }
+    .mobile-nav .mobile-cta {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .mobile-nav .btn { width: 100%; }
+
     /* ============================================================
-       RESPONSIVE
+       HERO
        ============================================================ */
-    @media (max-width: 480px) {
-      .card {
-        padding: 26px 20px 22px;
-        border-radius: 18px;
-      }
-      .hero-icon {
-        width: 62px;
-        height: 62px;
-        font-size: 28px;
-        margin-bottom: 14px;
-      }
-      .btn {
-        padding: 13px 20px;
-        min-height: 50px;
-        font-size: 14px;
-      }
+    .hero {
+      padding: 56px 0 64px;
+      position: relative;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    .hero-copy > * {
+      opacity: 0;
+      transform: translateY(10px);
+      animation: riseIn 0.75s var(--ease-out) forwards;
+    }
+    .hero-copy .hero-eyebrow   { animation-delay: 0.15s; }
+    .hero-copy .hero-title     { animation-delay: 0.3s; }
+    .hero-copy .hero-lede      { animation-delay: 0.45s; }
+    .hero-copy .hero-actions   { animation-delay: 0.6s; }
+    .hero-copy .hero-meta      { animation-delay: 0.75s; }
+    @keyframes riseIn {
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    @media (max-width: 360px) {
-      .card {
-        padding: 22px 16px 18px;
-      }
-      .hero-icon {
-        width: 56px;
-        height: 56px;
-        font-size: 26px;
-      }
-      .hero-title {
-        font-size: 22px;
-      }
-      .btn {
-        font-size: 13.5px;
-        padding: 12px 18px;
-      }
+    .hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2.1rem, 6.4vw, 3.6rem);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -0.015em;
+      color: var(--text-light);
+      margin: 16px 0 18px;
+    }
+    .hero-title em {
+      color: var(--accent-bright);
+      font-style: italic;
+    }
+    .hero-lede {
+      font-size: clamp(1rem, 2.5vw, 1.12rem);
+      line-height: 1.7;
+      color: var(--text-dim);
+      max-width: 540px;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .hero-meta {
+      margin-top: 22px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      align-items: center;
+    }
+    .hero-meta .dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      display: inline-block;
     }
 
     /* ============================================================
-       ACCESSIBILITÉ
+       APERÇU DASHBOARD (illustration HTML/CSS)
+       ============================================================ */
+    .preview {
+      position: relative;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(160deg, #131313 0%, #0c0c0c 100%);
+      border: 1px solid var(--border-gold);
+      box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(224, 184, 74, 0.04) inset;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(16px) rotate(-1.2deg);
+      animation: previewIn 1s var(--ease-out) 0.5s forwards;
+    }
+    @keyframes previewIn {
+      to { opacity: 1; transform: translateY(0) rotate(-1.2deg); }
+    }
+    .preview::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(224, 184, 74, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 0% 100%, rgba(26, 58, 42, 0.35) 0%, transparent 55%);
+    }
+    .preview-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .preview-bar span {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .preview-bar span:nth-child(1) { background: rgba(184, 134, 11, 0.45); }
+    .preview-bar .preview-url {
+      margin-left: auto;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+    .preview-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .preview-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .preview-greeting {
+      font-family: var(--font-serif);
+      font-size: 1.05rem;
+      color: var(--text-light);
+      font-weight: 600;
+    }
+    .preview-greeting em { color: var(--accent-bright); font-style: italic; }
+    .preview-pill {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent-bright);
+      background: rgba(184, 134, 11, 0.12);
+      border: 1px solid rgba(184, 134, 11, 0.22);
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+    .preview-countdown {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .preview-cd {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .preview-cd .n {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-light);
+      line-height: 1.1;
+    }
+    .preview-cd .l {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .preview-progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .preview-progress-label strong { color: var(--text-light); font-weight: 600; }
+    .preview-bar-track {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .preview-bar-fill {
+      height: 100%;
+      width: 62%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-bright));
+      border-radius: 999px;
+    }
+    .preview-subjects {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .preview-subject {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-soft);
+      font-size: 0.78rem;
+      color: var(--text-light);
+    }
+    .preview-subject .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--deep-green-light);
+      flex-shrink: 0;
+    }
+    .preview-subject.gold .dot { background: var(--accent-bright); }
+    .preview-caption {
+      position: absolute;
+      bottom: 10px;
+      right: 14px;
+      font-size: 0.62rem;
+      letter-spacing: 0.06em;
+      color: rgba(245, 240, 232, 0.35);
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    /* ============================================================
+       SECTION — PRÉSENTATION
+       ============================================================ */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+    .about-text p {
+      color: var(--text-dim);
+      font-size: 1rem;
+      line-height: 1.75;
+      margin-bottom: 14px;
+    }
+    .about-text p strong {
+      color: var(--text-light);
+      font-weight: 600;
+    }
+    .pillars {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .pillar {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 14px;
+      align-items: start;
+      padding: 16px;
+      background: linear-gradient(140deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.005));
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      transition: border-color 0.25s ease;
+    }
+    .pillar:hover { border-color: rgba(224, 184, 74, 0.22); }
+    .pillar-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(184, 134, 11, 0.10);
+      border: 1px solid rgba(184, 134, 11, 0.16);
+      color: var(--accent-bright);
+    }
+    .pillar-icon svg { width: 18px; height: 18px; }
+    .pillar h3 {
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 2px;
+    }
+    .pillar p {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      line-height: 1.55;
+    }
+
+    /* ============================================================
+       SECTION — OUTILS
+       ============================================================ */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .tool {
+      position: relative;
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.008) 100%);
+      border: 1px solid var(--border-soft);
+      overflow: hidden;
+      transition: border-color 0.3s ease, transform 0.3s ease;
+    }
+    .tool:hover {
+      border-color: rgba(224, 184, 74, 0.24);
+      transform: translateY(-2px);
+    }
+    .tool-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent-bright);
+      margin-bottom: 10px;
+    }
+    .tool-tag::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .tool h3 {
+      font-family: var(--font-serif);
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+    .tool p {
+      color: var(--text-dim);
+      font-size: 0.94rem;
+      line-height: 1.65;
+    }
+
+    /* Aperçu fiche de révision */
+    .note-preview {
+      margin-top: 18px;
+      background: rgba(10, 10, 10, 0.55);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-family: var(--font-body);
+    }
+    .note-preview .note-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .note-preview .note-meta .chip {
+      color: var(--accent-bright);
+      background: rgba(184, 134, 11, 0.10);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .note-preview h4 {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      color: var(--text-light);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .note-preview .note-line {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 999px;
+      margin-bottom: 6px;
+    }
+    .note-preview .note-line.w-80 { width: 80%; }
+    .note-preview .note-line.w-65 { width: 65%; }
+    .note-preview .note-line.w-90 { width: 90%; }
+    .note-preview .note-line.w-55 { width: 55%; }
+
+    /* Aperçu exercice */
+    .quiz-preview {
+      margin-top: 18px;
+      background: rgba(10, 10, 10, 0.55);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+    .quiz-q {
+      font-size: 0.86rem;
+      color: var(--text-light);
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+    .quiz-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .quiz-option .key {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+    }
+    .quiz-option.correct {
+      border-color: rgba(45, 125, 90, 0.5);
+      background: rgba(45, 125, 90, 0.10);
+      color: var(--text-light);
+    }
+    .quiz-option.correct .key {
+      background: rgba(45, 125, 90, 0.4);
+      color: #7FE0A6;
+    }
+
+    /* Bloc assistance — plus compact */
+    .tool.assist {
+      background: linear-gradient(160deg, rgba(26, 58, 42, 0.35) 0%, rgba(20, 20, 20, 0.6) 100%);
+      border-color: rgba(45, 125, 90, 0.28);
+    }
+    .assist-quote {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-left: 2px solid var(--accent-bright);
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 0 10px 10px 0;
+      font-size: 0.86rem;
+      color: var(--text-dim);
+      font-style: italic;
+      line-height: 1.6;
+    }
+
+    /* Bloc progression — avec mini graphe CSS */
+    .progress-chart {
+      margin-top: 18px;
+      height: 90px;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      padding: 12px;
+      background: rgba(10, 10, 10, 0.5);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+    }
+    .progress-chart .col {
+      flex: 1;
+      border-radius: 4px 4px 0 0;
+      background: linear-gradient(180deg, var(--accent-bright), rgba(184, 134, 11, 0.35));
+      opacity: 0.85;
+    }
+    .progress-chart .col:nth-child(1) { height: 35%; }
+    .progress-chart .col:nth-child(2) { height: 50%; }
+    .progress-chart .col:nth-child(3) { height: 42%; }
+    .progress-chart .col:nth-child(4) { height: 68%; }
+    .progress-chart .col:nth-child(5) { height: 60%; }
+    .progress-chart .col:nth-child(6) { height: 82%; }
+    .progress-chart .col:nth-child(7) { height: 95%; }
+
+    /* ============================================================
+       SECTION — PARCOURS (3 étapes)
+       ============================================================ */
+    .steps {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      position: relative;
+    }
+    .step {
+      position: relative;
+      padding: 24px 20px 24px 60px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-soft);
+      background: linear-gradient(140deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+    }
+    .step::before {
+      content: '';
+      position: absolute;
+      left: 24px;
+      top: 24px;
+      bottom: 24px;
+      width: 1px;
+      background: linear-gradient(180deg, rgba(224, 184, 74, 0.4), rgba(224, 184, 74, 0));
+    }
+    .step-num {
+      position: absolute;
+      left: 12px;
+      top: 22px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(184, 134, 11, 0.15);
+      border: 1px solid rgba(224, 184, 74, 0.45);
+      color: var(--accent-bright);
+      font-family: var(--font-serif);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .step h3 {
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 4px;
+    }
+    .step p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ============================================================
+       SECTION — BAC / TERMINALE D
+       ============================================================ */
+    .bac-wrap {
+      position: relative;
+      padding: 40px 24px;
+      border-radius: var(--radius-lg);
+      background:
+        linear-gradient(160deg, rgba(26, 58, 42, 0.55) 0%, rgba(10, 10, 10, 0.85) 100%);
+      border: 1px solid rgba(224, 184, 74, 0.18);
+      overflow: hidden;
+    }
+    .bac-wrap::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--accent-bright), var(--accent));
+    }
+    .bac-wrap::after {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(224, 184, 74, 0.12) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .bac-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.4rem, 3.8vw, 2rem);
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--text-light);
+      margin: 12px 0 14px;
+      max-width: 620px;
+    }
+    .bac-title em { color: var(--accent-bright); font-style: italic; }
+    .bac-text {
+      color: var(--text-dim);
+      font-size: 1rem;
+      line-height: 1.75;
+      max-width: 680px;
+    }
+    .bac-text strong { color: var(--text-light); font-weight: 600; }
+    .bac-pillars {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .bac-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      color: var(--text-light);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-soft);
+    }
+    .bac-pill .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-bright);
+    }
+
+    /* ============================================================
+       SECTION — CTA FINAL
+       ============================================================ */
+    .final-cta {
+      position: relative;
+      margin: 32px 0 40px;
+      padding: 48px 24px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      text-align: center;
+      background:
+        radial-gradient(ellipse 80% 100% at 50% 0%, rgba(26, 58, 42, 0.55) 0%, transparent 70%),
+        linear-gradient(160deg, #0f1712 0%, #0A0A0A 100%);
+      border: 1px solid rgba(224, 184, 74, 0.2);
+    }
+    .final-cta::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 20%; right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
+      opacity: 0.7;
+    }
+    .final-cta h2 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 4.4vw, 2.2rem);
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--text-light);
+      margin: 0 auto 12px;
+      max-width: 620px;
+    }
+    .final-cta h2 em { color: var(--accent-bright); font-style: italic; }
+    .final-cta p {
+      color: var(--text-dim);
+      font-size: 1rem;
+      line-height: 1.65;
+      max-width: 540px;
+      margin: 0 auto 26px;
+    }
+    .final-cta .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .site-footer {
+      border-top: 1px solid rgba(184, 134, 11, 0.08);
+      padding: 32px 0 calc(var(--safe-bottom) + 32px);
+      margin-top: 24px;
+    }
+    .footer-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .footer-brand {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-light);
+      letter-spacing: 0.02em;
+    }
+    .footer-brand .accent { color: var(--accent-bright); font-style: italic; }
+    .footer-copy {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 18px;
+    }
+    .footer-links a {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    .footer-links a:hover { color: var(--accent-bright); }
+
+    /* ============================================================
+       RÉVÉLATION AU SCROLL
+       ============================================================ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+    }
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ============================================================
+       RESPONSIVE — tablette et desktop
+       ============================================================ */
+    @media (min-width: 720px) {
+      .section { padding: 96px 0; }
+      .hero { padding: 80px 0 96px; }
+      .hero-grid { gap: 56px; }
+      .about-grid { grid-template-columns: 1.1fr 1fr; gap: 56px; }
+      .pillars { gap: 14px; }
+      .tools-grid { grid-template-columns: 1fr 1fr; }
+      .tool.tool-wide { grid-column: span 2; }
+      .steps { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+      .step { padding: 26px 22px 26px 60px; }
+      .footer-inner {
+        flex-direction: row;
+        align-items: center;
+      }
+      .final-cta { padding: 64px 40px; }
+      .bac-wrap { padding: 56px 48px; }
+    }
+
+    @media (min-width: 980px) {
+      .nav-desktop { display: flex; }
+      .header-actions { display: flex; }
+      .burger { display: none; }
+      .hero-grid { grid-template-columns: 1.05fr 1fr; gap: 72px; }
+      .hero-title { font-size: clamp(2.6rem, 4vw, 3.8rem); }
+    }
+
+    /* ============================================================
+       PETITS ÉCRANS
+       ============================================================ */
+    @media (max-width: 380px) {
+      .container {
+        padding-left: calc(var(--safe-left) + 16px);
+        padding-right: calc(var(--safe-right) + 16px);
+      }
+      .brand { font-size: 1.2rem; }
+      .hero-actions .btn { flex: 1 1 100%; }
+      .step { padding: 22px 16px 22px 56px; }
+      .tool { padding: 20px; }
+    }
+
+    /* ============================================================
+       ACCESSIBILITÉ — mouvement réduit
        ============================================================ */
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
       *::after {
         animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
       }
+      .site-bg,
+      .site-grid { opacity: 1; }
+      .hero-copy > *,
+      .preview { opacity: 1; transform: none; }
+      .brand .accent { animation: none; }
+      .reveal { opacity: 1; transform: none; }
     }
-
-  a:focus-visible,
-button:focus-visible {
-  outline: none;
-}
-
-    [hidden] { display: none !important; }
   </style>
 </head>
 <body>
 
-  <!-- ===== BACKGROUND ===== -->
-  <div class="bg-layer"></div>
-  <div class="glow glow-1"></div>
-  <div class="glow glow-2"></div>
+  <!-- ===== FOND (décoratif) ===== -->
+  <div class="site-bg" aria-hidden="true"></div>
+  <div class="site-grid" aria-hidden="true"></div>
 
-  <!-- ===== CARD ===== -->
-  <main class="card">
+  <!-- ===== HEADER ===== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="ARVEXA School, retour en haut">
+        ARVEXA<span class="accent">School</span>
+      </a>
 
-    <!-- CHARGEMENT -->
-    <div id="loading">
-      <div class="spinner"></div>
-      <span>Vérification de ta session...</span>
+      <nav class="nav-desktop" aria-label="Navigation principale">
+        <a href="#plateforme">Plateforme</a>
+        <a href="#outils">Outils</a>
+        <a href="#parcours">Parcours</a>
+        <a href="#bac">BAC</a>
+      </nav>
+
+      <div class="header-actions">
+        <a href="login.html" class="btn btn-ghost btn-sm">Se connecter</a>
+        <a href="register.html" class="btn btn-primary btn-sm">Créer mon compte</a>
+      </div>
+
+      <button
+        class="burger"
+        type="button"
+        id="burgerBtn"
+        aria-label="Ouvrir le menu"
+        aria-controls="mobileNav"
+        aria-expanded="false"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="4" y1="7" x2="20" y2="7"></line>
+          <line x1="4" y1="12" x2="20" y2="12"></line>
+          <line x1="4" y1="17" x2="20" y2="17"></line>
+        </svg>
+      </button>
     </div>
+  </header>
 
-    <!-- CHOIX -->
-    <div id="choice" hidden>
-      <div class="hero">
-        <div class="hero-icon">🎓</div>
-        <h1 class="hero-title">
-          Bienvenue sur <em>ARVEXA</em>
-        </h1>
-        <p class="hero-subtitle">
-          Choisis ton parcours. Que tu sois nouveau ou déjà inscrit, on t'accompagne vers la réussite au BAC.
-        </p>
-      </div>
-
-      <div class="actions">
-        <a class="btn primary" id="registerLink" href="register.html">
-          <i class="fas fa-user-plus"></i>
-          Créer un compte
-        </a>
-        <a class="btn secondary" id="loginLink" href="login.html">
-          <i class="fas fa-sign-in-alt"></i>
-          J'ai déjà un compte
-        </a>
-      </div>
-
-      <div class="footer">
-        <div class="brand">ARVEX<span>A School</span></div>
-        &copy; 2026 — Tous droits réservés
-      </div>
+  <!-- ===== MENU MOBILE ===== -->
+  <div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Menu">
+    <div class="mobile-nav-top">
+      <a class="brand" href="#top">ARVEXA<span class="accent">School</span></a>
+      <button class="burger" type="button" id="closeNavBtn" aria-label="Fermer le menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+        </svg>
+      </button>
     </div>
+    <a href="#plateforme" class="nav-link" data-close>Plateforme</a>
+    <a href="#outils" class="nav-link" data-close>Outils</a>
+    <a href="#parcours" class="nav-link" data-close>Parcours</a>
+    <a href="#bac" class="nav-link" data-close>BAC</a>
+    <div class="mobile-cta">
+      <a href="register.html" class="btn btn-primary">Créer mon compte</a>
+      <a href="login.html" class="btn btn-ghost">Se connecter</a>
+    </div>
+  </div>
+
+  <!-- ===== MAIN ===== -->
+  <main id="top">
+
+    <!-- ============================================================
+         SECTION 1 — HERO
+         ============================================================ -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <span class="eyebrow hero-eyebrow">Plateforme éducative · Niger</span>
+            <h1 class="hero-title" id="hero-title">
+              Prépare ton <em>BAC</em>.<br>
+              Construis ton <em>avenir</em>.
+            </h1>
+            <p class="hero-lede">
+              ARVEXA School réunit cours, exercices, fiches de révision et outils de suivi
+              dans un espace pensé pour les élèves qui préparent leur BAC — avec une attention
+              particulière portée à la Terminale D.
+            </p>
+            <div class="hero-actions">
+              <a href="register.html" class="btn btn-primary">Créer mon compte</a>
+              <a href="login.html" class="btn btn-ghost">Me connecter</a>
+            </div>
+            <div class="hero-meta">
+              <span>Inscription gratuite</span>
+              <span class="dot" aria-hidden="true"></span>
+              <span>Accès immédiat après création</span>
+            </div>
+          </div>
+
+          <!-- Aperçu d'interface fictif (illustration) -->
+          <div class="preview" role="img" aria-label="Aperçu illustratif de l'interface ARVEXA School : compte à rebours BAC, progression et matières">
+            <div class="preview-bar" aria-hidden="true">
+              <span></span><span></span><span></span>
+              <span class="preview-url">arvexa.school / tableau de bord</span>
+            </div>
+            <div class="preview-body" aria-hidden="true">
+              <div class="preview-row">
+                <div class="preview-greeting">Bonjour <em>Élève</em></div>
+                <span class="preview-pill">Terminale D</span>
+              </div>
+              <div class="preview-countdown">
+                <div class="preview-cd"><div class="n">128</div><div class="l">Jours</div></div>
+                <div class="preview-cd"><div class="n">14</div><div class="l">Heures</div></div>
+                <div class="preview-cd"><div class="n">32</div><div class="l">Min</div></div>
+              </div>
+              <div>
+                <div class="preview-progress-label">
+                  <span>Progression annuelle</span>
+                  <strong>62 %</strong>
+                </div>
+                <div class="preview-bar-track">
+                  <div class="preview-bar-fill"></div>
+                </div>
+              </div>
+              <div class="preview-subjects">
+                <div class="preview-subject"><span class="dot"></span>Mathématiques</div>
+                <div class="preview-subject gold"><span class="dot"></span>Physique</div>
+                <div class="preview-subject"><span class="dot"></span>Chimie</div>
+                <div class="preview-subject gold"><span class="dot"></span>SVT</div>
+              </div>
+            </div>
+            <div class="preview-caption">Aperçu illustratif</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 2 — PRÉSENTATION
+         ============================================================ -->
+    <section class="section" id="plateforme" aria-labelledby="plateforme-title">
+      <div class="container">
+        <div class="about-grid">
+          <div>
+            <span class="eyebrow">La plateforme</span>
+            <h2 class="section-title" id="plateforme-title">
+              Une plateforme éducative <em>conçue</em> pour les élèves
+            </h2>
+            <div class="about-text">
+              <p>
+                <strong>ARVEXA School</strong> est un espace d’apprentissage en ligne qui accompagne
+                les élèves dans leurs révisions et dans la préparation de leurs examens.
+                L’objectif est simple : rendre le travail personnel plus clair, plus régulier
+                et plus efficace.
+              </p>
+              <p>
+                La plateforme rassemble les supports utiles au quotidien — cours, fiches,
+                exercices, outils de suivi — dans un environnement unique, pour éviter de
+                disperser son attention entre plusieurs sources.
+              </p>
+              <p>
+                La démarche s’articule autour de trois idées : <strong>mieux organiser son
+                travail</strong>, <strong>comprendre les cours</strong>, puis
+                <strong>s’entraîner et mesurer ses progrès</strong> pour identifier
+                ce qu’il reste à retravailler.
+              </p>
+            </div>
+          </div>
+
+          <div class="pillars" aria-label="Les trois piliers de la démarche ARVEXA School">
+            <div class="pillar">
+              <div class="pillar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </div>
+              <div>
+                <h3>Organiser</h3>
+                <p>Structurer ses révisions et garder une vue d’ensemble de son programme.</p>
+              </div>
+            </div>
+            <div class="pillar">
+              <div class="pillar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                  <line x1="8" y1="7" x2="16" y2="7"></line>
+                  <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+              </div>
+              <div>
+                <h3>Comprendre</h3>
+                <p>Revoir les cours à son rythme et consolider les notions essentielles.</p>
+              </div>
+            </div>
+            <div class="pillar">
+              <div class="pillar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10"></line>
+                  <line x1="12" y1="20" x2="12" y2="4"></line>
+                  <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+              </div>
+              <div>
+                <h3>Progresser</h3>
+                <p>S’entraîner régulièrement et observer son évolution au fil des semaines.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 3 — OUTILS
+         ============================================================ -->
+    <section class="section" id="outils" aria-labelledby="outils-title">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Les outils</span>
+          <h2 class="section-title" id="outils-title">
+            Quatre familles d’outils, <em>un seul espace</em>
+          </h2>
+          <p class="section-lede">
+            Chaque outil répond à un moment précis du travail personnel : comprendre,
+            s’entraîner, être aidé, puis mesurer ses progrès.
+          </p>
+        </div>
+
+        <div class="tools-grid">
+
+          <!-- Cours & fiches -->
+          <article class="tool tool-wide">
+            <span class="tool-tag">Cours &amp; fiches</span>
+            <h3>Réviser avec des supports clairs</h3>
+            <p>
+              Les cours et les fiches de révision rassemblent les notions essentielles
+              de chaque chapitre. Ils servent à revoir une leçon, à préparer une
+              interrogation ou à retrouver rapidement une définition avant un devoir.
+            </p>
+            <div class="note-preview" aria-label="Aperçu illustratif d’une fiche de révision">
+              <div class="note-meta">
+                <span>Fiche de révision</span>
+                <span class="chip">Terminale D</span>
+              </div>
+              <h4>Fonctions exponentielles — notions clés</h4>
+              <div class="note-line w-90"></div>
+              <div class="note-line w-65"></div>
+              <div class="note-line w-80"></div>
+              <div class="note-line w-55"></div>
+            </div>
+          </article>
+
+          <!-- Exercices -->
+          <article class="tool">
+            <span class="tool-tag">Entraînement</span>
+            <h3>S’entraîner par la pratique</h3>
+            <p>
+              Les exercices permettent de mettre en application ce qui a été appris et de
+              se préparer aux interrogations, aux devoirs et aux épreuves du BAC.
+            </p>
+            <div class="quiz-preview" aria-label="Aperçu illustratif d’un exercice">
+              <div class="quiz-q">Quelle est la dérivée de f(x) = e^(2x) ?</div>
+              <div class="quiz-option"><span class="key">A</span>2e^(2x)</div>
+              <div class="quiz-option correct"><span class="key">B</span>e^(2x) — correct</div>
+              <div class="quiz-option"><span class="key">C</span>2x·e^(2x)</div>
+            </div>
+          </article>
+
+          <!-- Assistance intelligente -->
+          <article class="tool assist">
+            <span class="tool-tag">Assistance</span>
+            <h3>Une aide intelligente</h3>
+            <p>
+              Des outils d’assistance sont intégrés à la plateforme pour aider à
+              clarifier un point de cours, à reformuler une notion ou à préparer une
+              révision.
+            </p>
+            <div class="assist-quote">
+              « Explique-moi la différence entre limite et continuité en une phrase. »
+            </div>
+          </article>
+
+          <!-- Progression -->
+          <article class="tool tool-wide">
+            <span class="tool-tag">Suivi</span>
+            <h3>Suivre ses progrès</h3>
+            <p>
+              La progression s’observe dans le temps : chapitres travaillés, exercices
+              réalisés, matières plus ou moins maîtrisées. Ce suivi aide à identifier
+              les points à retravailler en priorité.
+            </p>
+            <div class="progress-chart" aria-label="Graphique illustratif de progression">
+              <div class="col"></div>
+              <div class="col"></div>
+              <div class="col"></div>
+              <div class="col"></div>
+              <div class="col"></div>
+              <div class="col"></div>
+              <div class="col"></div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 4 — PARCOURS
+         ============================================================ -->
+    <section class="section" id="parcours" aria-labelledby="parcours-title">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Le parcours</span>
+          <h2 class="section-title" id="parcours-title">
+            Trois étapes pour <em>commencer</em>
+          </h2>
+          <p class="section-lede">
+            La plateforme se prend en main simplement : un compte, un tour d’horizon
+            des outils, puis un travail régulier.
+          </p>
+        </div>
+
+        <ol class="steps" role="list">
+          <li class="step">
+            <span class="step-num" aria-hidden="true">1</span>
+            <h3>Créer son compte ou se connecter</h3>
+            <p>
+              L’inscription ouvre un espace personnel. Les élèves déjà inscrits
+              retrouvent leur tableau de bord en se connectant.
+            </p>
+          </li>
+          <li class="step">
+            <span class="step-num" aria-hidden="true">2</span>
+            <h3>Découvrir les outils et les matières</h3>
+            <p>
+              Chaque élève explore les cours, fiches et exercices des matières qui
+              correspondent à sa classe et à ses besoins.
+            </p>
+          </li>
+          <li class="step">
+            <span class="step-num" aria-hidden="true">3</span>
+            <h3>S’entraîner et suivre sa progression</h3>
+            <p>
+              Le travail régulier, associé au suivi, permet d’identifier les notions
+              à consolider et de gagner en confiance.
+            </p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 5 — BAC / TERMINALE D
+         ============================================================ -->
+    <section class="section" id="bac" aria-labelledby="bac-title">
+      <div class="container">
+        <div class="bac-wrap">
+          <span class="eyebrow">Préparation du BAC</span>
+          <h2 class="bac-title" id="bac-title">
+            Un espace pensé pour la <em>Terminale D</em>, ouvert aux autres élèves
+          </h2>
+          <p class="bac-text">
+            ARVEXA School accorde une attention particulière aux élèves de
+            <strong>Terminale D au Niger</strong>, qui préparent un BAC exigeant. La
+            plateforme met à leur disposition des cours structurés, des fiches et des
+            exercices adaptés aux matières scientifiques et à l’organisation du travail
+            personnel.
+          </p>
+          <p class="bac-text" style="margin-top:14px;">
+            L’objectif n’est pas de promettre la réussite, mais d’offrir un cadre
+            clair pour <strong>travailler régulièrement</strong>, revoir les notions
+            difficiles, s’entraîner et préparer sereinement les évaluations. Les élèves
+            d’autres séries, classes ou systèmes scolaires sont également les bienvenus.
+          </p>
+          <div class="bac-pillars">
+            <span class="bac-pill"><span class="dot"></span>Réviser régulièrement</span>
+            <span class="bac-pill"><span class="dot"></span>Revoir les notions difficiles</span>
+            <span class="bac-pill"><span class="dot"></span>Pratiquer les exercices</span>
+            <span class="bac-pill"><span class="dot"></span>Préparer les évaluations</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 6 — CTA FINAL
+         ============================================================ -->
+    <section class="section" aria-labelledby="cta-title" style="padding-top:0;">
+      <div class="container">
+        <div class="final-cta">
+          <h2 id="cta-title">
+            Commence à construire <em>ton avenir</em>
+          </h2>
+          <p>
+            Crée ton compte pour découvrir les outils d’ARVEXA School et commencer
+            à organiser tes révisions dès aujourd’hui.
+          </p>
+          <div class="actions">
+            <a href="register.html" class="btn btn-primary">Créer mon compte</a>
+            <a href="login.html" class="btn btn-ghost">Me connecter</a>
+          </div>
+        </div>
+      </div>
+    </section>
 
   </main>
 
-  <!-- ============================================================
-       SCRIPTS
-       ============================================================ -->
-  <script type="module">
-    // ================================================================
-    // AUTH-CHOICE — Redirection intelligente (version corrigée)
-    // Corrections :
-    //   C1 : Grâce initiale 800 ms sur null transitoire
-    //   C2 : Suppression de getDoc avant redirection (un user auth. = index.html)
-    //   C3 : Anti-boucle sur la cible de redirection
-    //   C4 : Lecture des deux clés redirectAfterLogin / redirectAfterAuth
-    //   C5 : Unsubscribe dès décision prise
-    //   C6 : Log explicite si browserLocalPersistence refusée
-    //   C7 : Plus de getFirestore dans ce fichier
-    // ================================================================
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js';
-    import {
-      getAuth,
-      onAuthStateChanged,
-      setPersistence,
-      browserLocalPersistence
-    } from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js';
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <div class="footer-brand">ARVEXA <span class="accent">School</span></div>
+        <div class="footer-copy">© 2026 ARVEXA School — Tous droits réservés.</div>
+      </div>
+      <nav class="footer-links" aria-label="Liens légaux">
+        <!-- ⚠️ Liens à activer uniquement si les fichiers existent réellement dans le dépôt.
+             Noms non vérifiés dans cette réponse pour ne pas inventer de destination.
+        <a href="conditions-utilisation.html">Conditions d’utilisation</a>
+        <a href="politique-confidentialite.html">Politique de confidentialité</a>
+        -->
+        <a href="login.html">Se connecter</a>
+        <a href="register.html">Créer mon compte</a>
+      </nav>
+    </div>
+  </footer>
 
-    const app = initializeApp({
-      apiKey: 'AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE',
-      authDomain: 'arvexa-fbf10.firebaseapp.com',
-      projectId: 'arvexa-fbf10',
-      storageBucket: 'arvexa-fbf10.firebasestorage.app',
-      messagingSenderId: '920108330053',
-      appId: '1:920108330053:web:f532d71cbc2c824bc7472c'
-    });
+  <script>
+    /* ============================================================
+       JS minimal — non bloquant
+       1) Menu mobile : ouverture / fermeture / Escape
+       2) Révélation au scroll via IntersectionObserver
+       3) Aucune dépendance Firebase, aucun réseau, aucune redirection
+       ============================================================ */
+    (function () {
+      'use strict';
 
-    const auth = getAuth(app);
+      /* --- 1. MENU MOBILE --- */
+      var burger = document.getElementById('burgerBtn');
+      var closeBtn = document.getElementById('closeNavBtn');
+      var mobileNav = document.getElementById('mobileNav');
+      var closeLinks = document.querySelectorAll('[data-close]');
 
-    // ✅ C6 — Log explicite si persistance refusée
-    try {
-      await setPersistence(auth, browserLocalPersistence);
-    } catch (e) {
-      console.warn('[Auth] Persistance locale indisponible sur auth-choice.html :', e.code || e.message);
-    }
-
-    // ================================================================
-    // ✅ C4 — Lecture des deux clés de redirection + C3 anti-boucle
-    // ================================================================
-    const FORBIDDEN_TARGETS = ['auth-choice.html', 'login.html', 'register.html', 'forgot-password.html'];
-
-    function safeGetRedirect() {
-      let raw = null;
-      try {
-        raw = sessionStorage.getItem('redirectAfterLogin')
-           || sessionStorage.getItem('redirectAfterAuth')
-           || null;
-      } catch (e) { /* sessionStorage indisponible */ }
-
-      if (!raw || typeof raw !== 'string') return 'index.html';
-
-      // Interdire les cibles qui provoqueraient une boucle
-      const lower = raw.toLowerCase();
-      for (const forbidden of FORBIDDEN_TARGETS) {
-        if (lower.includes(forbidden)) return 'index.html';
+      function openNav() {
+        mobileNav.classList.add('open');
+        mobileNav.setAttribute('aria-hidden', 'false');
+        if (burger) burger.setAttribute('aria-expanded', 'true');
+        var first = mobileNav.querySelector('a, button');
+        if (first) first.focus();
       }
-      // Interdire les URL absolues externes (open redirect)
-      if (/^https?:\/\//i.test(raw)) return 'index.html';
-      // Interdire les javascript:
-      if (/^javascript:/i.test(raw)) return 'index.html';
-
-      return raw;
-    }
-
-    const redirectTarget = safeGetRedirect();
-    const redirectEncoded = encodeURIComponent(redirectTarget);
-
-    document.getElementById('registerLink').href = `register.html?redirect=${redirectEncoded}`;
-    document.getElementById('loginLink').href = `login.html?redirect=${redirectEncoded}`;
-
-    // ================================================================
-    // ✅ C1/C2/C5 — Garde avec grâce initiale + unsubscribe propre
-    // ================================================================
-    const loadingEl = document.getElementById('loading');
-    const choiceEl = document.getElementById('choice');
-
-    let unsubscribeAuth = null;
-    let graceTimer = null;
-    let decisionMade = false;
-
-    function showChoice() {
-      if (decisionMade) return;
-      decisionMade = true;
-      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-      if (unsubscribeAuth) {
-        try { unsubscribeAuth(); } catch (e) {}
-        unsubscribeAuth = null;
-      }
-      loadingEl.hidden = true;
-      choiceEl.hidden = false;
-    }
-
-    function redirectToApp(user) {
-      if (decisionMade) return;
-      decisionMade = true;
-      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-      if (unsubscribeAuth) {
-        try { unsubscribeAuth(); } catch (e) {}
-        unsubscribeAuth = null;
-      }
-      // ✅ C2 — Aucun getDoc ici. index.html gère l'absence du doc via retry.
-      try { sessionStorage.removeItem('redirectAfterAuth'); } catch (e) {}
-      // Ne PAS supprimer redirectAfterLogin ici : login.html / register.html
-      // peuvent encore en avoir besoin si l'utilisateur revient.
-      window.location.replace(redirectTarget);
-    }
-
-    unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      if (decisionMade) return;
-
-      if (user) {
-        // Utilisateur confirmé → redirection immédiate
-        redirectToApp(user);
-        return;
+      function closeNav() {
+        mobileNav.classList.remove('open');
+        mobileNav.setAttribute('aria-hidden', 'true');
+        if (burger) burger.setAttribute('aria-expanded', 'false');
+        if (burger) burger.focus();
       }
 
-      // user === null : on attend un court délai avant d'afficher le choix.
-      // Si un user est restauré entre-temps, on annule.
-      if (graceTimer) return;
-      graceTimer = setTimeout(() => {
-        graceTimer = null;
-        if (decisionMade) return;
-        // Rattrapage : un user est apparu entre-temps ?
-        if (auth.currentUser) {
-          redirectToApp(auth.currentUser);
-          return;
+      if (burger) burger.addEventListener('click', openNav);
+      if (closeBtn) closeBtn.addEventListener('click', closeNav);
+      closeLinks.forEach(function (el) {
+        el.addEventListener('click', closeNav);
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && mobileNav.classList.contains('open')) {
+          closeNav();
         }
-        // Vraiment pas d'utilisateur → afficher le choix
-        showChoice();
-      }, 800);
-    });
+      });
 
-    // Hygiène : cleanup à la destruction
-    window.addEventListener('beforeunload', () => {
-      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-      if (unsubscribeAuth) { try { unsubscribeAuth(); } catch (e) {} unsubscribeAuth = null; }
-    });
+      /* --- 2. RÉVÉLATION AU SCROLL --- */
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var sections = document.querySelectorAll('.section, .tool, .pillar, .step, .bac-wrap, .final-cta');
+
+      if (reduceMotion || !('IntersectionObserver' in window)) {
+        sections.forEach(function (el) { el.classList.add('reveal', 'in'); });
+      } else {
+        sections.forEach(function (el) { el.classList.add('reveal'); });
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('in');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+        sections.forEach(function (el) { observer.observe(el); });
+      }
+    })();
   </script>
+
 </body>
 </html>
