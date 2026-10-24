@@ -62,7 +62,10 @@
       }
 
       await reexecuterScripts(doc.body);
-
+ 
+      // ⚡ Recharger manuellement Firebase si on est sur chapitre.html
+      await rechargerFirebaseSiBesoin(url);
+      
       document.body.style.opacity = '1';
       window.scrollTo(0, 0);
 
@@ -95,5 +98,26 @@
     }
   }
 
+    // ⚡ Recharger manuellement le script Firebase de chapitre.html
+  async function rechargerFirebaseSiBesoin(url) {
+    // Seulement si on navigue vers chapitre.html
+    if (!url.includes('chapitre.html')) return;
+    
+    const scriptFirebase = document.getElementById('firebaseScriptChapitre');
+    if (!scriptFirebase) return;
+    
+    // ⚡ Créer un nouveau script à partir de l'ancien
+    const newScript = document.createElement('script');
+    newScript.type = 'module';
+    newScript.id = 'firebaseScriptChapitre';
+    newScript.setAttribute('data-no-spa', 'firebase-chapitre');
+    newScript.textContent = scriptFirebase.textContent;
+    
+    // Remplacer l'ancien par le nouveau (ça force l'exécution)
+    scriptFirebase.parentNode.replaceChild(newScript, scriptFirebase);
+    
+    console.log('[SPA] Firebase ré-exécuté pour chapitre.html');
+  }
+  
   console.log('[SPA] Routeur automatique activé');
 })();
