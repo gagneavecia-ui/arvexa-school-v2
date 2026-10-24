@@ -1493,22 +1493,30 @@
 }
 </script>
 
-<script type="module">
+  <script type="module">
 // ═══════════════════════════════════════════════════════════════
-// ARV ASSISTANT v2 — Tuteur IA contextuel
+// ARV ASSISTANT v2.1 — Tuteur IA contextuel
+// Corrections appliquées :
+//  - C1 : gestion blocked/paused dans onUser
+//  - C2 : setPersistence avec log explicite
+//  - C3 : getDoc avec console.warn dans le catch
+//  - C4 : saveSession / clearSession alignés
+//  - C5 : redirection déléguée à auth-guard.js (redirectAfterLogin posé)
+//  - C6 : import signOut pour la gestion blocked
+//  - C7 : cleanup beforeunload pour les listeners online/offline
 // ═══════════════════════════════════════════════════════════════
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import {
   getAuth, setPersistence,
-  browserLocalPersistence, getIdToken
+  browserLocalPersistence, getIdToken, signOut
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 import {
   initializeFirestore, persistentLocalCache, persistentSingleTabManager,
   doc, getDoc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-  import { requireAuth } from './auth-guard.js';
-  
+import { requireAuth } from './auth-guard.js';
+
 // ────────────────────────────────────────────────────────────────
 // CONFIG
 // ────────────────────────────────────────────────────────────────
@@ -1528,9 +1536,42 @@ const db = initializeFirestore(app, {
   localCache: persistentLocalCache({ tabManager: persistentSingleTabManager() })
 });
 
+// ✅ C2 — Log explicite si persistance refusée
 try {
   await setPersistence(auth, browserLocalPersistence);
-} catch (e) {}
+} catch (e) {
+  console.warn('[ARV] Persistance locale indisponible :', e.code || e.message);
+}
+
+// ✅ C4 — SESSION / CACHE alignés
+const SESSION_KEY = 'arvexa_session';
+const USER_DATA_KEY = 'arvexa_user_data';
+const LAST_UID_KEY = 'arvexa_last_uid';
+
+function saveSession(user) {
+  if (!user) return;
+  try {
+    const data = {
+      uid: user.uid,
+      email: user.email,
+      lastActive: Date.now()
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    localStorage.setItem(LAST_UID_KEY, user.uid);
+  } catch (e) {}
+}
+
+function clearSession() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(USER_DATA_KEY);
+    localStorage.removeItem(LAST_UID_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('redirectAfterAuth');
+  } catch (e) {}
+}
 
 // ────────────────────────────────────────────────────────────────
 // ÉTAT
@@ -1546,6 +1587,10 @@ const state = {
   limit: 10,
   conversations: []
 };
+
+// ✅ C7 — Handlers online/offline stockés pour cleanup
+let onlineHandler = null;
+let offlineHandler = null;
 
 // ────────────────────────────────────────────────────────────────
 // DOM
@@ -1638,65 +1683,52 @@ function showToast(message, type = 'info') {
 }
 
 // ────────────────────────────────────────────────────────────────
-// MARKDOWN — rendu robuste
+// MARKDOWN
 // ────────────────────────────────────────────────────────────────
 function renderMarkdown(text) {
   if (!text) return '';
 
   let html = escapeHtml(text);
 
-  // Extraire les blocs de code AVANT tout le reste
   const codeBlocks = [];
   html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
     codeBlocks.push(code);
     return `%%CODEBLOCK${codeBlocks.length - 1}%%`;
   });
 
-  // Inline code
   html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
 
-  // Titres (###, ##, #)
   html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
   html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
   html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
 
-  // Blockquote
   html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
 
-  // Listes non ordonnées
   html = html.replace(/^(?:[\-\*])( .+)$/gm, '<li>$1</li>');
   html = html.replace(/(<li>.*<\/li>\n?)+/g, (match) => `<ul>${match}</ul>`);
 
-  // Listes ordonnées
   html = html.replace(/^\d+\. (.+)$/gm, '<li-ordered>$1</li-ordered>');
   html = html.replace(/(<li-ordered>.*<\/li-ordered>\n?)+/g, (match) =>
     `<ol>${match.replace(/<\/?li-ordered>/g, (t) => t.replace('li-ordered', 'li'))}</ol>`
   );
 
-  // Gras / italique
   html = html.replace(/\*\*([^\*\n]+)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/(?<!\*)\*([^\*\n]+)\*(?!\*)/g, '<em>$1</em>');
 
-  // Lien
   html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g,
     '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 
-  // HR
   html = html.replace(/^---$/gm, '<hr>');
 
-  // Retours à la ligne (mais pas dans les blocs de code)
   html = html.replace(/\n\n+/g, '</p><p>');
   html = html.replace(/\n/g, '<br>');
 
-  // Wrapper paragraphe
   html = `<p>${html}</p>`;
 
-  // Nettoyer les <p> vides ou collés autour de blocs
   html = html.replace(/<p>(<(?:h[1-6]|ul|ol|blockquote|pre|hr)[^>]*>)/g, '$1');
   html = html.replace(/(<\/(?:h[1-6]|ul|ol|blockquote|pre|hr)>)<\/p>/g, '$1');
   html = html.replace(/<p>\s*<\/p>/g, '');
 
-  // Restaurer les blocs de code
   html = html.replace(/%%CODEBLOCK(\d+)%%/g, (_, idx) =>
     `<pre><code>${escapeHtml(codeBlocks[parseInt(idx, 10)])}</code></pre>`
   );
@@ -1770,7 +1802,9 @@ async function fetchQuota() {
     state.limit = total;
     state.remaining = Math.max(0, total - used);
     updateQuota();
-  } catch (_) {
+  } catch (e) {
+    // ✅ C3 — warn au lieu du silence
+    console.warn('[ARV] fetchQuota:', e.code || e.message);
     state.limit = state.isPremium ? 60 : 10;
     state.remaining = state.limit;
     updateQuota();
@@ -1790,7 +1824,7 @@ function renderUser(data) {
 }
 
 // ────────────────────────────────────────────────────────────────
-// CONVERSATIONS (sidebar)
+// CONVERSATIONS
 // ────────────────────────────────────────────────────────────────
 async function loadConversations() {
   if (!state.user) return;
@@ -2107,7 +2141,6 @@ async function sendMessage() {
     return;
   }
 
-  // UI optimiste : message utilisateur tout de suite
   const userMsg = { role: 'user', content, createdAt: new Date() };
   const wasWelcome = state.messages.length === 0;
   state.messages.push(userMsg);
@@ -2144,7 +2177,6 @@ async function sendMessage() {
     hideTyping();
     const payload = await response.json().catch(() => null);
 
-    // Quota atteint
     if (response.status === 429 && payload?.code) {
       state.remaining = 0;
       updateQuota();
@@ -2157,7 +2189,6 @@ async function sendMessage() {
       throw new Error(payload?.error || 'Réponse invalide du serveur');
     }
 
-    // Succès
     const assistantMsg = {
       role: 'assistant',
       content: payload.reply || 'Pas de réponse.',
@@ -2166,10 +2197,8 @@ async function sendMessage() {
     state.messages.push(assistantMsg);
     renderMessage(assistantMsg);
 
-    // Mise à jour conversationId + quota
     if (payload.conversationId && !state.conversationId) {
       state.conversationId = payload.conversationId;
-      // Recharger la sidebar pour voir la nouvelle conversation
       loadConversations();
     }
 
@@ -2263,43 +2292,91 @@ function isUserPremium(data) {
   return !end || end.getTime() > Date.now();
 }
 
-  // ✅ Guard sécurisé : attend la confirmation de Firebase
-  requireAuth({
-    onUser: async (user) => {
-      state.user = user;
+// ✅ C5 — onNoUser retiré : auth-guard.js gère la redirection (pose redirectAfterLogin)
+requireAuth({
+  onUser: async (user) => {
+    state.user = user;
 
-      try {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        if (snap.exists()) {
-          state.userData = snap.data();
-          state.isPremium = isUserPremium(state.userData);
-          renderUser(state.userData);
+    // ✅ C4 — saveSession aligné
+    saveSession(user);
+
+    // ✅ C1/C3 — getDoc + blocked/paused + warn
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        const data = snap.data();
+        state.userData = data;
+        state.isPremium = isUserPremium(data);
+
+        // ✅ C1 — Compte bloqué
+        if (data.accountStatus === 'blocked') {
+          try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
+          // ✅ C4 — clearSession
+          clearSession();
+          // ✅ C6 — signOut tolérant
+          try { await signOut(auth); } catch (e) {}
+          window.location.replace('auth-choice.html');
+          return;
         }
-      } catch (_) {}
 
-      await fetchQuota();
-      await loadConversations();
-      renderChat();
-
-      function updateStatus() {
-        if (navigator.onLine) {
-          statusDot.classList.remove('offline');
-          statusText.textContent = 'Prêt à t\'aider';
-        } else {
-          statusDot.classList.add('offline');
-          statusText.textContent = 'Hors ligne';
+        // ✅ C1 — Compte paused : message discret, page reste accessible
+        if (data.accountStatus === 'paused') {
+          showToast('Ton compte est temporairement en pause. Contacte le support.', 'error');
         }
+
+        renderUser(data);
+
+        // ✅ C4 — cache du profil
+        try {
+          localStorage.setItem(USER_DATA_KEY, JSON.stringify({
+            ...data,
+            _uid: user.uid,
+            _cachedAt: Date.now()
+          }));
+        } catch (e) {}
       }
-      updateStatus();
-      window.addEventListener('online', updateStatus);
-      window.addEventListener('offline', updateStatus);
-
-      chatInput.focus();
-    },
-    onNoUser: () => {
-      window.location.replace('auth-choice.html');
+    } catch (e) {
+      // ✅ C3 — warn au lieu du silence
+      console.warn('[ARV] Lecture profil impossible :', e.code || e.message);
     }
-  });
+
+    await fetchQuota();
+    await loadConversations();
+    renderChat();
+
+    // ✅ C7 — handlers stockés pour cleanup
+    if (onlineHandler) window.removeEventListener('online', onlineHandler);
+    if (offlineHandler) window.removeEventListener('offline', offlineHandler);
+
+    onlineHandler = () => {
+      statusDot.classList.remove('offline');
+      statusText.textContent = 'Prêt à t\'aider';
+    };
+    offlineHandler = () => {
+      statusDot.classList.add('offline');
+      statusText.textContent = 'Hors ligne';
+    };
+
+    if (navigator.onLine) {
+      statusDot.classList.remove('offline');
+      statusText.textContent = 'Prêt à t\'aider';
+    } else {
+      statusDot.classList.add('offline');
+      statusText.textContent = 'Hors ligne';
+    }
+
+    window.addEventListener('online', onlineHandler);
+    window.addEventListener('offline', offlineHandler);
+
+    chatInput.focus();
+  }
+});
+
+// ✅ C7 — cleanup global
+window.addEventListener('beforeunload', () => {
+  if (onlineHandler) { try { window.removeEventListener('online', onlineHandler); } catch (e) {} }
+  if (offlineHandler) { try { window.removeEventListener('offline', offlineHandler); } catch (e) {} }
+});
 
 // ────────────────────────────────────────────────────────────────
 // INIT
@@ -2307,8 +2384,7 @@ function isUserPremium(data) {
 autoResize();
 updateSendBtn();
 
-console.log('🚀 ARV Assistant v2 — prêt');
+console.log('🚀 ARV Assistant v2.1 — corrections C1-C7 appliquées');
 </script>
-
 </body>
 </html>
