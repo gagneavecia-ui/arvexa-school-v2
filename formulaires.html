@@ -418,6 +418,18 @@
 <script type="module">
 // ================================================================
 // FORMULAIRES — Version robuste anti-flash
+// Corrections appliquées :
+//  - C1 : redirectToLogin préserve redirectAfterLogin/redirectAfterAuth + URL complète
+//  - C2 : saveSession écrit aussi sessionStorage
+//  - C3 : clearSession supprime redirectAfterLogin/redirectAfterAuth
+//  - C4 : log explicite si setPersistence échoue
+//  - C5 : unsubscribe propre du listener auth
+//  - C6 : renderContent() appelé IMMÉDIATEMENT (pas dans onUser)
+//  - C7 : favoris chargés immédiatement (guest) puis remplacés après Firebase
+//  - C8 : gestion blocked/paused via getDoc users/{uid}
+//  - C9 : imports signOut + getDoc
+//  - C10 : boucle renderKaTeX limitée à 5 tentatives
+//  - C11 : évite le double renderContent quand favoris inchangés
 // ================================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -425,7 +437,8 @@ import {
   getAuth,
   onAuthStateChanged,
   setPersistence,
-  browserLocalPersistence
+  browserLocalPersistence,
+  signOut
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 import {
   initializeFirestore,
@@ -455,12 +468,15 @@ const db = initializeFirestore(app, {
   })
 });
 
+// ✅ C4 — Log explicite si persistance refusée
 try {
   await setPersistence(auth, browserLocalPersistence);
-} catch (e) {}
+} catch (e) {
+  console.warn('[Auth] Persistance locale indisponible sur formulaires.html :', e.code || e.message);
+}
 
 // ================================================================
-// SESSION / CACHE
+// SESSION / CACHE — ✅ C2/C3 alignements
 // ================================================================
 const SESSION_KEY = 'arvexa_session';
 const USER_DATA_KEY = 'arvexa_user_data';
@@ -475,6 +491,7 @@ function saveSession(user) {
       lastActive: Date.now()
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C2
     localStorage.setItem(LAST_UID_KEY, user.uid);
   } catch (e) {}
 }
@@ -485,6 +502,9 @@ function clearSession() {
     localStorage.removeItem(USER_DATA_KEY);
     localStorage.removeItem(LAST_UID_KEY);
     sessionStorage.removeItem(SESSION_KEY);
+    // ✅ C3 — alignement
+    sessionStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('redirectAfterAuth');
   } catch (e) {}
 }
 
@@ -1839,6 +1859,7 @@ let currentUid = null;
 let isSyncing = false;
 let currentFormulaId = null;
 let searchTimer = null;
+let authUnsubscribe = null;   // ✅ C5
 
 const tabsEl = document.getElementById('tabs');
 const filtersEl = document.getElementById('filters');
@@ -1861,11 +1882,19 @@ function vibrate(ms) {
   if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} }
 }
 
+// ✅ C10 — boucle renderKaTeX limitée à 5 tentatives
+let katexRetries = 0;
 function renderKaTeX(element) {
   if (typeof renderMathInElement !== 'function') {
-    setTimeout(() => renderKaTeX(element), 200);
+    katexRetries++;
+    if (katexRetries <= 5) {
+      setTimeout(() => renderKaTeX(element), 200);
+    } else {
+      console.warn('[Formulaires] KaTeX non chargé après 5 tentatives — abandon');
+    }
     return;
   }
+  katexRetries = 0;
   try {
     renderMathInElement(element || document.body, {
       delimiters: [
@@ -2331,25 +2360,50 @@ searchInput.addEventListener('input', () => {
 });
 
 // ================================================================
-// AUTH ROBUSTE — Anti-flash
+// ✅ C6/C7 — Rendu et favoris IMMÉDIATS (avant Firebase)
+// ================================================================
+favorites = loadFavoritesFromLocal();  // clé 'guest' tant que currentUid est null
+updateFavCount();
+renderTabs();
+renderFilters();
+renderContent();  // ✅ contenu affiché immédiatement
+
+// ================================================================
+// AUTH ROBUSTE — ✅ C1/C5/C8
 // ================================================================
 let isRedirecting = false;
 let isAuthResolved = false;
 let graceTimer = null;
 let maxTimer = null;
 
+// ✅ C1 — préserver les clés existantes + URL complète
 function redirectToLogin() {
   if (isRedirecting) return;
   isRedirecting = true;
+
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) {
+    try { authUnsubscribe(); } catch (e) {}
+    authUnsubscribe = null;
+  }
+
   try {
-    sessionStorage.setItem('redirectAfterLogin',
-      window.location.pathname + window.location.search);
+    const existing = sessionStorage.getItem('redirectAfterLogin')
+                  || sessionStorage.getItem('redirectAfterAuth');
+    if (!existing) {
+      sessionStorage.setItem('redirectAfterLogin',
+        window.location.pathname + window.location.search + window.location.hash);
+    }
   } catch (e) {}
+
   window.location.replace('login.html');
 }
 
 function initAuthGuard(onAuthenticated) {
-  auth.onAuthStateChanged((user) => {
+  if (authUnsubscribe) return;  // garde anti-double
+
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
     if (isAuthResolved) {
       if (user && user.uid !== currentUid) {
         currentUid = user.uid;
@@ -2364,8 +2418,9 @@ function initAuthGuard(onAuthenticated) {
     }
 
     if (!user) {
-      if (graceTimer) clearTimeout(graceTimer);
+      if (graceTimer) return;
       graceTimer = setTimeout(() => {
+        graceTimer = null;
         if (isAuthResolved) return;
         if (auth.currentUser) return;
 
@@ -2416,16 +2471,50 @@ function initAuthGuard(onAuthenticated) {
 }
 
 // ================================================================
-// LANCER LA PROTECTION
+// LANCER LA PROTECTION — ✅ C8 (blocked/paused) + sync favoris
 // ================================================================
 initAuthGuard(async (user) => {
-  // Cache-first : favoris depuis localStorage
-  favorites = loadFavoritesFromLocal();
-  updateFavCount();
-  renderTabs();
-  renderFilters();
+  // ✅ C8 — vérification blocked/paused
+  try {
+    const userSnap = await getDoc(doc(db, 'users', user.uid));
+    if (userSnap.exists()) {
+      const userData = userSnap.data();
 
-  setTimeout(() => renderContent(), 200);
+      if (userData.accountStatus === 'blocked') {
+        try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
+        try { await signOut(auth); } catch (e) {}
+        window.location.replace('auth-choice.html');
+        return;
+      }
+
+      if (userData.accountStatus === 'paused') {
+        // Message discret via toast existant
+        showToast('Ton compte est temporairement en pause. Contacte le support.', 'error');
+        // On laisse la consultation fonctionner (contenu statique), mais on
+        // désactive les écritures Firestore pour ne pas aggraver la situation.
+      }
+
+      // Cache du profil pour les autres pages
+      try {
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify({
+          ...userData,
+          _uid: user.uid,
+          _cachedAt: Date.now()
+        }));
+      } catch (e) {}
+    }
+  } catch (e) {
+    console.warn('[Formulaires] Impossible de vérifier le statut :', e.code || e.message);
+  }
+
+  // ✅ C7 — recharge les favoris avec la bonne clé (UID)
+  const localFavs = loadFavoritesFromLocal();
+  if (JSON.stringify(localFavs) !== JSON.stringify(favorites)) {
+    favorites = localFavs;
+    updateFavCount();
+    renderTabs();
+    renderContent();  // ✅ C11 — re-render uniquement si différents
+  }
 
   // Synchronisation Firestore en arrière-plan
   if (!isSyncing) {
@@ -2434,7 +2523,7 @@ initAuthGuard(async (user) => {
       const remote = await loadFavoritesFromFirestore(user.uid);
       if (remote && Array.isArray(remote)) {
         const merged = [...new Set([...favorites, ...remote])].slice(0, MAX_FAVORITES);
-        if (merged.length !== favorites.length || JSON.stringify(merged) !== JSON.stringify(favorites)) {
+        if (JSON.stringify(merged) !== JSON.stringify(favorites)) {
           favorites = merged;
           saveFavoritesToLocal();
           saveFavoritesToFirestore(user.uid);
@@ -2450,16 +2539,14 @@ initAuthGuard(async (user) => {
   }
 });
 
-// ================================================================
-// INIT
-// ================================================================
-renderTabs();
-renderFilters();
-renderSkeleton(4);
-updateFavCount();
+// ✅ C5 — cleanup global
+window.addEventListener('beforeunload', () => {
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+});
 
-console.log('🚀 ARVEXA — Formulaires (avec session robuste)');
+console.log('🚀 ARVEXA — Formulaires (version corrigée C1-C11)');
 </script>
-
 </body>
 </html>
