@@ -2118,676 +2118,704 @@
   }
   </script>
 
-  <script type="module">
-  // ═══════════════════════════════════════════════════════════════
-  // EXAM — Mode examen BAC v6.1
-  // Corrections appliquées : voir commentaires ✅
-  // ═══════════════════════════════════════════════════════════════
+ <script type="module">
+// ═══════════════════════════════════════════════════════════════
+// EXAM — Mode examen BAC v6.2
+// Corrections appliquées :
+//  - C1 : initializeFirestore avec persistentLocalCache (aligné sur index.html etc.)
+//  - C2 : gestion blocked/paused dans onUser
+//  - C3 : redirectAfterLogin posé avant redirection (onNoUser)
+//  - C4 : loadActiveSession gère updatedAt null (session fraîche)
+//  - C5 : import signOut pour la gestion blocked
+// ═══════════════════════════════════════════════════════════════
 
-  import { initializeApp } from 'firebase/app';
-  import { getAuth, getIdToken } from 'firebase/auth';
-  import {
-    getFirestore,
-    doc, getDoc, setDoc, deleteDoc, serverTimestamp
-  } from 'firebase/firestore';
-  import { requireAuth } from './auth-guard.js';
-    
-  var firebaseConfig = {
-    apiKey: 'AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE',
-    authDomain: 'arvexa-fbf10.firebaseapp.com',
-    projectId: 'arvexa-fbf10',
-    storageBucket: 'arvexa-fbf10.firebasestorage.app',
-    messagingSenderId: '920108330053',
-    appId: '1:920108330053:web:f532d71cbc2c824bc7472c'
-  };
+import { initializeApp } from 'firebase/app';
+import { getAuth, getIdToken, signOut } from 'firebase/auth';
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager,
+  doc, getDoc, setDoc, deleteDoc, serverTimestamp
+} from 'firebase/firestore';
+import { requireAuth } from './auth-guard.js';
 
-  var app = initializeApp(firebaseConfig);
-  var auth = getAuth(app);
-  var db = getFirestore(app);
+var firebaseConfig = {
+  apiKey: 'AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE',
+  authDomain: 'arvexa-fbf10.firebaseapp.com',
+  projectId: 'arvexa-fbf10',
+  storageBucket: 'arvexa-fbf10.firebasestorage.app',
+  messagingSenderId: '920108330053',
+  appId: '1:920108330053:web:f532d71cbc2c824bc7472c'
+};
 
-  var EXAM_CONSTANTS = {
-    REQUIRED_EXERCISES: 3,
-    QUESTIONS_PER_EXERCISE: 5,
-    DEFAULT_DURATION_MIN: 60,
-    TIMER_WARNING_SEC: 300,
-    SESSION_TTL_HOURS: 24
-  };
+var app = initializeApp(firebaseConfig);
+var auth = getAuth(app);
 
-  var CHAPTERS = {
-    'mathematiques': [
-      'Nombres complexes',
-      'Similitudes planes directes',
-      'Calcul de probabilités',
-      'Variable aléatoire',
-      'Fonction numérique',
-      'Fonction logarithme',
-      'Fonction exponentielle',
-      'Calcul intégral',
-      'Équations différentielles',
-      'Suites numériques',
-      'Statistiques'
-    ],
-    'physique': [
-      'Cinématique',
-      'Mouvement rectiligne',
-      'Mouvement dans le champ de pesanteur',
-      'Mouvement des particules chargées',
-      'Oscillateurs mécaniques',
-      'Généralités sur les ondes',
-      'Mouvement vibratoire',
-      'Superposition des ondes',
-      'Interférence lumineuse',
-      'Champ magnétique',
-      'Force de Laplace',
-      'Force de Lorentz',
-      'Induction magnétique',
-      'Auto-induction',
-      'Circuit LC',
-      'Circuit RLC',
-      'Radioactivité'
-    ],
-    'chimie': [
-      'Solutions aqueuses et leur pH',
-      'Acide fort, base forte',
-      'Acide faible, base faible',
-      'Couples acide/base et classification',
-      'Réaction acido-basique et solution tampon',
-      'Alcools',
-      'Acides carboxyliques et ses dérivés',
-      'Amines et amides',
-      'Acides α-aminés et protéines'
-    ],
-    'svt': [
-      'Notion de l\'IG',
-      'Nature chimique et structure de l\'IG',
-      'La reproduction conforme',
-      'Cycle cellulaire',
-      'Protéines',
-      'Synthèse des protéines',
-      'Reproduction sexuée',
-      'Brassage des gènes',
-      'Transmission des caractères',
-      'Anomalies chromosomiques',
-      'Tissus nerveux',
-      'Messages nerveux',
-      'La glycémie',
-      'Appareils génitaux',
-      'Régulation des organes génitaux',
-      'Fécondation à la nidation',
-      'Régulation des naissances',
-      'Le soi et le non soi',
-      'Réponses immunitaires',
-      'VIH/SIDA'
-    ],
-    'philosophie': [
-      'Conscience - Inconscient',
-      'Les passions',
-      'Autrui',
-      'Travail',
-      'Histoire',
-      'Religion',
-      'Science et technique',
-      'Le langage',
-      'La vérité',
-      'Espace - temps',
-      'État',
-      'La justice',
-      'La liberté'
-    ],
-    'histoire': [
-      'Les causes de la Seconde Guerre mondiale',
-      'Le déroulement de la Seconde Guerre mondiale',
-      'L\'Afrique dans la guerre',
-      'Le bilan de la Seconde Guerre mondiale',
-      'Les conditions de la lutte de libération',
-      'La libération de l\'Algérie',
-      'La décolonisation en AOF',
-      'Les problèmes des pays décolonisés'
-    ],
-    'geographie': [
-      'Les aspects physiques',
-      'Étude humaine',
-      'L\'agriculture',
-      'L\'élevage',
-      'La pêche',
-      'L\'industrie et l\'artisanat',
-      'La communication et le transport',
-      'Le commerce',
-      'Le tourisme'
-    ]
-  };
+// ✅ C1 — aligné sur index.html, login.html, profil.html, arv-progress.html etc.
+var db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentSingleTabManager()
+  })
+});
 
-  var SUBJECT_LABELS = {
-    'mathematiques': 'Mathématiques',
-    'physique': 'Physique',
-    'chimie': 'Chimie',
-    'svt': 'SVT',
-    'philosophie': 'Philosophie',
-    'histoire': 'Histoire',
-    'geographie': 'Géographie'
-  };
+var EXAM_CONSTANTS = {
+  REQUIRED_EXERCISES: 3,
+  QUESTIONS_PER_EXERCISE: 5,
+  DEFAULT_DURATION_MIN: 60,
+  TIMER_WARNING_SEC: 300,
+  SESSION_TTL_HOURS: 24
+};
 
-  var GENERATION_STEPS = ['genStep1', 'genStep2', 'genStep3', 'genStep4', 'genStep5'];
-  var CORRECTION_STEPS = ['corrStep1', 'corrStep2', 'corrStep3', 'corrStep4', 'corrStep5'];
+var CHAPTERS = {
+  'mathematiques': [
+    'Nombres complexes',
+    'Similitudes planes directes',
+    'Calcul de probabilités',
+    'Variable aléatoire',
+    'Fonction numérique',
+    'Fonction logarithme',
+    'Fonction exponentielle',
+    'Calcul intégral',
+    'Équations différentielles',
+    'Suites numériques',
+    'Statistiques'
+  ],
+  'physique': [
+    'Cinématique',
+    'Mouvement rectiligne',
+    'Mouvement dans le champ de pesanteur',
+    'Mouvement des particules chargées',
+    'Oscillateurs mécaniques',
+    'Généralités sur les ondes',
+    'Mouvement vibratoire',
+    'Superposition des ondes',
+    'Interférence lumineuse',
+    'Champ magnétique',
+    'Force de Laplace',
+    'Force de Lorentz',
+    'Induction magnétique',
+    'Auto-induction',
+    'Circuit LC',
+    'Circuit RLC',
+    'Radioactivité'
+  ],
+  'chimie': [
+    'Solutions aqueuses et leur pH',
+    'Acide fort, base forte',
+    'Acide faible, base faible',
+    'Couples acide/base et classification',
+    'Réaction acido-basique et solution tampon',
+    'Alcools',
+    'Acides carboxyliques et ses dérivés',
+    'Amines et amides',
+    'Acides α-aminés et protéines'
+  ],
+  'svt': [
+    'Notion de l\'IG',
+    'Nature chimique et structure de l\'IG',
+    'La reproduction conforme',
+    'Cycle cellulaire',
+    'Protéines',
+    'Synthèse des protéines',
+    'Reproduction sexuée',
+    'Brassage des gènes',
+    'Transmission des caractères',
+    'Anomalies chromosomiques',
+    'Tissus nerveux',
+    'Messages nerveux',
+    'La glycémie',
+    'Appareils génitaux',
+    'Régulation des organes génitaux',
+    'Fécondation à la nidation',
+    'Régulation des naissances',
+    'Le soi et le non soi',
+    'Réponses immunitaires',
+    'VIH/SIDA'
+  ],
+  'philosophie': [
+    'Conscience - Inconscient',
+    'Les passions',
+    'Autrui',
+    'Travail',
+    'Histoire',
+    'Religion',
+    'Science et technique',
+    'Le langage',
+    'La vérité',
+    'Espace - temps',
+    'État',
+    'La justice',
+    'La liberté'
+  ],
+  'histoire': [
+    'Les causes de la Seconde Guerre mondiale',
+    'Le déroulement de la Seconde Guerre mondiale',
+    'L\'Afrique dans la guerre',
+    'Le bilan de la Seconde Guerre mondiale',
+    'Les conditions de la lutte de libération',
+    'La libération de l\'Algérie',
+    'La décolonisation en AOF',
+    'Les problèmes des pays décolonisés'
+  ],
+  'geographie': [
+    'Les aspects physiques',
+    'Étude humaine',
+    'L\'agriculture',
+    'L\'élevage',
+    'La pêche',
+    'L\'industrie et l\'artisanat',
+    'La communication et le transport',
+    'Le commerce',
+    'Le tourisme'
+  ]
+};
 
-  var state = {
-    user: null,
-    exam: null,
-    selectedSubject: null,
-    exerciseIndex: 0,
-    answers: {},
-    startedAt: 0,
-    remainingSeconds: 0,
-    timerId: null,
-    submitting: false,
-    lastResult: null,
-    notebookContext: null
-  };
+var SUBJECT_LABELS = {
+  'mathematiques': 'Mathématiques',
+  'physique': 'Physique',
+  'chimie': 'Chimie',
+  'svt': 'SVT',
+  'philosophie': 'Philosophie',
+  'histoire': 'Histoire',
+  'geographie': 'Géographie'
+};
 
-  var $ = function (id) { return document.getElementById(id); };
-  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+var GENERATION_STEPS = ['genStep1', 'genStep2', 'genStep3', 'genStep4', 'genStep5'];
+var CORRECTION_STEPS = ['corrStep1', 'corrStep2', 'corrStep3', 'corrStep4', 'corrStep5'];
 
-  // ✅ CORRECTION #2 — escapeHtml optimisé (regex au lieu de création DOM)
-  function escapeHtml(value) {
-    var s = String(value === null || value === undefined ? '' : value);
-    return s
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
+var state = {
+  user: null,
+  exam: null,
+  selectedSubject: null,
+  exerciseIndex: 0,
+  answers: {},
+  startedAt: 0,
+  remainingSeconds: 0,
+  timerId: null,
+  submitting: false,
+  lastResult: null,
+  notebookContext: null
+};
 
-  function setStatus(id, message, type) {
-    var el = $(id);
-    if (!el) return;
-    el.textContent = message;
-    el.className = 'status ' + (type || '');
-  }
+var $ = function (id) { return document.getElementById(id); };
+var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
 
-  function showView(id) {
-    ['configView', 'loadingView', 'subjectsView', 'examView', 'loadingCorrectionView', 'resultsView']
-      .forEach(function (v) {
-        var el = $(v);
-        if (el) el.classList.toggle('active', v === id);
-      });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+function escapeHtml(value) {
+  var s = String(value === null || value === undefined ? '' : value);
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
-  // ═══════════════════════════════════════════════════════════════
-  // CUSTOM SELECT
-  // ═══════════════════════════════════════════════════════════════
-  function CustomSelect(element) {
-    this.element = element;
-    this.name = element.dataset.name;
-    this.trigger = element.querySelector('.custom-select-trigger');
-    this.valueEl = element.querySelector('.custom-select-value');
-    this.optionsContainer = element.querySelector('.custom-select-options');
-    this.options = [];
-    this.value = null;
-    this.isOpen = false;
-    this.init();
-  }
+function setStatus(id, message, type) {
+  var el = $(id);
+  if (!el) return;
+  el.textContent = message;
+  el.className = 'status ' + (type || '');
+}
 
-  CustomSelect.prototype.init = function () {
-    var self = this;
-    this.trigger.addEventListener('click', function (e) { e.stopPropagation(); self.toggle(); });
-    document.addEventListener('click', function (e) {
-      if (!self.element.contains(e.target)) self.close();
+function showView(id) {
+  ['configView', 'loadingView', 'subjectsView', 'examView', 'loadingCorrectionView', 'resultsView']
+    .forEach(function (v) {
+      var el = $(v);
+      if (el) el.classList.toggle('active', v === id);
     });
-    this.refreshOptions();
-  };
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-  CustomSelect.prototype.refreshOptions = function () {
-    var self = this;
-    this.options = Array.prototype.slice.call(this.optionsContainer.querySelectorAll('.custom-select-option'));
-    this.options.forEach(function (opt) {
-      opt.addEventListener('click', function (e) {
-        e.stopPropagation();
-        self.select(opt.dataset.value);
-      });
+// ═══════════════════════════════════════════════════════════════
+// CUSTOM SELECT
+// ═══════════════════════════════════════════════════════════════
+function CustomSelect(element) {
+  this.element = element;
+  this.name = element.dataset.name;
+  this.trigger = element.querySelector('.custom-select-trigger');
+  this.valueEl = element.querySelector('.custom-select-value');
+  this.optionsContainer = element.querySelector('.custom-select-options');
+  this.options = [];
+  this.value = null;
+  this.isOpen = false;
+  this.init();
+}
+
+CustomSelect.prototype.init = function () {
+  var self = this;
+  this.trigger.addEventListener('click', function (e) { e.stopPropagation(); self.toggle(); });
+  document.addEventListener('click', function (e) {
+    if (!self.element.contains(e.target)) self.close();
+  });
+  this.refreshOptions();
+};
+
+CustomSelect.prototype.refreshOptions = function () {
+  var self = this;
+  this.options = Array.prototype.slice.call(this.optionsContainer.querySelectorAll('.custom-select-option'));
+  this.options.forEach(function (opt) {
+    opt.addEventListener('click', function (e) {
+      e.stopPropagation();
+      self.select(opt.dataset.value);
     });
-    if (!this.value && this.options.length > 0) {
-      this.select(this.options[0].dataset.value, true);
+  });
+  if (!this.value && this.options.length > 0) {
+    this.select(this.options[0].dataset.value, true);
+  }
+};
+
+CustomSelect.prototype.setOptions = function (options) {
+  this.optionsContainer.innerHTML = '';
+  var self = this;
+  options.forEach(function (opt) {
+    var div = document.createElement('div');
+    div.className = 'custom-select-option';
+    div.dataset.value = opt.value;
+    div.setAttribute('role', 'option');
+    if (opt.prefix) {
+      div.innerHTML = '<span class="option-prefix">' + escapeHtml(opt.prefix) + '</span> ' + escapeHtml(opt.label);
+    } else {
+      div.textContent = opt.label;
     }
-  };
+    self.optionsContainer.appendChild(div);
+  });
+  this.value = null;
+  this.refreshOptions();
+};
 
-  CustomSelect.prototype.setOptions = function (options) {
-    this.optionsContainer.innerHTML = '';
-    var self = this;
-    options.forEach(function (opt) {
-      var div = document.createElement('div');
-      div.className = 'custom-select-option';
-      div.dataset.value = opt.value;
-      div.setAttribute('role', 'option');
-      if (opt.prefix) {
-        div.innerHTML = '<span class="option-prefix">' + escapeHtml(opt.prefix) + '</span> ' + escapeHtml(opt.label);
-      } else {
-        div.textContent = opt.label;
-      }
-      self.optionsContainer.appendChild(div);
-    });
-    this.value = null;
-    this.refreshOptions();
-  };
-
-  CustomSelect.prototype.select = function (value, silent) {
-    this.value = value;
-    var selected = null;
-    for (var i = 0; i < this.options.length; i++) {
-      if (this.options[i].dataset.value === String(value)) { selected = this.options[i]; break; }
-    }
-    if (!selected) return;
-
-    var prefix = selected.querySelector('.option-prefix');
-    var prefixHTML = prefix ? prefix.outerHTML : '';
-    var label = selected.textContent.replace(prefix ? prefix.textContent : '', '').trim();
-    this.valueEl.innerHTML = prefixHTML + ' <span>' + escapeHtml(label) + '</span>';
-
-    this.options.forEach(function (o) {
-      o.classList.toggle('selected', o.dataset.value === String(value));
-    });
-    this.close();
-
-    if (!silent) {
-      this.element.dispatchEvent(new CustomEvent('change', {
-        detail: { name: this.name, value: this.value }
-      }));
-    }
-  };
-
-  CustomSelect.prototype.toggle = function () { this.isOpen ? this.close() : this.open(); };
-
-  CustomSelect.prototype.open = function () {
-    document.querySelectorAll('.custom-select.open').forEach(function (el) {
-      if (el !== this.element) el.classList.remove('open');
-    }, this);
-    this.element.classList.add('open');
-    this.trigger.setAttribute('aria-expanded', 'true');
-    this.isOpen = true;
-  };
-
-  CustomSelect.prototype.close = function () {
-    this.element.classList.remove('open');
-    this.trigger.setAttribute('aria-expanded', 'false');
-    this.isOpen = false;
-  };
-
-  CustomSelect.prototype.getValue = function () { return this.value; };
-
-  var selects = { subject: null, level: null, chapter: null, difficulty: null, duration: null };
-
-  function initSelects() {
-    selects.subject = new CustomSelect($('subjectSelect'));
-    selects.level = new CustomSelect($('levelSelect'));
-    selects.chapter = new CustomSelect($('chapterSelect'));
-    selects.difficulty = new CustomSelect($('difficultySelect'));
-    selects.duration = new CustomSelect($('durationSelect'));
-
-    selects.subject.select('mathematiques', true);
-    selects.level.select('Terminale D', true);
-    selects.difficulty.select('medium', true);
-    selects.duration.select('60', true);
-
-    updateChapters();
-    selects.subject.element.addEventListener('change', updateChapters);
+CustomSelect.prototype.select = function (value, silent) {
+  this.value = value;
+  var selected = null;
+  for (var i = 0; i < this.options.length; i++) {
+    if (this.options[i].dataset.value === String(value)) { selected = this.options[i]; break; }
   }
+  if (!selected) return;
 
-  function updateChapters() {
-    var subject = selects.subject.getValue();
-    var chapters = CHAPTERS[subject] || [];
-    var opts = [{ value: 'all', label: 'Tous les chapitres', prefix: '📚' }];
-    chapters.forEach(function (ch) { opts.push({ value: ch, label: ch, prefix: '📖' }); });
-    selects.chapter.setOptions(opts);
+  var prefix = selected.querySelector('.option-prefix');
+  var prefixHTML = prefix ? prefix.outerHTML : '';
+  var label = selected.textContent.replace(prefix ? prefix.textContent : '', '').trim();
+  this.valueEl.innerHTML = prefixHTML + ' <span>' + escapeHtml(label) + '</span>';
+
+  this.options.forEach(function (o) {
+    o.classList.toggle('selected', o.dataset.value === String(value));
+  });
+  this.close();
+
+  if (!silent) {
+    this.element.dispatchEvent(new CustomEvent('change', {
+      detail: { name: this.name, value: this.value }
+    }));
   }
+};
 
-  function readConfig() {
-    return {
-      subject: selects.subject.getValue(),
-      level: selects.level.getValue(),
-      chapter: selects.chapter.getValue(),
-      difficulty: selects.difficulty.getValue(),
-      duration: Number(selects.duration.getValue()),
-      exerciseCount: EXAM_CONSTANTS.REQUIRED_EXERCISES
-    };
-  }
+CustomSelect.prototype.toggle = function () { this.isOpen ? this.close() : this.open(); };
 
-  function prefillFromUrl() {
-    try {
-      var urlParams = new URLSearchParams(window.location.search);
-      var preSubject = urlParams.get('subject');
-      var preChapter = urlParams.get('chapter');
-      var preChapterId = urlParams.get('chapterId');
-      var useNotebook = urlParams.get('useNotebook') === 'true';
+CustomSelect.prototype.open = function () {
+  document.querySelectorAll('.custom-select.open').forEach(function (el) {
+    if (el !== this.element) el.classList.remove('open');
+  }, this);
+  this.element.classList.add('open');
+  this.trigger.setAttribute('aria-expanded', 'true');
+  this.isOpen = true;
+};
 
-      if (useNotebook && (preChapterId || preChapter)) {
-        state.notebookContext = {
-          chapterId: preChapterId || null,
-          chapterTitle: preChapter || '',
-          useNotebook: true
-        };
-        $('notebookBanner').classList.add('show');
-        if (preChapter) {
-          $('notebookBannerTitle').textContent = '📖 Basé sur ton cahier : ' + preChapter;
-          $('notebookBannerSub').textContent = 'L\'examen sera généré à partir des sections que tu as étudiées.';
-        }
-      }
+CustomSelect.prototype.close = function () {
+  this.element.classList.remove('open');
+  this.trigger.setAttribute('aria-expanded', 'false');
+  this.isOpen = false;
+};
 
-      if (preSubject) {
-        var exists = Array.prototype.slice.call(
-          document.querySelectorAll('#subjectSelect .custom-select-option')
-        ).some(function (o) { return o.dataset.value === preSubject; });
-        if (exists) {
-          selects.subject.select(preSubject, true);
-          updateChapters();
-        }
-      }
+CustomSelect.prototype.getValue = function () { return this.value; };
 
+var selects = { subject: null, level: null, chapter: null, difficulty: null, duration: null };
+
+function initSelects() {
+  selects.subject = new CustomSelect($('subjectSelect'));
+  selects.level = new CustomSelect($('levelSelect'));
+  selects.chapter = new CustomSelect($('chapterSelect'));
+  selects.difficulty = new CustomSelect($('difficultySelect'));
+  selects.duration = new CustomSelect($('durationSelect'));
+
+  selects.subject.select('mathematiques', true);
+  selects.level.select('Terminale D', true);
+  selects.difficulty.select('medium', true);
+  selects.duration.select('60', true);
+
+  updateChapters();
+  selects.subject.element.addEventListener('change', updateChapters);
+}
+
+function updateChapters() {
+  var subject = selects.subject.getValue();
+  var chapters = CHAPTERS[subject] || [];
+  var opts = [{ value: 'all', label: 'Tous les chapitres', prefix: '📚' }];
+  chapters.forEach(function (ch) { opts.push({ value: ch, label: ch, prefix: '📖' }); });
+  selects.chapter.setOptions(opts);
+}
+
+function readConfig() {
+  return {
+    subject: selects.subject.getValue(),
+    level: selects.level.getValue(),
+    chapter: selects.chapter.getValue(),
+    difficulty: selects.difficulty.getValue(),
+    duration: Number(selects.duration.getValue()),
+    exerciseCount: EXAM_CONSTANTS.REQUIRED_EXERCISES
+  };
+}
+
+function prefillFromUrl() {
+  try {
+    var urlParams = new URLSearchParams(window.location.search);
+    var preSubject = urlParams.get('subject');
+    var preChapter = urlParams.get('chapter');
+    var preChapterId = urlParams.get('chapterId');
+    var useNotebook = urlParams.get('useNotebook') === 'true';
+
+    if (useNotebook && (preChapterId || preChapter)) {
+      state.notebookContext = {
+        chapterId: preChapterId || null,
+        chapterTitle: preChapter || '',
+        useNotebook: true
+      };
+      $('notebookBanner').classList.add('show');
       if (preChapter) {
-        setTimeout(function () {
-          var chapterOptions = Array.prototype.slice.call(
-            document.querySelectorAll('#chapterOptions .custom-select-option')
-          );
+        $('notebookBannerTitle').textContent = '📖 Basé sur ton cahier : ' + preChapter;
+        $('notebookBannerSub').textContent = 'L\'examen sera généré à partir des sections que tu as étudiées.';
+      }
+    }
 
-          var normalize = function (s) {
-            return String(s || '').toLowerCase().normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-          };
+    if (preSubject) {
+      var exists = Array.prototype.slice.call(
+        document.querySelectorAll('#subjectSelect .custom-select-option')
+      ).some(function (o) { return o.dataset.value === preSubject; });
+      if (exists) {
+        selects.subject.select(preSubject, true);
+        updateChapters();
+      }
+    }
 
-          var target = normalize(preChapter);
-          var match = null;
-          for (var i = 0; i < chapterOptions.length; i++) {
-            if (normalize(chapterOptions[i].dataset.value) === target) { match = chapterOptions[i]; break; }
-          }
-          if (!match && target.length > 3) {
-            for (var j = 0; j < chapterOptions.length; j++) {
-              var v = normalize(chapterOptions[j].dataset.value);
-              if (v.length > 3 && (v.indexOf(target) !== -1 || target.indexOf(v) !== -1)) {
-                match = chapterOptions[j]; break;
-              }
+    if (preChapter) {
+      setTimeout(function () {
+        var chapterOptions = Array.prototype.slice.call(
+          document.querySelectorAll('#chapterOptions .custom-select-option')
+        );
+
+        var normalize = function (s) {
+          return String(s || '').toLowerCase().normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+        };
+
+        var target = normalize(preChapter);
+        var match = null;
+        for (var i = 0; i < chapterOptions.length; i++) {
+          if (normalize(chapterOptions[i].dataset.value) === target) { match = chapterOptions[i]; break; }
+        }
+        if (!match && target.length > 3) {
+          for (var j = 0; j < chapterOptions.length; j++) {
+            var v = normalize(chapterOptions[j].dataset.value);
+            if (v.length > 3 && (v.indexOf(target) !== -1 || target.indexOf(v) !== -1)) {
+              match = chapterOptions[j]; break;
             }
           }
-          if (match && match.dataset.value !== 'all') {
-            selects.chapter.select(match.dataset.value, true);
-          }
-        }, 150);
-      }
-    } catch (e) {
-      console.warn('[EXAM] Prefill error:', e.message);
+        }
+        if (match && match.dataset.value !== 'all') {
+          selects.chapter.select(match.dataset.value, true);
+        }
+      }, 150);
     }
+  } catch (e) {
+    console.warn('[EXAM] Prefill error:', e.message);
   }
+}
 
-  // ═══════════════════════════════════════════════════════════════
-  // ÉTAPES DE CHARGEMENT
-  // ═══════════════════════════════════════════════════════════════
-  function resetSteps(steps) {
-    steps.forEach(function (id) {
-      var el = $(id);
-      if (el) el.classList.remove('active', 'done');
-    });
-  }
+// ═══════════════════════════════════════════════════════════════
+// ÉTAPES DE CHARGEMENT
+// ═══════════════════════════════════════════════════════════════
+function resetSteps(steps) {
+  steps.forEach(function (id) {
+    var el = $(id);
+    if (el) el.classList.remove('active', 'done');
+  });
+}
 
-  function activateStep(stepId, statusEl, label) {
-    document.querySelectorAll('.loading-step').forEach(function (s) {
-      if (s.id === stepId) {
-        s.classList.add('active');
-        s.classList.remove('done');
-      } else if (s.classList.contains('active')) {
-        s.classList.remove('active');
-        s.classList.add('done');
-      }
-    });
-    if (statusEl) {
-      statusEl.textContent = label;
-      statusEl.classList.add('active');
+function activateStep(stepId, statusEl, label) {
+  document.querySelectorAll('.loading-step').forEach(function (s) {
+    if (s.id === stepId) {
+      s.classList.add('active');
+      s.classList.remove('done');
+    } else if (s.classList.contains('active')) {
+      s.classList.remove('active');
+      s.classList.add('done');
     }
+  });
+  if (statusEl) {
+    statusEl.textContent = label;
+    statusEl.classList.add('active');
   }
+}
 
-  function finishAllSteps(steps, statusEl, finalLabel) {
-    steps.forEach(function (id) {
-      var el = $(id);
-      if (el) {
-        el.classList.remove('active');
-        el.classList.add('done');
-      }
-    });
-    if (statusEl) {
-      statusEl.textContent = finalLabel || 'Terminé !';
-      statusEl.classList.remove('active');
+function finishAllSteps(steps, statusEl, finalLabel) {
+  steps.forEach(function (id) {
+    var el = $(id);
+    if (el) {
+      el.classList.remove('active');
+      el.classList.add('done');
     }
+  });
+  if (statusEl) {
+    statusEl.textContent = finalLabel || 'Terminé !';
+    statusEl.classList.remove('active');
   }
+}
 
-  // ═══════════════════════════════════════════════════════════════
-  // SESSION ACTIVE
-  // ═══════════════════════════════════════════════════════════════
-  async function saveActiveSession() {
-    if (!state.user || !state.selectedSubject) return;
-    try {
-      var ref = doc(db, 'users', state.user.uid, 'activeExam', 'current');
-      await setDoc(ref, {
-        exam: state.exam,
-        selectedSubjectId: state.selectedSubject.id,
-        exerciseIndex: state.exerciseIndex,
-        answers: state.answers,
-        startedAt: state.startedAt,
-        remainingSeconds: state.remainingSeconds,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
-    } catch (e) { console.warn('Save session error:', e.message); }
-  }
+// ═══════════════════════════════════════════════════════════════
+// SESSION ACTIVE — ✅ C4 : updatedAt null = session fraîche
+// ═══════════════════════════════════════════════════════════════
+async function saveActiveSession() {
+  if (!state.user || !state.selectedSubject) return;
+  try {
+    var ref = doc(db, 'users', state.user.uid, 'activeExam', 'current');
+    await setDoc(ref, {
+      exam: state.exam,
+      selectedSubjectId: state.selectedSubject.id,
+      exerciseIndex: state.exerciseIndex,
+      answers: state.answers,
+      startedAt: state.startedAt,
+      remainingSeconds: state.remainingSeconds,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch (e) { console.warn('Save session error:', e.message); }
+}
 
-  async function clearActiveSession() {
-    if (!state.user) return;
-    try {
-      await deleteDoc(doc(db, 'users', state.user.uid, 'activeExam', 'current'));
-    } catch (e) { console.warn('Clear session error:', e.message); }
-  }
+async function clearActiveSession() {
+  if (!state.user) return;
+  try {
+    await deleteDoc(doc(db, 'users', state.user.uid, 'activeExam', 'current'));
+  } catch (e) { console.warn('Clear session error:', e.message); }
+}
 
-  async function loadActiveSession() {
-    if (!state.user) return null;
-    try {
-      var snap = await getDoc(doc(db, 'users', state.user.uid, 'activeExam', 'current'));
-      if (!snap.exists()) return null;
-      var data = snap.data();
-      var updated = (data.updatedAt && data.updatedAt.toDate) ? data.updatedAt.toDate() : new Date(data.updatedAt);
-      var ageHours = (Date.now() - updated.getTime()) / (1000 * 60 * 60);
-      if (ageHours > EXAM_CONSTANTS.SESSION_TTL_HOURS) {
-        await clearActiveSession();
-        return null;
-      }
+async function loadActiveSession() {
+  if (!state.user) return null;
+  try {
+    var snap = await getDoc(doc(db, 'users', state.user.uid, 'activeExam', 'current'));
+    if (!snap.exists()) return null;
+    var data = snap.data();
+
+    // ✅ C4 — si updatedAt absent (serverTimestamp non résolu), on considère
+    // la session comme fraîche (ne pas la supprimer à tort).
+    if (!data.updatedAt) {
       return data;
-    } catch (e) { console.warn('Load session error:', e.message); return null; }
-  }
-
-  var saveSessionTimer = null;
-  function debouncedSaveSession() {
-    if (saveSessionTimer) clearTimeout(saveSessionTimer);
-    saveSessionTimer = setTimeout(saveActiveSession, 2000);
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // NORMALISATION DE L'EXAM
-  // ═══════════════════════════════════════════════════════════════
-  function normalizeExam(payload) {
-    var exam = payload && payload.exam;
-    if (!exam || !Array.isArray(exam.subjects) || exam.subjects.length < 2) {
-      throw new Error('Réponse du serveur invalide.');
-    }
-    exam.duration = Number(exam.duration) || EXAM_CONSTANTS.DEFAULT_DURATION_MIN;
-    exam.totalPoints = Number(exam.totalPoints) || 20;
-    exam.subjects = exam.subjects.slice(0, 2);
-    exam.subjects.forEach(function (subject, idx) {
-      var ok = Array.isArray(subject.exercises)
-        && subject.exercises.length === EXAM_CONSTANTS.REQUIRED_EXERCISES
-        && subject.exercises.every(function (ex) {
-          return Array.isArray(ex.questions) && ex.questions.length === EXAM_CONSTANTS.QUESTIONS_PER_EXERCISE;
-        });
-      if (!ok) throw new Error('Sujet ' + (idx + 1) + ' invalide.');
-    });
-    return exam;
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // GÉNÉRATION
-  // ═══════════════════════════════════════════════════════════════
-  $('configForm').addEventListener('submit', generateExam);
-
-  async function generateExam(event) {
-    event.preventDefault();
-    if (!navigator.onLine) {
-      setStatus('configStatus', 'Votre connexion semble interrompue.', 'error');
-      return;
-    }
-    if (!state.user) {
-      setStatus('configStatus', 'Connecte-toi pour générer un examen.', 'error');
-      return;
     }
 
-    var btn = $('generateButton');
-    btn.disabled = true;
-    btn.classList.add('loading');
-    setStatus('configStatus', '');
+    var updated;
+    if (typeof data.updatedAt.toDate === 'function') {
+      updated = data.updatedAt.toDate();
+    } else {
+      updated = new Date(data.updatedAt);
+    }
+    if (isNaN(updated.getTime())) {
+      return data;
+    }
 
-    showView('loadingView');
-    resetSteps(GENERATION_STEPS);
-    var statusEl = $('genLoadingStatus');
-
-    try {
-      var config = readConfig();
-      activateStep('genStep1', statusEl, 'Analyse de la configuration...');
-      await sleep(600);
-
-      var token = await getIdToken(state.user);
-      var headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
-
-      activateStep('genStep2', statusEl, 'Génération des deux sujets...');
-
-      var notebookContextPayload = state.notebookContext
-        ? { subject: config.subject, chapterId: state.notebookContext.chapterId, chapterTitle: state.notebookContext.chapterTitle }
-        : null;
-
-      var responsePromise = fetch('/api/exam', {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(Object.assign({}, config, { notebookContext: notebookContextPayload }))
-      });
-      await sleep(1500);
-
-      activateStep('genStep3', statusEl, 'Rédaction des exercices...');
-      var response = await responsePromise;
-      var payload = await response.json().catch(function () { return null; });
-
-      if (response.status === 401) throw new Error('AUTH_REQUIRED');
-      if (response.status === 429 && payload && payload.code === 'FREE_EXAM_LIMIT') {
-        showView('configView');
-        showPremiumPopup();
-        return;
-      }
-      if (response.status === 429) throw new Error('RATE_LIMIT');
-      if (!response.ok) {
-        console.error('[EXAM] Erreur serveur:', response.status, payload);
-        throw new Error((payload && (payload.error || payload.message)) || ('Erreur serveur ' + response.status));
-      }
-
-      if (payload && payload.unavailable) {
-        showView('configView');
-        setStatus('configStatus', payload.exam && payload.exam.message || 'Service temporairement indisponible.', 'error');
-        return;
-      }
-
-      activateStep('genStep4', statusEl, 'Vérification des questions...');
-      await sleep(800);
-
-      state.exam = normalizeExam(payload);
-      state.answers = {};
-      state.exerciseIndex = 0;
+    var ageHours = (Date.now() - updated.getTime()) / (1000 * 60 * 60);
+    if (ageHours > EXAM_CONSTANTS.SESSION_TTL_HOURS) {
       await clearActiveSession();
-
-      activateStep('genStep5', statusEl, 'Finalisation...');
-      await sleep(600);
-      finishAllSteps(GENERATION_STEPS, statusEl, '✅ Tes deux sujets sont prêts !');
-      await sleep(400);
-      displaySubjects();
-      showView('subjectsView');
-    } catch (error) {
-      console.error('Génération échouée:', error);
-      if (error.message === 'AUTH_REQUIRED') {
-        setStatus('configStatus', 'Connecte-toi pour générer un examen.', 'error');
-      } else if (error.message === 'RATE_LIMIT') {
-        setStatus('configStatus', 'Trop de tentatives. Attends une minute.', 'error');
-      } else {
-        setStatus('configStatus', error.message || 'Impossible de générer l\'examen.', 'error');
-      }
-      showView('configView');
-    } finally {
-      btn.disabled = false;
-      btn.classList.remove('loading');
+      return null;
     }
+    return data;
+  } catch (e) { console.warn('Load session error:', e.message); return null; }
+}
+
+var saveSessionTimer = null;
+function debouncedSaveSession() {
+  if (saveSessionTimer) clearTimeout(saveSessionTimer);
+  saveSessionTimer = setTimeout(saveActiveSession, 2000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NORMALISATION
+// ═══════════════════════════════════════════════════════════════
+function normalizeExam(payload) {
+  var exam = payload && payload.exam;
+  if (!exam || !Array.isArray(exam.subjects) || exam.subjects.length < 2) {
+    throw new Error('Réponse du serveur invalide.');
+  }
+  exam.duration = Number(exam.duration) || EXAM_CONSTANTS.DEFAULT_DURATION_MIN;
+  exam.totalPoints = Number(exam.totalPoints) || 20;
+  exam.subjects = exam.subjects.slice(0, 2);
+  exam.subjects.forEach(function (subject, idx) {
+    var ok = Array.isArray(subject.exercises)
+      && subject.exercises.length === EXAM_CONSTANTS.REQUIRED_EXERCISES
+      && subject.exercises.every(function (ex) {
+        return Array.isArray(ex.questions) && ex.questions.length === EXAM_CONSTANTS.QUESTIONS_PER_EXERCISE;
+      });
+    if (!ok) throw new Error('Sujet ' + (idx + 1) + ' invalide.');
+  });
+  return exam;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GÉNÉRATION
+// ═══════════════════════════════════════════════════════════════
+$('configForm').addEventListener('submit', generateExam);
+
+async function generateExam(event) {
+  event.preventDefault();
+  if (!navigator.onLine) {
+    setStatus('configStatus', 'Votre connexion semble interrompue.', 'error');
+    return;
+  }
+  if (!state.user) {
+    setStatus('configStatus', 'Connecte-toi pour générer un examen.', 'error');
+    return;
   }
 
-  function displaySubjects() {
-    var list = $('subjectsList');
-    list.replaceChildren();
-    state.exam.subjects.forEach(function (subject, index) {
-      var exerciseCount = subject.exercises.length;
-      var totalQuestions = subject.exercises.reduce(function (sum, ex) { return sum + ((ex.questions && ex.questions.length) || 0); }, 0);
-      var points = subject.exercises.reduce(function (sum, ex) { return sum + (Number(ex.points) || 0); }, 0);
-      points = Math.min(20, Math.round(points * 100) / 100); // ✅ Plafonné à 20
-      var level = subject.level || (index === 0 ? 'consolidation' : 'approfondissement');
-      var levelLabel = level === 'consolidation' ? 'Consolidation' : 'Approfondissement';
-      var levelClass = level === 'consolidation' ? 'consolidation' : 'approfondissement';
+  var btn = $('generateButton');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  setStatus('configStatus', '');
 
-      var card = document.createElement('article');
-      card.className = 'subject-card';
-      card.innerHTML =
-        '<div class="subject-kicker">Version ' + (index + 1) + '</div>' +
-        '<h3>' + escapeHtml(subject.title || ('Sujet ' + (index + 1))) + '</h3>' +
-        '<div style="margin-bottom:6px;">' +
-        '<span class="subject-level-badge ' + levelClass + '">' + levelLabel + '</span>' +
-        '</div>' +
-        '<p>' + escapeHtml(subject.instructions || 'Sujet complet à traiter dans le temps imparti.') + '</p>' +
-        '<div class="subject-meta">' +
-        '<span>' + exerciseCount + ' exercices</span>' +
-        '<span>' + totalQuestions + ' questions</span>' +
-        '<span>' + (Math.round(points * 100) / 100 || state.exam.totalPoints) + '/20 points</span>' +
-        '</div>';
+  showView('loadingView');
+  resetSteps(GENERATION_STEPS);
+  var statusEl = $('genLoadingStatus');
 
-      var btn = document.createElement('button');
-      btn.className = 'btn primary';
-      btn.type = 'button';
-      btn.textContent = 'Commencer';
-      btn.addEventListener('click', function () { startExam(subject); });
-      card.appendChild(btn);
-      list.appendChild(card);
+  try {
+    var config = readConfig();
+    activateStep('genStep1', statusEl, 'Analyse de la configuration...');
+    await sleep(600);
+
+    var token = await getIdToken(state.user);
+    var headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+
+    activateStep('genStep2', statusEl, 'Génération des deux sujets...');
+
+    var notebookContextPayload = state.notebookContext
+      ? { subject: config.subject, chapterId: state.notebookContext.chapterId, chapterTitle: state.notebookContext.chapterTitle }
+      : null;
+
+    var responsePromise = fetch('/api/exam', {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(Object.assign({}, config, { notebookContext: notebookContextPayload }))
     });
-  }
+    await sleep(1500);
 
-  // ═══════════════════════════════════════════════════════════════
-  // EXAMEN
-  // ═══════════════════════════════════════════════════════════════
-  async function startExam(subject) {
-    state.selectedSubject = subject;
-    state.exerciseIndex = 0;
+    activateStep('genStep3', statusEl, 'Rédaction des exercices...');
+    var response = await responsePromise;
+    var payload = await response.json().catch(function () { return null; });
+
+    if (response.status === 401) throw new Error('AUTH_REQUIRED');
+    if (response.status === 429 && payload && payload.code === 'FREE_EXAM_LIMIT') {
+      showView('configView');
+      showPremiumPopup();
+      return;
+    }
+    if (response.status === 429) throw new Error('RATE_LIMIT');
+    if (!response.ok) {
+      console.error('[EXAM] Erreur serveur:', response.status, payload);
+      throw new Error((payload && (payload.error || payload.message)) || ('Erreur serveur ' + response.status));
+    }
+
+    if (payload && payload.unavailable) {
+      showView('configView');
+      setStatus('configStatus', payload.exam && payload.exam.message || 'Service temporairement indisponible.', 'error');
+      return;
+    }
+
+    activateStep('genStep4', statusEl, 'Vérification des questions...');
+    await sleep(800);
+
+    state.exam = normalizeExam(payload);
     state.answers = {};
-    state.startedAt = Date.now();
-    state.remainingSeconds = Math.max(60, Number(state.exam.duration) * 60);
-    await saveActiveSession();
-    $('examTitle').textContent = subject.title || 'Sujet';
-    showView('examView');
-    renderExercise();
-    startTimer();
-  }
+    state.exerciseIndex = 0;
+    await clearActiveSession();
 
-  function answerKey(exerciseIndex, questionIndex) {
-    return state.selectedSubject.id + ':' + exerciseIndex + ':' + questionIndex;
+    activateStep('genStep5', statusEl, 'Finalisation...');
+    await sleep(600);
+    finishAllSteps(GENERATION_STEPS, statusEl, '✅ Tes deux sujets sont prêts !');
+    await sleep(400);
+    displaySubjects();
+    showView('subjectsView');
+  } catch (error) {
+    console.error('Génération échouée:', error);
+    if (error.message === 'AUTH_REQUIRED') {
+      setStatus('configStatus', 'Connecte-toi pour générer un examen.', 'error');
+    } else if (error.message === 'RATE_LIMIT') {
+      setStatus('configStatus', 'Trop de tentatives. Attends une minute.', 'error');
+    } else {
+      setStatus('configStatus', error.message || 'Impossible de générer l\'examen.', 'error');
+    }
+    showView('configView');
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('loading');
   }
+}
 
-  function saveAnswer(key, value) {
-    state.answers[key] = value;
-    debouncedSaveSession();
-  }
+function displaySubjects() {
+  var list = $('subjectsList');
+  list.replaceChildren();
+  state.exam.subjects.forEach(function (subject, index) {
+    var exerciseCount = subject.exercises.length;
+    var totalQuestions = subject.exercises.reduce(function (sum, ex) { return sum + ((ex.questions && ex.questions.length) || 0); }, 0);
+    var points = subject.exercises.reduce(function (sum, ex) { return sum + (Number(ex.points) || 0); }, 0);
+    points = Math.min(20, Math.round(points * 100) / 100);
+    var level = subject.level || (index === 0 ? 'consolidation' : 'approfondissement');
+    var levelLabel = level === 'consolidation' ? 'Consolidation' : 'Approfondissement';
+    var levelClass = level === 'consolidation' ? 'consolidation' : 'approfondissement';
 
-  function renderExercise() {
+    var card = document.createElement('article');
+    card.className = 'subject-card';
+    card.innerHTML =
+      '<div class="subject-kicker">Version ' + (index + 1) + '</div>' +
+      '<h3>' + escapeHtml(subject.title || ('Sujet ' + (index + 1))) + '</h3>' +
+      '<div style="margin-bottom:6px;">' +
+      '<span class="subject-level-badge ' + levelClass + '">' + levelLabel + '</span>' +
+      '</div>' +
+      '<p>' + escapeHtml(subject.instructions || 'Sujet complet à traiter dans le temps imparti.') + '</p>' +
+      '<div class="subject-meta">' +
+      '<span>' + exerciseCount + ' exercices</span>' +
+      '<span>' + totalQuestions + ' questions</span>' +
+      '<span>' + (Math.round(points * 100) / 100 || state.exam.totalPoints) + '/20 points</span>' +
+      '</div>';
+
+    var btn = document.createElement('button');
+    btn.className = 'btn primary';
+    btn.type = 'button';
+    btn.textContent = 'Commencer';
+    btn.addEventListener('click', function () { startExam(subject); });
+    card.appendChild(btn);
+    list.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXAMEN
+// ═══════════════════════════════════════════════════════════════
+async function startExam(subject) {
+  state.selectedSubject = subject;
+  state.exerciseIndex = 0;
+  state.answers = {};
+  state.startedAt = Date.now();
+  state.remainingSeconds = Math.max(60, Number(state.exam.duration) * 60);
+  await saveActiveSession();
+  $('examTitle').textContent = subject.title || 'Sujet';
+  showView('examView');
+  renderExercise();
+  startTimer();
+}
+
+function answerKey(exerciseIndex, questionIndex) {
+  return state.selectedSubject.id + ':' + exerciseIndex + ':' + questionIndex;
+}
+
+function saveAnswer(key, value) {
+  state.answers[key] = value;
+  debouncedSaveSession();
+}
+
+function renderExercise() {
   var exercise = state.selectedSubject.exercises[state.exerciseIndex];
   if (!exercise) return;
 
@@ -2811,7 +2839,6 @@
       '<span class="points">' + (Math.round((Number(question.points) || 0) * 100) / 100) + ' pt</span>';
     wrapper.appendChild(title);
 
-    // ✅ NOUVEAU : Gestion du type "drawing" pour la Physique
     if (question.type === 'drawing') {
       var drawingBox = document.createElement('div');
       drawingBox.style.cssText = 'border: 2px dashed #B8860B; padding: 20px; text-align: center; color: #8A8A7A; border-radius: 10px; margin-top: 12px; background: rgba(184, 134, 11, 0.05);';
@@ -2819,8 +2846,7 @@
         '<strong style="color: #E0B84A;">Fais ce schéma sur ton cahier.</strong><br>' +
         '<span style="font-size: 13px;">Tu pourras vérifier avec la correction à la fin.</span>';
       wrapper.appendChild(drawingBox);
-    } 
-    // ✅ Gestion des QCM (Choix multiples)
+    }
     else if (Array.isArray(question.options) && question.options.length === 4) {
       var options = document.createElement('div');
       options.className = 'answer-options';
@@ -2830,24 +2856,23 @@
         var optText = (opt && (opt.text || opt.label)) ? (opt.text || opt.label) : String(opt || '');
         var label = document.createElement('label');
         label.className = 'answer-option';
-        
+
         var input = document.createElement('input');
         input.type = 'radio';
         input.name = key;
         input.value = letter;
         input.checked = state.answers[key] === letter;
         input.addEventListener('change', function () { saveAnswer(key, letter); });
-        
+
         var text = document.createElement('span');
         text.textContent = letter + '. ' + optText;
-        
+
         label.appendChild(input);
         label.appendChild(text);
         options.appendChild(label);
       });
       wrapper.appendChild(options);
-    } 
-    // ✅ Gestion des réponses Texte / Nombre
+    }
     else {
       var isNumber = question.type === 'number';
       var input = document.createElement(isNumber ? 'input' : 'textarea');
@@ -2869,546 +2894,569 @@
   $('previousButton').disabled = state.exerciseIndex === 0;
   $('nextButton').disabled = state.exerciseIndex >= EXAM_CONSTANTS.REQUIRED_EXERCISES - 1;
   $('progressBar').style.width = (((state.exerciseIndex + 1) / EXAM_CONSTANTS.REQUIRED_EXERCISES) * 100) + '%';
-  
-  // Rendu KaTeX automatique (katex-utils.js MutationObserver)
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+}
 
-  function goNext() {
-    if (state.exerciseIndex < EXAM_CONSTANTS.REQUIRED_EXERCISES - 1) {
-      state.exerciseIndex += 1;
-      saveActiveSession();
-      renderExercise();
-    }
+function goNext() {
+  if (state.exerciseIndex < EXAM_CONSTANTS.REQUIRED_EXERCISES - 1) {
+    state.exerciseIndex += 1;
+    saveActiveSession();
+    renderExercise();
   }
+}
 
-  function goPrevious() {
-    if (state.exerciseIndex > 0) {
-      state.exerciseIndex -= 1;
-      saveActiveSession();
-      renderExercise();
-    }
+function goPrevious() {
+  if (state.exerciseIndex > 0) {
+    state.exerciseIndex -= 1;
+    saveActiveSession();
+    renderExercise();
   }
+}
 
-  function startTimer() {
-    clearInterval(state.timerId);
-    state.timerId = setInterval(function () {
-      state.remainingSeconds -= 1;
-      updateTimerDisplay();
-      if (state.remainingSeconds <= 0) {
-        clearInterval(state.timerId);
-        submitExam(true);
-      } else if (state.remainingSeconds % 30 === 0) {
-        saveActiveSession();
-      }
-    }, 1000);
+function startTimer() {
+  clearInterval(state.timerId);
+  state.timerId = setInterval(function () {
+    state.remainingSeconds -= 1;
     updateTimerDisplay();
+    if (state.remainingSeconds <= 0) {
+      clearInterval(state.timerId);
+      submitExam(true);
+    } else if (state.remainingSeconds % 30 === 0) {
+      saveActiveSession();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+window.addEventListener('beforeunload', function () {
+  if (state.timerId) clearInterval(state.timerId);
+});
+
+function updateTimerDisplay() {
+  var s = Math.max(0, state.remainingSeconds);
+  var h = String(Math.floor(s / 3600)).padStart(2, '0');
+  var m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+  var sec = String(s % 60).padStart(2, '0');
+  var timer = $('timer');
+  timer.textContent = h + ':' + m + ':' + sec;
+  timer.classList.toggle('urgent', s <= EXAM_CONSTANTS.TIMER_WARNING_SEC);
+}
+
+function askFinish() {
+  $('confirmModal').classList.add('show');
+  $('confirmFinishButton').focus();
+}
+
+function closeConfirmModal() {
+  $('confirmModal').classList.remove('show');
+}
+
+async function submitExam(auto) {
+  if (state.submitting) return;
+  state.submitting = true;
+
+  if (!state.selectedSubject || !state.user) {
+    state.submitting = false;
+    setStatus('examStatus', 'Connecte-toi pour terminer l\'examen.', 'error');
+    return;
   }
 
-  // ✅ CORRECTION #4 — Nettoyage du timer à la fermeture de la page
-  window.addEventListener('beforeunload', function () {
-    if (state.timerId) clearInterval(state.timerId);
-  });
+  closeConfirmModal();
+  clearInterval(state.timerId);
+  $('finishButton').disabled = true;
+  showView('loadingCorrectionView');
+  resetSteps(CORRECTION_STEPS);
+  var statusEl = $('corrLoadingStatus');
 
-  function updateTimerDisplay() {
-    var s = Math.max(0, state.remainingSeconds);
-    var h = String(Math.floor(s / 3600)).padStart(2, '0');
-    var m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
-    var sec = String(s % 60).padStart(2, '0');
-    var timer = $('timer');
-    timer.textContent = h + ':' + m + ':' + sec;
-    timer.classList.toggle('urgent', s <= EXAM_CONSTANTS.TIMER_WARNING_SEC);
-  }
+  try {
+    activateStep('corrStep1', statusEl, 'Envoi de ta copie au correcteur...');
+    await sleep(600);
+    var token = await getIdToken(state.user);
+    var headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
 
-  function askFinish() {
-    $('confirmModal').classList.add('show');
-    $('confirmFinishButton').focus();
-  }
+    activateStep('corrStep2', statusEl, 'Analyse des exercices...');
+    var responsePromise = fetch('/api/exam', {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({
+        action: 'correct',
+        exam: state.exam,
+        subjectId: state.selectedSubject.id,
+        answers: state.answers
+      })
+    });
+    await sleep(1500);
 
-  function closeConfirmModal() {
-    $('confirmModal').classList.remove('show');
-  }
+    activateStep('corrStep3', statusEl, 'Évaluation pédagogique...');
+    var response = await responsePromise;
+    var payload = await response.json().catch(function () { return null; });
 
-  // ═══════════════════════════════════════════════════════════════
-  // CORRECTION
-  // ✅ CORRECTION #1 — Verrou placé EN PREMIER + vérif state.user
-  // ═══════════════════════════════════════════════════════════════
-  async function submitExam(auto) {
-    // Verrou posé immédiatement (avant tout)
-    if (state.submitting) return;
-    state.submitting = true;
-
-    // Vérification utilisateur AVANT de continuer
-    if (!state.selectedSubject || !state.user) {
-      state.submitting = false;
-      setStatus('examStatus', 'Connecte-toi pour terminer l\'examen.', 'error');
-      return;
+    if (!response.ok) {
+      console.error('[EXAM] Erreur correction:', response.status, payload);
+      throw new Error((payload && (payload.error || payload.message)) || ('Erreur correction ' + response.status));
     }
 
-    closeConfirmModal();
-    clearInterval(state.timerId);
-    $('finishButton').disabled = true;
-    showView('loadingCorrectionView');
-    resetSteps(CORRECTION_STEPS);
-    var statusEl = $('corrLoadingStatus');
+    activateStep('corrStep4', statusEl, 'Calcul du score...');
+    await sleep(900);
+    activateStep('corrStep5', statusEl, 'Finalisation...');
+    await sleep(600);
+    finishAllSteps(CORRECTION_STEPS, statusEl, '✅ Ta copie est corrigée !');
+    await sleep(500);
 
-    try {
-      activateStep('corrStep1', statusEl, 'Envoi de ta copie au correcteur...');
-      await sleep(600);
-      var token = await getIdToken(state.user);
-      var headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+    showResults(payload.result);
+    await clearActiveSession();
+  } catch (error) {
+    console.error('Correction échouée:', error);
+    finishAllSteps(CORRECTION_STEPS, statusEl, '⚠️ Correction indisponible.');
+    await sleep(1200);
+    showView('examView');
+    setStatus('examStatus', 'Correction temporairement indisponible. Réessaie dans quelques minutes.', 'error');
+  } finally {
+    state.submitting = false;
+    $('finishButton').disabled = false;
+  }
+}
 
-      activateStep('corrStep2', statusEl, 'Analyse des exercices...');
-      var responsePromise = fetch('/api/exam', {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify({
-          action: 'correct',
-          exam: state.exam,
-          subjectId: state.selectedSubject.id,
-          answers: state.answers
-        })
-      });
-      await sleep(1500);
+function getGrade(percentage) {
+  if (percentage >= 90) return 'Excellent';
+  if (percentage >= 80) return 'Très bien';
+  if (percentage >= 70) return 'Bien';
+  if (percentage >= 60) return 'Assez bien';
+  if (percentage >= 50) return 'Passable';
+  return 'Insuffisant';
+}
+function getGradeEmoji(percentage) {
+  if (percentage >= 90) return '🏆';
+  if (percentage >= 70) return '🎉';
+  if (percentage >= 50) return '📚';
+  return '💪';
+}
+function getGradeClass(percentage) {
+  if (percentage >= 70) return 'success';
+  if (percentage >= 50) return 'warning';
+  return 'danger';
+}
+function getProgressColor(percent) {
+  if (percent >= 75) return 'linear-gradient(90deg, #45b47d, #6fd99a)';
+  if (percent >= 50) return 'linear-gradient(90deg, #E0B84A, #F0CC65)';
+  return 'linear-gradient(90deg, #d7654a, #e88a72)';
+}
 
-      activateStep('corrStep3', statusEl, 'Évaluation pédagogique...');
-      var response = await responsePromise;
-      var payload = await response.json().catch(function () { return null; });
+// ═══════════════════════════════════════════════════════════════
+// AFFICHAGE DES RÉSULTATS
+// ═══════════════════════════════════════════════════════════════
+function showResults(result) {
+  state.lastResult = result;
+  var score = Math.max(0, Math.min(20, Number((result && result.score) || 0)));
+  var percentage = Number((result && result.percentage) || Math.round((score / 20) * 100));
+  var grade = (result && result.grade) || getGrade(percentage);
 
-      if (!response.ok) {
-        console.error('[EXAM] Erreur correction:', response.status, payload);
-        throw new Error((payload && (payload.error || payload.message)) || ('Erreur correction ' + response.status));
+  $('resultScore').textContent = score.toFixed(2) + ' / 20';
+  $('resultPercent').textContent = percentage + ' %';
+
+  var details = $('resultsDetails');
+  details.replaceChildren();
+
+  var banner = document.createElement('div');
+  banner.className = 'grade-banner grade-' + getGradeClass(percentage);
+  banner.innerHTML =
+    '<div class="grade-emoji">' + getGradeEmoji(percentage) + '</div>' +
+    '<div class="grade-info">' +
+    '<div class="grade-title">' + escapeHtml(grade) + '</div>' +
+    '<div class="grade-sub">' + escapeHtml((result && result.globalFeedback && result.globalFeedback.encouragement) || 'Continue tes efforts !') + '</div>' +
+    '</div>';
+  details.appendChild(banner);
+
+  if (result && result.globalFeedback) {
+    var gf = result.globalFeedback;
+    var hasStrengths = Array.isArray(gf.strengths) && gf.strengths.length > 0;
+    var hasWeaknesses = Array.isArray(gf.weaknesses) && gf.weaknesses.length > 0;
+
+    if (hasStrengths || hasWeaknesses) {
+      var gfCard = document.createElement('div');
+      gfCard.className = 'recap-section';
+      var gfHtml = '<h3 class="recap-title">📊 Bilan personnalisé</h3>';
+
+      if (hasStrengths) {
+        gfHtml += '<div class="qd-section tip"><div class="qd-section-label">✅ Tes points forts</div><ul style="padding-left:20px;margin:0;">';
+        gf.strengths.forEach(function (s) { gfHtml += '<li>' + escapeHtml(s) + '</li>'; });
+        gfHtml += '</ul></div>';
       }
 
-      activateStep('corrStep4', statusEl, 'Calcul du score...');
-      await sleep(900);
-      activateStep('corrStep5', statusEl, 'Finalisation...');
-      await sleep(600);
-      finishAllSteps(CORRECTION_STEPS, statusEl, '✅ Ta copie est corrigée !');
-      await sleep(500);
-
-      showResults(payload.result);
-      await clearActiveSession();
-    } catch (error) {
-      console.error('Correction échouée:', error);
-      finishAllSteps(CORRECTION_STEPS, statusEl, '⚠️ Correction indisponible.');
-      await sleep(1200);
-      showView('examView');
-      setStatus('examStatus', 'Correction temporairement indisponible. Réessaie dans quelques minutes.', 'error');
-    } finally {
-      state.submitting = false;
-      $('finishButton').disabled = false;
-    }
-  }
-
-  function getGrade(percentage) {
-    if (percentage >= 90) return 'Excellent';
-    if (percentage >= 80) return 'Très bien';
-    if (percentage >= 70) return 'Bien';
-    if (percentage >= 60) return 'Assez bien';
-    if (percentage >= 50) return 'Passable';
-    return 'Insuffisant';
-  }
-  function getGradeEmoji(percentage) {
-    if (percentage >= 90) return '🏆';
-    if (percentage >= 70) return '🎉';
-    if (percentage >= 50) return '📚';
-    return '💪';
-  }
-  function getGradeClass(percentage) {
-    if (percentage >= 70) return 'success';
-    if (percentage >= 50) return 'warning';
-    return 'danger';
-  }
-  function getProgressColor(percent) {
-    if (percent >= 75) return 'linear-gradient(90deg, #45b47d, #6fd99a)';
-    if (percent >= 50) return 'linear-gradient(90deg, #E0B84A, #F0CC65)';
-    return 'linear-gradient(90deg, #d7654a, #e88a72)';
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // AFFICHAGE DES RÉSULTATS
-  // ═══════════════════════════════════════════════════════════════
-  function showResults(result) {
-    state.lastResult = result;
-    var score = Math.max(0, Math.min(20, Number((result && result.score) || 0)));
-    var percentage = Number((result && result.percentage) || Math.round((score / 20) * 100));
-    var grade = (result && result.grade) || getGrade(percentage);
-
-    $('resultScore').textContent = score.toFixed(2) + ' / 20';
-    $('resultPercent').textContent = percentage + ' %';
-
-    var details = $('resultsDetails');
-    details.replaceChildren();
-
-    var banner = document.createElement('div');
-    banner.className = 'grade-banner grade-' + getGradeClass(percentage);
-    banner.innerHTML =
-      '<div class="grade-emoji">' + getGradeEmoji(percentage) + '</div>' +
-      '<div class="grade-info">' +
-      '<div class="grade-title">' + escapeHtml(grade) + '</div>' +
-      '<div class="grade-sub">' + escapeHtml((result && result.globalFeedback && result.globalFeedback.encouragement) || 'Continue tes efforts !') + '</div>' +
-      '</div>';
-    details.appendChild(banner);
-
-    if (result && result.globalFeedback) {
-      var gf = result.globalFeedback;
-      var hasStrengths = Array.isArray(gf.strengths) && gf.strengths.length > 0;
-      var hasWeaknesses = Array.isArray(gf.weaknesses) && gf.weaknesses.length > 0;
-
-      if (hasStrengths || hasWeaknesses) {
-        var gfCard = document.createElement('div');
-        gfCard.className = 'recap-section';
-        var gfHtml = '<h3 class="recap-title">📊 Bilan personnalisé</h3>';
-
-        if (hasStrengths) {
-          gfHtml += '<div class="qd-section tip"><div class="qd-section-label">✅ Tes points forts</div><ul style="padding-left:20px;margin:0;">';
-          gf.strengths.forEach(function (s) { gfHtml += '<li>' + escapeHtml(s) + '</li>'; });
-          gfHtml += '</ul></div>';
-        }
-
-        if (hasWeaknesses) {
-          gfHtml += '<div class="qd-section why-wrong"><div class="qd-section-label">⚠️ À améliorer</div><ul style="padding-left:20px;margin:0;">';
-          gf.weaknesses.forEach(function (w) { gfHtml += '<li>' + escapeHtml(w) + '</li>'; });
-          gfHtml += '</ul></div>';
-        }
-
-        gfCard.innerHTML = gfHtml;
-        details.appendChild(gfCard);
+      if (hasWeaknesses) {
+        gfHtml += '<div class="qd-section why-wrong"><div class="qd-section-label">⚠️ À améliorer</div><ul style="padding-left:20px;margin:0;">';
+        gf.weaknesses.forEach(function (w) { gfHtml += '<li>' + escapeHtml(w) + '</li>'; });
+        gfHtml += '</ul></div>';
       }
+
+      gfCard.innerHTML = gfHtml;
+      details.appendChild(gfCard);
     }
+  }
 
-    var exercises = (result && Array.isArray(result.exercises)) ? result.exercises : [];
-    if (exercises.length > 0) {
-      var recap = document.createElement('div');
-      recap.className = 'recap-section';
-      recap.innerHTML = '<h3 class="recap-title">📚 Détail des exercices</h3>';
+  var exercises = (result && Array.isArray(result.exercises)) ? result.exercises : [];
+  if (exercises.length > 0) {
+    var recap = document.createElement('div');
+    recap.className = 'recap-section';
+    recap.innerHTML = '<h3 class="recap-title">📚 Détail des exercices</h3>';
 
-         exercises.forEach(function (exercise, idx) {
-    var percent = exercise.maxScore > 0 ? Math.min(100, (exercise.score / exercise.maxScore) * 100) : 0;
-    var icon = percent >= 75 ? '✅' : percent >= 50 ? '⚠️' : '❌';
+    exercises.forEach(function (exercise, idx) {
+      var percent = exercise.maxScore > 0 ? Math.min(100, (exercise.score / exercise.maxScore) * 100) : 0;
+      var icon = percent >= 75 ? '✅' : percent >= 50 ? '⚠️' : '❌';
 
-    var card = document.createElement('button');
-    card.className = 'exercise-card';
-    card.type = 'button';
-    card.innerHTML =
-      '<div class="exercise-card-icon">' + icon + '</div>' +
-      '<div class="exercise-card-body">' +
-      '<div class="exercise-card-title">Exercice ' + (exercise.number || (idx + 1)) + (exercise.title ? ' — ' + escapeHtml(exercise.title) : '') + '</div>' +
-      '<div class="exercise-card-meta">' +
-        Math.min(Number(exercise.score || 0), Number(exercise.maxScore || 6.67)).toFixed(2) + 
-        ' / ' + 
-        Number(exercise.maxScore || 6.67).toFixed(2) + 
-        ' pts · ' + 
+      var card = document.createElement('button');
+      card.className = 'exercise-card';
+      card.type = 'button';
+      card.innerHTML =
+        '<div class="exercise-card-icon">' + icon + '</div>' +
+        '<div class="exercise-card-body">' +
+        '<div class="exercise-card-title">Exercice ' + (exercise.number || (idx + 1)) + (exercise.title ? ' — ' + escapeHtml(exercise.title) : '') + '</div>' +
+        '<div class="exercise-card-meta">' +
+        Math.min(Number(exercise.score || 0), Number(exercise.maxScore || 6.67)).toFixed(2) +
+        ' / ' +
+        Number(exercise.maxScore || 6.67).toFixed(2) +
+        ' pts · ' +
         (exercise.correctAnswers || 0) + '/' + (exercise.totalQuestions || 5) + ' correctes' +
-      '</div>' +
-      '<div class="exercise-card-progress"><div class="exercise-card-fill" style="width:' + percent + '%;background:' + getProgressColor(percent) + '"></div></div>' +
-      '</div>' +
-      '<div class="exercise-card-arrow">→</div>';
-    card.addEventListener('click', function () { showExerciseDetail(exercise, idx); });
-    recap.appendChild(card);
-  });
-      details.appendChild(recap);
-    }
-
-    if (result && Array.isArray(result.revisionTopics) && result.revisionTopics.length > 0) {
-      var topics = document.createElement('div');
-      topics.className = 'topics-section';
-      var topicsHtml = '<h3 class="topics-title">📖 Points à revoir en priorité</h3><ul class="topics-list">';
-      result.revisionTopics.forEach(function (t) { topicsHtml += '<li>' + escapeHtml(t) + '</li>'; });
-      topicsHtml += '</ul>';
-      topics.innerHTML = topicsHtml;
-      details.appendChild(topics);
-    }
-
-    showView('resultsView');
-    // Rendu KaTeX automatique (katex-utils.js)
+        '</div>' +
+        '<div class="exercise-card-progress"><div class="exercise-card-fill" style="width:' + percent + '%;background:' + getProgressColor(percent) + '"></div></div>' +
+        '</div>' +
+        '<div class="exercise-card-arrow">→</div>';
+      card.addEventListener('click', function () { showExerciseDetail(exercise, idx); });
+      recap.appendChild(card);
+    });
+    details.appendChild(recap);
   }
 
-  function showExerciseDetail(exercise, exerciseIndex) {
-    var details = $('resultsDetails');
-    details.replaceChildren();
-    var percent = exercise.maxScore > 0 ? (exercise.score / exercise.maxScore) * 100 : 0;
-    var icon = percent >= 75 ? '✅' : percent >= 50 ? '⚠️' : '❌';
+  if (result && Array.isArray(result.revisionTopics) && result.revisionTopics.length > 0) {
+    var topics = document.createElement('div');
+    topics.className = 'topics-section';
+    var topicsHtml = '<h3 class="topics-title">📖 Points à revoir en priorité</h3><ul class="topics-list">';
+    result.revisionTopics.forEach(function (t) { topicsHtml += '<li>' + escapeHtml(t) + '</li>'; });
+    topicsHtml += '</ul>';
+    topics.innerHTML = topicsHtml;
+    details.appendChild(topics);
+  }
 
-    var header = document.createElement('div');
-    header.className = 'exercise-detail-header';
-    header.innerHTML =
+  showView('resultsView');
+}
+
+function showExerciseDetail(exercise, exerciseIndex) {
+  var details = $('resultsDetails');
+  details.replaceChildren();
+  var percent = exercise.maxScore > 0 ? (exercise.score / exercise.maxScore) * 100 : 0;
+  var icon = percent >= 75 ? '✅' : percent >= 50 ? '⚠️' : '❌';
+
+  var header = document.createElement('div');
+  header.className = 'exercise-detail-header';
+  header.innerHTML =
     '<button class="back-btn-detail" id="backToRecapBtn"><i class="fas fa-arrow-left"></i> Retour</button>' +
     '<div class="exercise-detail-title">' +
     '<div class="exercise-detail-icon">' + icon + '</div>' +
     '<div><h3>Exercice ' + (exercise.number || (exerciseIndex + 1)) + (exercise.title ? ' — ' + escapeHtml(exercise.title) : '') + '</h3>' +
-    '<div class="exercise-detail-meta">' + 
-      Math.min(Number(exercise.score || 0), Number(exercise.maxScore || 6.67)).toFixed(2) + 
-      ' / ' + 
-      Number(exercise.maxScore || 6.67).toFixed(2) + 
-      ' pts · ' + (exercise.correctAnswers || 0) + '/' + (exercise.totalQuestions || 5) + ' correctes</div>' +
+    '<div class="exercise-detail-meta">' +
+    Math.min(Number(exercise.score || 0), Number(exercise.maxScore || 6.67)).toFixed(2) +
+    ' / ' +
+    Number(exercise.maxScore || 6.67).toFixed(2) +
+    ' pts · ' + (exercise.correctAnswers || 0) + '/' + (exercise.totalQuestions || 5) + ' correctes</div>' +
     '</div></div>';
-    details.appendChild(header);
+  details.appendChild(header);
 
-    var questions = Array.isArray(exercise.questions) ? exercise.questions : [];
-    if (questions.length === 0) {
-      var empty = document.createElement('p');
-      empty.className = 'lead';
-      empty.textContent = 'Aucun détail disponible.';
-      details.appendChild(empty);
-    } else {
-      questions.forEach(function (q, idx) {
-        var qEl = document.createElement('div');
-        qEl.className = 'question-detail q-' + (q.status || 'pending');
+  var questions = Array.isArray(exercise.questions) ? exercise.questions : [];
+  if (questions.length === 0) {
+    var empty = document.createElement('p');
+    empty.className = 'lead';
+    empty.textContent = 'Aucun détail disponible.';
+    details.appendChild(empty);
+  } else {
+    questions.forEach(function (q, idx) {
+      var qEl = document.createElement('div');
+      qEl.className = 'question-detail q-' + (q.status || 'pending');
 
-        var qIcon = q.status === 'correct' ? '✅' : q.status === 'wrong' ? '❌' : '⏭️';
-        var pointsClass = q.status === 'correct' ? 'full' : (Number(q.points) > 0 ? '' : 'zero');
+      var qIcon = q.status === 'correct' ? '✅' : q.status === 'wrong' ? '❌' : '⏭️';
+      var pointsClass = q.status === 'correct' ? 'full' : (Number(q.points) > 0 ? '' : 'zero');
 
-        var html = '';
+      var html = '';
 
+      html +=
+        '<div class="qd-header">' +
+        '<div class="qd-number"><span class="q-icon">' + qIcon + '</span> Question ' + escapeHtml(q.number || (idx + 1)) + '</div>' +
+        '<div class="qd-points ' + pointsClass + '">' + Number(q.points || 0).toFixed(2) + ' / ' + Number(q.maxPoints || 1.33).toFixed(2) + ' pt</div>' +
+        '</div>';
+
+      if (q.questionText) {
         html +=
-          '<div class="qd-header">' +
-          '<div class="qd-number"><span class="q-icon">' + qIcon + '</span> Question ' + escapeHtml(q.number || (idx + 1)) + '</div>' +
-          '<div class="qd-points ' + pointsClass + '">' + Number(q.points || 0).toFixed(2) + ' / ' + Number(q.maxPoints || 1.33).toFixed(2) + ' pt</div>' +
+          '<div class="qd-statement">' +
+          '<div class="qd-statement-label"><i class="fas fa-question-circle"></i> Énoncé</div>' +
+          '<div>' + escapeHtml(q.questionText) + '</div>' +
           '</div>';
+      }
 
-        if (q.questionText) {
-          html +=
-            '<div class="qd-statement">' +
-            '<div class="qd-statement-label"><i class="fas fa-question-circle"></i> Énoncé</div>' +
-            '<div>' + escapeHtml(q.questionText) + '</div>' +
-            '</div>';
-        }
+      html += '<div class="qd-answers">';
+      html += '<div class="qd-answer-box student">';
+      html += '<div class="qd-answer-label">✍️ Ta réponse</div>';
+      if (q.status === 'unanswered' || !q.studentAnswer) {
+        html += '<div class="qd-answer-text muted">Pas de réponse</div>';
+      } else {
+        html += '<div class="qd-answer-text">' + escapeHtml(String(q.studentAnswer)) + '</div>';
+      }
+      html += '</div>';
 
-        html += '<div class="qd-answers">';
-        html += '<div class="qd-answer-box student">';
-        html += '<div class="qd-answer-label">✍️ Ta réponse</div>';
-        if (q.status === 'unanswered' || !q.studentAnswer) {
-          html += '<div class="qd-answer-text muted">Pas de réponse</div>';
-        } else {
-          html += '<div class="qd-answer-text">' + escapeHtml(String(q.studentAnswer)) + '</div>';
-        }
+      if (q.correctAnswer) {
+        html += '<div class="qd-answer-box correct">';
+        html += '<div class="qd-answer-label">✅ Bonne réponse</div>';
+        html += '<div class="qd-answer-text">' + escapeHtml(String(q.correctAnswer)) + '</div>';
         html += '</div>';
+      }
+      html += '</div>';
 
-        if (q.correctAnswer) {
-          html += '<div class="qd-answer-box correct">';
-          html += '<div class="qd-answer-label">✅ Bonne réponse</div>';
-          html += '<div class="qd-answer-text">' + escapeHtml(String(q.correctAnswer)) + '</div>';
-          html += '</div>';
-        }
-        html += '</div>';
+      if (q.concept) {
+        html +=
+          '<div class="qd-section concept">' +
+          '<div class="qd-section-label"><i class="fas fa-brain"></i> Notion testée</div>' +
+          '<div>' + escapeHtml(q.concept) + '</div>' +
+          '</div>';
+      }
 
-        if (q.concept) {
-          html +=
-            '<div class="qd-section concept">' +
-            '<div class="qd-section-label"><i class="fas fa-brain"></i> Notion testée</div>' +
-            '<div>' + escapeHtml(q.concept) + '</div>' +
-            '</div>';
-        }
+      if (q.explanation) {
+        html +=
+          '<div class="qd-section explanation">' +
+          '<div class="qd-section-label"><i class="fas fa-lightbulb"></i> Explication</div>' +
+          '<div>' + escapeHtml(q.explanation) + '</div>' +
+          '</div>';
+      }
 
-        if (q.explanation) {
-          html +=
-            '<div class="qd-section explanation">' +
-            '<div class="qd-section-label"><i class="fas fa-lightbulb"></i> Explication</div>' +
-            '<div>' + escapeHtml(q.explanation) + '</div>' +
-            '</div>';
-        }
+      if (Array.isArray(q.steps) && q.steps.length > 0) {
+        html +=
+          '<div class="qd-section steps">' +
+          '<div class="qd-section-label"><i class="fas fa-list-ol"></i> Étapes du calcul</div>' +
+          '<ol>' +
+          q.steps.map(function (s) { return '<li>' + escapeHtml(s) + '</li>'; }).join('') +
+          '</ol>' +
+          '</div>';
+      }
 
-        if (Array.isArray(q.steps) && q.steps.length > 0) {
-          html +=
-            '<div class="qd-section steps">' +
-            '<div class="qd-section-label"><i class="fas fa-list-ol"></i> Étapes du calcul</div>' +
-            '<ol>' +
-            q.steps.map(function (s) { return '<li>' + escapeHtml(s) + '</li>'; }).join('') +
-            '</ol>' +
-            '</div>';
-        }
+      if (q.whyWrong && q.status !== 'correct') {
+        html +=
+          '<div class="qd-section why-wrong">' +
+          '<div class="qd-section-label"><i class="fas fa-times-circle"></i> Pourquoi tu as raté</div>' +
+          '<div>' + escapeHtml(q.whyWrong) + '</div>' +
+          '</div>';
+      }
 
-        if (q.whyWrong && q.status !== 'correct') {
-          html +=
-            '<div class="qd-section why-wrong">' +
-            '<div class="qd-section-label"><i class="fas fa-times-circle"></i> Pourquoi tu as raté</div>' +
-            '<div>' + escapeHtml(q.whyWrong) + '</div>' +
-            '</div>';
-        }
+      if (q.commonMistake) {
+        html +=
+          '<div class="qd-section mistake">' +
+          '<div class="qd-section-label"><i class="fas fa-triangle-exclamation"></i> Erreur classique</div>' +
+          '<div>' + escapeHtml(q.commonMistake) + '</div>' +
+          '</div>';
+      }
 
-        if (q.commonMistake) {
-          html +=
-            '<div class="qd-section mistake">' +
-            '<div class="qd-section-label"><i class="fas fa-triangle-exclamation"></i> Erreur classique</div>' +
-            '<div>' + escapeHtml(q.commonMistake) + '</div>' +
-            '</div>';
-        }
+      if (q.toReview) {
+        html +=
+          '<div class="qd-section review">' +
+          '<div class="qd-section-label"><i class="fas fa-book-open"></i> À revoir</div>' +
+          '<div>' + escapeHtml(q.toReview) + '</div>' +
+          '</div>';
+      }
 
-        if (q.toReview) {
-          html +=
-            '<div class="qd-section review">' +
-            '<div class="qd-section-label"><i class="fas fa-book-open"></i> À revoir</div>' +
-            '<div>' + escapeHtml(q.toReview) + '</div>' +
-            '</div>';
-        }
+      if (q.betterMethod) {
+        html +=
+          '<div class="qd-section tip">' +
+          '<div class="qd-section-label"><i class="fas fa-star"></i> Astuce bonus</div>' +
+          '<div>' + escapeHtml(q.betterMethod) + '</div>' +
+          '</div>';
+      }
 
-        if (q.betterMethod) {
-          html +=
-            '<div class="qd-section tip">' +
-            '<div class="qd-section-label"><i class="fas fa-star"></i> Astuce bonus</div>' +
-            '<div>' + escapeHtml(q.betterMethod) + '</div>' +
-            '</div>';
-        }
+      if (q.feedback) {
+        html +=
+          '<div class="qd-section feedback">' +
+          '<div class="qd-section-label"><i class="fas fa-comment-dots"></i> Commentaire</div>' +
+          '<div class="qd-feedback-text">' + escapeHtml(q.feedback) + '</div>' +
+          '</div>';
+      }
 
-        if (q.feedback) {
-          html +=
-            '<div class="qd-section feedback">' +
-            '<div class="qd-section-label"><i class="fas fa-comment-dots"></i> Commentaire</div>' +
-            '<div class="qd-feedback-text">' + escapeHtml(q.feedback) + '</div>' +
-            '</div>';
-        }
-
-        qEl.innerHTML = html;
-        details.appendChild(qEl);
-      });
-    }
-
-    if (exercise.explanation) {
-      var expl = document.createElement('div');
-      expl.className = 'exercise-explanation';
-      expl.innerHTML = '<div class="explanation-label">📝 Bilan de l\'exercice</div><div class="explanation-text">' + escapeHtml(exercise.explanation) + '</div>';
-      details.appendChild(expl);
-    }
-
-    if (exercise.advice) {
-      var advice = document.createElement('div');
-      advice.className = 'exercise-explanation';
-      advice.innerHTML = '<div class="explanation-label">🎯 Conseil</div><div class="explanation-text">' + escapeHtml(exercise.advice) + '</div>';
-      details.appendChild(advice);
-    }
-
-    // Rendu KaTeX automatique (katex-utils.js)
-
-    var backBtn = document.getElementById('backToRecapBtn');
-    if (backBtn) {
-      backBtn.addEventListener('click', function () {
-        showResults(state.lastResult);
-      });
-    }
+      qEl.innerHTML = html;
+      details.appendChild(qEl);
+    });
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // POP-UP PREMIUM UNIVERSEL
-  // ═══════════════════════════════════════════════════════════════
-  function showPremiumPopup() {
-    $('premiumOverlay').classList.add('show');
-    $('premiumClose').focus();
+  if (exercise.explanation) {
+    var expl = document.createElement('div');
+    expl.className = 'exercise-explanation';
+    expl.innerHTML = '<div class="explanation-label">📝 Bilan de l\'exercice</div><div class="explanation-text">' + escapeHtml(exercise.explanation) + '</div>';
+    details.appendChild(expl);
   }
-  function hidePremiumPopup() { $('premiumOverlay').classList.remove('show'); }
 
-  $('premiumClose').addEventListener('click', hidePremiumPopup);
-  $('premiumOverlay').addEventListener('click', function (e) {
-    if (e.target === $('premiumOverlay')) hidePremiumPopup();
-  });
+  if (exercise.advice) {
+    var advice = document.createElement('div');
+    advice.className = 'exercise-explanation';
+    advice.innerHTML = '<div class="explanation-label">🎯 Conseil</div><div class="explanation-text">' + escapeHtml(exercise.advice) + '</div>';
+    details.appendChild(advice);
+  }
 
-  // ✅ CORRECTION #3 — try/catch pour éviter un blocage si la session échoue
-  async function checkActiveSession() {
+  var backBtn = document.getElementById('backToRecapBtn');
+  if (backBtn) {
+    backBtn.addEventListener('click', function () {
+      showResults(state.lastResult);
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// POP-UP PREMIUM
+// ═══════════════════════════════════════════════════════════════
+function showPremiumPopup() {
+  $('premiumOverlay').classList.add('show');
+  $('premiumClose').focus();
+}
+function hidePremiumPopup() { $('premiumOverlay').classList.remove('show'); }
+
+$('premiumClose').addEventListener('click', hidePremiumPopup);
+$('premiumOverlay').addEventListener('click', function (e) {
+  if (e.target === $('premiumOverlay')) hidePremiumPopup();
+});
+
+async function checkActiveSession() {
+  try {
+    var session = await loadActiveSession();
+    if (!session || !session.exam) return;
+
+    var subject = session.exam.subjects && session.exam.subjects.find(function (s) { return s.id === session.selectedSubjectId; });
+    if (!subject) { await clearActiveSession(); return; }
+
+    $('resumeMeta').innerHTML =
+      '<div><span class="label">Matière</span><span class="value">' + escapeHtml(session.exam.subject || '—') + '</span></div>' +
+      '<div><span class="label">Sujet</span><span class="value">' + escapeHtml(subject.title || 'Sujet') + '</span></div>' +
+      '<div><span class="label">Exercice</span><span class="value">' + ((Number(session.exerciseIndex) || 0) + 1) + ' / ' + EXAM_CONSTANTS.REQUIRED_EXERCISES + '</span></div>' +
+      '<div><span class="label">Réponses données</span><span class="value">' + Object.keys(session.answers || {}).length + '</span></div>';
+
+    $('resumeModal').classList.add('show');
+
+    $('resumeContinueBtn').onclick = function () {
+      state.exam = session.exam;
+      state.selectedSubject = subject;
+      state.exerciseIndex = Number(session.exerciseIndex) || 0;
+      state.answers = session.answers || {};
+      state.startedAt = Number(session.startedAt) || Date.now();
+      state.remainingSeconds = Number(session.remainingSeconds) || (state.exam.duration * 60);
+      $('resumeModal').classList.remove('show');
+      $('examTitle').textContent = subject.title || 'Sujet';
+      showView('examView');
+      renderExercise();
+      startTimer();
+    };
+
+    $('resumeNewBtn').onclick = async function () {
+      await clearActiveSession();
+      $('resumeModal').classList.remove('show');
+      state.exam = null;
+      state.selectedSubject = null;
+      showView('configView');
+    };
+  } catch (e) {
+    console.warn('[EXAM] checkActiveSession error:', e.message);
+  }
+}
+
+$('backConfigButton').addEventListener('click', function () { showView('configView'); });
+$('previousButton').addEventListener('click', goPrevious);
+$('nextButton').addEventListener('click', goNext);
+$('finishButton').addEventListener('click', askFinish);
+$('cancelFinishButton').addEventListener('click', closeConfirmModal);
+
+$('confirmFinishButton').addEventListener('click', function () {
+  if (!state.user) {
+    closeConfirmModal();
+    setStatus('examStatus', 'Connecte-toi pour terminer l\'examen.', 'error');
+    return;
+  }
+  if (!state.selectedSubject) {
+    closeConfirmModal();
+    return;
+  }
+  submitExam(false);
+});
+
+$('newExamButton').addEventListener('click', async function () {
+  await clearActiveSession();
+  state.exam = null;
+  state.selectedSubject = null;
+  state.submitting = false;
+  state.lastResult = null;
+  state.notebookContext = null;
+  showView('configView');
+});
+
+window.addEventListener('online', function () {
+  $('connectionState').textContent = 'Connexion disponible';
+  $('connectionState').classList.add('online');
+});
+window.addEventListener('offline', function () {
+  $('connectionState').textContent = 'Hors ligne';
+  $('connectionState').classList.remove('online');
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    if ($('premiumOverlay').classList.contains('show')) hidePremiumPopup();
+    if ($('confirmModal').classList.contains('show')) closeConfirmModal();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH GUARD — ✅ C2 / C3
+// ═══════════════════════════════════════════════════════════════
+initSelects();
+
+requireAuth({
+  onUser: async function (user) {
+    state.user = user;
+
+    // ✅ C2 — vérification blocked/paused (cohérence avec les autres pages)
     try {
-      var session = await loadActiveSession();
-      if (!session || !session.exam) return;
+      var userSnap = await getDoc(doc(db, 'users', user.uid));
+      if (userSnap.exists()) {
+        var userData = userSnap.data();
 
-      var subject = session.exam.subjects && session.exam.subjects.find(function (s) { return s.id === session.selectedSubjectId; });
-      if (!subject) { await clearActiveSession(); return; }
+        if (userData.accountStatus === 'blocked') {
+          try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
+          try { await signOut(auth); } catch (e) {}
+          window.location.replace('auth-choice.html');
+          return;
+        }
 
-      $('resumeMeta').innerHTML =
-        '<div><span class="label">Matière</span><span class="value">' + escapeHtml(session.exam.subject || '—') + '</span></div>' +
-        '<div><span class="label">Sujet</span><span class="value">' + escapeHtml(subject.title || 'Sujet') + '</span></div>' +
-        '<div><span class="label">Exercice</span><span class="value">' + ((Number(session.exerciseIndex) || 0) + 1) + ' / ' + EXAM_CONSTANTS.REQUIRED_EXERCISES + '</span></div>' +
-        '<div><span class="label">Réponses données</span><span class="value">' + Object.keys(session.answers || {}).length + '</span></div>';
-
-      $('resumeModal').classList.add('show');
-
-      $('resumeContinueBtn').onclick = function () {
-        state.exam = session.exam;
-        state.selectedSubject = subject;
-        state.exerciseIndex = Number(session.exerciseIndex) || 0;
-        state.answers = session.answers || {};
-        state.startedAt = Number(session.startedAt) || Date.now();
-        state.remainingSeconds = Number(session.remainingSeconds) || (state.exam.duration * 60);
-        $('resumeModal').classList.remove('show');
-        $('examTitle').textContent = subject.title || 'Sujet';
-        showView('examView');
-        renderExercise();
-        startTimer();
-      };
-
-      $('resumeNewBtn').onclick = async function () {
-        await clearActiveSession();
-        $('resumeModal').classList.remove('show');
-        state.exam = null;
-        state.selectedSubject = null;
-        showView('configView');
-      };
+        if (userData.accountStatus === 'paused') {
+          setStatus('configStatus', 'Ton compte est temporairement en pause. Contacte le support.', 'error');
+          // On laisse la page affichée mais on empêche la génération
+          $('generateButton').disabled = true;
+          return;
+        }
+      }
     } catch (e) {
-      // ✅ Empêche un blocage si la session échoue à charger
-      console.warn('[EXAM] checkActiveSession error:', e.message);
+      console.warn('[EXAM] Impossible de vérifier le statut du compte :', e.code || e.message);
     }
-  }
 
-  $('backConfigButton').addEventListener('click', function () { showView('configView'); });
-  $('previousButton').addEventListener('click', goPrevious);
-  $('nextButton').addEventListener('click', goNext);
-  $('finishButton').addEventListener('click', askFinish);
-  $('cancelFinishButton').addEventListener('click', closeConfirmModal);
-
-  // ✅ CORRECTION #1 — Vérification renforcée avant soumission
-  $('confirmFinishButton').addEventListener('click', function () {
-    if (!state.user) {
-      closeConfirmModal();
-      setStatus('examStatus', 'Connecte-toi pour terminer l\'examen.', 'error');
-      return;
-    }
-    if (!state.selectedSubject) {
-      closeConfirmModal();
-      return;
-    }
-    submitExam(false);
-  });
-
-  $('newExamButton').addEventListener('click', async function () {
-    await clearActiveSession();
-    state.exam = null;
-    state.selectedSubject = null;
-    state.submitting = false;
-    state.lastResult = null;
-    state.notebookContext = null;
-    showView('configView');
-  });
-
-  window.addEventListener('online', function () {
-    $('connectionState').textContent = 'Connexion disponible';
+    $('connectionState').textContent = 'connecté';
     $('connectionState').classList.add('online');
-  });
-  window.addEventListener('offline', function () {
-    $('connectionState').textContent = 'Hors ligne';
-    $('connectionState').classList.remove('online');
-  });
+    prefillFromUrl();
+    await checkActiveSession();
+  },
+  onNoUser: () => {
+    // ✅ C3 — préserver l'URL de retour après login
+    try {
+      var existing = sessionStorage.getItem('redirectAfterLogin')
+                  || sessionStorage.getItem('redirectAfterAuth');
+      if (!existing) {
+        sessionStorage.setItem('redirectAfterLogin',
+          window.location.pathname + window.location.search + window.location.hash);
+      }
+    } catch (e) {}
+    window.location.replace('auth-choice.html');
+  }
+});
 
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      if ($('premiumOverlay').classList.contains('show')) hidePremiumPopup();
-      if ($('confirmModal').classList.contains('show')) closeConfirmModal();
-    }
-  });
-
-   // ✅ Guard sécurisé : attend la confirmation de Firebase
-  requireAuth({
-    onUser: async function (user) {
-      state.user = user;
-      $('connectionState').textContent = 'connecté';
-      $('connectionState').classList.add('online');
-      prefillFromUrl();
-      await checkActiveSession();
-    },
-    onNoUser: () => {
-      window.location.replace('auth-choice.html');
-    }
-  });
-
-  initSelects();
-  console.log('ARVEXA — Mode examen v6.1 — Corrections appliquées');
-  </script>
+console.log('ARVEXA — Mode examen v6.2 — Corrections C1-C5 appliquées');
+</script>
 </body>
 </html>
