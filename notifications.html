@@ -819,497 +819,577 @@
   }
   </script>
 
-  <script type="module">
-  // ================================================================
-  // NOTIFICATIONS — Version robuste anti-flash
-  // ================================================================
+ <script type="module">
+// ================================================================
+// NOTIFICATIONS — Version robuste anti-flash
+// Corrections appliquées :
+//  - C1 : redirectToLogin préserve redirectAfterLogin/redirectAfterAuth
+//  - C2 : performLogout → auth-choice.html + unsub onAuthStateChanged
+//  - C3 : gestion blocked/paused alignée sur index.html / profil.html
+//  - C4 : retry doux + warn si doc users/{uid} absent
+//  - C5 : saveSession écrit aussi sessionStorage
+//  - C6 : clearSession supprime redirectAfterLogin/redirectAfterAuth
+//  - C7 : log explicite si setPersistence échoue
+//  - C8 : unsubscribe propre du listener auth
+//  - C9 : warn dans le catch de loadUserData
+// ================================================================
 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import {
-    getAuth,
-    onAuthStateChanged,
-    setPersistence,
-    browserLocalPersistence,
-    signOut
-  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-  import {
-    initializeFirestore,
-    persistentLocalCache,
-    persistentSingleTabManager,
-    doc,
-    collection,
-    query,
-    orderBy,
-    limit,
-    onSnapshot,
-    updateDoc,
-    writeBatch,
-    serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager,
+  doc,
+  getDoc,
+  collection,
+  query,
+  orderBy,
+  limit,
+  onSnapshot,
+  updateDoc,
+  writeBatch,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-  // ================================================================
-  // CONFIG FIREBASE
-  // ================================================================
-  const firebaseConfig = {
-    apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
-    authDomain: "arvexa-fbf10.firebaseapp.com",
-    projectId: "arvexa-fbf10",
-    storageBucket: "arvexa-fbf10.firebasestorage.app",
-    messagingSenderId: "920108330053",
-    appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
+// ================================================================
+// CONFIG FIREBASE
+// ================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
+  authDomain: "arvexa-fbf10.firebaseapp.com",
+  projectId: "arvexa-fbf10",
+  storageBucket: "arvexa-fbf10.firebasestorage.app",
+  messagingSenderId: "920108330053",
+  appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentSingleTabManager()
+  })
+});
+
+// ✅ C7 — Log explicite si persistance refusée
+try {
+  await setPersistence(auth, browserLocalPersistence);
+} catch (e) {
+  console.warn('[Auth] Persistance locale indisponible sur notifications.html :', e.code || e.message);
+}
+
+// ================================================================
+// SESSION / CACHE — ✅ C5/C6 alignements
+// ================================================================
+const SESSION_KEY = 'arvexa_session';
+const USER_DATA_KEY = 'arvexa_user_data';
+const LAST_UID_KEY = 'arvexa_last_uid';
+
+function saveSession(user) {
+  if (!user) return;
+  try {
+    const data = {
+      uid: user.uid,
+      email: user.email,
+      lastActive: Date.now()
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C5
+    localStorage.setItem(LAST_UID_KEY, user.uid);
+  } catch (e) {}
+}
+
+function clearSession() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(USER_DATA_KEY);
+    localStorage.removeItem(LAST_UID_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    // ✅ C6 — alignement
+    sessionStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('redirectAfterAuth');
+  } catch (e) {}
+}
+
+function getCachedUserData(uid) {
+  try {
+    const raw = localStorage.getItem(USER_DATA_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (cached._uid && cached._uid !== uid) {
+      localStorage.removeItem(USER_DATA_KEY);
+      return null;
+    }
+    return cached;
+  } catch (e) { return null; }
+}
+
+// ================================================================
+// DOM
+// ================================================================
+const notifList = document.getElementById('notifList');
+const filtersEl = document.getElementById('filters');
+const countAll = document.getElementById('countAll');
+const countUnread = document.getElementById('countUnread');
+const unreadCountHeader = document.getElementById('unreadCountHeader');
+const markAllReadBtn = document.getElementById('markAllReadBtn');
+
+const modal = document.getElementById('notifModal');
+const modalContent = document.getElementById('notifModalContent');
+
+const toastContainer = document.getElementById('toastContainer');
+
+// ================================================================
+// ÉTAT
+// ================================================================
+let allNotifications = [];
+let currentFilter = 'all';
+let unsubscribeNotifications = null;
+let unsubscribeUser = null;
+let currentUid = null;
+let currentUser = null;
+let isRedirecting = false;
+let isAuthResolved = false;
+let graceTimer = null;
+let maxTimer = null;
+let authUnsubscribe = null;         // ✅ C8
+let missingDocInFlight = false;     // ✅ C4
+
+// ================================================================
+// UTILITAIRE — TIMESTAMP
+// ================================================================
+function toDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === 'function') return value.toDate();
+  if (value.seconds !== undefined) return new Date(value.seconds * 1000);
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+// ================================================================
+// FORMAT TEMPS RELATIF
+// ================================================================
+function formatRelativeTime(timestamp) {
+  const date = toDate(timestamp);
+  if (!date) return '';
+
+  const now = new Date();
+  const diffMs = now - date;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffSec < 60) return 'À l\'instant';
+  if (diffMin < 60) return `Il y a ${diffMin} min`;
+  if (diffHour < 24) return `Il y a ${diffHour}h`;
+  if (diffDay === 1) return 'Hier';
+  if (diffDay < 7) return `Il y a ${diffDay} jours`;
+  if (diffDay < 30) return `Il y a ${Math.floor(diffDay / 7)} sem.`;
+  if (diffDay < 365) return `Il y a ${Math.floor(diffDay / 30)} mois`;
+  return `Il y a ${Math.floor(diffDay / 365)} an${diffDay >= 730 ? 's' : ''}`;
+}
+
+// ================================================================
+// FORMAT DATE COMPLÈTE
+// ================================================================
+function formatFullDate(timestamp) {
+  const date = toDate(timestamp);
+  if (!date) return '';
+  return date.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+// ================================================================
+// TYPE → ICÔNE + COULEUR
+// ================================================================
+function getTypeConfig(type) {
+  const configs = {
+    info: { icon: 'fa-circle-info', emoji: 'ℹ️', label: 'Info' },
+    success: { icon: 'fa-circle-check', emoji: '✅', label: 'Succès' },
+    warning: { icon: 'fa-triangle-exclamation', emoji: '⚠️', label: 'Attention' },
+    danger: { icon: 'fa-circle-exclamation', emoji: '🚨', label: 'Important' },
+    announce: { icon: 'fa-bullhorn', emoji: '📢', label: 'Annonce' }
+  };
+  return configs[type] || configs.info;
+}
+
+// ================================================================
+// ESCAPE HTML
+// ================================================================
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = String(text || '');
+  return div.innerHTML;
+}
+
+// ================================================================
+// TOAST
+// ================================================================
+function showToast(message, type = 'success') {
+  const icons = {
+    success: 'fa-check-circle',
+    error: 'fa-exclamation-circle',
+    info: 'fa-info-circle'
+  };
+  const colors = {
+    success: '#3AB67E',
+    error: '#f87171',
+    info: '#E0B84A'
   };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <i class="fas ${icons[type] || icons.info}" style="color:${colors[type] || colors.info}"></i>
+    <span>${message}</span>
+  `;
+  toastContainer.appendChild(toast);
 
-  const db = initializeFirestore(app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentSingleTabManager()
-    })
-  });
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-10px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+}
 
-  try {
-    await setPersistence(auth, browserLocalPersistence);
-  } catch (e) {}
-
-  // ================================================================
-  // SESSION / CACHE
-  // ================================================================
-  const SESSION_KEY = 'arvexa_session';
-  const USER_DATA_KEY = 'arvexa_user_data';
-  const LAST_UID_KEY = 'arvexa_last_uid';
-
-  function saveSession(user) {
-    if (!user) return;
-    try {
-      const data = {
-        uid: user.uid,
-        email: user.email,
-        lastActive: Date.now()
-      };
-      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
-      localStorage.setItem(LAST_UID_KEY, user.uid);
-    } catch (e) {}
+// ================================================================
+// RENDU
+// ================================================================
+function renderNotifications() {
+  let list = allNotifications;
+  if (currentFilter === 'unread') {
+    list = list.filter(n => !n.read);
   }
 
-  function clearSession() {
-    try {
-      localStorage.removeItem(SESSION_KEY);
-      localStorage.removeItem(USER_DATA_KEY);
-      localStorage.removeItem(LAST_UID_KEY);
-      sessionStorage.removeItem(SESSION_KEY);
-    } catch (e) {}
-  }
+  const totalCount = allNotifications.length;
+  const unreadCount = allNotifications.filter(n => !n.read).length;
 
-  // ================================================================
-  // DOM
-  // ================================================================
-  const notifList = document.getElementById('notifList');
-  const filtersEl = document.getElementById('filters');
-  const countAll = document.getElementById('countAll');
-  const countUnread = document.getElementById('countUnread');
-  const unreadCountHeader = document.getElementById('unreadCountHeader');
-  const markAllReadBtn = document.getElementById('markAllReadBtn');
+  countAll.textContent = totalCount;
+  countUnread.textContent = unreadCount;
+  unreadCountHeader.textContent = unreadCount;
 
-  const modal = document.getElementById('notifModal');
-  const modalContent = document.getElementById('notifModalContent');
+  markAllReadBtn.disabled = unreadCount === 0;
 
-  const toastContainer = document.getElementById('toastContainer');
+  filtersEl.style.display = totalCount > 0 ? 'flex' : 'none';
 
-  // ================================================================
-  // ÉTAT
-  // ================================================================
-  let allNotifications = [];
-  let currentFilter = 'all';
-  let unsubscribeNotifications = null;
-  let unsubscribeUser = null;
-  let currentUid = null;
-  let currentUser = null;
-  let isRedirecting = false;
-  let isAuthResolved = false;
-  let graceTimer = null;
-  let maxTimer = null;
-
-  // ================================================================
-  // UTILITAIRE — TIMESTAMP
-  // ================================================================
-  function toDate(value) {
-    if (!value) return null;
-    if (typeof value.toDate === 'function') return value.toDate();
-    if (value.seconds !== undefined) return new Date(value.seconds * 1000);
-    const date = value instanceof Date ? value : new Date(value);
-    return Number.isNaN(date.getTime()) ? null : date;
-  }
-
-  // ================================================================
-  // FORMAT TEMPS RELATIF
-  // ================================================================
-  function formatRelativeTime(timestamp) {
-    const date = toDate(timestamp);
-    if (!date) return '';
-
-    const now = new Date();
-    const diffMs = now - date;
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHour = Math.floor(diffMin / 60);
-    const diffDay = Math.floor(diffHour / 24);
-
-    if (diffSec < 60) return 'À l\'instant';
-    if (diffMin < 60) return `Il y a ${diffMin} min`;
-    if (diffHour < 24) return `Il y a ${diffHour}h`;
-    if (diffDay === 1) return 'Hier';
-    if (diffDay < 7) return `Il y a ${diffDay} jours`;
-    if (diffDay < 30) return `Il y a ${Math.floor(diffDay / 7)} sem.`;
-    if (diffDay < 365) return `Il y a ${Math.floor(diffDay / 30)} mois`;
-    return `Il y a ${Math.floor(diffDay / 365)} an${diffDay >= 730 ? 's' : ''}`;
-  }
-
-  // ================================================================
-  // FORMAT DATE COMPLÈTE
-  // ================================================================
-  function formatFullDate(timestamp) {
-    const date = toDate(timestamp);
-    if (!date) return '';
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  // ================================================================
-  // TYPE → ICÔNE + COULEUR
-  // ================================================================
-  function getTypeConfig(type) {
-    const configs = {
-      info: { icon: 'fa-circle-info', emoji: 'ℹ️', label: 'Info' },
-      success: { icon: 'fa-circle-check', emoji: '✅', label: 'Succès' },
-      warning: { icon: 'fa-triangle-exclamation', emoji: '⚠️', label: 'Attention' },
-      danger: { icon: 'fa-circle-exclamation', emoji: '🚨', label: 'Important' },
-      announce: { icon: 'fa-bullhorn', emoji: '📢', label: 'Annonce' }
-    };
-    return configs[type] || configs.info;
-  }
-
-  // ================================================================
-  // ESCAPE HTML
-  // ================================================================
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = String(text || '');
-    return div.innerHTML;
-  }
-
-  // ================================================================
-  // TOAST
-  // ================================================================
-  function showToast(message, type = 'success') {
-    const icons = {
-      success: 'fa-check-circle',
-      error: 'fa-exclamation-circle',
-      info: 'fa-info-circle'
-    };
-    const colors = {
-      success: '#3AB67E',
-      error: '#f87171',
-      info: '#E0B84A'
-    };
-
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `
-      <i class="fas ${icons[type] || icons.info}" style="color:${colors[type] || colors.info}"></i>
-      <span>${message}</span>
-    `;
-    toastContainer.appendChild(toast);
-
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateY(-10px)';
-      setTimeout(() => toast.remove(), 300);
-    }, 2500);
-  }
-
-  // ================================================================
-  // RENDU
-  // ================================================================
-  function renderNotifications() {
-    let list = allNotifications;
-    if (currentFilter === 'unread') {
-      list = list.filter(n => !n.read);
-    }
-
-    const totalCount = allNotifications.length;
-    const unreadCount = allNotifications.filter(n => !n.read).length;
-
-    countAll.textContent = totalCount;
-    countUnread.textContent = unreadCount;
-    unreadCountHeader.textContent = unreadCount;
-
-    markAllReadBtn.disabled = unreadCount === 0;
-
-    filtersEl.style.display = totalCount > 0 ? 'flex' : 'none';
-
-    if (list.length === 0) {
-      if (totalCount === 0) {
-        notifList.innerHTML = `
-          <div class="empty-state">
-            <div class="es-icon"><i class="fas fa-bell-slash"></i></div>
-            <h4>Aucune notification</h4>
-            <p>Tu recevras ici les annonces, les mises à jour et les informations importantes.</p>
-          </div>
-        `;
-      } else {
-        notifList.innerHTML = `
-          <div class="empty-state">
-            <div class="es-icon"><i class="fas fa-check-circle"></i></div>
-            <h4>Tout est lu !</h4>
-            <p>Tu n'as aucune notification non lue.</p>
-          </div>
-        `;
-      }
-      return;
-    }
-
-    notifList.innerHTML = list.map((n, i) => {
-      const typeConfig = getTypeConfig(n.type);
-      const title = n.title || 'Notification';
-      const body = n.body || '';
-      const time = formatRelativeTime(n.createdAt);
-      const isUnread = !n.read;
-
-      return `
-        <div class="notif-card ${isUnread ? 'unread' : ''}"
-             data-id="${n.id}"
-             style="animation-delay: ${Math.min(i * 0.03, 0.3)}s">
-          <div class="notif-icon ${n.type || 'info'} ${isUnread ? 'unread-dot' : ''}">
-            <i class="fas ${typeConfig.icon}"></i>
-          </div>
-          <div class="notif-content">
-            <div class="notif-header">
-              <div class="notif-title">${escapeHtml(title)}</div>
-              <div class="notif-time">${escapeHtml(time)}</div>
-            </div>
-            <div class="notif-body">${escapeHtml(body)}</div>
-          </div>
+  if (list.length === 0) {
+    if (totalCount === 0) {
+      notifList.innerHTML = `
+        <div class="empty-state">
+          <div class="es-icon"><i class="fas fa-bell-slash"></i></div>
+          <h4>Aucune notification</h4>
+          <p>Tu recevras ici les annonces, les mises à jour et les informations importantes.</p>
         </div>
       `;
-    }).join('');
-
-    notifList.querySelectorAll('.notif-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const id = card.dataset.id;
-        openNotifDetail(id);
-      });
-    });
+    } else {
+      notifList.innerHTML = `
+        <div class="empty-state">
+          <div class="es-icon"><i class="fas fa-check-circle"></i></div>
+          <h4>Tout est lu !</h4>
+          <p>Tu n'as aucune notification non lue.</p>
+        </div>
+      `;
+    }
+    return;
   }
 
-  // ================================================================
-  // OUVRIR DÉTAIL
-  // ================================================================
-  async function openNotifDetail(id) {
-    const notif = allNotifications.find(n => n.id === id);
-    if (!notif) return;
+  notifList.innerHTML = list.map((n, i) => {
+    const typeConfig = getTypeConfig(n.type);
+    const title = n.title || 'Notification';
+    const body = n.body || '';
+    const time = formatRelativeTime(n.createdAt);
+    const isUnread = !n.read;
 
-    const typeConfig = getTypeConfig(notif.type);
-    const title = notif.title || 'Notification';
-    const body = notif.body || 'Aucun contenu.';
-    const fullDate = formatFullDate(notif.createdAt);
-
-    // Marquer comme lu si pas encore lu
-    if (!notif.read && currentUid) {
-      try {
-        await updateDoc(
-          doc(db, 'users', currentUid, 'notifications', id),
-          { read: true }
-        );
-      } catch (e) {}
-    }
-
-    modalContent.innerHTML = `
-      <button class="modal-close" id="modalCloseBtn" aria-label="Fermer">
-        <i class="fas fa-xmark"></i>
-      </button>
-
-      <div class="modal-head">
-        <div class="modal-icon ${notif.type || 'info'}">
+    return `
+      <div class="notif-card ${isUnread ? 'unread' : ''}"
+           data-id="${n.id}"
+           style="animation-delay: ${Math.min(i * 0.03, 0.3)}s">
+        <div class="notif-icon ${n.type || 'info'} ${isUnread ? 'unread-dot' : ''}">
           <i class="fas ${typeConfig.icon}"></i>
         </div>
-        <div class="modal-titles">
-          <div class="modal-title">${escapeHtml(title)}</div>
-          <div class="modal-date">${escapeHtml(fullDate)}</div>
+        <div class="notif-content">
+          <div class="notif-header">
+            <div class="notif-title">${escapeHtml(title)}</div>
+            <div class="notif-time">${escapeHtml(time)}</div>
+          </div>
+          <div class="notif-body">${escapeHtml(body)}</div>
         </div>
       </div>
-
-      <div class="modal-body">${escapeHtml(body)}</div>
-
-      <div class="modal-actions">
-        <button class="modal-btn secondary" id="closeModalBtn">
-          <i class="fas fa-check"></i> Fermer
-        </button>
-      </div>
     `;
+  }).join('');
 
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-
-    document.getElementById('modalCloseBtn').addEventListener('click', closeNotifDetail);
-    document.getElementById('closeModalBtn').addEventListener('click', closeNotifDetail);
-
-    setupModalSwipe(modalContent);
-  }
-
-  function closeNotifDetail() {
-    modal.classList.remove('show');
-    document.body.style.overflow = '';
-  }
-
-  // ================================================================
-  // SWIPE TO CLOSE
-  // ================================================================
-  function setupModalSwipe(sheet) {
-    let startY = 0, currentY = 0, isDragging = false;
-
-    sheet.addEventListener('touchstart', (e) => {
-      const rect = sheet.getBoundingClientRect();
-      const touchY = e.touches[0].clientY;
-      if (touchY - rect.top < 80) {
-        startY = touchY;
-        currentY = touchY;
-        isDragging = true;
-        sheet.style.transition = 'none';
-      }
-    }, { passive: true });
-
-    sheet.addEventListener('touchmove', (e) => {
-      if (!isDragging) return;
-      currentY = e.touches[0].clientY;
-      const diff = currentY - startY;
-      if (diff > 0) {
-        sheet.style.transform = `translateY(${diff}px)`;
-        e.preventDefault();
-      }
-    }, { passive: false });
-
-    sheet.addEventListener('touchend', () => {
-      if (!isDragging) return;
-      isDragging = false;
-      sheet.style.transition = '';
-      const diff = currentY - startY;
-      if (diff > 100) {
-        sheet.style.transform = `translateY(100%)`;
-        setTimeout(() => {
-          modal.classList.remove('show');
-          sheet.style.transform = '';
-        }, 300);
-      } else {
-        sheet.style.transform = '';
-      }
-      startY = 0;
-      currentY = 0;
-    }, { passive: true });
-  }
-
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeNotifDetail();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('show')) {
-      closeNotifDetail();
-    }
-  });
-
-  // ================================================================
-  // MARQUER TOUT COMME LU
-  // ================================================================
-  async function markAllAsRead() {
-    if (!currentUid) return;
-
-    const unread = allNotifications.filter(n => !n.read);
-    if (unread.length === 0) return;
-
-    markAllReadBtn.disabled = true;
-
-    try {
-      const batch = writeBatch(db);
-      unread.forEach(n => {
-        const ref = doc(db, 'users', currentUid, 'notifications', n.id);
-        batch.update(ref, { read: true });
-      });
-      await batch.commit();
-
-      showToast(`${unread.length} notification${unread.length > 1 ? 's' : ''} marquée${unread.length > 1 ? 's' : ''} comme lue${unread.length > 1 ? 's' : ''}`, 'success');
-    } catch (e) {
-      console.error(e);
-      showToast('Impossible de marquer comme lu', 'error');
-      markAllReadBtn.disabled = false;
-    }
-  }
-
-  markAllReadBtn.addEventListener('click', markAllAsRead);
-
-  // ================================================================
-  // FILTRES
-  // ================================================================
-  filtersEl.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      currentFilter = btn.dataset.filter;
-      filtersEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderNotifications();
+  notifList.querySelectorAll('.notif-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.id;
+      openNotifDetail(id);
     });
   });
+}
 
-  // ================================================================
-  // CHARGEMENT DES NOTIFICATIONS (temps réel)
-  // ================================================================
-  function loadNotifications(user) {
-    if (unsubscribeNotifications) {
-      unsubscribeNotifications();
-      unsubscribeNotifications = null;
+// ================================================================
+// OUVRIR DÉTAIL
+// ================================================================
+async function openNotifDetail(id) {
+  const notif = allNotifications.find(n => n.id === id);
+  if (!notif) return;
+
+  const typeConfig = getTypeConfig(notif.type);
+  const title = notif.title || 'Notification';
+  const body = notif.body || 'Aucun contenu.';
+  const fullDate = formatFullDate(notif.createdAt);
+
+  // Marquer comme lu si pas encore lu (best-effort, non bloquant)
+  if (!notif.read && currentUid) {
+    try {
+      await updateDoc(
+        doc(db, 'users', currentUid, 'notifications', id),
+        { read: true }
+      );
+    } catch (e) {
+      // Silencieux : le clic doit ouvrir même si le marquage échoue
     }
-
-    const notifsQuery = query(
-      collection(db, 'users', user.uid, 'notifications'),
-      orderBy('createdAt', 'desc'),
-      limit(50)
-    );
-
-    unsubscribeNotifications = onSnapshot(notifsQuery,
-      (snapshot) => {
-        allNotifications = snapshot.docs.map(d => ({
-          id: d.id,
-          ...d.data()
-        }));
-        renderNotifications();
-      },
-      (error) => {
-        console.warn('Erreur chargement notifications:', error);
-        allNotifications = [];
-        renderNotifications();
-      }
-    );
   }
 
-  // ================================================================
-  // CHARGEMENT UTILISATEUR (temps réel)
-  // ================================================================
-  function loadUserData(user) {
-    if (unsubscribeUser) {
-      unsubscribeUser();
-      unsubscribeUser = null;
+  modalContent.innerHTML = `
+    <button class="modal-close" id="modalCloseBtn" aria-label="Fermer">
+      <i class="fas fa-xmark"></i>
+    </button>
+
+    <div class="modal-head">
+      <div class="modal-icon ${notif.type || 'info'}">
+        <i class="fas ${typeConfig.icon}"></i>
+      </div>
+      <div class="modal-titles">
+        <div class="modal-title">${escapeHtml(title)}</div>
+        <div class="modal-date">${escapeHtml(fullDate)}</div>
+      </div>
+    </div>
+
+    <div class="modal-body">${escapeHtml(body)}</div>
+
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="closeModalBtn">
+        <i class="fas fa-check"></i> Fermer
+      </button>
+    </div>
+  `;
+
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+
+  document.getElementById('modalCloseBtn').addEventListener('click', closeNotifDetail);
+  document.getElementById('closeModalBtn').addEventListener('click', closeNotifDetail);
+
+  setupModalSwipe(modalContent);
+}
+
+function closeNotifDetail() {
+  modal.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ================================================================
+// SWIPE TO CLOSE
+// ================================================================
+function setupModalSwipe(sheet) {
+  let startY = 0, currentY = 0, isDragging = false;
+
+  sheet.addEventListener('touchstart', (e) => {
+    const rect = sheet.getBoundingClientRect();
+    const touchY = e.touches[0].clientY;
+    if (touchY - rect.top < 80) {
+      startY = touchY;
+      currentY = touchY;
+      isDragging = true;
+      sheet.style.transition = 'none';
     }
+  }, { passive: true });
 
-    const userRef = doc(db, 'users', user.uid);
+  sheet.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+    if (diff > 0) {
+      sheet.style.transform = `translateY(${diff}px)`;
+      e.preventDefault();
+    }
+  }, { passive: false });
 
-    unsubscribeUser = onSnapshot(userRef,
-      (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
+  sheet.addEventListener('touchend', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    sheet.style.transition = '';
+    const diff = currentY - startY;
+    if (diff > 100) {
+      sheet.style.transform = `translateY(100%)`;
+      setTimeout(() => {
+        modal.classList.remove('show');
+        sheet.style.transform = '';
+      }, 300);
+    } else {
+      sheet.style.transform = '';
+    }
+    startY = 0;
+    currentY = 0;
+  }, { passive: true });
+}
+
+modal.addEventListener('click', (e) => {
+  if (e.target === modal) closeNotifDetail();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && modal.classList.contains('show')) {
+    closeNotifDetail();
+  }
+});
+
+// ================================================================
+// MARQUER TOUT COMME LU
+// ================================================================
+async function markAllAsRead() {
+  if (!currentUid) return;
+
+  const unread = allNotifications.filter(n => !n.read);
+  if (unread.length === 0) return;
+
+  markAllReadBtn.disabled = true;
+
+  try {
+    const batch = writeBatch(db);
+    unread.forEach(n => {
+      const ref = doc(db, 'users', currentUid, 'notifications', n.id);
+      batch.update(ref, { read: true });
+    });
+    await batch.commit();
+
+    showToast(`${unread.length} notification${unread.length > 1 ? 's' : ''} marquée${unread.length > 1 ? 's' : ''} comme lue${unread.length > 1 ? 's' : ''}`, 'success');
+  } catch (e) {
+    console.error(e);
+    showToast('Impossible de marquer comme lu', 'error');
+    markAllReadBtn.disabled = false;
+  }
+}
+
+markAllReadBtn.addEventListener('click', markAllAsRead);
+
+// ================================================================
+// FILTRES
+// ================================================================
+filtersEl.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentFilter = btn.dataset.filter;
+    filtersEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderNotifications();
+  });
+});
+
+// ================================================================
+// CHARGEMENT DES NOTIFICATIONS (temps réel) — ✅ C9
+// ================================================================
+function loadNotifications(user) {
+  if (unsubscribeNotifications) {
+    unsubscribeNotifications();
+    unsubscribeNotifications = null;
+  }
+
+  const notifsQuery = query(
+    collection(db, 'users', user.uid, 'notifications'),
+    orderBy('createdAt', 'desc'),
+    limit(50)
+  );
+
+  unsubscribeNotifications = onSnapshot(notifsQuery,
+    (snapshot) => {
+      allNotifications = snapshot.docs.map(d => ({
+        id: d.id,
+        ...d.data()
+      }));
+      renderNotifications();
+    },
+    (error) => {
+      // ✅ C9 — warn au lieu du silence
+      console.warn('[Notifs] onSnapshot error:', error.code || error.message);
+      allNotifications = [];
+      renderNotifications();
+    }
+  );
+}
+
+// ================================================================
+// ✅ C4 — Retry doux si doc users/{uid} absent
+// ================================================================
+async function handleMissingUserDoc(uid) {
+  if (missingDocInFlight) return;
+  missingDocInFlight = true;
+  try {
+    await new Promise((r) => setTimeout(r, 900));
+    if (!auth.currentUser || auth.currentUser.uid !== uid) return;
+    const retry = await getDoc(doc(db, 'users', uid));
+    if (retry.exists()) {
+      const data = retry.data();
+      try {
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify({
+          ...data,
+          _uid: uid,
+          _cachedAt: Date.now()
+        }));
+      } catch (e) {}
+      return;
+    }
+    console.warn('[Notifs] Profil utilisateur introuvable pour', uid);
+  } catch (e) {
+    console.warn('[Notifs] handleMissingUserDoc:', e.code || e.message);
+  } finally {
+    missingDocInFlight = false;
+  }
+}
+
+// ================================================================
+// CHARGEMENT UTILISATEUR — ✅ C3 (blocked/paused) + C4 (retry)
+// ================================================================
+function loadUserData(user) {
+  if (unsubscribeUser) {
+    unsubscribeUser();
+    unsubscribeUser = null;
+  }
+
+  const userRef = doc(db, 'users', user.uid);
+
+  unsubscribeUser = onSnapshot(userRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+
+        // ✅ C3 — blocked : signOut tolérant + auth-choice.html
+        if (data.accountStatus === 'blocked') {
+          if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
+          if (unsubscribeNotifications) { unsubscribeNotifications(); unsubscribeNotifications = null; }
+          clearSession();
+          try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
+          signOut(auth)
+            .catch((err) => console.warn('[Notifs] signOut bloqué :', err.code || err.message))
+            .finally(() => { window.location.replace('auth-choice.html'); });
+          return;
+        }
+
+        // ✅ C3 — paused : ne pas déconnecter, message, rester sur la page
+        if (data.accountStatus === 'paused') {
           try {
             localStorage.setItem(USER_DATA_KEY, JSON.stringify({
               ...data,
@@ -1317,133 +1397,189 @@
               _cachedAt: Date.now()
             }));
           } catch (e) {}
+          showToast('Ton compte est temporairement en pause. Contacte le support.', 'error');
+          return;
         }
-      },
-      (error) => {
-        // Silencieux
-      }
-    );
-  }
 
-  // ================================================================
-  // DÉCONNEXION
-  // ================================================================
-  async function performLogout() {
-    isRedirecting = true;
-    if (unsubscribeNotifications) unsubscribeNotifications();
-    if (unsubscribeUser) unsubscribeUser();
-    clearSession();
-    try { await signOut(auth); } catch (e) {}
-    window.location.replace('login.html');
-  }
-
-  document.getElementById('logoutBtn').addEventListener('click', (e) => {
-    e.preventDefault();
-    performLogout();
-  });
-
-  document.getElementById('menuToggle').addEventListener('click', () => {
-    document.getElementById('sidebar').classList.toggle('open');
-    document.getElementById('sidebarOverlay').classList.toggle('active');
-  });
-
-  document.getElementById('sidebarOverlay').addEventListener('click', () => {
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebarOverlay').classList.remove('active');
-  });
-
-  // ================================================================
-  // AUTH ROBUSTE — Anti-flash
-  // ================================================================
-  function redirectToLogin() {
-    if (isRedirecting) return;
-    isRedirecting = true;
-    try {
-      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
-    } catch (e) {}
-    window.location.replace('login.html');
-  }
-
-  function initAuthGuard(onAuthenticated) {
-    auth.onAuthStateChanged((user) => {
-      if (isAuthResolved) {
-        if (user && user.uid !== currentUid) {
-          currentUid = user.uid;
-          currentUser = user;
-          saveSession(user);
-          onAuthenticated(user);
-        } else if (!user && currentUid) {
-          currentUid = null;
-          currentUser = null;
-          clearSession();
-          redirectToLogin();
-        }
-        return;
-      }
-
-      if (!user) {
-        if (graceTimer) clearTimeout(graceTimer);
-        graceTimer = setTimeout(() => {
-          if (isAuthResolved) return;
-          if (auth.currentUser) return;
-
-          const hasSession = localStorage.getItem(SESSION_KEY);
-          const hasUserData = localStorage.getItem(USER_DATA_KEY);
-
-          if ((hasSession || hasUserData) && !navigator.onLine) {
-            setTimeout(() => {
-              if (auth.currentUser) return;
-              if (!isAuthResolved) redirectToLogin();
-            }, 1500);
-            return;
-          }
-
-          if (hasSession && hasUserData) {
-            setTimeout(() => {
-              if (auth.currentUser) return;
-              if (!isAuthResolved) redirectToLogin();
-            }, 1500);
-            return;
-          }
-
-          redirectToLogin();
-        }, 600);
-        return;
-      }
-
-      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-      if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-
-      isAuthResolved = true;
-      currentUid = user.uid;
-      currentUser = user;
-      saveSession(user);
-      onAuthenticated(user);
-    });
-
-    maxTimer = setTimeout(() => {
-      if (isAuthResolved) return;
-      if (auth.currentUser) {
-        isAuthResolved = true;
-        currentUid = auth.currentUser.uid;
-        currentUser = auth.currentUser;
-        saveSession(auth.currentUser);
-        onAuthenticated(auth.currentUser);
+        try {
+          localStorage.setItem(USER_DATA_KEY, JSON.stringify({
+            ...data,
+            _uid: user.uid,
+            _cachedAt: Date.now()
+          }));
+        } catch (e) {}
       } else {
+        const cached = getCachedUserData(user.uid);
+        if (!cached) {
+          // ✅ C4 — retry doux avant décision
+          handleMissingUserDoc(user.uid);
+        }
+      }
+    },
+    (error) => {
+      // ✅ C9 — warn au lieu du silence
+      console.warn('[Notifs] onSnapshot users:', error.code || error.message);
+    }
+  );
+}
+
+// ================================================================
+// DÉCONNEXION — ✅ C2/C8
+// ================================================================
+async function performLogout() {
+  isRedirecting = true;
+
+  // ✅ C8 — désabonnements propres
+  if (unsubscribeNotifications) { unsubscribeNotifications(); unsubscribeNotifications = null; }
+  if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
+  if (authUnsubscribe) {
+    try { authUnsubscribe(); } catch (e) {}
+    authUnsubscribe = null;
+  }
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+
+  currentUid = null;
+  currentUser = null;
+  clearSession();
+  try { await signOut(auth); } catch (e) {}
+  // ✅ C2 — alignement sur index.html / profil.html / abonnement.html
+  window.location.replace('auth-choice.html');
+}
+
+document.getElementById('logoutBtn').addEventListener('click', (e) => {
+  e.preventDefault();
+  performLogout();
+});
+
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+});
+
+document.getElementById('sidebarOverlay').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+});
+
+// ================================================================
+// AUTH ROBUSTE — ✅ C1/C8
+// ================================================================
+// ✅ C1 — préserver les clés existantes
+function redirectToLogin() {
+  if (isRedirecting) return;
+  isRedirecting = true;
+
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) {
+    try { authUnsubscribe(); } catch (e) {}
+    authUnsubscribe = null;
+  }
+
+  try {
+    const existing = sessionStorage.getItem('redirectAfterLogin')
+                  || sessionStorage.getItem('redirectAfterAuth');
+    if (!existing) {
+      sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search);
+    }
+  } catch (e) {}
+
+  window.location.replace('login.html');
+}
+
+function initAuthGuard(onAuthenticated) {
+  if (authUnsubscribe) return; // garde anti-double
+
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
+    if (isAuthResolved) {
+      if (user && user.uid !== currentUid) {
+        currentUid = user.uid;
+        currentUser = user;
+        saveSession(user);
+        onAuthenticated(user);
+      } else if (!user && currentUid) {
+        currentUid = null;
+        currentUser = null;
+        clearSession();
         redirectToLogin();
       }
-    }, 5000);
-  }
+      return;
+    }
 
-  // ================================================================
-  // LANCER LA PROTECTION
-  // ================================================================
-  initAuthGuard(async (user) => {
-    loadNotifications(user);
-    loadUserData(user);
+    if (!user) {
+      if (graceTimer) return;
+      graceTimer = setTimeout(() => {
+        graceTimer = null;
+        if (isAuthResolved) return;
+        if (auth.currentUser) return;
+
+        const hasSession = localStorage.getItem(SESSION_KEY);
+        const hasUserData = localStorage.getItem(USER_DATA_KEY);
+
+        if ((hasSession || hasUserData) && !navigator.onLine) {
+          setTimeout(() => {
+            if (auth.currentUser) return;
+            if (!isAuthResolved) redirectToLogin();
+          }, 1500);
+          return;
+        }
+
+        if (hasSession && hasUserData) {
+          setTimeout(() => {
+            if (auth.currentUser) return;
+            if (!isAuthResolved) redirectToLogin();
+          }, 1500);
+          return;
+        }
+
+        redirectToLogin();
+      }, 600);
+      return;
+    }
+
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+
+    isAuthResolved = true;
+    currentUid = user.uid;
+    currentUser = user;
+    saveSession(user);
+    onAuthenticated(user);
   });
 
-  console.log('🚀 ARVEXA — Notifications (avec session robuste)');
-  </script>
+  maxTimer = setTimeout(() => {
+    if (isAuthResolved) return;
+    if (auth.currentUser) {
+      isAuthResolved = true;
+      currentUid = auth.currentUser.uid;
+      currentUser = auth.currentUser;
+      saveSession(auth.currentUser);
+      onAuthenticated(auth.currentUser);
+    } else {
+      redirectToLogin();
+    }
+  }, 5000);
+}
+
+// ================================================================
+// LANCER LA PROTECTION
+// ================================================================
+initAuthGuard(async (user) => {
+  loadNotifications(user);
+  loadUserData(user);
+});
+
+// ✅ C8 — cleanup global
+window.addEventListener('beforeunload', () => {
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+  if (unsubscribeNotifications) { try { unsubscribeNotifications(); } catch (e) {} unsubscribeNotifications = null; }
+  if (unsubscribeUser) { try { unsubscribeUser(); } catch (e) {} unsubscribeUser = null; }
+});
+
+console.log('🚀 ARVEXA — Notifications (version corrigée C1-C9)');
+</script>
 </body>
 </html>
