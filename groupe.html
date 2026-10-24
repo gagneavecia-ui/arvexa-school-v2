@@ -1187,6 +1187,14 @@
 <script type="module">
 // ================================================================
 // GROUPE D'ÉCHANGE — Version robuste anti-flash
+// Corrections appliquées :
+//  - C1 : redirectToLogin préserve redirectAfterLogin + URL complète
+//  - C2 : saveSession écrit aussi sessionStorage
+//  - C3 : clearSession supprime redirectAfterLogin/redirectAfterAuth
+//  - C4 : gestion blocked/paused dans loadUserData (initial + onSnapshot)
+//  - C5 : performLogout → auth-choice.html
+//  - C6 : console.warn sur catch silencieux
+//  - C7 : unsubscribe propre + beforeunload
 // ================================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -1236,7 +1244,7 @@ const db = initializeFirestore(app, {
   })
 });
 
-setPersistence(auth, browserLocalPersistence).catch(e => console.warn('setPersistence:', e));
+setPersistence(auth, browserLocalPersistence).catch(e => console.warn('[Auth] setPersistence:', e.code || e.message));
 
 // ================================================================
 // CONSTANTES
@@ -1266,7 +1274,7 @@ const QUICK_EMOJIS = [
 ];
 
 // ================================================================
-// SESSION / CACHE
+// SESSION / CACHE — ✅ C2/C3 alignements
 // ================================================================
 const SESSION_KEY = 'arvexa_session';
 const USER_DATA_KEY = 'arvexa_user_data';
@@ -1281,6 +1289,7 @@ function saveSession(user) {
       lastActive: Date.now()
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C2
     localStorage.setItem(LAST_UID_KEY, user.uid);
   } catch (e) {}
 }
@@ -1291,6 +1300,9 @@ function clearSession() {
     localStorage.removeItem(USER_DATA_KEY);
     localStorage.removeItem(LAST_UID_KEY);
     sessionStorage.removeItem(SESSION_KEY);
+    // ✅ C3 — alignement
+    sessionStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('redirectAfterAuth');
   } catch (e) {}
 }
 
@@ -1315,18 +1327,17 @@ let currentReply = null;
 let isSearching = false;
 let searchQuery = '';
 
-// Swipe state
 let swipeStartX = 0;
 let swipeCurrentX = 0;
 let swipeActiveEl = null;
 let swipeActiveId = null;
 let swipeTriggered = false;
 
-// Auth state
 let isRedirecting = false;
 let isAuthResolved = false;
 let graceTimer = null;
 let maxTimer = null;
+let authUnsubscribe = null;  // ✅ C7
 
 // ================================================================
 // DOM
@@ -1385,18 +1396,12 @@ function showToast(message, type = 'info') {
   toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-// ================================================================
-// ESCAPE HTML
-// ================================================================
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = String(text || '');
   return div.innerHTML;
 }
 
-// ================================================================
-// SURBRILLANCE RECHERCHE
-// ================================================================
 function highlightText(text, query) {
   const safeText = escapeHtml(text || '');
   if (!query) return safeText;
@@ -1405,9 +1410,6 @@ function highlightText(text, query) {
   return safeText.replace(regex, '<mark>$1</mark>');
 }
 
-// ================================================================
-// FORMAT HEURE
-// ================================================================
 function formatTime(timestamp) {
   const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
   if (isNaN(date.getTime())) return '';
@@ -1438,17 +1440,11 @@ function formatDaySeparator(timestamp) {
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-// ================================================================
-// MOTS INTERDITS
-// ================================================================
 function containsForbiddenWords(text) {
   const lower = text.toLowerCase();
   return FORBIDDEN_WORDS.some(word => lower.includes(word));
 }
 
-// ================================================================
-// COMPRESSION IMAGE
-// ================================================================
 function compressImage(file) {
   return new Promise((resolve, reject) => {
     if (!file.type.startsWith('image/')) {
@@ -1506,9 +1502,7 @@ function compressImage(file) {
 function renderMessages() {
   if (!messagesContainer) return;
 
-  const dataToRender = isSearching && searchQuery
-    ? filteredMessages
-    : messages;
+  const dataToRender = isSearching && searchQuery ? filteredMessages : messages;
 
   if (dataToRender.length === 0) {
     messagesContainer.innerHTML = `
@@ -1584,7 +1578,6 @@ function renderMessages() {
   });
 
   messagesContainer.innerHTML = html;
-
   attachMessageEvents();
 
   if (!isSearching) {
@@ -1597,9 +1590,6 @@ function renderMessages() {
   }
 }
 
-// ================================================================
-// ÉVÉNEMENTS SUR LES MESSAGES (appui long, swipe, images)
-// ================================================================
 function attachMessageEvents() {
   messagesContainer.querySelectorAll('.msg-image').forEach(img => {
     img.addEventListener('click', () => openImageModal(img.src));
@@ -1699,9 +1689,6 @@ function attachMessageEvents() {
   });
 }
 
-// ================================================================
-// SCROLL VERS UN MESSAGE
-// ================================================================
 function scrollToMessage(msgId) {
   const el = messagesContainer.querySelector(`[data-msg-id="${msgId}"]`);
   if (!el) {
@@ -1731,14 +1718,12 @@ function loadMessages() {
 
   unsubscribeMessages = onSnapshot(messagesQuery,
     (snapshot) => {
-      messages = snapshot.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-      }));
+      messages = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       applySearch();
     },
     (error) => {
-      console.warn('Erreur messages:', error);
+      // ✅ C6 — warn
+      console.warn('[Groupe] onSnapshot messages:', error.code || error.message);
       if (messagesContainer) {
         messagesContainer.innerHTML = `
           <div class="empty-chat">
@@ -1751,9 +1736,6 @@ function loadMessages() {
   );
 }
 
-// ================================================================
-// RECHERCHE
-// ================================================================
 function applySearch() {
   if (!searchQuery || !searchQuery.trim()) {
     filteredMessages = messages;
@@ -1797,7 +1779,7 @@ if (searchInput) {
 }
 
 // ================================================================
-// RÉPONSE (reply)
+// RÉPONSE
 // ================================================================
 function startReply(messageData) {
   if (!messageData) return;
@@ -1823,12 +1805,10 @@ function cancelReply() {
   if (replyPreview) replyPreview.classList.remove('show');
 }
 
-if (replyPreviewClose) {
-  replyPreviewClose.addEventListener('click', cancelReply);
-}
+if (replyPreviewClose) replyPreviewClose.addEventListener('click', cancelReply);
 
 // ================================================================
-// ENVOYER UN MESSAGE
+// ENVOYER
 // ================================================================
 async function sendMessage() {
   if (!messageInput || !sendBtn) return;
@@ -1861,10 +1841,7 @@ async function sendMessage() {
       createdAt: serverTimestamp()
     };
 
-    if (currentReply) {
-      messageData.replyTo = { ...currentReply };
-    }
-
+    if (currentReply) messageData.replyTo = { ...currentReply };
     if (hasImage) {
       messageData.imageBase64 = pendingImageBase64;
       messageData.imageName = pendingImageName || 'image.jpg';
@@ -1893,9 +1870,6 @@ async function sendMessage() {
   }
 }
 
-// ================================================================
-// BOUTON ENVOYER
-// ================================================================
 function updateSendButton() {
   if (!messageInput || !sendBtn) return;
   const hasContent = messageInput.value.trim().length > 0;
@@ -1903,9 +1877,6 @@ function updateSendButton() {
   sendBtn.disabled = (!hasContent && !hasImage) || isBanned;
 }
 
-// ================================================================
-// INPUT EVENTS
-// ================================================================
 if (messageInput) {
   messageInput.addEventListener('input', () => {
     const wrap = messageInput.closest('.message-input-wrap');
@@ -1935,12 +1906,10 @@ if (messageInput) {
   });
 }
 
-if (sendBtn) {
-  sendBtn.addEventListener('click', sendMessage);
-}
+if (sendBtn) sendBtn.addEventListener('click', sendMessage);
 
 // ================================================================
-// EMOJI PICKER
+// EMOJI
 // ================================================================
 function buildEmojiPicker() {
   if (!emojiPicker) return;
@@ -1973,7 +1942,7 @@ document.addEventListener('click', (e) => {
 });
 
 // ================================================================
-// IMAGE UPLOAD
+// IMAGE
 // ================================================================
 if (imageBtn && imageInput) {
   imageBtn.addEventListener('click', () => imageInput.click());
@@ -2043,14 +2012,10 @@ function openImageModal(src) {
 function closeImageModal() {
   if (!imageModal || !imageModalImg) return;
   imageModal.classList.remove('show');
-  setTimeout(() => {
-    imageModalImg.src = '';
-  }, 300);
+  setTimeout(() => { imageModalImg.src = ''; }, 300);
 }
 
-if (imageModal) {
-  imageModal.addEventListener('click', closeImageModal);
-}
+if (imageModal) imageModal.addEventListener('click', closeImageModal);
 if (imageModalClose) {
   imageModalClose.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -2079,11 +2044,8 @@ if (confirmOk) {
   confirmOk.addEventListener('click', async () => {
     if (confirmCallback) {
       confirmOk.disabled = true;
-      try {
-        await confirmCallback();
-      } catch (e) {
-        showToast('Erreur: ' + e.message, 'error');
-      }
+      try { await confirmCallback(); }
+      catch (e) { showToast('Erreur: ' + e.message, 'error'); }
       confirmOk.disabled = false;
     }
     closeConfirm();
@@ -2103,9 +2065,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     if (imageModal && imageModal.classList.contains('show')) closeImageModal();
     if (confirmModal && confirmModal.classList.contains('show')) closeConfirm();
-    if (searchBar && searchBar.classList.contains('show')) {
-      searchClose.click();
-    }
+    if (searchBar && searchBar.classList.contains('show')) searchClose.click();
   }
 });
 
@@ -2182,15 +2142,10 @@ function openMessageMenu(messageData) {
       const action = btn.dataset.action;
       closeMessageMenu();
 
-      if (action === 'copy') {
-        copyMessageText(messageData.content);
-      } else if (action === 'reply') {
-        startReply(messageData);
-      } else if (action === 'delete') {
-        deleteMessage(messageData.id);
-      } else if (action === 'ban') {
-        banUser(messageData.userId, messageData.userName);
-      }
+      if (action === 'copy') copyMessageText(messageData.content);
+      else if (action === 'reply') startReply(messageData);
+      else if (action === 'delete') deleteMessage(messageData.id);
+      else if (action === 'ban') banUser(messageData.userId, messageData.userName);
     });
   });
 
@@ -2230,7 +2185,7 @@ async function copyMessageText(text) {
 }
 
 // ================================================================
-// SUPPRESSION DÉFINITIVE
+// SUPPRESSION
 // ================================================================
 function deleteMessage(messageId) {
   openConfirm(
@@ -2267,7 +2222,7 @@ function banUser(userId, userName) {
 }
 
 // ================================================================
-// CHARGER USER DATA
+// ✅ C4 — LOAD USER DATA avec gestion blocked/paused
 // ================================================================
 function loadUserData(user) {
   if (unsubscribeUser) {
@@ -2277,12 +2232,34 @@ function loadUserData(user) {
 
   const userRef = doc(db, 'users', user.uid);
   unsubscribeUser = onSnapshot(userRef,
-    (docSnap) => {
+    async (docSnap) => {
       if (docSnap.exists()) {
-        currentUserData = docSnap.data();
+        const data = docSnap.data();
+        currentUserData = data;
+
+        // ✅ C4 — Gestion blocked/paused (initial + à chaque changement)
+        if (data.accountStatus === 'blocked') {
+          try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
+          if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
+          if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
+          if (unsubscribeBanCheck) { unsubscribeBanCheck(); unsubscribeBanCheck = null; }
+          clearSession();
+          try { await signOut(auth); } catch (e) {}
+          window.location.replace('auth-choice.html');
+          return;
+        }
+
+        if (data.accountStatus === 'paused') {
+          showToast('Ton compte est temporairement en pause. Contacte le support.', 'error');
+          // On laisse la consultation mais on désactive l'envoi
+          isBanned = true;  // Utilise le même mécanisme pour bloquer l'envoi
+          if (bannedOverlay) bannedOverlay.classList.remove('show');
+          updateSendButton();
+        }
+
         try {
           localStorage.setItem(USER_DATA_KEY, JSON.stringify({
-            ...currentUserData,
+            ...data,
             _uid: user.uid,
             _cachedAt: Date.now()
           }));
@@ -2290,11 +2267,11 @@ function loadUserData(user) {
       }
     },
     (error) => {
+      // ✅ C6 — warn
+      console.warn('[Groupe] onSnapshot user:', error.code || error.message);
       try {
         const cached = JSON.parse(localStorage.getItem(USER_DATA_KEY) || '{}');
-        if (cached && Object.keys(cached).length > 0) {
-          currentUserData = cached;
-        }
+        if (cached && Object.keys(cached).length > 0) currentUserData = cached;
       } catch (e) {}
     }
   );
@@ -2314,53 +2291,66 @@ function watchBanStatus(uid) {
     (docSnap) => {
       isBanned = docSnap.exists();
       if (bannedOverlay) {
-        if (isBanned) {
-          bannedOverlay.classList.add('show');
-        } else {
-          bannedOverlay.classList.remove('show');
-        }
+        if (isBanned) bannedOverlay.classList.add('show');
+        else bannedOverlay.classList.remove('show');
       }
       updateSendButton();
     },
-    (error) => {}
+    (error) => {
+      // ✅ C6 — warn
+      console.warn('[Groupe] onSnapshot ban:', error.code || error.message);
+    }
   );
 }
 
-// ================================================================
-// COMPTEUR MEMBRES
-// ================================================================
 function updateOnlineCount() {
   if (!onlineCount) return;
   onlineCount.textContent = 'Communauté ARVEXA';
 }
 
 // ================================================================
-// DÉCONNEXION
+// ✅ C5 — DÉCONNEXION (cohérence avec les autres pages)
 // ================================================================
 async function performLogout() {
   isRedirecting = true;
   if (unsubscribeMessages) unsubscribeMessages();
   if (unsubscribeUser) unsubscribeUser();
   if (unsubscribeBanCheck) unsubscribeBanCheck();
+  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
   clearSession();
   try { await signOut(auth); } catch (e) {}
-  window.location.replace('login.html');
+  // ✅ C5 — alignement sur les autres pages
+  window.location.replace('auth-choice.html');
 }
 
 // ================================================================
-// AUTH ROBUSTE — Anti-flash
+// AUTH ROBUSTE — ✅ C1/C7
 // ================================================================
+// ✅ C1 — préserver redirectAfterLogin + URL complète
 function redirectToLogin() {
   if (isRedirecting) return;
   isRedirecting = true;
+
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+
   try {
-    sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+    const existing = sessionStorage.getItem('redirectAfterLogin')
+                  || sessionStorage.getItem('redirectAfterAuth');
+    if (!existing) {
+      sessionStorage.setItem('redirectAfterLogin',
+        window.location.pathname + window.location.search + window.location.hash);
+    }
   } catch (e) {}
+
   window.location.replace('login.html');
 }
 
 function initAuthGuard(onAuthenticated) {
-  auth.onAuthStateChanged((user) => {
+  if (authUnsubscribe) return;
+
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
     if (isAuthResolved) {
       if (user && user.uid !== currentUid) {
         currentUid = user.uid;
@@ -2377,8 +2367,9 @@ function initAuthGuard(onAuthenticated) {
     }
 
     if (!user) {
-      if (graceTimer) clearTimeout(graceTimer);
+      if (graceTimer) return;
       graceTimer = setTimeout(() => {
+        graceTimer = null;
         if (isAuthResolved) return;
         if (auth.currentUser) return;
 
@@ -2440,6 +2431,16 @@ initAuthGuard(async (user) => {
   updateOnlineCount();
 });
 
+// ✅ C7 — cleanup global
+window.addEventListener('beforeunload', () => {
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+  if (unsubscribeMessages) { try { unsubscribeMessages(); } catch (e) {} unsubscribeMessages = null; }
+  if (unsubscribeUser) { try { unsubscribeUser(); } catch (e) {} unsubscribeUser = null; }
+  if (unsubscribeBanCheck) { try { unsubscribeBanCheck(); } catch (e) {} unsubscribeBanCheck = null; }
+});
+
 // ================================================================
 // INIT
 // ================================================================
@@ -2447,8 +2448,7 @@ buildEmojiPicker();
 updateSendButton();
 updateOnlineCount();
 
-console.log('🚀 ARVEXA — Groupe (avec session robuste)');
+console.log('🚀 ARVEXA — Groupe (version corrigée C1-C7)');
 </script>
-
 </body>
 </html>
