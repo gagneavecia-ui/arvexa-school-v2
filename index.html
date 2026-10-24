@@ -2,10 +2,9 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0A0A0A">
   <meta name="description" content="ARVEXA School - Tableau de bord">
-  <meta name="view-transition" content="same-origin">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" href="icon.png" type="image/png">
@@ -13,7 +12,6 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <script src="arvexa-auth-core.js" defer></script>
   <script src="register-sw.js" defer></script>
 
 <!-- ✅ TUTORIEL ARVEXA — injection directe -->
@@ -66,6 +64,7 @@
       --accent-bright: #E0B84A;
       --accent-dim: rgba(184, 134, 11, 0.08);
       --success: #2D7D5A;
+      --success-light: #3AB67E;
       --danger: #B85C3A;
       --bg-dark: #0A0A0A;
       --bg-surface: #141414;
@@ -99,7 +98,7 @@
     }
 
     /* ============================================================
-       BACKGROUND
+       BACKGROUND (statique)
        ============================================================ */
     .gradient-bg {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
@@ -109,12 +108,11 @@
     }
     .glow {
       position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: -1;
-      opacity: 0.15; animation: glowMove 10s ease-in-out infinite alternate;
+      opacity: 0.12;
     }
     .glow-1 { width: 350px; height: 350px; background: rgba(26,58,42,0.18); top: -80px; right: -80px; }
-    .glow-2 { width: 200px; height: 200px; background: rgba(184,134,11,0.05); bottom: 0; left: 0; animation-delay: -4s; }
-    .glow-3 { width: 250px; height: 250px; background: rgba(26,58,42,0.1); top: 30%; left: 60%; transform: translate(-50%,-50%); animation-delay: -8s; }
-    @keyframes glowMove { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(30px,-20px) scale(1.1); } }
+    .glow-2 { width: 200px; height: 200px; background: rgba(184,134,11,0.05); bottom: 0; left: 0; }
+    .glow-3 { width: 250px; height: 250px; background: rgba(26,58,42,0.1); top: 30%; left: 60%; transform: translate(-50%,-50%); }
 
     .sidebar-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
@@ -123,7 +121,7 @@
     .sidebar-overlay.active { display: block; opacity: 1; }
 
     /* ============================================================
-       SIDEBAR
+       SIDEBAR (inchangée)
        ============================================================ */
     .sidebar {
       position: fixed; top: 0; left: -280px; width: 280px; height: 100vh;
@@ -145,10 +143,8 @@
       background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
       background-size: 200% auto; -webkit-background-clip: text; background-clip: text;
       -webkit-text-fill-color: transparent; font-style: italic;
-      animation: shimmerText 4s linear infinite;
       margin-left: 4px;
     }
-    @keyframes shimmerText { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
     .sidebar .nav { flex: 1; display: flex; flex-direction: column; gap: 2px; }
     .sidebar .nav a {
       display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px;
@@ -169,21 +165,13 @@
       background: rgba(184, 134, 11, 0.12);
       color: var(--accent-bright);
     }
-    .sidebar .nav a.avis-link i {
-      color: var(--accent-bright);
-      animation: starPulse 2s ease-in-out infinite;
-    }
-    @keyframes starPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-    }
     .sidebar .nav-divider { height: 1px; background: rgba(255,255,255,0.04); margin: 6px 0; }
     .sidebar .nav-bottom { margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.04); }
     .sidebar .nav-bottom a { color: var(--text-muted); font-size: 12px; }
     .sidebar .nav-bottom a:hover { color: var(--text-dim); }
 
     /* ============================================================
-       MAIN CONTENT
+       MAIN
        ============================================================ */
     .main-content { flex: 1; width: 100%; min-height: 100vh; padding-bottom: 32px; }
 
@@ -232,7 +220,7 @@
     .container { max-width: 900px; margin: 0 auto; padding: 16px 16px 20px; }
 
     /* ============================================================
-       CARD
+       CARD BASE
        ============================================================ */
     .card {
       background: var(--bg-card); backdrop-filter: blur(10px); border: 1px solid var(--card-border);
@@ -247,44 +235,164 @@
     .section-title:first-of-type { margin-top: 0; }
 
     /* ============================================================
-       HERO CARD - COMPTE À REBOURS
+       PROGRESSION SCOLAIRE — bloc prioritaire
        ============================================================ */
-    .hero-card {
-      position: relative; overflow: hidden; padding: 20px 22px;
+    .progress-card {
+      position: relative; overflow: hidden; padding: 22px;
+      background: linear-gradient(140deg, rgba(26, 58, 42, 0.55) 0%, rgba(10, 10, 10, 0.7) 100%);
+      border: 1px solid rgba(224, 184, 74, 0.18);
     }
-    .hero-card::before {
+    .progress-card::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
       background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
     }
+    .progress-header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-bottom: 4px; flex-wrap: wrap;
+    }
+    .progress-eyebrow {
+      font-size: 10.5px; font-weight: 700; letter-spacing: 1.4px;
+      text-transform: uppercase; color: var(--accent-bright);
+    }
+    .progress-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(18px, 2vw, 22px); font-weight: 700;
+      color: var(--text-light); margin: 4px 0 14px; line-height: 1.25;
+    }
+    .progress-title em { color: var(--accent-bright); font-style: italic; }
 
+    .progress-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+      margin-bottom: 16px;
+    }
+    .progress-metric {
+      background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 12px; padding: 12px 8px; text-align: center;
+    }
+    .progress-metric .num {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(22px, 3vw, 28px); font-weight: 700;
+      color: var(--text-light); line-height: 1.1;
+    }
+    .progress-metric .num.muted { color: var(--text-muted); font-size: 18px; }
+    .progress-metric .lbl {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px;
+      color: var(--text-muted); margin-top: 4px; font-weight: 600;
+    }
+
+    .progress-bar-track {
+      height: 6px; background: rgba(255,255,255,0.05);
+      border-radius: 999px; overflow: hidden; margin-bottom: 14px;
+    }
+    .progress-bar-fill {
+      height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-bright));
+      border-radius: 999px; transition: width 0.6s ease;
+    }
+    .progress-foot {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; flex-wrap: wrap;
+    }
+    .progress-foot-text {
+      font-size: 12.5px; color: var(--text-dim);
+    }
+    .progress-foot-text strong { color: var(--text-light); font-weight: 600; }
+    .progress-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 999px;
+      background: rgba(224, 184, 74, 0.10);
+      border: 1px solid rgba(224, 184, 74, 0.28);
+      color: var(--accent-bright); font-size: 12.5px; font-weight: 600;
+      text-decoration: none; transition: var(--transition);
+    }
+    .progress-link:hover {
+      background: rgba(224, 184, 74, 0.16);
+      border-color: rgba(224, 184, 74, 0.5);
+    }
+
+    /* ============================================================
+       ACTION PRINCIPALE INTELLIGENTE
+       ============================================================ */
+    .primary-action {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px 18px; margin-top: 14px;
+      background: linear-gradient(135deg, rgba(224, 184, 74, 0.14), rgba(184, 134, 11, 0.06));
+      border: 1px solid rgba(224, 184, 74, 0.32);
+      border-radius: var(--radius);
+      text-decoration: none; color: var(--text-light);
+      transition: var(--transition);
+    }
+    .primary-action:hover {
+      transform: translateY(-2px);
+      border-color: rgba(224, 184, 74, 0.55);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    .primary-action:active { transform: scale(0.99); }
+    .primary-action-icon {
+      width: 44px; height: 44px; flex-shrink: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+      color: #0A0A0A;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .primary-action-body { flex: 1; min-width: 0; }
+    .primary-action-eyebrow {
+      font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase;
+      color: var(--accent-bright); font-weight: 700; margin-bottom: 2px;
+    }
+    .primary-action-title {
+      font-size: clamp(14px, 1.5vw, 16px); font-weight: 600;
+      color: var(--text-light); line-height: 1.3;
+    }
+    .primary-action-desc {
+      font-size: 12px; color: var(--text-dim); margin-top: 2px;
+    }
+    .primary-action-arrow {
+      color: var(--accent-bright); font-size: 16px; flex-shrink: 0;
+    }
+
+    /* ============================================================
+       COMPTE À REBOURS — carte élégante moyenne
+       ============================================================ */
+    .countdown-card {
+      margin-top: 20px; padding: 22px;
+      position: relative; overflow: hidden;
+      background: var(--bg-card); border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+    }
+    .countdown-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(224, 184, 74, 0.5), transparent);
+    }
     .countdown-header {
       display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 8px; margin-bottom: 6px;
+      gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
     }
-    .countdown-title-wrap { display: flex; align-items: center; gap: 8px; }
-    .countdown-icon { font-size: clamp(20px, 2.5vw, 26px); }
+    .countdown-title-wrap { display: flex; align-items: center; gap: 10px; }
+    .countdown-icon { font-size: 20px; }
     .countdown-title {
-      font-size: clamp(16px, 1.8vw, 20px); font-weight: 700;
-      font-family: 'Playfair Display', serif; color: var(--text-light);
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(16px, 1.8vw, 19px); font-weight: 700; color: var(--text-light);
+    }
+    .countdown-date {
+      font-size: 11px; color: var(--text-muted);
+      font-weight: 500;
     }
     .countdown-status {
-      font-size: clamp(12px, 1.2vw, 14px); font-weight: 600;
-      padding: 4px 14px; border-radius: 20px;
-      background: rgba(184, 134, 11, 0.08); color: var(--accent-bright);
-      border: 1px solid rgba(184, 134, 11, 0.1);
-      transition: all 0.5s ease;
+      font-size: 11px; font-weight: 600;
+      padding: 4px 12px; border-radius: 999px;
+      background: rgba(224, 184, 74, 0.08); color: var(--accent-bright);
+      border: 1px solid rgba(224, 184, 74, 0.15);
       white-space: nowrap;
     }
-    .countdown-status.early { background: rgba(46, 204, 113, 0.1); color: #2ECC71; border-color: rgba(46, 204, 113, 0.15); }
-    .countdown-status.mid { background: rgba(241, 196, 15, 0.1); color: #F1C40F; border-color: rgba(241, 196, 15, 0.15); }
-    .countdown-status.late { background: rgba(230, 126, 34, 0.1); color: #E67E22; border-color: rgba(230, 126, 34, 0.15); }
-    .countdown-status.critical { background: rgba(231, 76, 60, 0.1); color: #E74C3C; border-color: rgba(231, 76, 60, 0.15); animation: pulseStatus 1.5s ease-in-out infinite; }
-    @keyframes pulseStatus { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .countdown-status.early { background: rgba(46, 204, 113, 0.1); color: #2ECC71; border-color: rgba(46, 204, 113, 0.2); }
+    .countdown-status.mid { background: rgba(241, 196, 15, 0.1); color: #F1C40F; border-color: rgba(241, 196, 15, 0.2); }
+    .countdown-status.late { background: rgba(230, 126, 34, 0.1); color: #E67E22; border-color: rgba(230, 126, 34, 0.2); }
+    .countdown-status.critical { background: rgba(231, 76, 60, 0.1); color: #E74C3C; border-color: rgba(231, 76, 60, 0.2); }
 
     .progress-track {
-      width: 100%; height: 3px; background: rgba(255,255,255,0.06);
-      border-radius: 4px; margin: 8px 0 10px; overflow: hidden;
-      position: relative;
+      width: 100%; height: 4px; background: rgba(255,255,255,0.06);
+      border-radius: 4px; margin: 0 0 14px; overflow: hidden;
     }
     .progress-fill {
       height: 100%; border-radius: 4px; transition: width 1s ease;
@@ -298,38 +406,141 @@
 
     .countdown-display {
       display: flex; align-items: center; justify-content: center;
-      gap: 12px; margin: 4px 0 2px;
+      gap: 10px;
     }
     .cd-block {
       display: flex; flex-direction: column; align-items: center;
       background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);
-      border-radius: 10px; padding: 6px 16px; min-width: 60px;
+      border-radius: 10px; padding: 8px 14px; min-width: 64px;
     }
     .cd-number {
-      font-size: clamp(26px, 3.5vw, 36px); font-weight: 800;
-      font-family: 'Playfair Display', serif; color: var(--text-light);
+      font-size: clamp(24px, 3vw, 30px); font-weight: 800;
+      font-family: 'Playfair Display', Georgia, serif; color: var(--text-light);
       line-height: 1.1;
     }
     .cd-label {
-      font-size: clamp(9px, 0.9vw, 11px); color: var(--text-muted);
+      font-size: 10px; color: var(--text-muted);
       text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
     }
     .cd-separator {
-      font-size: clamp(20px, 2.5vw, 30px); font-weight: 700;
-      color: var(--text-muted); padding-bottom: 12px;
+      font-size: 22px; font-weight: 700;
+      color: var(--text-muted); padding-bottom: 10px;
     }
 
     /* ============================================================
-       CONSEIL
+       MATIÈRES
+       ============================================================ */
+    .subjects-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .subject-chip {
+      background: var(--bg-card); border: 1px solid var(--card-border);
+      border-radius: 14px; padding: 16px 14px; transition: var(--transition);
+      text-decoration: none; color: var(--text-light);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .subject-chip:hover {
+      border-color: rgba(224, 184, 74, 0.22); transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .subject-chip:active { transform: scale(0.98); }
+    .subject-chip .icon-badge {
+      width: 42px; height: 42px; border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(184, 134, 11, 0.08); color: var(--accent-bright);
+      font-size: 17px; flex-shrink: 0;
+    }
+    .subject-chip .subject-name { font-size: clamp(13px, 1.3vw, 14.5px); font-weight: 600; }
+    .subject-chip .subject-chapters { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .subject-chip .subject-chapters.has-progress { color: var(--accent-bright); font-weight: 600; }
+
+    /* ============================================================
+       OUTILS
+       ============================================================ */
+    .tools-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .tool-card {
+      background: var(--bg-card); backdrop-filter: blur(10px);
+      border: 1px solid var(--card-border); border-radius: 14px;
+      padding: 16px 8px; text-align: center; transition: var(--transition);
+      text-decoration: none; color: var(--text-light);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 6px; min-height: 88px;
+    }
+    .tool-card:hover {
+      border-color: rgba(224, 184, 74, 0.22); transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    }
+    .tool-card:active { transform: scale(0.97); }
+    .tool-card .icon-badge {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(184, 134, 11, 0.08); color: var(--accent-bright);
+      font-size: 15px; transition: var(--transition);
+    }
+    .tool-card:hover .icon-badge {
+      background: rgba(184, 134, 11, 0.15);
+    }
+    .tool-card .name { font-size: clamp(11px, 1.1vw, 12px); font-weight: 600; }
+
+    /* ============================================================
+       CONSEILS — 3 catégories
+       ============================================================ */
+    .tips-grid {
+      display: grid; grid-template-columns: 1fr; gap: 10px;
+    }
+    .tip-card {
+      background: var(--bg-card); border: 1px solid var(--card-border);
+      border-radius: var(--radius); padding: 16px 18px;
+      transition: var(--transition); position: relative;
+    }
+    .tip-card:hover { border-color: rgba(224, 184, 74, 0.18); }
+    .tip-card .tip-header {
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .tip-card .tip-icon {
+      width: 40px; height: 40px; border-radius: 11px;
+      background: rgba(184, 134, 11, 0.10); color: var(--accent-bright);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .tip-card .tip-content { flex: 1; min-width: 0; }
+    .tip-card .tip-eyebrow {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.7px;
+      font-weight: 700; color: var(--accent-bright);
+    }
+    .tip-card .tip-title {
+      font-size: clamp(14px, 1.4vw, 15px); font-weight: 700;
+      color: var(--text-light); margin: 3px 0 5px;
+    }
+    .tip-card .tip-text {
+      font-size: clamp(12px, 1.2vw, 13px); color: var(--text-dim);
+      line-height: 1.65;
+    }
+    .tip-card.personalized {
+      background: linear-gradient(140deg, rgba(26, 58, 42, 0.45), rgba(20, 20, 20, 0.6));
+      border-color: rgba(45, 125, 90, 0.28);
+    }
+    .tip-card.personalized .tip-icon {
+      background: rgba(45, 125, 90, 0.15);
+      color: #7FE0A6;
+    }
+    .tip-card.personalized .tip-eyebrow { color: #7FE0A6; }
+    .tip-card.motivation {
+      background: linear-gradient(140deg, rgba(224, 184, 74, 0.10), rgba(20, 20, 20, 0.6));
+      border-color: rgba(224, 184, 74, 0.25);
+    }
+
+    /* ============================================================
+       AVIS / ABONNEMENT
        ============================================================ */
     .next-card {
       background: linear-gradient(135deg, rgba(184, 134, 11, 0.06), rgba(26, 58, 42, 0.08));
       border: 1px solid rgba(184, 134, 11, 0.12); border-radius: var(--radius);
       padding: 18px 20px; position: relative; overflow: hidden;
-    }
-    .next-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-bright));
     }
     .next-card .badge {
       font-size: 10px; font-weight: 600; color: var(--accent-bright);
@@ -348,156 +559,26 @@
     }
     .next-card .message strong { color: var(--text-light); }
 
-    /* ============================================================
-       SUBJECTS GRID
-       ============================================================ */
-    .subjects-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-    .subject-chip {
-      background: var(--bg-card); border: 1px solid var(--card-border);
-      border-radius: 14px; padding: 16px 14px; transition: var(--transition);
-      text-decoration: none; color: var(--text-light);
-      display: flex; align-items: center; gap: 14px;
-    }
-    .subject-chip:hover {
-      border-color: rgba(184, 134, 11, 0.16); transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
-    .subject-chip:active { transform: scale(0.97); }
-    .subject-chip .icon-badge {
-      width: 40px; height: 40px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(184, 134, 11, 0.08); color: var(--accent-bright);
-      font-size: 16px; flex-shrink: 0;
-    }
-    .subject-chip .subject-name { font-size: clamp(13px, 1.3vw, 14px); font-weight: 600; }
-    .subject-chip .subject-chapters { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-
-    /* ============================================================
-       SECTION AVIS — Carte + Bouton dédiés
-       ============================================================ */
     .avis-card {
       background: linear-gradient(135deg, rgba(184, 134, 11, 0.1), rgba(26, 58, 42, 0.08)) !important;
       border-color: rgba(184, 134, 11, 0.25) !important;
     }
-
     .avis-btn-inline {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 14px;
-      padding: 12px 24px;
-      border-radius: 30px;
-      border: none;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; margin-top: 14px;
+      padding: 12px 24px; border-radius: 30px; border: none;
       background: linear-gradient(135deg, var(--accent-bright), var(--accent));
-      color: #0A0A0A;
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-      cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+      color: #0A0A0A; font-family: 'Inter', sans-serif;
+      font-size: 13px; font-weight: 700; letter-spacing: 0.2px;
+      cursor: pointer; transition: var(--transition);
       box-shadow: 0 4px 16px rgba(184, 134, 11, 0.25);
-      position: relative;
-      overflow: hidden;
     }
-
-    .avis-btn-inline::before {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-      transition: left 0.6s ease;
-    }
-
-    .avis-btn-inline:hover::before {
-      left: 100%;
-    }
-
     .avis-btn-inline:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 28px rgba(184, 134, 11, 0.4);
     }
+    .avis-btn-inline:active { transform: translateY(0) scale(0.98); }
 
-    .avis-btn-inline:active {
-      transform: translateY(0) scale(0.97);
-    }
-
-    .avis-btn-inline i {
-      font-size: 14px;
-    }
-
-    /* ============================================================
-       TOOLS GRID
-       ============================================================ */
-    .tools-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-    .tool-card {
-      background: var(--bg-card); backdrop-filter: blur(10px);
-      border: 1px solid var(--card-border); border-radius: 14px;
-      padding: 16px 8px; text-align: center; transition: var(--transition);
-      text-decoration: none; color: var(--text-light);
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; gap: 6px; min-height: 88px;
-    }
-    .tool-card:hover {
-      border-color: rgba(184, 134, 11, 0.16); transform: translateY(-3px);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-    }
-    .tool-card:active { transform: scale(0.95); }
-    .tool-card .icon-badge {
-      width: 36px; height: 36px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(184, 134, 11, 0.08); color: var(--accent-bright);
-      font-size: 15px; transition: var(--transition);
-    }
-    .tool-card:hover .icon-badge {
-      background: rgba(184, 134, 11, 0.15);
-      transform: scale(1.05);
-    }
-    .tool-card .name { font-size: clamp(11px, 1.1vw, 12px); font-weight: 600; }
-
-    /* ============================================================
-       TIP CARD
-       ============================================================ */
-    .tip-card {
-      background: var(--bg-card); border: 1px solid var(--card-border);
-      border-radius: var(--radius); padding: 16px 18px;
-      transition: var(--transition);
-    }
-    .tip-card:hover { border-color: rgba(184, 134, 11, 0.14); }
-    .tip-card .tip-header {
-      display: flex; align-items: flex-start; gap: 12px;
-    }
-    .tip-card .tip-icon {
-      width: 38px; height: 38px; border-radius: 10px;
-      background: rgba(184, 134, 11, 0.1); color: var(--accent-bright);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; flex-shrink: 0;
-    }
-    .tip-card .tip-content { flex: 1; min-width: 0; }
-    .tip-card .tip-eyebrow {
-      font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
-      font-weight: 700; color: var(--accent-bright);
-    }
-    .tip-card .tip-title {
-      font-size: clamp(14px, 1.4vw, 15px); font-weight: 700;
-      color: var(--text-light); margin: 2px 0 4px;
-    }
-    .tip-card .tip-text {
-      font-size: clamp(12px, 1.2vw, 13px); color: var(--text-dim);
-      line-height: 1.6;
-    }
-
-    /* ============================================================
-       SUBSCRIPTION CARD
-       ============================================================ */
     .subscription-reminder { margin-top: 14px; }
     .sub-card {
       background: linear-gradient(135deg, rgba(184, 134, 11, 0.06), rgba(26, 58, 42, 0.08));
@@ -580,7 +661,6 @@
       border: 1px solid rgba(184, 134, 11, 0.2);
       border-radius: var(--radius);
       position: relative; overflow: hidden;
-      animation: fadeInUp 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .fcm-banner-content::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0;
@@ -592,12 +672,6 @@
       background: rgba(184, 134, 11, 0.15);
       display: flex; align-items: center; justify-content: center;
       font-size: 22px; flex-shrink: 0;
-      animation: fcmBell 2s ease-in-out infinite;
-    }
-    @keyframes fcmBell {
-      0%, 90%, 100% { transform: rotate(0); }
-      92%, 96% { transform: rotate(-10deg); }
-      94%, 98% { transform: rotate(10deg); }
     }
     .fcm-text { flex: 1; min-width: 0; }
     .fcm-title { font-size: 14px; font-weight: 700; color: var(--text-light); margin-bottom: 2px; }
@@ -638,7 +712,6 @@
       transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .avis-modal-overlay.show { opacity: 1; visibility: visible; }
-
     .avis-modal {
       background: linear-gradient(145deg, #141414 0%, #0A0A0A 100%);
       border: 1px solid rgba(184, 134, 11, 0.2);
@@ -657,15 +730,8 @@
       position: absolute; top: 0; left: 0; right: 0;
       height: 3px;
       background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
-      background-size: 200% 100%;
-      animation: borderShimmer 4s linear infinite;
       border-radius: 20px 20px 0 0;
     }
-    @keyframes borderShimmer {
-      0% { background-position: 0% 0%; }
-      100% { background-position: 300% 0%; }
-    }
-
     .avis-close {
       position: absolute; top: 14px; right: 14px;
       width: 32px; height: 32px; border-radius: 50%;
@@ -679,9 +745,7 @@
     .avis-close:hover {
       background: rgba(255, 255, 255, 0.08);
       color: var(--text-light);
-      transform: rotate(90deg);
     }
-
     .avis-header {
       text-align: center;
       margin-bottom: 20px;
@@ -694,11 +758,6 @@
       border: 1px solid rgba(184, 134, 11, 0.2);
       font-size: 28px;
       margin-bottom: 12px;
-      animation: iconFloat 3s ease-in-out infinite;
-    }
-    @keyframes iconFloat {
-      0%, 100% { transform: translateY(0) rotate(-2deg); }
-      50% { transform: translateY(-6px) rotate(2deg); }
     }
     .avis-title {
       font-size: 22px;
@@ -713,7 +772,6 @@
       font-size: 13px; color: var(--text-dim);
       line-height: 1.5;
     }
-
     .avis-field { margin-bottom: 18px; }
     .avis-label {
       display: block;
@@ -724,7 +782,6 @@
       letter-spacing: 0.5px;
     }
     .avis-label i { color: var(--accent-bright); margin-right: 6px; }
-
     .avis-stars {
       display: flex;
       align-items: center;
@@ -744,7 +801,6 @@
     .avis-star.active {
       color: var(--accent-bright);
       transform: scale(1.15);
-      text-shadow: 0 0 16px rgba(224, 184, 74, 0.5);
     }
     .avis-star-hint {
       text-align: center;
@@ -753,10 +809,8 @@
       margin-top: 4px;
       min-height: 18px;
       font-weight: 500;
-      transition: color 0.2s ease;
     }
     .avis-star-hint.active { color: var(--accent-bright); font-weight: 600; }
-
     .avis-textarea {
       width: 100%;
       min-height: 100px;
@@ -786,7 +840,6 @@
     }
     .avis-char-count.warning { color: var(--accent-bright); }
     .avis-char-count.danger { color: var(--danger); }
-
     .avis-categories {
       display: flex; flex-wrap: wrap; gap: 6px;
     }
@@ -808,7 +861,6 @@
       color: var(--accent-bright);
       border-color: rgba(184, 134, 11, 0.25);
     }
-
     .avis-actions {
       display: flex; gap: 10px;
       margin-top: 20px;
@@ -859,7 +911,6 @@
     .avis-btn.loading .btn-text,
     .avis-btn.loading .btn-icon { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .avis-success {
       text-align: center;
       padding: 20px 0;
@@ -870,11 +921,6 @@
       font-size: 56px;
       margin-bottom: 14px;
       display: inline-block;
-      animation: successPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    @keyframes successPop {
-      0% { transform: scale(0); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
     }
     .avis-success h3 {
       font-size: 22px;
@@ -888,7 +934,7 @@
     }
 
     /* ============================================================
-       ⚡ MODALE DE CONFIRMATION (harmonisation avec profil.html)
+       MODALE DE CONFIRMATION
        ============================================================ */
     .arvexa-confirm-overlay {
       position: fixed;
@@ -920,7 +966,7 @@
       overflow: hidden;
       transform: scale(0.9) translateY(20px);
       transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(184, 134, 11, 0.08);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
     }
     .arvexa-confirm-overlay.show .arvexa-confirm-modal {
       transform: scale(1) translateY(0);
@@ -931,15 +977,11 @@
       top: 0; left: 0; right: 0;
       height: 3px;
       background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
-      background-size: 200% 100%;
-      animation: borderShimmer 3s linear infinite;
     }
     .arvexa-confirm-icon-wrap {
       display: flex;
       justify-content: center;
       margin-bottom: 18px;
-      position: relative;
-      z-index: 1;
     }
     .arvexa-confirm-icon-box {
       width: 64px;
@@ -951,21 +993,10 @@
       align-items: center;
       justify-content: center;
       font-size: 28px;
-      position: relative;
-      animation: iconPulse 2s ease-in-out infinite;
-    }
-    @keyframes iconPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(184, 134, 11, 0.2); transform: scale(1); }
-      50% { box-shadow: 0 0 0 12px rgba(184, 134, 11, 0); transform: scale(1.03); }
     }
     .arvexa-confirm-icon-box.danger {
       background: linear-gradient(135deg, rgba(184, 92, 58, 0.15), rgba(184, 92, 58, 0.05));
       border-color: rgba(184, 92, 58, 0.3);
-      animation: iconPulseDanger 2s ease-in-out infinite;
-    }
-    @keyframes iconPulseDanger {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(184, 92, 58, 0.2); transform: scale(1); }
-      50% { box-shadow: 0 0 0 12px rgba(184, 92, 58, 0); transform: scale(1.03); }
     }
     .arvexa-confirm-title {
       font-size: 22px;
@@ -975,16 +1006,12 @@
       text-align: center;
       margin-bottom: 8px;
       line-height: 1.25;
-      position: relative;
-      z-index: 1;
     }
     .arvexa-confirm-divider {
       width: 40px;
       height: 2px;
       margin: 0 auto 16px;
       background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      position: relative;
-      z-index: 1;
     }
     .arvexa-confirm-message {
       font-size: 14.5px;
@@ -992,8 +1019,6 @@
       color: var(--text-dim);
       text-align: center;
       margin-bottom: 24px;
-      position: relative;
-      z-index: 1;
     }
     .arvexa-confirm-message strong {
       color: var(--text-light);
@@ -1002,8 +1027,6 @@
     .arvexa-confirm-actions {
       display: flex;
       gap: 10px;
-      position: relative;
-      z-index: 1;
     }
     .arvexa-confirm-btn {
       flex: 1;
@@ -1013,13 +1036,12 @@
       font-size: 14px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: var(--transition);
       font-family: 'Inter', sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      letter-spacing: 0.2px;
     }
     .arvexa-confirm-btn.cancel {
       background: rgba(255, 255, 255, 0.05);
@@ -1029,30 +1051,17 @@
     .arvexa-confirm-btn.cancel:hover {
       background: rgba(255, 255, 255, 0.09);
       color: var(--text-light);
-      border-color: rgba(255, 255, 255, 0.12);
     }
-    .arvexa-confirm-btn.cancel:active { transform: scale(0.97); }
     .arvexa-confirm-btn.danger {
       background: linear-gradient(135deg, #D97A3A, #B85C3A);
       color: #fff;
       box-shadow: 0 4px 16px rgba(184, 92, 58, 0.25);
     }
-    .arvexa-confirm-btn.danger:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 22px rgba(184, 92, 58, 0.4);
-    }
-    .arvexa-confirm-btn.danger:active { transform: scale(0.97); }
     .arvexa-confirm-btn.primary {
       background: linear-gradient(135deg, var(--accent-bright), var(--accent));
       color: #0A0A0A;
       box-shadow: 0 4px 16px rgba(184, 134, 11, 0.25);
     }
-    .arvexa-confirm-btn.primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 22px rgba(184, 134, 11, 0.4);
-    }
-    .arvexa-confirm-btn.primary:active { transform: scale(0.97); }
-    .arvexa-confirm-btn i { font-size: 13px; }
     .arvexa-confirm-close {
       position: absolute;
       top: 12px;
@@ -1074,7 +1083,6 @@
     .arvexa-confirm-close:hover {
       background: rgba(255, 255, 255, 0.08);
       color: var(--text-light);
-      transform: rotate(90deg);
     }
 
     /* ============================================================
@@ -1085,6 +1093,7 @@
       .sidebar-overlay { display: none !important; }
       .main-content { margin-left: var(--sidebar-width); }
       .header .menu-toggle { display: none; }
+      .tips-grid { grid-template-columns: repeat(3, 1fr); }
     }
 
     @media (max-width: 767px) {
@@ -1095,19 +1104,19 @@
     }
 
     @media (max-width: 640px) {
-      .hero-card { padding: 16px 16px; }
-      .countdown-display { gap: 8px; }
-      .cd-block { padding: 4px 10px; min-width: 50px; }
-      .cd-number { font-size: 22px; }
-      .cd-separator { font-size: 18px; padding-bottom: 10px; }
+      .progress-card { padding: 18px 16px; }
+      .countdown-card { padding: 18px 16px; }
       .countdown-header { flex-direction: column; align-items: flex-start; }
-      .countdown-status { font-size: 12px; padding: 2px 12px; }
+      .countdown-status { font-size: 10.5px; padding: 3px 10px; }
+      .countdown-display { gap: 6px; }
+      .cd-block { padding: 6px 10px; min-width: 54px; }
+      .cd-number { font-size: 22px; }
+      .cd-separator { font-size: 16px; padding-bottom: 8px; }
       .sub-card { flex-direction: column; text-align: center; padding: 16px 14px; gap: 10px; }
       .sub-card .sub-btn { width: 100%; justify-content: center; }
       .subjects-grid { gap: 8px; }
       .subject-chip { padding: 12px; }
-      .subject-chip .icon-badge { width: 32px; height: 32px; font-size: 14px; }
-      .subject-chip .subject-name { font-size: 13px; }
+      .subject-chip .icon-badge { width: 34px; height: 34px; font-size: 14px; }
       .tools-grid { gap: 6px; }
       .tool-card { padding: 12px 6px; min-height: 76px; }
       .tool-card .icon-badge { width: 30px; height: 30px; font-size: 13px; }
@@ -1115,33 +1124,32 @@
       .header .header-actions button { width: 32px; height: 32px; font-size: 13px; }
       .next-card .title { font-size: 16px; }
       .next-card .message { font-size: 13px; }
-
       .avis-modal { padding: 22px 18px 18px; }
       .avis-star { font-size: 28px; }
       .avis-title { font-size: 19px; }
-
       .arvexa-confirm-modal { padding: 26px 22px 20px; max-width: 360px; }
-      .arvexa-confirm-icon-box { width: 56px; height: 56px; font-size: 24px; }
       .arvexa-confirm-title { font-size: 19px; }
       .arvexa-confirm-message { font-size: 13.5px; }
-      .arvexa-confirm-btn { padding: 11px 14px; font-size: 13px; }
     }
 
     @media (max-width: 480px) {
       .container { padding: 10px 10px 16px; }
-      .cd-block { padding: 3px 8px; min-width: 44px; }
+      .progress-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+      .progress-metric { padding: 10px 4px; }
+      .progress-metric .num { font-size: 20px; }
+      .progress-metric .lbl { font-size: 9px; }
+      .progress-title { font-size: 17px; }
+      .countdown-display { gap: 4px; }
+      .cd-block { padding: 5px 8px; min-width: 46px; }
       .cd-number { font-size: 18px; }
-      .cd-separator { font-size: 14px; padding-bottom: 8px; }
+      .cd-separator { font-size: 14px; padding-bottom: 6px; }
       .cd-label { font-size: 8px; }
-      .countdown-status { font-size: 10px; padding: 2px 10px; }
-      .progress-track { height: 2px; }
-      .subjects-grid { grid-template-columns: 1fr; }
+      .subjects-grid { grid-template-columns: 1fr 1fr; }
       .tools-grid { grid-template-columns: repeat(3, 1fr); gap: 5px; }
       .tool-card { padding: 10px 4px; min-height: 68px; border-radius: 10px; }
       .tool-card .icon-badge { width: 28px; height: 28px; font-size: 12px; }
       .tool-card .name { font-size: 9px; }
       .header .greeting { font-size: 11px; }
-      .header .greeting #greetingEmoji { font-size: 13px; }
       .card { padding: 14px; }
       .section-title { margin: 18px 0 8px; }
       .section-title h3 { font-size: 14px; }
@@ -1151,15 +1159,13 @@
       .footer-links { gap: 10px; }
       .footer-links a { font-size: 11px; }
       .tip-card { padding: 14px; }
-      .tip-card .tip-icon { width: 32px; height: 32px; font-size: 13px; }
+      .tip-card .tip-icon { width: 34px; height: 34px; font-size: 13px; }
       .tip-card .tip-title { font-size: 13px; }
       .tip-card .tip-text { font-size: 12px; }
       .sub-card .sub-icon { width: 36px; height: 36px; font-size: 16px; }
-
       .avis-modal { padding: 20px 16px 16px; max-width: 340px; }
       .avis-icon-wrap { width: 52px; height: 52px; font-size: 24px; }
       .avis-title { font-size: 17px; }
-      .avis-subtitle { font-size: 12px; }
       .avis-star { font-size: 26px; }
       .avis-actions { flex-direction: column-reverse; gap: 8px; }
       .avis-btn { padding: 12px 16px; font-size: 13px; }
@@ -1171,31 +1177,35 @@
       .tool-card { padding: 8px 2px; min-height: 60px; border-radius: 8px; }
       .tool-card .icon-badge { width: 24px; height: 24px; font-size: 11px; border-radius: 6px; }
       .tool-card .name { font-size: 8px; }
-      .cd-block { padding: 2px 6px; min-width: 38px; }
-      .cd-number { font-size: 15px; }
-      .cd-separator { font-size: 12px; padding-bottom: 6px; }
+      .cd-block { padding: 3px 6px; min-width: 40px; }
+      .cd-number { font-size: 16px; }
       .cd-label { font-size: 7px; }
-      .countdown-title { font-size: 15px; }
-      .countdown-icon { font-size: 18px; }
-      .hero-card { padding: 12px; }
-
+      .progress-metric .num { font-size: 17px; }
+      .progress-metric .lbl { font-size: 8px; }
       .avis-star { font-size: 24px; gap: 4px; }
-      .avis-title { font-size: 16px; }
-      .avis-cat-chip { font-size: 11px; padding: 5px 10px; }
-
       .arvexa-confirm-modal { padding: 22px 18px 18px; }
-      .arvexa-confirm-title { font-size: 17px; }
-      .arvexa-confirm-message { font-size: 13px; margin-bottom: 20px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
 
-  a:focus-visible,
-button:focus-visible {
-  outline: none;
-}
+    /* ============================================================
+       ACCESSIBILITÉ — focus visible rétabli
+       ============================================================ */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
 
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -1266,21 +1276,79 @@ button:focus-visible {
     <!-- ===== CONTAINER ===== -->
     <div class="container" id="dashboardContent">
 
-      <!-- ===== CONTENU DYNAMIQUE ===== -->
       <div id="dynamicContent">
 
-        <!-- ===== HERO ===== -->
-        <div class="card hero-card">
+        <!-- ============================================================
+             BLOC 1 — PROGRESSION SCOLAIRE (prioritaire)
+             ============================================================ -->
+        <section class="progress-card" aria-labelledby="progressTitle">
+          <div class="progress-header">
+            <span class="progress-eyebrow">Ma progression</span>
+            <span class="progress-eyebrow" id="progressUpdated" style="opacity:0.55;font-weight:500;letter-spacing:0.5px;"></span>
+          </div>
+          <h2 class="progress-title" id="progressTitle">
+            Ton travail, <em>en un coup d’œil</em>
+          </h2>
+
+          <div class="progress-grid">
+            <div class="progress-metric">
+              <div class="num" id="metricChapters">0</div>
+              <div class="lbl">Chapitres lus</div>
+            </div>
+            <div class="progress-metric">
+              <div class="num" id="metricSubjects">0/4</div>
+              <div class="lbl">Matières travaillées</div>
+            </div>
+            <div class="progress-metric">
+              <div class="num" id="metricPercent">—</div>
+              <div class="lbl">Avancement</div>
+            </div>
+          </div>
+
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+          </div>
+
+          <div class="progress-foot">
+            <span class="progress-foot-text" id="progressFootText">
+              Commence une révision pour suivre ta progression.
+            </span>
+            <a href="arv-progress.html" class="progress-link">
+              Détails <i class="fas fa-arrow-right" style="font-size:10px;"></i>
+            </a>
+          </div>
+
+          <!-- Action principale intelligente -->
+          <a href="matiere.html?subject=mathematiques" class="primary-action" id="primaryAction">
+            <span class="primary-action-icon">
+              <i class="fas fa-book-open" id="primaryActionIcon"></i>
+            </span>
+            <span class="primary-action-body">
+              <span class="primary-action-eyebrow" id="primaryActionEyebrow">Commencer</span>
+              <span class="primary-action-title" id="primaryActionTitle">Commencer une révision</span>
+              <span class="primary-action-desc" id="primaryActionDesc">Choisis une matière pour démarrer.</span>
+            </span>
+            <i class="fas fa-arrow-right primary-action-arrow"></i>
+          </a>
+        </section>
+
+        <!-- ============================================================
+             BLOC 2 — COMPTE À REBOURS BAC
+             ============================================================ -->
+        <section class="countdown-card" aria-labelledby="countdownTitle">
           <div class="countdown-header">
             <div class="countdown-title-wrap">
               <span class="countdown-icon">📅</span>
-              <span class="countdown-title" id="countdownTitle">BAC 2026</span>
+              <div>
+                <div class="countdown-title" id="countdownTitle">BAC 2026</div>
+                <div class="countdown-date" id="countdownDate">Date indicative</div>
+              </div>
             </div>
             <span class="countdown-status early" id="countdownStatus">🌱 Tu as le temps</span>
           </div>
 
           <div class="progress-track">
-            <div class="progress-fill early" id="progressFill" style="width: 25%"></div>
+            <div class="progress-fill early" id="progressFill" style="width: 0%"></div>
           </div>
 
           <div class="countdown-display">
@@ -1299,54 +1367,46 @@ button:focus-visible {
               <span class="cd-label">Minutes</span>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- ===== CONSEIL ===== -->
-        <div class="section-title"><h3>💡 Conseil</h3></div>
-        <div class="next-card">
-          <div class="badge"><i class="fas fa-lightbulb"></i> Bien démarrer</div>
-          <div class="title">Comment choisir une matière ?</div>
-          <div class="message">
-            Commence par la matière où tu te sens <strong>le moins à l'aise</strong>. 
-            Ensuite, alterne avec celles que tu maîtrises mieux pour garder la <strong>motivation</strong>. 
-            N'oublie pas de faire des pauses régulières et de varier les méthodes de révision.
-          </div>
-        </div>
-
-        <!-- ===== MES MATIÈRES ===== -->
+        <!-- ============================================================
+             BLOC 3 — MATIÈRES
+             ============================================================ -->
         <div class="section-title"><h3>📐 Mes matières</h3></div>
-      <div class="subjects-grid" id="subjectsGrid">
-  <a href="matiere.html?subject=mathematiques" class="subject-chip">
-    <div class="icon-badge"><i class="fas fa-square-root-variable"></i></div>
-    <div>
-      <div class="subject-name">Mathématiques</div>
-      <div class="subject-chapters" data-subject="mathematiques">11 chapitres</div>
-    </div>
-  </a>
-  <a href="matiere.html?subject=physique" class="subject-chip">
-    <div class="icon-badge"><i class="fas fa-bolt"></i></div>
-    <div>
-      <div class="subject-name">Physique</div>
-      <div class="subject-chapters" data-subject="physique">17 chapitres</div>
-    </div>
-  </a>
-  <a href="matiere.html?subject=chimie" class="subject-chip">
-    <div class="icon-badge"><i class="fas fa-flask"></i></div>
-    <div>
-      <div class="subject-name">Chimie</div>
-      <div class="subject-chapters" data-subject="chimie">9 chapitres</div>
-    </div>
-  </a>
-  <a href="matiere.html?subject=svt" class="subject-chip">
-    <div class="icon-badge"><i class="fas fa-dna"></i></div>
-    <div>
-      <div class="subject-name">SVT</div>
-      <div class="subject-chapters" data-subject="svt">20 chapitres</div>
-    </div>
-  </a>
-</div>
+        <div class="subjects-grid" id="subjectsGrid">
+          <a href="matiere.html?subject=mathematiques" class="subject-chip">
+            <div class="icon-badge"><i class="fas fa-square-root-variable"></i></div>
+            <div>
+              <div class="subject-name">Mathématiques</div>
+              <div class="subject-chapters" data-subject="mathematiques">11 chapitres</div>
+            </div>
+          </a>
+          <a href="matiere.html?subject=physique" class="subject-chip">
+            <div class="icon-badge"><i class="fas fa-bolt"></i></div>
+            <div>
+              <div class="subject-name">Physique</div>
+              <div class="subject-chapters" data-subject="physique">17 chapitres</div>
+            </div>
+          </a>
+          <a href="matiere.html?subject=chimie" class="subject-chip">
+            <div class="icon-badge"><i class="fas fa-flask"></i></div>
+            <div>
+              <div class="subject-name">Chimie</div>
+              <div class="subject-chapters" data-subject="chimie">9 chapitres</div>
+            </div>
+          </a>
+          <a href="matiere.html?subject=svt" class="subject-chip">
+            <div class="icon-badge"><i class="fas fa-dna"></i></div>
+            <div>
+              <div class="subject-name">SVT</div>
+              <div class="subject-chapters" data-subject="svt">20 chapitres</div>
+            </div>
+          </a>
+        </div>
 
-        <!-- ===== OUTILS & RESSOURCES ===== -->
+        <!-- ============================================================
+             BLOC 4 — OUTILS
+             ============================================================ -->
         <div class="section-title"><h3>🛠️ Outils & Ressources</h3></div>
         <div class="tools-grid" id="toolsGrid">
           <a href="calculatrice.html" class="tool-card">
@@ -1375,20 +1435,46 @@ button:focus-visible {
           </a>
         </div>
 
-        <!-- ===== CONSEIL DU JOUR ===== -->
-        <div class="section-title"><h3>💡 Conseil du jour</h3></div>
-        <div class="tip-card" id="tipCard">
-          <div class="tip-header">
-            <div class="tip-icon"><i class="fas fa-lightbulb"></i></div>
-            <div class="tip-content">
-              <div class="tip-eyebrow">Conseil du jour</div>
-              <div class="tip-title" id="tipTitle">Méthode de travail</div>
-              <div class="tip-text" id="tipText">Chargement du conseil...</div>
+        <!-- ============================================================
+             BLOC 5 — CONSEILS (3 catégories)
+             ============================================================ -->
+        <div class="section-title"><h3>💡 Conseils pour toi</h3></div>
+        <div class="tips-grid">
+          <div class="tip-card" id="tipDaily">
+            <div class="tip-header">
+              <div class="tip-icon"><i class="fas fa-lightbulb"></i></div>
+              <div class="tip-content">
+                <div class="tip-eyebrow">Révision du jour</div>
+                <div class="tip-title" id="tipDailyTitle">Méthode de travail</div>
+                <div class="tip-text" id="tipDailyText">Chargement du conseil...</div>
+              </div>
+            </div>
+          </div>
+          <div class="tip-card personalized" id="tipPersonalized" style="display:none;">
+            <div class="tip-header">
+              <div class="tip-icon"><i class="fas fa-bullseye"></i></div>
+              <div class="tip-content">
+                <div class="tip-eyebrow">Personnalisé</div>
+                <div class="tip-title" id="tipPersoTitle">—</div>
+                <div class="tip-text" id="tipPersoText">—</div>
+              </div>
+            </div>
+          </div>
+          <div class="tip-card motivation" id="tipMotivation">
+            <div class="tip-header">
+              <div class="tip-icon"><i class="fas fa-fire"></i></div>
+              <div class="tip-content">
+                <div class="tip-eyebrow">Motivation</div>
+                <div class="tip-title" id="tipMotivationTitle">Continue comme ça</div>
+                <div class="tip-text" id="tipMotivationText">Chaque petit pas te rapproche de ton objectif.</div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- ===== SECTION AVIS ===== -->
+        <!-- ============================================================
+             BLOC 6 — AVIS
+             ============================================================ -->
         <div class="section-title"><h3>⭐ Ton avis compte</h3></div>
         <div class="next-card avis-card">
           <div class="badge"><i class="fas fa-star"></i> Aide-nous à nous améliorer</div>
@@ -1402,7 +1488,9 @@ button:focus-visible {
           </button>
         </div>
 
-        <!-- ===== ABONNEMENT ===== -->
+        <!-- ============================================================
+             BLOC 7 — ABONNEMENT
+             ============================================================ -->
         <div class="subscription-reminder" id="subscriptionReminder" style="display:none;">
           <div class="sub-card" id="subCard">
             <div class="sub-icon"><i class="fas fa-crown"></i></div>
@@ -1444,16 +1532,12 @@ button:focus-visible {
       <button class="avis-close" id="avisClose" aria-label="Fermer">
         <i class="fas fa-times"></i>
       </button>
-
-      <!-- Formulaire -->
       <div id="avisForm">
         <div class="avis-header">
           <div class="avis-icon-wrap">⭐</div>
           <h2 class="avis-title">Ton <em>avis</em> compte</h2>
           <p class="avis-subtitle">Aide-nous à améliorer ARVEXA School</p>
         </div>
-
-        <!-- Étoiles -->
         <div class="avis-field">
           <label class="avis-label"><i class="fas fa-star"></i> Note globale</label>
           <div class="avis-stars" id="avisStars">
@@ -1465,8 +1549,6 @@ button:focus-visible {
           </div>
           <div class="avis-star-hint" id="avisStarHint">Clique sur les étoiles</div>
         </div>
-
-        <!-- Catégories -->
         <div class="avis-field">
           <label class="avis-label"><i class="fas fa-tags"></i> Catégorie</label>
           <div class="avis-categories" id="avisCategories">
@@ -1477,8 +1559,6 @@ button:focus-visible {
             <button class="avis-cat-chip" data-cat="autre"><i class="fas fa-ellipsis"></i> Autre</button>
           </div>
         </div>
-
-        <!-- Message -->
         <div class="avis-field">
           <label class="avis-label"><i class="fas fa-pen"></i> Ton message</label>
           <textarea
@@ -1489,8 +1569,6 @@ button:focus-visible {
           ></textarea>
           <div class="avis-char-count" id="avisCharCount">0 / 500</div>
         </div>
-
-        <!-- Actions -->
         <div class="avis-actions">
           <button class="avis-btn cancel" id="avisCancel">
             <i class="fas fa-times"></i>
@@ -1503,8 +1581,6 @@ button:focus-visible {
           </button>
         </div>
       </div>
-
-      <!-- Succès -->
       <div class="avis-success" id="avisSuccess">
         <div class="avis-success-icon">🎉</div>
         <h3>Merci beaucoup !</h3>
@@ -1518,8 +1594,7 @@ button:focus-visible {
   </div>
 
   <!-- ============================================================
-       MODALE DE CONFIRMATION DE DÉCONNEXION
-       (harmonisation avec profil.html)
+       MODALE CONFIRMATION DÉCONNEXION
        ============================================================ -->
   <div class="arvexa-confirm-overlay" id="arvexaConfirmModal">
     <div class="arvexa-confirm-modal">
@@ -1547,7 +1622,7 @@ button:focus-visible {
       </div>
     </div>
   </div>
-  
+
   <!-- ============================================================ -->
   <!-- SCRIPTS                                                       -->
   <!-- ============================================================ -->
@@ -1563,17 +1638,15 @@ button:focus-visible {
   </script>
     <script type="module">
   // ================================================================
-  // INDEX — Version robuste avec modale de confirmation
-  // Corrections appliquées (voir commentaires ✅)
-  //  - C1 : Garde d'auth avec délai de grâce sur null initial + unsub unique
-  //  - C2 : Retry Firestore avant redirect register.html
-  //  - C3 : Log explicite si browserLocalPersistence refusée
-  //  - C4 : Désabonnement propre onAuthStateChanged dans performLogout
-  //  - C5 : Garde dans blocked avec signOut tolérant
-  //  - A1 : isAuthResolved réellement utilisé (bloque redirectToLogin tant que non résolu)
-  //  - A2 : redirectToLogin inerte si déjà résolu sans user ET si auth.currentUser existe
-  //  - A3 : loadUserData !exists ne redirige plus immédiatement (retry doux)
-  //  - A4 : Cleanup unsub sur beforeunload (hygiène)
+  // INDEX — Version refondue (progression prioritaire, action intelligente)
+  // Corrections conservées de la version précédente + ajouts :
+  //  - Bloc progression lue depuis localStorage (arvexa_read_parts)
+  //  - Action principale conditionnelle (aucune donnée inventée)
+  //  - Conseils en 3 catégories (révision / personnalisé / motivation)
+  //  - Compte à rebours avec date de référence visible
+  //  - showToast sécurisé (textContent, plus d'innerHTML)
+  //  - handleMissingUserDoc sans redirection register.html
+  //  - focus-visible rétabli
   // ================================================================
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -1628,7 +1701,6 @@ button:focus-visible {
     })
   });
 
-  // ⚡ FIREBASE MESSAGING
   let messaging = null;
   try {
     messaging = getMessaging(app);
@@ -1636,11 +1708,10 @@ button:focus-visible {
     console.warn('FCM non supporté:', e);
   }
 
-  // ✅ CORRECTION C3 — Log explicite de l'échec de persistance
   try {
     await setPersistence(auth, browserLocalPersistence);
   } catch (e) {
-    console.warn('[Auth] Persistance locale indisponible, repli sur le mode par défaut :', e.code || e.message);
+    console.warn('[Auth] Persistance locale indisponible :', e.code || e.message);
   }
 
   // ================================================================
@@ -1654,11 +1725,7 @@ button:focus-visible {
   function saveSession(user) {
     if (!user) return;
     try {
-      const data = {
-        uid: user.uid,
-        email: user.email,
-        lastActive: Date.now()
-      };
+      const data = { uid: user.uid, email: user.email, lastActive: Date.now() };
       localStorage.setItem(SESSION_KEY, JSON.stringify(data));
       localStorage.setItem(LAST_UID_KEY, user.uid);
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
@@ -1678,9 +1745,7 @@ button:focus-visible {
   function saveUserDataToCache(data, uid) {
     try {
       localStorage.setItem(USER_DATA_KEY, JSON.stringify({
-        ...data,
-        _cachedAt: Date.now(),
-        _uid: uid
+        ...data, _cachedAt: Date.now(), _uid: uid
       }));
     } catch (e) {}
   }
@@ -1694,14 +1759,9 @@ button:focus-visible {
         return null;
       }
       return cached;
-    } catch (e) {
-      return null;
-    }
+    } catch (e) { return null; }
   }
 
-  // ================================================================
-  // UTILITAIRE
-  // ================================================================
   function toDate(value) {
     if (!value) return null;
     if (typeof value.toDate === 'function') return value.toDate();
@@ -1727,8 +1787,6 @@ button:focus-visible {
   const userFirstName = document.getElementById('userFirstName');
   const greetingText = document.getElementById('greetingText');
   const greetingEmoji = document.getElementById('greetingEmoji');
-  const tipTitle = document.getElementById('tipTitle');
-  const tipText = document.getElementById('tipText');
   const notifDot = document.getElementById('notifDot');
 
   const cdDays = document.getElementById('cdDays');
@@ -1737,15 +1795,37 @@ button:focus-visible {
   const progressFill = document.getElementById('progressFill');
   const countdownStatus = document.getElementById('countdownStatus');
   const countdownTitle = document.getElementById('countdownTitle');
+  const countdownDate = document.getElementById('countdownDate');
+
+  const metricChapters = document.getElementById('metricChapters');
+  const metricSubjects = document.getElementById('metricSubjects');
+  const metricPercent = document.getElementById('metricPercent');
+  const progressBar = document.getElementById('progressBar');
+  const progressFootText = document.getElementById('progressFootText');
+  const progressUpdated = document.getElementById('progressUpdated');
+
+  const primaryAction = document.getElementById('primaryAction');
+  const primaryActionIcon = document.getElementById('primaryActionIcon');
+  const primaryActionEyebrow = document.getElementById('primaryActionEyebrow');
+  const primaryActionTitle = document.getElementById('primaryActionTitle');
+  const primaryActionDesc = document.getElementById('primaryActionDesc');
+
+  const tipDailyTitle = document.getElementById('tipDailyTitle');
+  const tipDailyText = document.getElementById('tipDailyText');
+  const tipPersonalized = document.getElementById('tipPersonalized');
+  const tipPersoTitle = document.getElementById('tipPersoTitle');
+  const tipPersoText = document.getElementById('tipPersoText');
+  const tipMotivationTitle = document.getElementById('tipMotivationTitle');
+  const tipMotivationText = document.getElementById('tipMotivationText');
 
   // ================================================================
   // CONSTANTES
   // ================================================================
   const SUBJECTS = [
-    { key: 'mathematiques', name: 'Mathématiques', chapters: 11 },
-    { key: 'physique', name: 'Physique', chapters: 17 },
-    { key: 'chimie', name: 'Chimie', chapters: 9 },
-    { key: 'svt', name: 'SVT', chapters: 20 }
+    { key: 'mathematiques', name: 'Mathématiques', chapters: 11, icon: 'fa-square-root-variable' },
+    { key: 'physique', name: 'Physique', chapters: 17, icon: 'fa-bolt' },
+    { key: 'chimie', name: 'Chimie', chapters: 9, icon: 'fa-flask' },
+    { key: 'svt', name: 'SVT', chapters: 20, icon: 'fa-dna' }
   ];
 
   const VAPID_KEY = 'BKx2iXs_mlCDdDjh_JxsjOQiOlW1-95pJi8myJCr503pB8TkFjJ8bZfpZ7Fv9pYyV_O9_Ca_fbwkO5eGPrnWaHA';
@@ -1762,7 +1842,7 @@ button:focus-visible {
     { title: '🌿 Pause nature', text: "Prends une pause de 10 minutes en extérieur. L'air frais booste la concentration." },
     { title: '🎵 Concentration', text: "Écoute de la musique instrumentale ou des sons de nature pour rester focus." },
     { title: '📖 Lecture active', text: "Ne lis pas passivement. Pose-toi des questions, souligne, prends des notes." },
-    { title: '🏆 Petit victoire', text: "Célèbre chaque petite victoire. Chaque exercice réussi est une étape franchie." },
+    { title: '🏆 Petite victoire', text: "Célèbre chaque petite victoire. Chaque exercice réussi est une étape franchie." },
     { title: '💤 Sommeil', text: "Dors 7 à 8 heures par nuit. Le cerveau consolide les apprentissages pendant le sommeil." },
     { title: '🥗 Nutrition', text: "Mange équilibré. Un cerveau bien nourri est un cerveau performant." },
     { title: '🚶 Bouge', text: "Fais 15 minutes d'exercice par jour. Le sport améliore la mémoire et la concentration." },
@@ -1779,17 +1859,14 @@ button:focus-visible {
   // COMPTE À REBOURS
   // ================================================================
   function getExamDate() {
-  // ⚡ Délègue à bac-date.js (source unique de vérité)
-  if (typeof window.ARVEXA_getExamDate === 'function') {
-    return window.ARVEXA_getExamDate();
-  }
-
-  // Fallback de secours (si bac-date.js n'est pas chargé)
-  const now = new Date();
-  const year = now.getFullYear();
-  const juneThisYear = new Date(year, 5, 1);
-  if (now < juneThisYear) return juneThisYear;
-  return new Date(year + 1, 5, 1);
+    if (typeof window.ARVEXA_getExamDate === 'function') {
+      return window.ARVEXA_getExamDate();
+    }
+    const now = new Date();
+    const year = now.getFullYear();
+    const juneThisYear = new Date(year, 5, 1);
+    if (now < juneThisYear) return juneThisYear;
+    return new Date(year + 1, 5, 1);
   }
 
   function getSchoolYearStart(examDate) {
@@ -1815,6 +1892,11 @@ button:focus-visible {
     const diffMs = exam - now;
 
     countdownTitle.textContent = 'BAC ' + exam.getFullYear();
+    try {
+      countdownDate.textContent = 'Échéance : ' + exam.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch (e) {
+      countdownDate.textContent = 'Date indicative';
+    }
 
     if (diffMs <= 0) {
       cdDays.textContent = '0';
@@ -1876,60 +1958,178 @@ button:focus-visible {
   updateGreeting('Élève');
 
   // ================================================================
-  // CONSEIL DU JOUR
+  // PROGRESSION SCOLAIRE (prioritaire)
   // ================================================================
-  function renderTip() {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 0);
-    const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-    const tip = TIPS[dayOfYear % TIPS.length] || TIPS[0];
-    tipTitle.textContent = tip.title;
-    tipText.textContent = tip.text;
-  }
-
-  renderTip();
-
-  // ================================================================
-  // COMPTEUR CHAPITRES
-  // ================================================================
-  function updateSubjectsProgress() {
+  function readProgressData() {
     let readParts = [];
     try {
       readParts = JSON.parse(localStorage.getItem(READ_KEY) || '[]');
     } catch (e) { readParts = []; }
 
-    SUBJECTS.forEach(subject => {
-      const chaptersSet = new Set();
-      readParts.forEach(key => {
-        const parts = key.split('_');
-        if (parts[0] === subject.key && parts.length >= 2) {
-          chaptersSet.add(parts[1]);
-        }
-      });
-      const readCount = chaptersSet.size;
+    const perSubject = {};
+    SUBJECTS.forEach(s => { perSubject[s.key] = new Set(); });
 
-      const el = document.querySelector(`[data-subject="${subject.key}"]`);
-      if (el) {
-        const displayCount = readCount > 0
-          ? `${readCount}/${subject.chapters} chapitres lus`
-          : `${subject.chapters} chapitres`;
-        el.textContent = displayCount;
+    readParts.forEach(key => {
+      const parts = String(key).split('_');
+      if (parts.length >= 2 && perSubject[parts[0]]) {
+        perSubject[parts[0]].add(parts[1]);
       }
     });
+
+    let totalChaptersRead = 0;
+    let subjectsTouched = 0;
+    const totalChaptersAll = SUBJECTS.reduce((acc, s) => acc + s.chapters, 0);
+
+    SUBJECTS.forEach(s => {
+      const count = perSubject[s.key].size;
+      if (count > 0) {
+        subjectsTouched++;
+        totalChaptersRead += count;
+      }
+    });
+
+    return {
+      perSubject,
+      totalChaptersRead,
+      totalChaptersAll,
+      subjectsTouched,
+      subjectsTotal: SUBJECTS.length
+    };
   }
 
-  updateSubjectsProgress();
+  function renderProgress() {
+    const data = readProgressData();
 
-  // ✅ CORRECTION #7 — Rafraîchir les compteurs quand l'utilisateur revient sur la page
-  window.addEventListener('pageshow', (e) => {
-    if (e.persisted) updateSubjectsProgress();
-  });
+    metricChapters.textContent = data.totalChaptersRead;
+    metricSubjects.textContent = `${data.subjectsTouched}/${data.subjectsTotal}`;
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      updateSubjectsProgress();
+    if (data.totalChaptersRead > 0 && data.totalChaptersAll > 0) {
+      const pct = Math.round((data.totalChaptersRead / data.totalChaptersAll) * 100);
+      metricPercent.textContent = pct + '%';
+      progressBar.style.width = pct + '%';
+      progressFootText.innerHTML = '';
+      const strong = document.createElement('strong');
+      strong.textContent = data.totalChaptersRead + ' chapitre' + (data.totalChaptersRead > 1 ? 's' : '');
+      progressFootText.appendChild(strong);
+      progressFootText.appendChild(document.createTextNode(' lus sur ' + data.totalChaptersAll + ' au total.'));
+    } else {
+      metricPercent.textContent = '—';
+      progressBar.style.width = '0%';
+      progressFootText.textContent = 'Commence une révision pour suivre ta progression.';
     }
-  });
+
+    // Mettre à jour les cartes matières (compteurs)
+    SUBJECTS.forEach(s => {
+      const el = document.querySelector(`[data-subject="${s.key}"]`);
+      if (el) {
+        const count = data.perSubject[s.key].size;
+        if (count > 0) {
+          el.textContent = `${count}/${s.chapters} chapitres lus`;
+          el.classList.add('has-progress');
+        } else {
+          el.textContent = `${s.chapters} chapitres`;
+          el.classList.remove('has-progress');
+        }
+      }
+    });
+
+    // Action principale
+    renderPrimaryAction(data);
+
+    // Conseil personnalisé
+    renderPersonalizedTip(data);
+  }
+
+  function renderPrimaryAction(data) {
+    // Trouver la matière avec le plus de chapitres lus mais incomplète
+    let bestSubject = null;
+    let bestRead = 0;
+
+    SUBJECTS.forEach(s => {
+      const count = data.perSubject[s.key].size;
+      if (count > 0 && count < s.chapters && count > bestRead) {
+        bestRead = count;
+        bestSubject = s;
+      }
+    });
+
+    if (bestSubject) {
+      primaryAction.href = `matiere.html?subject=${bestSubject.key}`;
+      primaryActionIcon.className = 'fas fa-play';
+      primaryActionEyebrow.textContent = 'Continuer';
+      primaryActionTitle.textContent = 'Reprendre ' + bestSubject.name;
+      primaryActionDesc.textContent = bestRead + ' chapitre' + (bestRead > 1 ? 's' : '') + ' déjà lu' + (bestRead > 1 ? 's' : '') + '.';
+    } else if (data.totalChaptersRead === 0) {
+      primaryAction.href = 'matiere.html?subject=mathematiques';
+      primaryActionIcon.className = 'fas fa-book-open';
+      primaryActionEyebrow.textContent = 'Commencer';
+      primaryActionTitle.textContent = 'Commencer une révision';
+      primaryActionDesc.textContent = 'Choisis une matière pour démarrer.';
+    } else {
+      // Toutes les matières travaillées sont complètes
+      primaryAction.href = 'arv-progress.html';
+      primaryActionIcon.className = 'fas fa-chart-line';
+      primaryActionEyebrow.textContent = 'Progresser';
+      primaryActionTitle.textContent = 'Voir ma progression détaillée';
+      primaryActionDesc.textContent = 'Analyse tes chapitres lus.';
+    }
+  }
+
+  // ================================================================
+  // CONSEILS
+  // ================================================================
+  function renderDailyTip() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+    const tip = TIPS[dayOfYear % TIPS.length] || TIPS[0];
+    tipDailyTitle.textContent = tip.title;
+    tipDailyText.textContent = tip.text;
+  }
+
+  function renderPersonalizedTip(data) {
+    if (data.totalChaptersRead === 0) {
+      tipPersonalized.style.display = 'none';
+      return;
+    }
+
+    // Trouver la matière la moins avancée (pour suggérer de la travailler)
+    let weakest = null;
+    let weakestRatio = Infinity;
+    SUBJECTS.forEach(s => {
+      const count = data.perSubject[s.key].size;
+      const ratio = count / s.chapters;
+      if (ratio < weakestRatio) {
+        weakestRatio = ratio;
+        weakest = s;
+      }
+    });
+
+    if (!weakest) {
+      tipPersonalized.style.display = 'none';
+      return;
+    }
+
+    tipPersonalized.style.display = 'block';
+    tipPersoTitle.textContent = 'Pense à ' + weakest.name;
+    tipPersoText.textContent = `Tu as lu ${data.perSubject[weakest.key].size} chapitre${data.perSubject[weakest.key].size > 1 ? 's' : ''} sur ${weakest.chapters}. Continue pour couvrir le programme.`;
+  }
+
+  function renderMotivation() {
+    // Rotation sur les 4 messages, sans dépendre de données externes
+    const messages = [
+      { title: 'Continue comme ça', text: 'Chaque petit pas te rapproche de ton objectif.' },
+      { title: 'La régularité paie', text: 'Mieux vaut 20 minutes par jour que 3 heures une fois par semaine.' },
+      { title: 'Tu progresses', text: 'Chaque chapitre lu est une victoire. Sois fier de ton travail.' },
+      { title: 'Garde le cap', text: 'Le BAC se prépare sur la durée. Reste constant.' }
+    ];
+    const idx = new Date().getDate() % messages.length;
+    tipMotivationTitle.textContent = messages[idx].title;
+    tipMotivationText.textContent = messages[idx].text;
+  }
+
+  renderDailyTip();
+  renderMotivation();
 
   // ================================================================
   // NOTIFICATIONS NON LUES
@@ -1942,10 +2142,8 @@ button:focus-visible {
         limit(1)
       );
       const snapshot = await getDocs(q);
-      const hasUnread = !snapshot.empty;
-      if (notifDot) notifDot.classList.toggle('show', hasUnread);
+      if (notifDot) notifDot.classList.toggle('show', !snapshot.empty);
     } catch (e) {
-      // ✅ CORRECTION #8 — On trace l'erreur au lieu de l'avaler complètement
       console.warn('[Notif] checkUnread:', e.message);
       if (notifDot) notifDot.classList.remove('show');
     }
@@ -2008,9 +2206,6 @@ button:focus-visible {
     reminder.style.display = 'none';
   }
 
-  // ================================================================
-  // RENDU UTILISATEUR
-  // ================================================================
   function renderUserData(data) {
     if (!data) return;
     updateGreeting(data.firstName || 'Élève');
@@ -2018,14 +2213,13 @@ button:focus-visible {
     updateSubscriptionDisplay(premium, data);
   }
 
-  // ✅ CORRECTION #6 — Nettoyage du code mort (skeletonLoading inexistant)
   function showDashboard() {
     const dynamic = document.getElementById('dynamicContent');
     if (dynamic) dynamic.style.display = 'block';
   }
 
   // ================================================================
-  // TOAST — UNE SEULE DÉFINITION
+  // TOAST — SÉCURISÉ (textContent, plus d'innerHTML sur le message)
   // ================================================================
   function showToast(message, type = 'info') {
     let container = document.getElementById('toastContainer');
@@ -2050,62 +2244,40 @@ button:focus-visible {
 
     const toast = document.createElement('div');
     const icons = {
-      success: 'fa-check-circle',
-      error: 'fa-exclamation-circle',
-      info: 'fa-info-circle',
-      warning: 'fa-exclamation-triangle'
+      success: 'fa-check-circle', error: 'fa-exclamation-circle',
+      info: 'fa-info-circle', warning: 'fa-exclamation-triangle'
     };
     const colors = {
-      success: '#3AB67E',
-      error: '#E74C3C',
-      info: '#E0B84A',
-      warning: '#D4A017'
+      success: '#3AB67E', error: '#E74C3C', info: '#E0B84A', warning: '#D4A017'
     };
 
     toast.style.cssText = `
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 18px;
-      border-radius: 12px;
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 18px; border-radius: 12px;
       background: rgba(20, 22, 20, 0.96);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
       border: 1px solid ${colors[type] || colors.info}44;
-      color: #F5F0E8;
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
+      color: #F5F0E8; font-family: 'Inter', sans-serif;
+      font-size: 13px; font-weight: 500;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
       pointer-events: auto;
-      animation: toastSlideIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     `;
 
-    toast.innerHTML = `
-      <i class="fas ${icons[type] || icons.info}" style="color: ${colors[type] || colors.info}; font-size: 15px; flex-shrink: 0;"></i>
-      <span style="flex: 1; min-width: 0; line-height: 1.5;">${message}</span>
-    `;
+    const icon = document.createElement('i');
+    icon.className = `fas ${icons[type] || icons.info}`;
+    icon.style.cssText = `color: ${colors[type] || colors.info}; font-size: 15px; flex-shrink: 0;`;
+    toast.appendChild(icon);
 
-    if (!document.getElementById('toastAnimationStyle')) {
-      const style = document.createElement('style');
-      style.id = 'toastAnimationStyle';
-      style.textContent = `
-        @keyframes toastSlideIn {
-          from { opacity: 0; transform: translateY(-20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes toastSlideOut {
-          from { opacity: 1; transform: translateY(0); }
-          to { opacity: 0; transform: translateY(-20px); }
-        }
-      `;
-      document.head.appendChild(style);
-    }
+    const span = document.createElement('span');
+    span.style.cssText = 'flex: 1; min-width: 0; line-height: 1.5;';
+    span.textContent = String(message);
+    toast.appendChild(span);
 
     container.appendChild(toast);
 
     setTimeout(() => {
-      toast.style.animation = 'toastSlideOut 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
       setTimeout(() => toast.remove(), 300);
     }, 3000);
   }
@@ -2209,24 +2381,14 @@ button:focus-visible {
   async function saveFcmToken(token) {
     const user = auth.currentUser;
     if (!user) return;
-
     try {
       const userRef = doc(db, 'users', user.uid);
       const userSnap = await getDoc(userRef);
       const data = userSnap.exists() ? userSnap.data() : {};
-
       let tokens = Array.isArray(data.fcmTokens) ? [...data.fcmTokens] : [];
-
-      if (data.fcmToken && !tokens.includes(data.fcmToken)) {
-        tokens.push(data.fcmToken);
-      }
-
-      if (!tokens.includes(token)) {
-        tokens.push(token);
-      }
-
+      if (data.fcmToken && !tokens.includes(data.fcmToken)) tokens.push(data.fcmToken);
+      if (!tokens.includes(token)) tokens.push(token);
       if (tokens.length > 5) tokens = tokens.slice(-5);
-
       await updateDoc(userRef, {
         fcmTokens: tokens,
         fcmTokenUpdatedAt: serverTimestamp(),
@@ -2247,30 +2409,25 @@ button:focus-visible {
   }
 
   async function checkExistingFcmToken(user) {
-  // ⚡ Double garde : messaging + Notification API
-  if (!messaging) return;
-  if (typeof Notification === 'undefined') return;
-  if (Notification.permission !== 'granted') return;
-
-  try {
-    const swRegistration = window.arvexaFcmRegistration
-      ? await window.arvexaFcmRegistration
-      : await navigator.serviceWorker.getRegistration('./firebase-cloud-messaging-push-scope');
-    if (!swRegistration) return;
-
-    const token = await getToken(messaging, {
-      vapidKey: VAPID_KEY,
-      serviceWorkerRegistration: swRegistration
-    });
-
-    if (token) {
-      fcmToken = token;
-      await saveFcmToken(token);
+    if (!messaging) return;
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission !== 'granted') return;
+    try {
+      const swRegistration = window.arvexaFcmRegistration
+        ? await window.arvexaFcmRegistration
+        : await navigator.serviceWorker.getRegistration('./firebase-cloud-messaging-push-scope');
+      if (!swRegistration) return;
+      const token = await getToken(messaging, {
+        vapidKey: VAPID_KEY,
+        serviceWorkerRegistration: swRegistration
+      });
+      if (token) {
+        fcmToken = token;
+        await saveFcmToken(token);
+      }
+    } catch (e) {
+      console.warn('[FCM] checkExisting failed:', e.message);
     }
-  } catch (e) {
-    // Silencieux : FCM est optionnel
-    console.warn('[FCM] checkExisting failed:', e.message);
-  }
   }
 
   // ================================================================
@@ -2281,9 +2438,7 @@ button:focus-visible {
   let currentUid = null;
   let isRedirecting = false;
   let isAuthResolved = false;
-  // ✅ CORRECTION #2 — Mémoriser le dernier UID écouté pour éviter les doubles abonnements
   let lastSnapshotUid = null;
-  // ✅ CORRECTION C1 — Timer de grâce pour le null initial + unsub unique de l'observateur auth
   let authGraceTimer = null;
   let authUnsubscribe = null;
 
@@ -2341,7 +2496,6 @@ button:focus-visible {
       updateStarHint();
       updateSubmitState();
     });
-
     star.addEventListener('mouseenter', () => {
       const hoverValue = parseInt(star.dataset.value);
       avisStars.forEach(s => {
@@ -2417,14 +2571,10 @@ button:focus-visible {
 
       await addDoc(collection(db, 'avis'), {
         userId: auth.currentUser.uid,
-        userEmail: userEmail,
-        userName: userName,
-        rating: currentRating,
-        category: currentCategory,
-        message: message,
-        createdAt: serverTimestamp(),
-        appVersion: '1.0.0',
-        platform: navigator.userAgent
+        userEmail, userName,
+        rating: currentRating, category: currentCategory,
+        message, createdAt: serverTimestamp(),
+        appVersion: '1.0.0', platform: navigator.userAgent
       });
 
       try {
@@ -2440,7 +2590,6 @@ button:focus-visible {
         telegramSent ? 'Avis envoyé.' : 'Avis enregistré. Notification Telegram différée.',
         telegramSent ? 'success' : 'info'
       );
-
     } catch (error) {
       console.error('Erreur envoi avis:', error);
       showToast('Impossible d\'envoyer ton avis. Réessaie.', 'error');
@@ -2457,17 +2606,13 @@ button:focus-visible {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userName, userEmail, rating, category, message })
     });
-
     const data = await response.json().catch(() => null);
-    if (!response.ok) {
-      throw new Error(data?.error || 'Notification Telegram indisponible.');
-    }
-
+    if (!response.ok) throw new Error(data?.error || 'Notification Telegram indisponible.');
     return data;
   }
 
   // ================================================================
-  // MODALE DE CONFIRMATION
+  // MODALE CONFIRMATION
   // ================================================================
   const confirmModal = document.getElementById('arvexaConfirmModal');
   const confirmIconBox = document.getElementById('arvexaConfirmIconBox');
@@ -2487,12 +2632,9 @@ button:focus-visible {
     confirmIcon.textContent = options.icon || '⚠️';
     confirmOkText.textContent = options.confirmText || 'Confirmer';
     confirmCancel.textContent = options.cancelText || 'Annuler';
-
     confirmIconBox.className = 'arvexa-confirm-icon-box ' + (options.variant === 'primary' ? '' : 'danger');
     confirmOk.className = 'arvexa-confirm-btn ' + (options.variant === 'primary' ? 'primary' : 'danger');
-
     confirmCallback = options.onConfirm || null;
-
     confirmModal.classList.add('show');
     document.body.style.overflow = 'hidden';
   };
@@ -2505,55 +2647,38 @@ button:focus-visible {
 
   confirmCancel.addEventListener('click', closeArvexaConfirm);
   confirmClose.addEventListener('click', closeArvexaConfirm);
-
   confirmOk.addEventListener('click', () => {
     const cb = confirmCallback;
     closeArvexaConfirm();
     if (typeof cb === 'function') cb();
   });
-
   confirmModal.addEventListener('click', (e) => {
     if (e.target === confirmModal) closeArvexaConfirm();
   });
-
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && confirmModal.classList.contains('show')) {
-      closeArvexaConfirm();
-    }
+    if (e.key === 'Escape' && confirmModal.classList.contains('show')) closeArvexaConfirm();
   });
 
   // ================================================================
   // LOAD USER DATA (temps réel)
-  // ✅ CORRECTION C2/A3 : retry doux si doc users/{uid} absent avant redirect
   // ================================================================
   function loadUserData(user) {
-    // ✅ CORRECTION #2 — Éviter de recréer une connexion temps réel inutilement
-    if (unsubscribeUser && lastSnapshotUid === user.uid) {
-      return;
-    }
-    if (unsubscribeUser) {
-      unsubscribeUser();
-      unsubscribeUser = null;
-    }
+    if (unsubscribeUser && lastSnapshotUid === user.uid) return;
+    if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
     lastSnapshotUid = user.uid;
 
     const userRef = doc(db, 'users', user.uid);
     unsubscribeUser = onSnapshot(userRef,
       (docSnap) => {
         const cached = getCachedUserData(user.uid);
-
         if (docSnap.exists()) {
           userData = docSnap.data();
 
-          // ✅ CORRECTION #1 — Gestion propre des comptes bloqués et en pause
           if (userData.accountStatus === 'blocked') {
             if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
             lastSnapshotUid = null;
             clearSession();
-            try {
-              sessionStorage.setItem('arvexa_account_blocked', '1');
-            } catch (e) {}
-            // ✅ CORRECTION C5 — signOut tolérant : si ça pend, on redirige quand même
+            try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
             signOut(auth)
               .catch((err) => console.warn('[Auth] signOut bloqué :', err.code || err.message))
               .finally(() => { window.location.replace('auth-choice.html'); });
@@ -2561,7 +2686,6 @@ button:focus-visible {
           }
 
           if (userData.accountStatus === 'paused') {
-            // Ne pas déconnecter : afficher un message et continuer
             showToast('Ton compte est temporairement en pause. Contacte le support.', 'warning');
             renderUserData(userData);
             showDashboard();
@@ -2577,7 +2701,6 @@ button:focus-visible {
           renderUserData(cached);
           showDashboard();
         } else {
-          // ✅ CORRECTION C2/A3 — Retry doux avant de renvoyer vers register.html
           handleMissingUserDoc(user.uid);
         }
       },
@@ -2595,7 +2718,8 @@ button:focus-visible {
     );
   }
 
-  // ✅ CORRECTION C2/A3 — Vérification douce avant redirection vers register.html
+  // ✅ CORRIGÉ — pas de redirection automatique vers register.html
+  // On affiche un message et on propose un contact, sans boucle.
   let missingUserDocInFlight = false;
   async function handleMissingUserDoc(uid) {
     if (missingUserDocInFlight) return;
@@ -2612,10 +2736,16 @@ button:focus-visible {
         showDashboard();
         return;
       }
-      window.location.replace('register.html');
+      // Profil toujours absent : message d'erreur, pas de redirection
+      showToast(
+        'Ton compte existe, mais son profil est incomplet. Contacte le support ARVEXA pour le restaurer.',
+        'error'
+      );
+      showDashboard();
     } catch (e) {
-      // Panne réseau : on ne redirige pas, on garde l'écran (le snapshot temps réel corrigera)
       console.warn('[Firestore] handleMissingUserDoc:', e.code || e.message);
+      showToast('Impossible de vérifier ton profil. Vérifie ta connexion.', 'error');
+      showDashboard();
     } finally {
       missingUserDocInFlight = false;
     }
@@ -2638,7 +2768,6 @@ button:focus-visible {
       }, 600);
     }
     try {
-      // ✅ CORRECTION #5 — On force un nouveau token + lecture serveur sans casser la connexion temps réel
       await getIdToken(user, true);
       const userRef = doc(db, 'users', user.uid);
       const snap = await getDoc(userRef, { source: 'server' });
@@ -2649,8 +2778,9 @@ button:focus-visible {
         renderUserData(fresh);
       }
       updateCountdown();
-      renderTip();
-      updateSubjectsProgress();
+      renderProgress();
+      renderDailyTip();
+      renderMotivation();
       showToast('Données actualisées', 'success');
     } catch (e) {
       console.warn('[Refresh] erreur:', e.message);
@@ -2659,12 +2789,10 @@ button:focus-visible {
   }
 
   // ================================================================
-  // AUTH ROBUSTE — Anti-flash
-  // ✅ CORRECTION C1/A1/A2 : délai de grâce sur null initial + rattrapage
+  // AUTH ROBUSTE
   // ================================================================
   function redirectToLogin() {
     if (isRedirecting) return;
-    // ✅ A2 — Ne pas rediriger si un utilisateur est finalement présent (rattrapage)
     if (auth.currentUser) return;
     isRedirecting = true;
     try {
@@ -2674,18 +2802,12 @@ button:focus-visible {
   }
 
   function initAuthGuard(onAuthenticated) {
-    // ✅ C1 — Unsub unique + délai de grâce sur null initial
-    if (authUnsubscribe) {
-      // Déjà branché : ne pas dupliquer l'abonnement
-      return;
-    }
+    if (authUnsubscribe) return;
 
     authUnsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // Un utilisateur confirmé : annuler tout timer de grâce en attente
         if (authGraceTimer) { clearTimeout(authGraceTimer); authGraceTimer = null; }
         if (!isAuthResolved) isAuthResolved = true;
-
         if (user.uid === currentUid) return;
         currentUid = user.uid;
         saveSession(user);
@@ -2693,14 +2815,10 @@ button:focus-visible {
         return;
       }
 
-      // user === null
       if (!isAuthResolved) {
-        // ✅ A1 — Premier tick sans user : on attend un court délai.
-        // Si un user arrive, on annule. Sinon, on redirige proprement.
         if (authGraceTimer) return;
         authGraceTimer = setTimeout(() => {
           authGraceTimer = null;
-          // Rattrapage : un user est apparu entre-temps ?
           if (auth.currentUser) return;
           if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
           isAuthResolved = true;
@@ -2712,7 +2830,6 @@ button:focus-visible {
         return;
       }
 
-      // Session établie puis perdue → vraie déconnexion
       currentUid = null;
       lastSnapshotUid = null;
       clearSession();
@@ -2724,8 +2841,6 @@ button:focus-visible {
   // LANCER LA PROTECTION
   // ================================================================
   initAuthGuard(async (user) => {
-    // ✅ CORRECTION #3 — Ne plus afficher l'abonnement depuis le cache
-    // On affiche tout SAUF les infos sensibles d'abonnement (qui viendront de Firestore)
     const cached = getCachedUserData(user.uid);
     if (cached) {
       const cachedSafe = { ...cached };
@@ -2733,14 +2848,13 @@ button:focus-visible {
       delete cachedSafe.isUnlocked;
       delete cachedSafe.hasDeposited;
       delete cachedSafe.subscriptionEndDate;
-
       userData = cachedSafe;
       updateGreeting(cachedSafe.firstName || 'Élève');
-      // On n'affiche pas encore la carte abonnement : elle viendra de Firestore
       showDashboard();
     }
 
     loadUserData(user);
+    renderProgress();
 
     setupFcmForeground();
     await checkExistingFcmToken(user);
@@ -2748,21 +2862,16 @@ button:focus-visible {
   });
 
   // ================================================================
-  // DÉCONNEXION — AVEC MODALE DE CONFIRMATION
-  // ✅ CORRECTION C4 : désabonnement propre de onAuthStateChanged
+  // DÉCONNEXION
   // ================================================================
   async function performLogout() {
     isRedirecting = true;
     if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
-    if (authUnsubscribe) {
-      try { authUnsubscribe(); } catch (e) {}
-      authUnsubscribe = null;
-    }
+    if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
     if (authGraceTimer) { clearTimeout(authGraceTimer); authGraceTimer = null; }
     lastSnapshotUid = null;
     clearSession();
     try { await signOut(auth); } catch (e) {}
-    // ✅ CORRECTION #4 — Redirection uniforme vers auth-choice.html
     window.location.replace('auth-choice.html');
   }
 
@@ -2806,7 +2915,6 @@ button:focus-visible {
 
   document.getElementById('refreshBtn').addEventListener('click', refreshDashboard);
 
-  // Événements de la modale avis
   document.getElementById('avisLinkSidebar').addEventListener('click', (e) => {
     e.preventDefault();
     document.getElementById('sidebar').classList.remove('open');
@@ -2831,18 +2939,23 @@ button:focus-visible {
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && avisModal.classList.contains('show')) {
-      closeAvisModal();
-    }
+    if (e.key === 'Escape' && avisModal.classList.contains('show')) closeAvisModal();
   });
 
-  // ✅ CORRECTION A4 — Cleanup global (hygiène, non bloquant)
+  // Rafraîchir la progression quand l'utilisateur revient sur la page
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) renderProgress();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') renderProgress();
+  });
+
   window.addEventListener('beforeunload', () => {
     if (authGraceTimer) { clearTimeout(authGraceTimer); authGraceTimer = null; }
-    // Ne PAS désabonner authUnsubscribe ici : inutile, le contexte est détruit.
   });
 
-  console.log('🚀 ARVEXA School — Index (version corrigée — C1-C5, A1-A4)');
+  console.log('🚀 ARVEXA School — Index refondu (progression prioritaire, action intelligente)');
   </script>
 </body>
 </html>
