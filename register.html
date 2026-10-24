@@ -814,6 +814,24 @@
       outline-offset: 2px;
     }
 
+    .terms-box label a,
+.terms-box > span a,
+.terms-box > span .terms-link {
+  color: var(--accent-bright);
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 1px dashed rgba(224, 184, 74, 0.5);
+  transition: var(--transition-fast);
+}
+
+.terms-box label a:hover,
+.terms-box > span a:hover,
+.terms-box > span .terms-link:hover {
+  color: #F0CC65;
+  border-bottom-color: var(--accent-bright);
+  border-bottom-style: solid;
+}
+    
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb {
@@ -1018,14 +1036,20 @@
         </div>
 
         <!-- Conditions -->
-        <label class="terms-box" id="termsBox" for="termsCheckbox">
-          <input type="checkbox" id="termsCheckbox">
-          <span>
-            J'accepte les <a href="conditions.html" target="_blank">Conditions d'utilisation</a>
-            et la <a href="confidentialite.html" target="_blank">Politique de confidentialité</a>
-            d'ARVEXA School.
-          </span>
-        </label>
+       <label class="terms-box" id="termsBox" for="termsCheckbox">
+  <input type="checkbox" id="termsCheckbox">
+  <span>
+    J'accepte les
+    <a href="conditions.html"
+       onclick="event.stopPropagation();"
+       class="terms-link">Conditions d'utilisation</a>
+    et la
+    <a href="confidentialite.html"
+       onclick="event.stopPropagation();"
+       class="terms-link">Politique de confidentialité</a>
+    d'ARVEXA School.
+  </span>
+</label>
         <div class="terms-error" id="termsError">
           Tu dois accepter les conditions pour continuer.
         </div>
@@ -1051,7 +1075,7 @@
         Déjà membre ?
         <a href="login.html">Se connecter</a>
         &nbsp;•&nbsp;
-        <a href="https://wa.me/22798064667" target="_blank">Aide</a>
+        <a href="https://wa.me/22774872082" target="_blank">Aide</a>
       </p>
     </footer>
   </main>
