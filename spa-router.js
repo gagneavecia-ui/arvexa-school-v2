@@ -106,7 +106,12 @@
       
       // 7. Mettre à jour le titre
       document.title = doc.title;
-
+      
+      // ⚡ Recharger les données de la page si elle expose une fonction
+      if (typeof window.arvexaRechargerMatiere === 'function') {
+        window.arvexaRechargerMatiere();
+      }
+      
       // 8. Mettre à jour l'URL
       if (!isPopState) {
         history.pushState({}, '', url);
@@ -148,5 +153,12 @@
     }
   }
 
+    // ⚡ API publique pour que les pages puissent déclencher une navigation SPA
+  window.arvexaNavigate = function(url) {
+    if (!url) return;
+    const absoluteUrl = new URL(url, location.href).href;
+    naviguer(absoluteUrl);
+  };
+  
   console.log('[SPA] Routeur robuste activé');
 })();
