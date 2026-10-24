@@ -942,6 +942,17 @@
   <script type="module">
   // ================================================================
   // LOGIN — Version robuste anti-flash
+  // Corrections appliquées :
+  //  - C1 : Un seul chemin de redirection (le submit handler). onAuthStateChanged
+  //         ne redirige QUE si l'utilisateur arrive déjà connecté (hors soumission).
+  //  - C2 : Ne jamais signOut sur blocked/paused. Message d'erreur, formulaire actif.
+  //  - C3 : Ne jamais signOut sur profil introuvable. Message + lien register.
+  //  - C4 : clearSession aligné sur index.html (toutes les clés).
+  //  - C5 : Validation anti-boucle du redirectPath (alignée sur auth-choice.html).
+  //  - C6 : Unsubscribe propre du listener auth.
+  //  - C7 : Grâce initiale 800 ms sur le null de onAuthStateChanged.
+  //  - C8 : Log explicite si setPersistence échoue.
+  //  - C9 : Nettoyage des clés redirect seulement APRÈS décision de redirection.
   // ================================================================
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -950,8 +961,7 @@
     onAuthStateChanged,
     setPersistence,
     browserLocalPersistence,
-    signInWithEmailAndPassword,
-    signOut
+    signInWithEmailAndPassword
   } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
   import {
     initializeFirestore,
@@ -978,16 +988,19 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
-  // ⚡ FIRESTORE AVEC PERSISTANCE LOCALE (mode hors-ligne)
+  // ⚡ FIRESTORE AVEC PERSISTANCE LOCALE (cohérence avec index.html)
   const db = initializeFirestore(app, {
     localCache: persistentLocalCache({
       tabManager: persistentSingleTabManager()
     })
   });
 
+  // ✅ C8 — Log explicite si persistance refusée
   try {
     await setPersistence(auth, browserLocalPersistence);
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[Auth] Persistance locale indisponible sur login.html :', e.code || e.message);
+  }
 
   // ================================================================
   // DOM
@@ -1007,7 +1020,7 @@
   const toastContainer = document.getElementById('toastContainer');
 
   // ================================================================
-  // SESSION CACHE
+  // SESSION CACHE — ✅ C4 aligné sur index.html
   // ================================================================
   const SESSION_KEY = 'arvexa_session';
   const USER_DATA_KEY = 'arvexa_user_data';
@@ -1031,7 +1044,11 @@
   function clearSession() {
     try {
       localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(USER_DATA_KEY);
+      localStorage.removeItem(LAST_UID_KEY);
       sessionStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem('redirectAfterLogin');
+      sessionStorage.removeItem('redirectAfterAuth');
     } catch (e) {}
   }
 
@@ -1143,74 +1160,111 @@
   }
 
   // ================================================================
-  // AUTH STATE — REDIRECTION ROBUSTE
-  // ⚡ Version anti-flash avec attente intelligente
+  // ✅ C5 — Validation anti-boucle de la cible de redirection
+  // Alignée sur auth-choice.html
+  // ================================================================
+  const FORBIDDEN_TARGETS = ['auth-choice.html', 'login.html', 'register.html', 'forgot-password.html'];
+
+  function safeGetRedirect() {
+    let raw = null;
+    try {
+      raw = sessionStorage.getItem('redirectAfterLogin')
+         || sessionStorage.getItem('redirectAfterAuth')
+         || null;
+    } catch (e) { /* sessionStorage indisponible */ }
+
+    if (!raw || typeof raw !== 'string') return 'index.html';
+
+    const lower = raw.toLowerCase();
+    for (const forbidden of FORBIDDEN_TARGETS) {
+      if (lower.includes(forbidden)) return 'index.html';
+    }
+    if (/^https?:\/\//i.test(raw)) return 'index.html';
+    if (/^javascript:/i.test(raw)) return 'index.html';
+    if (raw.startsWith('//')) return 'index.html';
+
+    return raw;
+  }
+
+  // ================================================================
+  // ✅ C1/C6/C7 — Garde auth unique, avec grâce et unsub
   // ================================================================
   let currentUid = null;
   let isRedirecting = false;
   let isAuthResolved = false;
+  let isSubmittingForm = false;   // ✅ C1 : le handler submit est actif
+  let authUnsubscribe = null;
+  let graceTimer = null;
+  let decisionMade = false;
 
-  onAuthStateChanged(auth, (user) => {
-    // ⚡ Première fois que le listener se déclenche
-    if (!isAuthResolved) {
-      isAuthResolved = true;
+  function doRedirect(user) {
+    if (isRedirecting) return;
+    isRedirecting = true;
+    decisionMade = true;
 
-      // Cas 1 : Pas d'utilisateur → on reste sur login
-      if (!user) {
-        // Nettoyer les résidus de session éventuels
-        try {
-          // Si on est vraiment déconnecté, nettoyer
-          if (!localStorage.getItem(SESSION_KEY)) {
-            clearSession();
-          }
-        } catch (e) {}
-        return;
-      }
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+    if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
 
-      // Cas 2 : Utilisateur restauré → rediriger
-      redirectAfterLogin(user);
+    // ✅ C9 — Nettoyer les clés seulement au moment de la redirection effective
+    const target = safeGetRedirect();
+
+    console.log('[Login] Redirection vers :', target);
+    saveSession(user);
+    try {
+      sessionStorage.removeItem('redirectAfterLogin');
+      sessionStorage.removeItem('redirectAfterAuth');
+    } catch (e) {}
+
+    window.location.replace(target);
+  }
+
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
+    // ✅ C1 — Pendant une soumission de formulaire, c'est le handler submit
+    // qui décide. On ignore le listener pour éviter les doubles redirections.
+    if (isSubmittingForm) {
+      if (user) currentUid = user.uid;
       return;
     }
 
-    // ⚡ Changements ultérieurs
+    if (decisionMade) return;
+
+    if (!isAuthResolved) {
+      isAuthResolved = true;
+
+      if (!user) {
+        // ✅ C7 — Grâce initiale : ne rien décider tout de suite
+        if (graceTimer) return;
+        graceTimer = setTimeout(() => {
+          graceTimer = null;
+          if (decisionMade) return;
+          if (auth.currentUser) {
+            // Rattrapage : un user est apparu entre-temps
+            doRedirect(auth.currentUser);
+            return;
+          }
+          // Vraiment déconnecté : on laisse le formulaire actif
+        }, 800);
+        return;
+      }
+
+      // Utilisateur déjà connecté en arrivant sur login.html → redirection
+      currentUid = user.uid;
+      doRedirect(user);
+      return;
+    }
+
+    // Changements ultérieurs (hors soumission)
     if (user && user.uid !== currentUid) {
-      // Nouvel utilisateur connecté (après signIn par exemple)
-      redirectAfterLogin(user);
+      currentUid = user.uid;
+      doRedirect(user);
     } else if (!user && currentUid) {
-      // Déconnexion
       currentUid = null;
       clearSession();
     }
   });
 
   // ================================================================
-  // REDIRECTION APRÈS LOGIN
-  // ================================================================
-  function redirectAfterLogin(user) {
-    if (isRedirecting) return;
-    isRedirecting = true;
-
-    currentUid = user.uid;
-
-    console.log('[Login] Utilisateur connecté :', user.email);
-
-    // ⚡ Sauvegarder la session AVANT la redirection
-    saveSession(user);
-
-    // ⚡ Récupérer la page de destination
-    const requestedRedirect = sessionStorage.getItem('redirectAfterLogin') || sessionStorage.getItem('redirectAfterAuth') || 'index.html';
-    const redirectPath = requestedRedirect.startsWith('/') || (!requestedRedirect.includes(':') && !requestedRedirect.startsWith('//')) ? requestedRedirect : 'index.html';
-    sessionStorage.removeItem('redirectAfterLogin');
-    sessionStorage.removeItem('redirectAfterAuth');
-
-    // ⚡ Redirection immédiate avec replace
-    setTimeout(() => {
-      window.location.replace(redirectPath);
-    }, 200);
-  }
-
-  // ================================================================
-  // SOUMISSION DU FORMULAIRE
+  // SOUMISSION DU FORMULAIRE — ✅ C1 : seul maître de la redirection
   // ================================================================
   let isSubmitting = false;
 
@@ -1220,6 +1274,7 @@
     if (isSubmitting || loginBtn.disabled) return;
 
     isSubmitting = true;
+    isSubmittingForm = true;   // ✅ C1 : gèle le listener auth
     loginBtn.disabled = true;
     loginBtn.classList.add('loading');
 
@@ -1230,40 +1285,57 @@
       // 1. Connexion Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      currentUid = user.uid;
 
       // 2. Vérifier que le profil existe
-      const userRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userRef);
+      let userData = null;
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userRef);
 
-      if (!userDoc.exists()) {
-        await signOut(auth);
-        showToast('Profil introuvable. Redirection...', 'error');
-        setTimeout(() => window.location.replace('register.html'), 1500);
-        isSubmitting = false;
-        loginBtn.disabled = false;
-        loginBtn.classList.remove('loading');
-        return;
+        if (!userDoc.exists()) {
+          // ✅ C3 — Ne pas signOut, ne pas rediriger. Message clair + lien register.
+          showToast(
+            'Profil introuvable. <a href="register.html">Créer un compte</a>',
+            'error',
+            true,
+            7000
+          );
+          loginBtn.disabled = false;
+          loginBtn.classList.remove('loading');
+          isSubmitting = false;
+          isSubmittingForm = false;
+          return;
+        }
+
+        userData = userDoc.data();
+      } catch (fsErr) {
+        // Panne Firestore : ne pas bloquer la connexion pour autant
+        console.warn('[Login] getDoc users failed :', fsErr.code || fsErr.message);
+        // On continue : index.html refera la vérification via onSnapshot
       }
 
-      const userData = userDoc.data();
+      // 3. Vérifier le statut du compte (si on a pu le lire)
+      if (userData) {
+        if (userData.accountStatus === 'blocked') {
+          // ✅ C2 — Ne pas signOut. Message clair, formulaire actif.
+          showToast('❌ Ton compte est bloqué. Contacte le support.', 'error', false, 7000);
+          loginBtn.disabled = false;
+          loginBtn.classList.remove('loading');
+          isSubmitting = false;
+          isSubmittingForm = false;
+          return;
+        }
 
-      // 3. Vérifier le statut du compte
-      if (userData.accountStatus === 'blocked') {
-        await signOut(auth);
-        showToast('❌ Ton compte est bloqué. Contacte le support.', 'error', false, 6000);
-        isSubmitting = false;
-        loginBtn.disabled = false;
-        loginBtn.classList.remove('loading');
-        return;
-      }
-
-      if (userData.accountStatus === 'paused') {
-        await signOut(auth);
-        showToast('⏸️ Ton compte est en pause. Contacte le support.', 'error', false, 6000);
-        isSubmitting = false;
-        loginBtn.disabled = false;
-        loginBtn.classList.remove('loading');
-        return;
+        if (userData.accountStatus === 'paused') {
+          // ✅ C2 — Ne pas signOut.
+          showToast('⏸️ Ton compte est en pause. Contacte le support.', 'error', false, 7000);
+          loginBtn.disabled = false;
+          loginBtn.classList.remove('loading');
+          isSubmitting = false;
+          isSubmittingForm = false;
+          return;
+        }
       }
 
       // 4. Succès
@@ -1274,25 +1346,16 @@
       }
 
       try {
-        await updateDoc(userRef, { lastLogin: serverTimestamp() });
-      } catch (e) {}
+        await updateDoc(doc(db, 'users', user.uid), { lastLogin: serverTimestamp() });
+      } catch (e) { /* fire-and-forget */ }
 
-      // ⚡ Sauvegarder la session AVANT de rediriger
       saveSession(user);
-
       showToast('✅ Connexion réussie !', 'success');
 
-      // ⚡ isRedirecting sera géré par onAuthStateChanged
-      // mais on met un fallback au cas où
-      const redirectPath = sessionStorage.getItem('redirectAfterLogin') || 'index.html';
-      sessionStorage.removeItem('redirectAfterLogin');
-
-      setTimeout(() => {
-        if (!isRedirecting) {
-          isRedirecting = true;
-          window.location.replace(redirectPath);
-        }
-      }, 800);
+      // ✅ C1 — Redirection décidée ici, une seule fois
+      isSubmitting = false;
+      isSubmittingForm = false;
+      doRedirect(user);
 
     } catch (error) {
       let message = 'Une erreur est survenue.';
@@ -1324,12 +1387,18 @@
 
       loginBtn.disabled = false;
       loginBtn.classList.remove('loading');
-    } finally {
       isSubmitting = false;
+      isSubmittingForm = false;
     }
   });
 
-  console.log('🚀 ARVEXA School — Login (avec session robuste)');
+  // ✅ C6 — Cleanup à la destruction
+  window.addEventListener('beforeunload', () => {
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+    if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+  });
+
+  console.log('🚀 ARVEXA School — Login (version corrigée C1-C9)');
   </script>
 
 </body>
