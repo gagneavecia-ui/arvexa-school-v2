@@ -1,6 +1,6 @@
 // ================================================================
 // REGISTER SERVICE WORKER — ARVEXA School
-// Version : OFFLINE v1.1
+// Version : OFFLINE v1.2 — Sans reload brutal
 // ================================================================
 
 (function () {
@@ -8,14 +8,6 @@
 
   // ═══ 1. ENREGISTREMENT SW ═══
   if ('serviceWorker' in navigator) {
-    let refreshing = false;
-
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      console.log('[SW] Nouveau contrôleur — rechargement');
-      window.location.reload();
-    });
 
     window.addEventListener('load', () => {
       navigator.serviceWorker
@@ -31,7 +23,8 @@
             if (!newWorker) return;
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('[SW] Nouvelle version — activation');
+                console.log('[SW] Nouvelle version détectée — activation silencieuse');
+                // ⚡ On active la nouvelle version SANS reload
                 newWorker.postMessage({ type: 'SKIP_WAITING' });
               }
             });
@@ -87,48 +80,44 @@
 
   // ═══ 4. LANCEMENT ═══
   function boot() {
-  injectOffline();
-  injectAnalytics();
-  injectTour();
-}
-
-// ═══ INJECTION DU TUTORIEL ═══
-function injectTour() {
-  if (document.getElementById('arvexaTourScript')) return;
-
-  // Ne pas injecter sur les pages publiques
-  const path = window.location.pathname.toLowerCase();
-  const SKIP = [
-    'login', 'register', 'forgot-password', 'auth-choice',
-    'onboarding.html', 'conditions', 'confidentialite',
-    'offline', '404', 'onboarding-tour'
-  ];
-
-  if (SKIP.some((p) => path.includes(p))) return;
-
-  // Ne pas injecter si le tour est déjà fait
-  try {
-    if (localStorage.getItem('arvexa_tour_completed_v1') === '1') return;
-  } catch (e) { return; }
-
-  // Injecter le CSS
-  if (!document.querySelector('link[data-arvexa-tour-css]')) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'tour-styles.css';
-    link.setAttribute('data-arvexa-tour-css', '1');
-    document.head.appendChild(link);
+    injectOffline();
+    injectAnalytics();
+    injectTour();
   }
 
-  // Injecter le script
-  const script = document.createElement('script');
-  script.id = 'arvexaTourScript';
-  script.src = 'onboarding-tour.js';
-  script.defer = true;
-  script.onerror = () => console.warn('[Tour] Impossible de charger onboarding-tour.js');
-  document.head.appendChild(script);
-}
-  
+  // ═══ INJECTION DU TUTORIEL ═══
+  function injectTour() {
+    if (document.getElementById('arvexaTourScript')) return;
+
+    const path = window.location.pathname.toLowerCase();
+    const SKIP = [
+      'login', 'register', 'forgot-password', 'auth-choice',
+      'onboarding.html', 'conditions', 'confidentialite',
+      'offline', '404', 'onboarding-tour'
+    ];
+
+    if (SKIP.some((p) => path.includes(p))) return;
+
+    try {
+      if (localStorage.getItem('arvexa_tour_completed_v1') === '1') return;
+    } catch (e) { return; }
+
+    if (!document.querySelector('link[data-arvexa-tour-css]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'tour-styles.css';
+      link.setAttribute('data-arvexa-tour-css', '1');
+      document.head.appendChild(link);
+    }
+
+    const script = document.createElement('script');
+    script.id = 'arvexaTourScript';
+    script.src = 'onboarding-tour.js';
+    script.defer = true;
+    script.onerror = () => console.warn('[Tour] Impossible de charger onboarding-tour.js');
+    document.head.appendChild(script);
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
