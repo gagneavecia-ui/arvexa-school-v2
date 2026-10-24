@@ -1019,6 +1019,14 @@
   const passwordHelp = document.getElementById('passwordHelp');
   const toastContainer = document.getElementById('toastContainer');
 
+    // Dans login.html, après le chargement du DOM :
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('reset') === 'success') {
+  showToast('✅ Mot de passe réinitialisé. Connecte-toi avec ton nouveau mot de passe.', 'success', 6000);
+  // Optionnel : nettoyer l'URL
+  window.history.replaceState({}, '', window.location.pathname);
+}
+
   // ================================================================
   // SESSION CACHE — ✅ C4 aligné sur index.html
   // ================================================================
