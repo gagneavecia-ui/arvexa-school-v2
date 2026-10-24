@@ -12,7 +12,6 @@
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
- <script src="arvexa-auth-core.js" defer></script>
   <script src="register-sw.js" defer></script>
 
   <style>
@@ -32,29 +31,29 @@
 
       --bg-dark: #0A0A0A;
       --bg-surface: #141414;
-      --bg-card: rgba(20, 20, 20, 0.7);
+      --bg-card: rgba(18, 18, 18, 0.78);
       --bg-elevated: rgba(255, 255, 255, 0.02);
 
       --text-light: #F5F0E8;
-      --text-dim: #8A8A7A;
-      --text-muted: #5A5A4A;
+      --text-dim: #A0A090;
+      --text-muted: #7A7A6A;
 
-      --card-border: rgba(184, 134, 11, 0.08);
-      --card-border-hover: rgba(184, 134, 11, 0.18);
+      --card-border: rgba(224, 184, 74, 0.10);
+      --card-border-hover: rgba(224, 184, 74, 0.22);
 
       --input-bg: rgba(255, 255, 255, 0.03);
-      --input-border: rgba(255, 255, 255, 0.06);
-      --input-border-focus: rgba(184, 134, 11, 0.4);
+      --input-border: rgba(255, 255, 255, 0.08);
+      --input-border-focus: rgba(224, 184, 74, 0.55);
 
-      --transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      --transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
       --transition-fast: all 0.15s ease;
       --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.42);
       --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
 
       --radius-sm: 8px;
       --radius: 12px;
-      --radius-lg: 20px;
+      --radius-lg: 18px;
 
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -103,7 +102,7 @@
       inset: 0;
       z-index: -3;
       background:
-        radial-gradient(ellipse 40% 30% at 30% 20%, rgba(26, 58, 42, 0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 30% 20%, rgba(26, 58, 42, 0.14) 0%, transparent 70%),
         radial-gradient(ellipse 30% 20% at 70% 80%, rgba(184, 134, 11, 0.03) 0%, transparent 60%),
         linear-gradient(180deg, #0A0A0A 0%, #060606 100%);
     }
@@ -114,23 +113,18 @@
       filter: blur(90px);
       pointer-events: none;
       z-index: -2;
-      opacity: 0.15;
-      animation: glowFloat 12s ease-in-out infinite alternate;
+      opacity: 0.14;
     }
     .glow-1 { width: 380px; height: 380px; background: rgba(26, 58, 42, 0.25); top: -100px; right: -100px; }
-    .glow-2 { width: 250px; height: 250px; background: rgba(184, 134, 11, 0.08); bottom: -60px; left: -60px; animation-delay: -6s; }
-
-    @keyframes glowFloat {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(40px, -30px) scale(1.15); }
-    }
+    .glow-2 { width: 250px; height: 250px; background: rgba(184, 134, 11, 0.08); bottom: -60px; left: -60px; }
 
     .grain {
       position: fixed;
       inset: 0;
       z-index: -1;
       pointer-events: none;
-      opacity: 0.03;
+      opacity: 0;
+      display: none;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
@@ -154,9 +148,9 @@
       gap: 0;
       text-decoration: none;
       font-family: 'Playfair Display', Georgia, serif;
-      font-size: clamp(18px, 3vw, 22px);
+      font-size: clamp(20px, 3.4vw, 24px);
       font-weight: 700;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
       color: var(--text-light);
       transition: var(--transition-fast);
     }
@@ -169,7 +163,7 @@
       -webkit-text-fill-color: transparent;
       font-style: italic;
       margin-left: 4px;
-      animation: shimmerText 5s linear infinite;
+      animation: shimmerText 5s linear 2;
     }
     @keyframes shimmerText {
       0% { background-position: 0% center; }
@@ -179,23 +173,29 @@
     .header-link {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 12.5px;
-      font-weight: 500;
-      color: var(--text-dim);
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-light);
       text-decoration: none;
-      padding: 8px 14px;
-      border-radius: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 9px 16px;
+      min-height: 40px;
+      border-radius: 999px;
+      border: 1px solid rgba(224, 184, 74, 0.28);
+      background: rgba(224, 184, 74, 0.04);
       transition: var(--transition-fast);
       white-space: nowrap;
     }
     .header-link:hover {
       color: var(--text-light);
-      border-color: rgba(184, 134, 11, 0.2);
-      background: rgba(184, 134, 11, 0.04);
+      border-color: rgba(224, 184, 74, 0.55);
+      background: rgba(224, 184, 74, 0.10);
     }
-    .header-link i { font-size: 11px; }
+    .header-link i { font-size: 12px; color: var(--accent-bright); }
+    .header-link:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 3px;
+    }
 
     /* ============================================================
        MAIN CONTAINER
@@ -210,11 +210,11 @@
       flex-direction: column;
       justify-content: center;
       min-height: 0;
-      animation: pageEnter 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+      animation: pageEnter 0.55s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     @keyframes pageEnter {
-      from { opacity: 0; transform: translateY(24px); }
+      from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
@@ -223,7 +223,7 @@
        ============================================================ */
     .hero {
       text-align: center;
-      padding: 24px 0 28px;
+      padding: 26px 0 30px;
     }
 
     .hero-icon {
@@ -233,64 +233,54 @@
       width: 72px;
       height: 72px;
       border-radius: 22px;
-      background: linear-gradient(135deg, rgba(184, 134, 11, 0.15), rgba(26, 58, 42, 0.1));
-      border: 1px solid rgba(184, 134, 11, 0.2);
-      font-size: 32px;
+      background: linear-gradient(135deg, rgba(224, 184, 74, 0.14), rgba(26, 58, 42, 0.10));
+      border: 1px solid rgba(224, 184, 74, 0.28);
+      color: var(--accent-bright);
       margin-bottom: 20px;
-      animation: iconFloat 3s ease-in-out infinite;
       position: relative;
     }
-    .hero-icon::before {
-      content: '';
-      position: absolute;
-      inset: -2px;
-      border-radius: 24px;
-      background: linear-gradient(135deg, rgba(184, 134, 11, 0.3), transparent, rgba(45, 125, 90, 0.2));
-      z-index: -1;
-      filter: blur(8px);
-      opacity: 0.6;
-    }
-    @keyframes iconFloat {
-      0%, 100% { transform: translateY(0) rotate(-2deg); }
-      50% { transform: translateY(-8px) rotate(2deg); }
+    .hero-icon svg {
+      width: 32px;
+      height: 32px;
+      display: block;
     }
 
     .hero-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 14px;
-      border-radius: 30px;
-      background: rgba(184, 134, 11, 0.08);
-      border: 1px solid rgba(184, 134, 11, 0.15);
+      padding: 7px 16px;
+      border-radius: 999px;
+      background: rgba(224, 184, 74, 0.08);
+      border: 1px solid rgba(224, 184, 74, 0.20);
       color: var(--accent-bright);
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 600;
-      letter-spacing: 0.8px;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
     .hero-badge i { font-size: 12px; }
 
     .hero-title {
       font-family: 'Playfair Display', Georgia, serif;
-      font-size: clamp(28px, 6vw, 38px);
+      font-size: clamp(30px, 6.4vw, 42px);
       font-weight: 700;
-      line-height: 1.15;
-      letter-spacing: -0.02em;
+      line-height: 1.12;
+      letter-spacing: -0.025em;
       color: var(--text-light);
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     .hero-title em {
-      color: var(--accent);
+      color: var(--accent-bright);
       font-style: italic;
     }
 
     .hero-subtitle {
-      font-size: clamp(13px, 1.8vw, 14.5px);
+      font-size: clamp(14px, 2vw, 15.5px);
       color: var(--text-dim);
-      line-height: 1.6;
-      max-width: 380px;
+      line-height: 1.65;
+      max-width: 400px;
       margin: 0 auto;
       font-weight: 400;
     }
@@ -300,11 +290,11 @@
        ============================================================ */
     .form-card {
       background: var(--bg-card);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--card-border);
       border-radius: var(--radius-lg);
-      padding: 28px 24px;
+      padding: 32px 26px;
       box-shadow: var(--shadow);
       position: relative;
       overflow: hidden;
@@ -316,14 +306,8 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--success), var(--accent));
-      background-size: 300% 100%;
-      animation: borderShimmer 6s linear infinite;
-    }
-    @keyframes borderShimmer {
-      0% { background-position: 0% 0%; }
-      100% { background-position: 300% 0%; }
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(224, 184, 74, 0.45), transparent);
     }
 
     /* ============================================================
@@ -338,11 +322,11 @@
 
     .field-label {
       display: block;
-      font-size: 12.5px;
+      font-size: 13px;
       font-weight: 500;
       color: var(--text-dim);
       margin-bottom: 8px;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.15px;
     }
 
     .field-input-wrap {
@@ -352,7 +336,7 @@
       background: var(--input-bg);
       border: 1px solid var(--input-border);
       border-radius: var(--radius);
-      transition: var(--transition-fast);
+      transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
       overflow: hidden;
       min-width: 0;
       width: 100%;
@@ -360,18 +344,19 @@
     }
     .field-input-wrap:focus-within {
       border-color: var(--input-border-focus);
-      background: rgba(184, 134, 11, 0.02);
-      box-shadow: 0 0 0 4px rgba(184, 134, 11, 0.06);
+      background: rgba(224, 184, 74, 0.03);
+      box-shadow: 0 0 0 3px rgba(224, 184, 74, 0.10);
     }
     .field-input-wrap.is-error {
-      border-color: rgba(231, 76, 60, 0.4);
-      background: rgba(231, 76, 60, 0.02);
+      border-color: rgba(231, 76, 60, 0.55);
+      background: rgba(231, 76, 60, 0.04);
     }
     .field-input-wrap.is-error:focus-within {
-      box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.08);
+      box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.12);
     }
     .field-input-wrap.is-success {
-      border-color: rgba(45, 125, 90, 0.4);
+      border-color: rgba(58, 182, 126, 0.55);
+      background: rgba(58, 182, 126, 0.03);
     }
 
     .field-input-wrap .icon {
@@ -379,7 +364,7 @@
       color: var(--text-muted);
       font-size: 14px;
       flex-shrink: 0;
-      transition: var(--transition-fast);
+      transition: color 0.18s ease;
       display: flex;
       align-items: center;
     }
@@ -394,7 +379,7 @@
       flex: 1;
       min-width: 0;
       width: 100%;
-      padding: 13px 14px 13px 10px;
+      padding: 14px 14px 14px 10px;
       background: transparent;
       border: none;
       outline: none;
@@ -419,7 +404,7 @@
       right: 14px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 14px;
+      font-size: 15px;
       pointer-events: none;
       transition: var(--transition-fast);
     }
@@ -428,12 +413,12 @@
 
     .toggle-pwd {
       position: absolute;
-      right: 10px;
+      right: 8px;
       top: 50%;
       transform: translateY(-50%);
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
       background: transparent;
       border: none;
       color: var(--text-muted);
@@ -441,25 +426,29 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
+      font-size: 14px;
       transition: var(--transition-fast);
       z-index: 2;
     }
     .toggle-pwd:hover {
       color: var(--accent-bright);
-      background: rgba(184, 134, 11, 0.08);
+      background: rgba(224, 184, 74, 0.08);
+    }
+    .toggle-pwd:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 1px;
     }
 
     .field-help {
       display: none;
-      font-size: 11.5px;
+      font-size: 12px;
       color: var(--text-muted);
-      margin-top: 6px;
+      margin-top: 8px;
       padding-left: 4px;
       line-height: 1.5;
     }
     .field-help.visible { display: block; }
-    .field-help.error { color: var(--danger); }
+    .field-help.error { color: #FF8A7A; }
 
     /* ============================================================
        LOGIN OPTIONS (remember + forgot)
@@ -483,15 +472,16 @@
     .remember-checkbox input[type="checkbox"] {
       appearance: none;
       -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      min-width: 20px;
-      border: 2px solid rgba(255, 255, 255, 0.15);
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      border: 2px solid rgba(255, 255, 255, 0.18);
       border-radius: 6px;
       background: transparent;
       cursor: pointer;
       position: relative;
       transition: var(--transition-fast);
+      flex-shrink: 0;
     }
     .remember-checkbox input[type="checkbox"]:checked {
       background: linear-gradient(135deg, var(--accent-bright), var(--accent));
@@ -500,83 +490,80 @@
     .remember-checkbox input[type="checkbox"]:checked::after {
       content: '';
       position: absolute;
-      left: 5px;
-      top: 1px;
-      width: 6px;
-      height: 11px;
+      left: 6px;
+      top: 2px;
+      width: 7px;
+      height: 12px;
       border: solid #0A0A0A;
       border-width: 0 2px 2px 0;
       transform: rotate(45deg);
     }
     .remember-checkbox input[type="checkbox"]:focus-visible {
-      outline: 2px solid var(--accent);
+      outline: 2px solid var(--accent-bright);
       outline-offset: 2px;
     }
     .remember-checkbox label {
-      font-size: 12.5px;
+      font-size: 13px;
       color: var(--text-dim);
       cursor: pointer;
     }
 
     .forgot-link {
-      font-size: 12.5px;
+      font-size: 13px;
       color: var(--accent-bright);
-      text-decoration: none;
+      text-decoration: underline;
+      text-underline-offset: 2px;
       font-weight: 500;
       transition: var(--transition-fast);
-      border-bottom: 1px solid transparent;
     }
     .forgot-link:hover {
-      border-bottom-color: var(--accent-bright);
+      color: #F0CC65;
+    }
+    .forgot-link:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 3px;
+      border-radius: 3px;
     }
 
     /* ============================================================
        SUBMIT BUTTON
        ============================================================ */
-  .btn-submit {
-  width: 100%;
-  padding: 14px 24px;
-  border: none;
-  border-radius: 30px;
-  background: linear-gradient(135deg, var(--accent-bright), var(--accent));
-  color: #0A0A0A;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: var(--transition);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(184, 134, 11, 0.15);
-  min-height: 50px;
-}
-    .btn-submit::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
+    .btn-submit {
       width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-      transition: left 0.6s ease;
-    }
-    .btn-submit:not(:disabled):hover::before {
-      left: 100%;
+      padding: 15px 24px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+      color: #0A0A0A;
+      font-family: inherit;
+      font-size: 15.5px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.18s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s ease, opacity 0.2s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(184, 134, 11, 0.22);
+      min-height: 54px;
+      touch-action: manipulation;
     }
     .btn-submit:not(:disabled):hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(184, 134, 11, 0.35);
+      box-shadow: 0 8px 32px rgba(224, 184, 74, 0.38);
     }
     .btn-submit:not(:disabled):active {
-      transform: translateY(0) scale(0.98);
+      transform: translateY(0) scale(0.99);
+    }
+    .btn-submit:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 3px;
     }
     .btn-submit:disabled {
-      opacity: 0.35;
+      opacity: 0.4;
       cursor: not-allowed;
       box-shadow: none;
     }
@@ -585,7 +572,7 @@
       display: none;
       width: 18px;
       height: 18px;
-      border: 2px solid rgba(10, 10, 10, 0.2);
+      border: 2px solid rgba(10, 10, 10, 0.25);
       border-top-color: #0A0A0A;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
@@ -606,12 +593,12 @@
       gap: 16px;
       margin: 22px 0 18px;
     }
-    .divider .line { flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+    .divider .line { flex: 1; height: 1px; background: rgba(255, 255, 255, 0.06); }
     .divider .text {
-      font-size: 11.5px;
+      font-size: 12px;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 1.5px;
+      letter-spacing: 1.8px;
       font-weight: 600;
     }
 
@@ -620,13 +607,13 @@
        ============================================================ */
     .btn-register {
       width: 100%;
-      padding: 13px;
-      border-radius: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      background: transparent;
-      color: var(--text-dim);
-      font-size: 14px;
-      font-weight: 500;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(224, 184, 74, 0.28);
+      background: rgba(224, 184, 74, 0.04);
+      color: var(--text-light);
+      font-size: 14.5px;
+      font-weight: 600;
       cursor: pointer;
       transition: var(--transition);
       font-family: inherit;
@@ -635,14 +622,20 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
+      min-height: 50px;
+      touch-action: manipulation;
     }
     .btn-register:hover {
-      border-color: rgba(184,134,11,0.15);
-      color: var(--text-light);
-      background: rgba(255,255,255,0.03);
+      border-color: rgba(224, 184, 74, 0.55);
+      background: rgba(224, 184, 74, 0.10);
       transform: translateY(-1px);
     }
-    .btn-register:active { transform: scale(0.98); }
+    .btn-register:active { transform: scale(0.99); }
+    .btn-register:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 3px;
+    }
+    .btn-register i { font-size: 13px; color: var(--accent-bright); }
 
     /* ============================================================
        SECURITY BADGE
@@ -652,28 +645,28 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      margin-top: 18px;
-      font-size: 11.5px;
+      margin-top: 20px;
+      font-size: 12px;
       color: var(--text-muted);
     }
     .security-note i {
       color: var(--success-light);
-      font-size: 11px;
+      font-size: 12px;
     }
 
     /* ============================================================
        FOOTER
        ============================================================ */
     .site-footer {
-      margin-top: 32px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
       text-align: center;
     }
     .site-footer p {
-      font-size: 11px;
+      font-size: 12.5px;
       color: var(--text-muted);
-      line-height: 1.6;
+      line-height: 1.7;
     }
     .site-footer a {
       color: var(--text-dim);
@@ -681,6 +674,11 @@
       transition: var(--transition-fast);
     }
     .site-footer a:hover { color: var(--accent-bright); }
+    .site-footer a:focus-visible {
+      outline: 2px solid var(--accent-bright);
+      outline-offset: 2px;
+      border-radius: 3px;
+    }
 
     /* ============================================================
        TOAST
@@ -715,7 +713,7 @@
       animation: toastIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
       pointer-events: auto;
     }
-    .toast.success { border-color: rgba(45, 125, 90, 0.4); }
+    .toast.success { border-color: rgba(58, 182, 126, 0.4); }
     .toast.error { border-color: rgba(231, 76, 60, 0.4); }
     .toast i { font-size: 15px; flex-shrink: 0; }
     .toast.success i { color: var(--success-light); }
@@ -734,61 +732,69 @@
       .site-header { padding: 16px 16px 0; }
       .page { padding: 0 16px 40px; }
       .hero { padding: 20px 0 22px; }
-      .hero-icon { width: 62px; height: 62px; font-size: 28px; margin-bottom: 16px; }
-      .hero-badge { font-size: 10px; padding: 5px 12px; }
-      .form-card { padding: 22px 18px; }
-      .field-input-wrap input { padding: 12px 12px 12px 8px; font-size: 14px; }
-      .btn-submit { padding: 13px 18px; min-height: 50px; font-size: 14px; }
-      .login-options { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .hero-icon { width: 64px; height: 64px; border-radius: 18px; margin-bottom: 16px; }
+      .hero-icon svg { width: 28px; height: 28px; }
+      .hero-badge { font-size: 11px; padding: 6px 14px; }
+      .form-card { padding: 26px 20px; }
+      .field-input-wrap input { padding: 13px 12px 13px 8px; font-size: 16px; }
+      .btn-submit { padding: 14px 18px; min-height: 52px; font-size: 15px; }
+      .login-options { flex-direction: column; align-items: flex-start; gap: 10px; }
     }
 
     @media (max-width: 360px) {
       .site-header { padding: 12px 12px 0; }
       .page { padding: 0 12px 32px; }
       .hero { padding: 16px 0 18px; }
-      .hero-icon { width: 56px; height: 56px; font-size: 26px; }
-      .hero-title { font-size: 24px; }
-      .form-card { padding: 20px 14px; border-radius: 16px; }
+      .hero-icon { width: 56px; height: 56px; border-radius: 16px; }
+      .hero-icon svg { width: 26px; height: 26px; }
+      .hero-title { font-size: 26px; }
+      .form-card { padding: 22px 16px; border-radius: 16px; }
       .field { margin-bottom: 14px; }
-      .field-input-wrap input { font-size: 13px; padding: 11px 10px 11px 8px; }
+      .field-input-wrap input { font-size: 16px; padding: 12px 10px 12px 8px; }
       .header-link span { display: none; }
-      .header-link { padding: 8px 12px; }
-      .btn-submit { font-size: 13.5px; padding: 12px 16px; }
+      .header-link { padding: 8px 12px; min-width: 40px; justify-content: center; }
+      .btn-submit { font-size: 14.5px; padding: 13px 16px; }
     }
 
     @media (min-width: 768px) {
       .site-header { max-width: 560px; padding: 24px 24px 0; }
       .page { max-width: 560px; padding: 0 24px 60px; }
-      .form-card { padding: 32px 28px; }
+      .form-card { padding: 36px 32px; }
     }
 
     /* ============================================================
-       ACCESSIBILITÉ
+       ACCESSIBILITÉ — prefers-reduced-motion
        ============================================================ */
     @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
+      .page,
+      .logo .gold,
+      .field-input-wrap,
+      .btn-submit,
+      .btn-register,
+      .forgot-link,
+      .toast {
+        animation: none !important;
+        transition: none !important;
       }
+      html { scroll-behavior: auto; }
     }
 
     a:focus-visible,
     button:focus-visible,
-    input:focus-visible {
+    input:focus-visible,
+    label:focus-visible {
       outline: 2px solid var(--accent-bright);
-      outline-offset: 2px;
+      outline-offset: 3px;
     }
 
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb {
-      background: rgba(184, 134, 11, 0.25);
+      background: rgba(224, 184, 74, 0.25);
       border-radius: 10px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(184, 134, 11, 0.4);
+      background: rgba(224, 184, 74, 0.45);
     }
   </style>
 </head>
@@ -816,7 +822,13 @@
 
     <!-- HERO -->
     <section class="hero">
-      <div class="hero-icon">🔐</div>
+      <div class="hero-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          <circle cx="12" cy="16.5" r="1.2" fill="currentColor" stroke="none"></circle>
+        </svg>
+      </div>
       <div class="hero-badge">
         <i class="fas fa-star"></i>
         <span>Bon retour parmi nous</span>
@@ -872,7 +884,7 @@
             >
               <i class="fas fa-eye"></i>
             </button>
-            <span class="field-status" id="passwordStatus"></span>
+            <span class="field-status" id="passwordStatus" aria-live="polite"></span>
           </div>
           <div class="field-help" id="passwordHelp"></div>
         </div>
@@ -925,7 +937,7 @@
   </main>
 
   <!-- ===== TOASTS ===== -->
-  <div class="toast-container" id="toastContainer"></div>
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
   <!-- ============================================================
        SCRIPTS
@@ -943,17 +955,6 @@
   <script type="module">
   // ================================================================
   // LOGIN — Version robuste anti-flash
-  // Corrections appliquées :
-  //  - C1 : Un seul chemin de redirection (le submit handler). onAuthStateChanged
-  //         ne redirige QUE si l'utilisateur arrive déjà connecté (hors soumission).
-  //  - C2 : Ne jamais signOut sur blocked/paused. Message d'erreur, formulaire actif.
-  //  - C3 : Ne jamais signOut sur profil introuvable. Message + lien register.
-  //  - C4 : clearSession aligné sur index.html (toutes les clés).
-  //  - C5 : Validation anti-boucle du redirectPath (alignée sur auth-choice.html).
-  //  - C6 : Unsubscribe propre du listener auth.
-  //  - C7 : Grâce initiale 800 ms sur le null de onAuthStateChanged.
-  //  - C8 : Log explicite si setPersistence échoue.
-  //  - C9 : Nettoyage des clés redirect seulement APRÈS décision de redirection.
   // ================================================================
 
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -962,7 +963,8 @@
     onAuthStateChanged,
     setPersistence,
     browserLocalPersistence,
-    signInWithEmailAndPassword
+    signInWithEmailAndPassword,
+    signOut
   } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
   import {
     initializeFirestore,
@@ -989,19 +991,16 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
-  // ⚡ FIRESTORE AVEC PERSISTANCE LOCALE (cohérence avec index.html)
+  // ⚡ FIRESTORE AVEC PERSISTANCE LOCALE (mode hors-ligne)
   const db = initializeFirestore(app, {
     localCache: persistentLocalCache({
       tabManager: persistentSingleTabManager()
     })
   });
 
-  // ✅ C8 — Log explicite si persistance refusée
   try {
     await setPersistence(auth, browserLocalPersistence);
-  } catch (e) {
-    console.warn('[Auth] Persistance locale indisponible sur login.html :', e.code || e.message);
-  }
+  } catch (e) {}
 
   // ================================================================
   // DOM
@@ -1020,16 +1019,8 @@
   const passwordHelp = document.getElementById('passwordHelp');
   const toastContainer = document.getElementById('toastContainer');
 
-    // Dans login.html, après le chargement du DOM :
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('reset') === 'success') {
-  showToast('✅ Mot de passe réinitialisé. Connecte-toi avec ton nouveau mot de passe.', 'success', 6000);
-  // Optionnel : nettoyer l'URL
-  window.history.replaceState({}, '', window.location.pathname);
-}
-
   // ================================================================
-  // SESSION CACHE — ✅ C4 aligné sur index.html
+  // SESSION CACHE
   // ================================================================
   const SESSION_KEY = 'arvexa_session';
   const USER_DATA_KEY = 'arvexa_user_data';
@@ -1053,11 +1044,7 @@ if (urlParams.get('reset') === 'success') {
   function clearSession() {
     try {
       localStorage.removeItem(SESSION_KEY);
-      localStorage.removeItem(USER_DATA_KEY);
-      localStorage.removeItem(LAST_UID_KEY);
       sessionStorage.removeItem(SESSION_KEY);
-      sessionStorage.removeItem('redirectAfterLogin');
-      sessionStorage.removeItem('redirectAfterAuth');
     } catch (e) {}
   }
 
@@ -1169,111 +1156,74 @@ if (urlParams.get('reset') === 'success') {
   }
 
   // ================================================================
-  // ✅ C5 — Validation anti-boucle de la cible de redirection
-  // Alignée sur auth-choice.html
-  // ================================================================
-  const FORBIDDEN_TARGETS = ['auth-choice.html', 'login.html', 'register.html', 'forgot-password.html'];
-
-  function safeGetRedirect() {
-    let raw = null;
-    try {
-      raw = sessionStorage.getItem('redirectAfterLogin')
-         || sessionStorage.getItem('redirectAfterAuth')
-         || null;
-    } catch (e) { /* sessionStorage indisponible */ }
-
-    if (!raw || typeof raw !== 'string') return 'index.html';
-
-    const lower = raw.toLowerCase();
-    for (const forbidden of FORBIDDEN_TARGETS) {
-      if (lower.includes(forbidden)) return 'index.html';
-    }
-    if (/^https?:\/\//i.test(raw)) return 'index.html';
-    if (/^javascript:/i.test(raw)) return 'index.html';
-    if (raw.startsWith('//')) return 'index.html';
-
-    return raw;
-  }
-
-  // ================================================================
-  // ✅ C1/C6/C7 — Garde auth unique, avec grâce et unsub
+  // AUTH STATE — REDIRECTION ROBUSTE
+  // ⚡ Version anti-flash avec attente intelligente
   // ================================================================
   let currentUid = null;
   let isRedirecting = false;
   let isAuthResolved = false;
-  let isSubmittingForm = false;   // ✅ C1 : le handler submit est actif
-  let authUnsubscribe = null;
-  let graceTimer = null;
-  let decisionMade = false;
 
-  function doRedirect(user) {
-    if (isRedirecting) return;
-    isRedirecting = true;
-    decisionMade = true;
-
-    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-    if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
-
-    // ✅ C9 — Nettoyer les clés seulement au moment de la redirection effective
-    const target = safeGetRedirect();
-
-    console.log('[Login] Redirection vers :', target);
-    saveSession(user);
-    try {
-      sessionStorage.removeItem('redirectAfterLogin');
-      sessionStorage.removeItem('redirectAfterAuth');
-    } catch (e) {}
-
-    window.location.replace(target);
-  }
-
-  authUnsubscribe = onAuthStateChanged(auth, (user) => {
-    // ✅ C1 — Pendant une soumission de formulaire, c'est le handler submit
-    // qui décide. On ignore le listener pour éviter les doubles redirections.
-    if (isSubmittingForm) {
-      if (user) currentUid = user.uid;
-      return;
-    }
-
-    if (decisionMade) return;
-
+  onAuthStateChanged(auth, (user) => {
+    // ⚡ Première fois que le listener se déclenche
     if (!isAuthResolved) {
       isAuthResolved = true;
 
+      // Cas 1 : Pas d'utilisateur → on reste sur login
       if (!user) {
-        // ✅ C7 — Grâce initiale : ne rien décider tout de suite
-        if (graceTimer) return;
-        graceTimer = setTimeout(() => {
-          graceTimer = null;
-          if (decisionMade) return;
-          if (auth.currentUser) {
-            // Rattrapage : un user est apparu entre-temps
-            doRedirect(auth.currentUser);
-            return;
+        // Nettoyer les résidus de session éventuels
+        try {
+          // Si on est vraiment déconnecté, nettoyer
+          if (!localStorage.getItem(SESSION_KEY)) {
+            clearSession();
           }
-          // Vraiment déconnecté : on laisse le formulaire actif
-        }, 800);
+        } catch (e) {}
         return;
       }
 
-      // Utilisateur déjà connecté en arrivant sur login.html → redirection
-      currentUid = user.uid;
-      doRedirect(user);
+      // Cas 2 : Utilisateur restauré → rediriger
+      redirectAfterLogin(user);
       return;
     }
 
-    // Changements ultérieurs (hors soumission)
+    // ⚡ Changements ultérieurs
     if (user && user.uid !== currentUid) {
-      currentUid = user.uid;
-      doRedirect(user);
+      // Nouvel utilisateur connecté (après signIn par exemple)
+      redirectAfterLogin(user);
     } else if (!user && currentUid) {
+      // Déconnexion
       currentUid = null;
       clearSession();
     }
   });
 
   // ================================================================
-  // SOUMISSION DU FORMULAIRE — ✅ C1 : seul maître de la redirection
+  // REDIRECTION APRÈS LOGIN
+  // ================================================================
+  function redirectAfterLogin(user) {
+    if (isRedirecting) return;
+    isRedirecting = true;
+
+    currentUid = user.uid;
+
+    console.log('[Login] Utilisateur connecté :', user.email);
+
+    // ⚡ Sauvegarder la session AVANT la redirection
+    saveSession(user);
+
+    // ⚡ Récupérer la page de destination
+    const requestedRedirect = sessionStorage.getItem('redirectAfterLogin') || sessionStorage.getItem('redirectAfterAuth') || 'index.html';
+    const redirectPath = requestedRedirect.startsWith('/') || (!requestedRedirect.includes(':') && !requestedRedirect.startsWith('//')) ? requestedRedirect : 'index.html';
+    sessionStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('redirectAfterAuth');
+
+    // ⚡ Redirection immédiate avec replace
+    setTimeout(() => {
+      window.location.replace(redirectPath);
+    }, 200);
+  }
+
+  // ================================================================
+  // SOUMISSION DU FORMULAIRE
   // ================================================================
   let isSubmitting = false;
 
@@ -1283,7 +1233,6 @@ if (urlParams.get('reset') === 'success') {
     if (isSubmitting || loginBtn.disabled) return;
 
     isSubmitting = true;
-    isSubmittingForm = true;   // ✅ C1 : gèle le listener auth
     loginBtn.disabled = true;
     loginBtn.classList.add('loading');
 
@@ -1294,57 +1243,40 @@ if (urlParams.get('reset') === 'success') {
       // 1. Connexion Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      currentUid = user.uid;
 
       // 2. Vérifier que le profil existe
-      let userData = null;
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userRef);
+      const userRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userRef);
 
-        if (!userDoc.exists()) {
-          // ✅ C3 — Ne pas signOut, ne pas rediriger. Message clair + lien register.
-          showToast(
-            'Profil introuvable. <a href="register.html">Créer un compte</a>',
-            'error',
-            true,
-            7000
-          );
-          loginBtn.disabled = false;
-          loginBtn.classList.remove('loading');
-          isSubmitting = false;
-          isSubmittingForm = false;
-          return;
-        }
-
-        userData = userDoc.data();
-      } catch (fsErr) {
-        // Panne Firestore : ne pas bloquer la connexion pour autant
-        console.warn('[Login] getDoc users failed :', fsErr.code || fsErr.message);
-        // On continue : index.html refera la vérification via onSnapshot
+      if (!userDoc.exists()) {
+        await signOut(auth);
+        showToast('Profil introuvable. Redirection...', 'error');
+        setTimeout(() => window.location.replace('register.html'), 1500);
+        isSubmitting = false;
+        loginBtn.disabled = false;
+        loginBtn.classList.remove('loading');
+        return;
       }
 
-      // 3. Vérifier le statut du compte (si on a pu le lire)
-      if (userData) {
-        if (userData.accountStatus === 'blocked') {
-          // ✅ C2 — Ne pas signOut. Message clair, formulaire actif.
-          showToast('❌ Ton compte est bloqué. Contacte le support.', 'error', false, 7000);
-          loginBtn.disabled = false;
-          loginBtn.classList.remove('loading');
-          isSubmitting = false;
-          isSubmittingForm = false;
-          return;
-        }
+      const userData = userDoc.data();
 
-        if (userData.accountStatus === 'paused') {
-          // ✅ C2 — Ne pas signOut.
-          showToast('⏸️ Ton compte est en pause. Contacte le support.', 'error', false, 7000);
-          loginBtn.disabled = false;
-          loginBtn.classList.remove('loading');
-          isSubmitting = false;
-          isSubmittingForm = false;
-          return;
-        }
+      // 3. Vérifier le statut du compte
+      if (userData.accountStatus === 'blocked') {
+        await signOut(auth);
+        showToast('❌ Ton compte est bloqué. Contacte le support.', 'error', false, 6000);
+        isSubmitting = false;
+        loginBtn.disabled = false;
+        loginBtn.classList.remove('loading');
+        return;
+      }
+
+      if (userData.accountStatus === 'paused') {
+        await signOut(auth);
+        showToast('⏸️ Ton compte est en pause. Contacte le support.', 'error', false, 6000);
+        isSubmitting = false;
+        loginBtn.disabled = false;
+        loginBtn.classList.remove('loading');
+        return;
       }
 
       // 4. Succès
@@ -1355,16 +1287,25 @@ if (urlParams.get('reset') === 'success') {
       }
 
       try {
-        await updateDoc(doc(db, 'users', user.uid), { lastLogin: serverTimestamp() });
-      } catch (e) { /* fire-and-forget */ }
+        await updateDoc(userRef, { lastLogin: serverTimestamp() });
+      } catch (e) {}
 
+      // ⚡ Sauvegarder la session AVANT de rediriger
       saveSession(user);
+
       showToast('✅ Connexion réussie !', 'success');
 
-      // ✅ C1 — Redirection décidée ici, une seule fois
-      isSubmitting = false;
-      isSubmittingForm = false;
-      doRedirect(user);
+      // ⚡ isRedirecting sera géré par onAuthStateChanged
+      // mais on met un fallback au cas où
+      const redirectPath = sessionStorage.getItem('redirectAfterLogin') || 'index.html';
+      sessionStorage.removeItem('redirectAfterLogin');
+
+      setTimeout(() => {
+        if (!isRedirecting) {
+          isRedirecting = true;
+          window.location.replace(redirectPath);
+        }
+      }, 800);
 
     } catch (error) {
       let message = 'Une erreur est survenue.';
@@ -1396,18 +1337,12 @@ if (urlParams.get('reset') === 'success') {
 
       loginBtn.disabled = false;
       loginBtn.classList.remove('loading');
+    } finally {
       isSubmitting = false;
-      isSubmittingForm = false;
     }
   });
 
-  // ✅ C6 — Cleanup à la destruction
-  window.addEventListener('beforeunload', () => {
-    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-    if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
-  });
-
-  console.log('🚀 ARVEXA School — Login (version corrigée C1-C9)');
+  console.log('🚀 ARVEXA School — Login (avec session robuste)');
   </script>
 
 </body>
