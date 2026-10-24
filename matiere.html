@@ -1158,107 +1158,124 @@
   </script>
 
   <script type="module">
-  // ================================================================
-  // MATIERE — Version robuste anti-flash
-  // ================================================================
+// ================================================================
+// MATIERE — Version robuste anti-flash
+// Corrections appliquées :
+//  - C1 : redirectToLogin préserve redirectAfterLogin/redirectAfterAuth
+//  - C2 : gestion blocked/paused alignée sur index.html / profil.html
+//  - C3 : retry doux + warn si doc users/{uid} absent
+//  - C4 : saveSession écrit aussi sessionStorage
+//  - C5 : clearSession supprime redirectAfterLogin/redirectAfterAuth
+//  - C6 : log explicite si setPersistence échoue
+//  - C7 : unsubscribe propre du listener auth
+//  - C8 : warn dans le catch de loadUserData
+// ================================================================
 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import {
-    getAuth,
-    onAuthStateChanged,
-    setPersistence,
-    browserLocalPersistence
-  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-  import {
-    initializeFirestore,
-    persistentLocalCache,
-    persistentSingleTabManager,
-    doc,
-    getDoc,
-    onSnapshot,
-    collection,
-    query,
-    orderBy
-  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentSingleTabManager,
+  doc,
+  getDoc,
+  onSnapshot,
+  collection,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-  // ================================================================
-  // CONFIG FIREBASE
-  // ================================================================
-  const firebaseConfig = {
-    apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
-    authDomain: "arvexa-fbf10.firebaseapp.com",
-    projectId: "arvexa-fbf10",
-    storageBucket: "arvexa-fbf10.firebasestorage.app",
-    messagingSenderId: "920108330053",
-    appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
-  };
+// ================================================================
+// CONFIG FIREBASE
+// ================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
+  authDomain: "arvexa-fbf10.firebaseapp.com",
+  projectId: "arvexa-fbf10",
+  storageBucket: "arvexa-fbf10.firebasestorage.app",
+  messagingSenderId: "920108330053",
+  appId: "1:920108330053:web:f532d71cbc2c824bc7472c"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-  const db = initializeFirestore(app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentSingleTabManager()
-    })
-  });
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentSingleTabManager()
+  })
+});
 
+// ✅ C6 — Log explicite si persistance refusée
+try {
+  await setPersistence(auth, browserLocalPersistence);
+} catch (e) {
+  console.warn('[Auth] Persistance locale indisponible sur matiere.html :', e.code || e.message);
+}
+
+// ================================================================
+// SESSION / CACHE — ✅ C4/C5 alignements
+// ================================================================
+const SESSION_KEY = 'arvexa_session';
+const USER_DATA_KEY = 'arvexa_user_data';
+const LAST_UID_KEY = 'arvexa_last_uid';
+const READ_KEY = 'arvexa_read_parts';
+
+function saveSession(user) {
+  if (!user) return;
   try {
-    await setPersistence(auth, browserLocalPersistence);
+    const data = {
+      uid: user.uid,
+      email: user.email,
+      lastActive: Date.now()
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); // ✅ C4
+    localStorage.setItem(LAST_UID_KEY, user.uid);
   } catch (e) {}
+}
 
-  // ================================================================
-  // SESSION / CACHE
-  // ================================================================
-  const SESSION_KEY = 'arvexa_session';
-  const USER_DATA_KEY = 'arvexa_user_data';
-  const LAST_UID_KEY = 'arvexa_last_uid';
-  const READ_KEY = 'arvexa_read_parts';
+function clearSession() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(USER_DATA_KEY);
+    localStorage.removeItem(LAST_UID_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    // ✅ C5 — alignement
+    sessionStorage.removeItem('redirectAfterLogin');
+    sessionStorage.removeItem('redirectAfterAuth');
+  } catch (e) {}
+}
 
-  function saveSession(user) {
-    if (!user) return;
-    try {
-      const data = {
-        uid: user.uid,
-        email: user.email,
-        lastActive: Date.now()
-      };
-      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
-      localStorage.setItem(LAST_UID_KEY, user.uid);
-    } catch (e) {}
-  }
-
-  function clearSession() {
-    try {
-      localStorage.removeItem(SESSION_KEY);
+function getCachedUserData(uid) {
+  try {
+    const raw = localStorage.getItem(USER_DATA_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (cached._uid && cached._uid !== uid) {
       localStorage.removeItem(USER_DATA_KEY);
-      localStorage.removeItem(LAST_UID_KEY);
-      sessionStorage.removeItem(SESSION_KEY);
-    } catch (e) {}
-  }
+      return null;
+    }
+    return cached;
+  } catch (e) { return null; }
+}
 
-  function getCachedUserData(uid) {
-    try {
-      const raw = localStorage.getItem(USER_DATA_KEY);
-      if (!raw) return null;
-      const cached = JSON.parse(raw);
-      if (cached._uid && cached._uid !== uid) {
-        localStorage.removeItem(USER_DATA_KEY);
-        return null;
-      }
-      return cached;
-    } catch (e) { return null; }
-  }
+// ================================================================
+// URL PARAMS
+// ================================================================
+const params = new URLSearchParams(window.location.search);
+const subjectKey = params.get('subject') || 'mathematiques';
 
-  // ================================================================
-  // URL PARAMS
-  // ================================================================
-  const params = new URLSearchParams(window.location.search);
-  const subjectKey = params.get('subject') || 'mathematiques';
-
-  // ================================================================
-  // CONFIG MATIÈRES (FALLBACK)
-  // ================================================================
- const SUBJECTS_CONFIG = {
+// ================================================================
+// CONFIG MATIÈRES (FALLBACK)
+// ================================================================
+const SUBJECTS_CONFIG = {
   mathematiques: {
     name: 'Mathématiques',
     description: 'Algèbre, analyse, géométrie et probabilités.',
@@ -1284,6 +1301,7 @@
     color: '#7AE04A'
   }
 };
+
 const DEFAULT_CHAPTERS = {
   mathematiques: [
     { title: 'Nombres complexes', isFree: true },
@@ -1352,434 +1370,480 @@ const DEFAULT_CHAPTERS = {
   ]
 };
 
-  // ================================================================
-  // DOM
-  // ================================================================
-  const chapterList = document.getElementById('chapterList');
-  const pageTitle = document.querySelector('#pageTitle span');
-  const subjectTitle = document.getElementById('subjectTitle');
-  const subjectDescription = document.getElementById('subjectDescription');
-  const subjectIconWrap = document.getElementById('subjectIconWrap');
-  const subjectStats = document.getElementById('subjectStats');
-  const statChapters = document.getElementById('statChapters');
-  const statHoursPill = document.getElementById('statHoursPill');
-  const statHours = document.getElementById('statHours');
-  const statFreePill = document.getElementById('statFreePill');
-  const statFree = document.getElementById('statFree');
-  const chapterCount = document.getElementById('chapterCount');
-  const progressRead = document.getElementById('progressRead');
-  const progressTotal = document.getElementById('progressTotal');
-  const progressPercent = document.getElementById('progressPercent');
-  const progressFill = document.getElementById('progressFill');
+// ================================================================
+// DOM
+// ================================================================
+const chapterList = document.getElementById('chapterList');
+const pageTitle = document.querySelector('#pageTitle span');
+const subjectTitle = document.getElementById('subjectTitle');
+const subjectDescription = document.getElementById('subjectDescription');
+const subjectIconWrap = document.getElementById('subjectIconWrap');
+const subjectStats = document.getElementById('subjectStats');
+const statChapters = document.getElementById('statChapters');
+const statHoursPill = document.getElementById('statHoursPill');
+const statHours = document.getElementById('statHours');
+const statFreePill = document.getElementById('statFreePill');
+const statFree = document.getElementById('statFree');
+const chapterCount = document.getElementById('chapterCount');
+const progressRead = document.getElementById('progressRead');
+const progressTotal = document.getElementById('progressTotal');
+const progressPercent = document.getElementById('progressPercent');
+const progressFill = document.getElementById('progressFill');
 
-  // ================================================================
-  // ÉTAT
-  // ================================================================
-  let subjectConfig = null;
-  let chapters = [];
-  let isPremium = false;
-  let currentUid = null;
-  let unsubscribeUser = null;
-  let unsubscribeChapters = null;
-  let unsubscribeSubject = null;
+// ================================================================
+// ÉTAT
+// ================================================================
+let subjectConfig = null;
+let chapters = [];
+let isPremium = false;
+let currentUid = null;
+let unsubscribeUser = null;
+let unsubscribeChapters = null;
+let unsubscribeSubject = null;
+let authUnsubscribe = null;         // ✅ C7
+let missingDocInFlight = false;     // ✅ C3
 
-  // ================================================================
-  // UTILITAIRES
-  // ================================================================
-  function toDate(value) {
-    if (!value) return null;
-    if (typeof value.toDate === 'function') return value.toDate();
-    if (value.seconds !== undefined) return new Date(value.seconds * 1000);
-    const date = value instanceof Date ? value : new Date(value);
-    return Number.isNaN(date.getTime()) ? null : date;
+// ================================================================
+// UTILITAIRES
+// ================================================================
+function toDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === 'function') return value.toDate();
+  if (value.seconds !== undefined) return new Date(value.seconds * 1000);
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isUserPremium(userData) {
+  if (!userData) return false;
+  const hasStatus = userData.premium === true ||
+                    userData.isUnlocked === true ||
+                    userData.hasDeposited === true;
+  if (!hasStatus) return false;
+  const endDate = toDate(userData.subscriptionEndDate);
+  if (!endDate) return true;
+  return endDate.getTime() > Date.now();
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = String(text || '');
+  return div.innerHTML;
+}
+
+// ================================================================
+// LECTURE DES PARTIES LUES
+// ================================================================
+function getReadParts() {
+  try {
+    return JSON.parse(localStorage.getItem(READ_KEY) || '[]');
+  } catch (e) { return []; }
+}
+
+function getReadPartsForChapter(chapterIndex) {
+  const readParts = getReadParts();
+  const prefix = `${subjectKey}_${chapterIndex}_`;
+  return readParts.filter(key => key.startsWith(prefix)).length;
+}
+
+function getReadChaptersCount() {
+  const readParts = getReadParts();
+  const chaptersSet = new Set();
+  readParts.forEach(key => {
+    const parts = key.split('_');
+    if (parts[0] === subjectKey && parts.length >= 2) {
+      chaptersSet.add(parts[1]);
+    }
+  });
+  return chaptersSet.size;
+}
+
+// ================================================================
+// STATUT D'UN CHAPITRE
+// ================================================================
+function getChapterStatus(chapterIndex, chapterData) {
+  const readCount = getReadPartsForChapter(chapterIndex);
+  const totalParts = chapterData.totalParts || 0;
+
+  if (readCount === 0) return { status: 'not-opened', readCount, totalParts };
+  if (totalParts > 0 && readCount >= totalParts) {
+    return { status: 'completed', readCount, totalParts };
+  }
+  return { status: 'in-progress', readCount, totalParts };
+}
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function navigateToChapter(chapterIndex) {
+  window.location.href = `chapitre.html?subject=${subjectKey}&chapter=${chapterIndex}`;
+}
+
+function showPremiumPopup() {
+  const popup = document.getElementById('premiumPopup');
+  popup.classList.remove('hide');
+  popup.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function hidePremiumPopup() {
+  const popup = document.getElementById('premiumPopup');
+  popup.classList.remove('show');
+  popup.classList.add('hide');
+  document.body.style.overflow = '';
+}
+
+window.navigateToChapter = navigateToChapter;
+window.showPremiumPopup = showPremiumPopup;
+
+// ================================================================
+// POPUP EVENTS
+// ================================================================
+document.getElementById('popupCloseBtn').addEventListener('click', hidePremiumPopup);
+document.getElementById('premiumPopup').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) hidePremiumPopup();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') hidePremiumPopup();
+});
+
+// ================================================================
+// RENDU HERO
+// ================================================================
+function renderHero() {
+  if (!subjectConfig) return;
+
+  pageTitle.textContent = subjectConfig.name;
+  document.title = 'ARVEXA - ' + subjectConfig.name;
+
+  subjectIconWrap.innerHTML = `<i class="fas ${subjectConfig.icon}"></i>`;
+  subjectIconWrap.style.background = (subjectConfig.color || '#E0B84A') + '15';
+  subjectIconWrap.style.color = subjectConfig.color || '#E0B84A';
+  subjectIconWrap.style.borderColor = (subjectConfig.color || '#E0B84A') + '30';
+
+  subjectTitle.textContent = subjectConfig.name;
+
+  if (subjectConfig.description) {
+    subjectDescription.textContent = subjectConfig.description;
+    subjectDescription.style.display = 'block';
+  } else {
+    subjectDescription.style.display = 'none';
   }
 
-  function isUserPremium(userData) {
-    if (!userData) return false;
-    const hasStatus = userData.premium === true ||
-                      userData.isUnlocked === true ||
-                      userData.hasDeposited === true;
-    if (!hasStatus) return false;
-    const endDate = toDate(userData.subscriptionEndDate);
-    if (!endDate) return true;
-    return endDate.getTime() > Date.now();
+  subjectStats.style.display = 'flex';
+  statChapters.textContent = chapters.length;
+
+  const totalMinutes = chapters.reduce((sum, ch) => sum + (ch.estimatedMinutes || 0), 0);
+  if (totalMinutes > 0) {
+    statHoursPill.style.display = 'inline-flex';
+    statHours.textContent = Math.round(totalMinutes / 60);
+  } else {
+    statHoursPill.style.display = 'none';
   }
 
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = String(text || '');
-    return div.innerHTML;
+  const freeCount = chapters.filter(ch => ch.isFree).length;
+  if (freeCount > 0) {
+    statFreePill.style.display = 'inline-flex';
+    statFree.textContent = freeCount;
+  } else {
+    statFreePill.style.display = 'none';
+  }
+}
+
+// ================================================================
+// RENDU PROGRESSION
+// ================================================================
+function renderProgress() {
+  const total = chapters.length;
+  const read = getReadChaptersCount();
+  const percent = total > 0 ? Math.round((read / total) * 100) : 0;
+
+  progressRead.textContent = read;
+  progressTotal.textContent = total;
+  progressPercent.textContent = `(${percent}%)`;
+  progressFill.style.width = percent + '%';
+}
+
+// ================================================================
+// RENDU CHAPITRES
+// ================================================================
+function renderChapters() {
+  chapterCount.textContent = `${chapters.length} chapitre${chapters.length > 1 ? 's' : ''}`;
+
+  if (chapters.length === 0) {
+    chapterList.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon"><i class="fas fa-folder-open"></i></div>
+        <h4>Aucun chapitre disponible</h4>
+        <p>Le contenu sera ajouté prochainement.</p>
+      </div>
+    `;
+    return;
   }
 
-  // ================================================================
-  // LECTURE DES PARTIES LUES
-  // ================================================================
-  function getReadParts() {
-    try {
-      return JSON.parse(localStorage.getItem(READ_KEY) || '[]');
-    } catch (e) { return []; }
-  }
+  chapterList.innerHTML = chapters.map((chap, index) => {
+    const isFree = chap.isFree === true;
+    const isLocked = !isPremium && !isFree;
+    const status = getChapterStatus(index, chap);
 
-  function getReadPartsForChapter(chapterIndex) {
-    const readParts = getReadParts();
-    const prefix = `${subjectKey}_${chapterIndex}_`;
-    return readParts.filter(key => key.startsWith(prefix)).length;
-  }
+    let cardClass = 'chapter-card';
+    if (isLocked) cardClass += ' locked';
+    if (status.status === 'in-progress') cardClass += ' in-progress';
+    if (status.status === 'completed') cardClass += ' completed';
 
-  function getReadChaptersCount() {
-    const readParts = getReadParts();
-    const chaptersSet = new Set();
-    readParts.forEach(key => {
-      const parts = key.split('_');
-      if (parts[0] === subjectKey && parts.length >= 2) {
-        chaptersSet.add(parts[1]);
+    let badgesHtml = '';
+    if (isFree) {
+      badgesHtml += '<span class="badge free">🎁 Gratuit</span>';
+    } else if (isLocked) {
+      badgesHtml += '<span class="badge premium">🔒 Premium</span>';
+    } else if (isPremium && !isFree) {
+      badgesHtml += '<span class="badge premium">👑 Premium</span>';
+    }
+
+    if (status.status === 'in-progress') {
+      badgesHtml += '<span class="badge in-progress">📌 En cours</span>';
+    } else if (status.status === 'completed') {
+      badgesHtml += '<span class="badge completed">✅ Terminé</span>';
+    }
+
+    const descriptionHtml = chap.description
+      ? `<div class="cc-description">${escapeHtml(chap.description)}</div>`
+      : '';
+
+    let metaHtml = '';
+    if (chap.estimatedMinutes || chap.difficulty) {
+      const items = [];
+
+      if (chap.estimatedMinutes) {
+        const hours = Math.floor(chap.estimatedMinutes / 60);
+        const mins = chap.estimatedMinutes % 60;
+        const timeStr = hours > 0
+          ? (mins > 0 ? `${hours}h${mins}` : `${hours}h`)
+          : `${mins}min`;
+        items.push(`<span class="cc-meta-item"><i class="fas fa-clock"></i> ${timeStr}</span>`);
       }
-    });
-    return chaptersSet.size;
-  }
 
-  // ================================================================
-  // STATUT D'UN CHAPITRE
-  // ================================================================
-  function getChapterStatus(chapterIndex, chapterData) {
-    const readCount = getReadPartsForChapter(chapterIndex);
-    const totalParts = chapterData.totalParts || 0;
+      if (chap.difficulty) {
+        const labels = { easy: 'Facile', medium: 'Moyen', hard: 'Difficile' };
+        const icons = { easy: 'fa-circle', medium: 'fa-circle-half-stroke', hard: 'fa-circle' };
+        const label = labels[chap.difficulty] || '';
+        const icon = icons[chap.difficulty] || 'fa-circle';
+        items.push(`<span class="cc-meta-item difficulty-${chap.difficulty}"><i class="fas ${icon}"></i> ${label}</span>`);
+      }
 
-    if (readCount === 0) return { status: 'not-opened', readCount, totalParts };
-    if (totalParts > 0 && readCount >= totalParts) {
-      return { status: 'completed', readCount, totalParts };
-    }
-    return { status: 'in-progress', readCount, totalParts };
-  }
-
-  // ================================================================
-  // NAVIGATION
-  // ================================================================
-  function navigateToChapter(chapterIndex) {
-    window.location.href = `chapitre.html?subject=${subjectKey}&chapter=${chapterIndex}`;
-  }
-
-  function showPremiumPopup() {
-    const popup = document.getElementById('premiumPopup');
-    popup.classList.remove('hide');
-    popup.classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function hidePremiumPopup() {
-    const popup = document.getElementById('premiumPopup');
-    popup.classList.remove('show');
-    popup.classList.add('hide');
-    document.body.style.overflow = '';
-  }
-
-  window.navigateToChapter = navigateToChapter;
-  window.showPremiumPopup = showPremiumPopup;
-
-  // ================================================================
-  // POPUP EVENTS
-  // ================================================================
-  document.getElementById('popupCloseBtn').addEventListener('click', hidePremiumPopup);
-  document.getElementById('premiumPopup').addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) hidePremiumPopup();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') hidePremiumPopup();
-  });
-
-  // ================================================================
-  // RENDU HERO
-  // ================================================================
-  function renderHero() {
-    if (!subjectConfig) return;
-
-    pageTitle.textContent = subjectConfig.name;
-    document.title = 'ARVEXA - ' + subjectConfig.name;
-
-    subjectIconWrap.innerHTML = `<i class="fas ${subjectConfig.icon}"></i>`;
-    subjectIconWrap.style.background = (subjectConfig.color || '#E0B84A') + '15';
-    subjectIconWrap.style.color = subjectConfig.color || '#E0B84A';
-    subjectIconWrap.style.borderColor = (subjectConfig.color || '#E0B84A') + '30';
-
-    subjectTitle.textContent = subjectConfig.name;
-
-    if (subjectConfig.description) {
-      subjectDescription.textContent = subjectConfig.description;
-      subjectDescription.style.display = 'block';
-    } else {
-      subjectDescription.style.display = 'none';
+      if (items.length > 0) {
+        metaHtml = `<div class="cc-meta">${items.join('')}</div>`;
+      }
     }
 
-    subjectStats.style.display = 'flex';
-    statChapters.textContent = chapters.length;
-
-    const totalMinutes = chapters.reduce((sum, ch) => sum + (ch.estimatedMinutes || 0), 0);
-    if (totalMinutes > 0) {
-      statHoursPill.style.display = 'inline-flex';
-      statHours.textContent = Math.round(totalMinutes / 60);
-    } else {
-      statHoursPill.style.display = 'none';
-    }
-
-    const freeCount = chapters.filter(ch => ch.isFree).length;
-    if (freeCount > 0) {
-      statFreePill.style.display = 'inline-flex';
-      statFree.textContent = freeCount;
-    } else {
-      statFreePill.style.display = 'none';
-    }
-  }
-
-  // ================================================================
-  // RENDU PROGRESSION
-  // ================================================================
-  function renderProgress() {
-    const total = chapters.length;
-    const read = getReadChaptersCount();
-    const percent = total > 0 ? Math.round((read / total) * 100) : 0;
-
-    progressRead.textContent = read;
-    progressTotal.textContent = total;
-    progressPercent.textContent = `(${percent}%)`;
-    progressFill.style.width = percent + '%';
-  }
-
-  // ================================================================
-  // RENDU CHAPITRES
-  // ================================================================
-  function renderChapters() {
-    chapterCount.textContent = `${chapters.length} chapitre${chapters.length > 1 ? 's' : ''}`;
-
-    if (chapters.length === 0) {
-      chapterList.innerHTML = `
-        <div class="empty-state">
-          <div class="es-icon"><i class="fas fa-folder-open"></i></div>
-          <h4>Aucun chapitre disponible</h4>
-          <p>Le contenu sera ajouté prochainement.</p>
+    let progressHtml = '';
+    if (status.status !== 'not-opened' && status.totalParts > 0) {
+      const chapterPercent = Math.round((status.readCount / status.totalParts) * 100);
+      progressHtml = `
+        <div class="cc-progress">
+          <div class="cc-progress-info">
+            <span>Progression</span>
+            <span class="value">${status.readCount}/${status.totalParts} parties · ${chapterPercent}%</span>
+          </div>
+          <div class="cc-progress-track">
+            <div class="cc-progress-fill" style="width:${chapterPercent}%"></div>
+          </div>
         </div>
       `;
+    }
+
+    const onclick = isLocked ? 'showPremiumPopup()' : `navigateToChapter(${index})`;
+
+    return `
+      <div class="${cardClass}" onclick="${onclick}">
+        <div class="cc-header">
+          <div class="cc-num">${index + 1}</div>
+          <div class="cc-info">
+            <div class="cc-title-row">
+              <div class="cc-title">${escapeHtml(chap.title || 'Chapitre ' + (index + 1))}</div>
+              <div class="cc-badges">${badgesHtml}</div>
+            </div>
+            ${descriptionHtml}
+            ${metaHtml}
+          </div>
+        </div>
+        ${progressHtml}
+      </div>
+    `;
+  }).join('');
+
+  renderProgress();
+}
+
+// ================================================================
+// CHARGEMENT DEPUIS FIRESTORE
+// ================================================================
+function loadSubjectFromFirestore() {
+  // ⚡ 1. CHARGER LES DONNÉES DE FALLBACK IMMÉDIATEMENT (pour ne jamais avoir 0)
+  if (!subjectConfig) loadFallbackSubjectConfig();
+  if (chapters.length === 0) loadFallbackChapters();
+
+  // 2. Charger les infos de la matière depuis Firestore
+  const subjectRef = doc(db, 'subjects', subjectKey);
+
+  if (unsubscribeSubject) unsubscribeSubject();
+
+  unsubscribeSubject = onSnapshot(subjectRef,
+    (subjectSnap) => {
+      if (subjectSnap.exists()) {
+        const data = subjectSnap.data();
+        subjectConfig = {
+          name: data.name || (SUBJECTS_CONFIG[subjectKey]?.name || 'Matière'),
+          description: data.description || '',
+          icon: data.icon || (SUBJECTS_CONFIG[subjectKey]?.icon || 'fa-book'),
+          color: data.color || (SUBJECTS_CONFIG[subjectKey]?.color || '#E0B84A')
+        };
+        renderHero();
+      }
+    },
+    (error) => {
+      console.warn('Firestore subject error:', error.code || error.message);
+    }
+  );
+
+  // 3. Charger les chapitres depuis Firestore
+  if (unsubscribeChapters) unsubscribeChapters();
+
+  const chaptersQuery = query(
+    collection(db, 'subjects', subjectKey, 'chapters'),
+    orderBy('order', 'asc')
+  );
+
+  unsubscribeChapters = onSnapshot(chaptersQuery,
+    (snap) => {
+      if (!snap.empty) {
+        chapters = snap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            title: data.title || '',
+            description: data.description || '',
+            isFree: data.isFree === true,
+            order: data.order || 0,
+            difficulty: data.difficulty || null,
+            estimatedMinutes: data.estimatedMinutes || 0,
+            totalParts: data.totalParts || 0
+          };
+        });
+        renderChapters();
+        renderProgress();
+        renderHero();
+      }
+      // Sinon, on garde le fallback déjà chargé
+    },
+    (error) => {
+      console.warn('Firestore chapters error:', error.code || error.message);
+      // En cas d'erreur, le fallback est déjà chargé
+    }
+  );
+}
+
+function loadFallbackSubjectConfig() {
+  const cfg = SUBJECTS_CONFIG[subjectKey];
+  if (cfg) {
+    subjectConfig = {
+      name: cfg.name,
+      description: cfg.description || '',
+      icon: cfg.icon,
+      color: cfg.color
+    };
+    renderHero();
+  } else {
+    window.location.replace('index.html');
+  }
+}
+
+function loadFallbackChapters() {
+  const fallback = DEFAULT_CHAPTERS[subjectKey] || [];
+  chapters = fallback.map((ch, i) => ({
+    title: typeof ch === 'string' ? ch : ch.title,
+    isFree: typeof ch === 'object' ? ch.isFree === true : (i === 0),
+    description: '',
+    order: i,
+    difficulty: null,
+    estimatedMinutes: 0,
+    totalParts: 0
+  }));
+
+  if (!subjectConfig) loadFallbackSubjectConfig();
+
+  renderHero();
+  renderChapters();
+  renderProgress();
+}
+
+// ================================================================
+// ✅ C3 — Retry doux si doc users/{uid} absent
+// ================================================================
+async function handleMissingUserDoc(uid) {
+  if (missingDocInFlight) return;
+  missingDocInFlight = true;
+  try {
+    await new Promise((r) => setTimeout(r, 900));
+    if (!auth.currentUser || auth.currentUser.uid !== uid) return;
+    const retry = await getDoc(doc(db, 'users', uid));
+    if (retry.exists()) {
+      const data = retry.data();
+      try {
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify({
+          ...data,
+          _uid: uid,
+          _cachedAt: Date.now()
+        }));
+      } catch (e) {}
+      const newPremium = isUserPremium(data);
+      if (newPremium !== isPremium) {
+        isPremium = newPremium;
+        if (chapters.length > 0) renderChapters();
+      }
       return;
     }
+    console.warn('[Matiere] Profil utilisateur introuvable pour', uid);
+  } catch (e) {
+    console.warn('[Matiere] handleMissingUserDoc:', e.code || e.message);
+  } finally {
+    missingDocInFlight = false;
+  }
+}
 
-    chapterList.innerHTML = chapters.map((chap, index) => {
-      const isFree = chap.isFree === true;
-      const isLocked = !isPremium && !isFree;
-      const status = getChapterStatus(index, chap);
-
-      let cardClass = 'chapter-card';
-      if (isLocked) cardClass += ' locked';
-      if (status.status === 'in-progress') cardClass += ' in-progress';
-      if (status.status === 'completed') cardClass += ' completed';
-
-      let badgesHtml = '';
-      if (isFree) {
-        badgesHtml += '<span class="badge free">🎁 Gratuit</span>';
-      } else if (isLocked) {
-        badgesHtml += '<span class="badge premium">🔒 Premium</span>';
-      } else if (isPremium && !isFree) {
-        badgesHtml += '<span class="badge premium">👑 Premium</span>';
-      }
-
-      if (status.status === 'in-progress') {
-        badgesHtml += '<span class="badge in-progress">📌 En cours</span>';
-      } else if (status.status === 'completed') {
-        badgesHtml += '<span class="badge completed">✅ Terminé</span>';
-      }
-
-      const descriptionHtml = chap.description
-        ? `<div class="cc-description">${escapeHtml(chap.description)}</div>`
-        : '';
-
-      let metaHtml = '';
-      if (chap.estimatedMinutes || chap.difficulty) {
-        const items = [];
-
-        if (chap.estimatedMinutes) {
-          const hours = Math.floor(chap.estimatedMinutes / 60);
-          const mins = chap.estimatedMinutes % 60;
-          const timeStr = hours > 0
-            ? (mins > 0 ? `${hours}h${mins}` : `${hours}h`)
-            : `${mins}min`;
-          items.push(`<span class="cc-meta-item"><i class="fas fa-clock"></i> ${timeStr}</span>`);
-        }
-
-        if (chap.difficulty) {
-          const labels = { easy: 'Facile', medium: 'Moyen', hard: 'Difficile' };
-          const icons = { easy: 'fa-circle', medium: 'fa-circle-half-stroke', hard: 'fa-circle' };
-          const label = labels[chap.difficulty] || '';
-          const icon = icons[chap.difficulty] || 'fa-circle';
-          items.push(`<span class="cc-meta-item difficulty-${chap.difficulty}"><i class="fas ${icon}"></i> ${label}</span>`);
-        }
-
-        if (items.length > 0) {
-          metaHtml = `<div class="cc-meta">${items.join('')}</div>`;
-        }
-      }
-
-      let progressHtml = '';
-      if (status.status !== 'not-opened' && status.totalParts > 0) {
-        const chapterPercent = Math.round((status.readCount / status.totalParts) * 100);
-        progressHtml = `
-          <div class="cc-progress">
-            <div class="cc-progress-info">
-              <span>Progression</span>
-              <span class="value">${status.readCount}/${status.totalParts} parties · ${chapterPercent}%</span>
-            </div>
-            <div class="cc-progress-track">
-              <div class="cc-progress-fill" style="width:${chapterPercent}%"></div>
-            </div>
-          </div>
-        `;
-      }
-
-      const onclick = isLocked ? 'showPremiumPopup()' : `navigateToChapter(${index})`;
-
-      return `
-        <div class="${cardClass}" onclick="${onclick}">
-          <div class="cc-header">
-            <div class="cc-num">${index + 1}</div>
-            <div class="cc-info">
-              <div class="cc-title-row">
-                <div class="cc-title">${escapeHtml(chap.title || 'Chapitre ' + (index + 1))}</div>
-                <div class="cc-badges">${badgesHtml}</div>
-              </div>
-              ${descriptionHtml}
-              ${metaHtml}
-            </div>
-          </div>
-          ${progressHtml}
-        </div>
-      `;
-    }).join('');
-
-    renderProgress();
+// ================================================================
+// CHARGEMENT UTILISATEUR — ✅ C2 (blocked/paused) + C3 (retry) + C8 (warn)
+// ================================================================
+function loadUserData(user) {
+  if (unsubscribeUser) {
+    unsubscribeUser();
+    unsubscribeUser = null;
   }
 
-  // ================================================================
-  // CHARGEMENT DEPUIS FIRESTORE
-  // ================================================================
-function loadSubjectFromFirestore() {
-    // ⚡ 1. CHARGER LES DONNÉES DE FALLBACK IMMÉDIATEMENT (pour ne jamais avoir 0)
-    if (!subjectConfig) loadFallbackSubjectConfig();
-    if (chapters.length === 0) loadFallbackChapters();
+  const userRef = doc(db, 'users', user.uid);
 
-    // 2. Charger les infos de la matière depuis Firestore
-    const subjectRef = doc(db, 'subjects', subjectKey);
+  unsubscribeUser = onSnapshot(userRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
 
-    if (unsubscribeSubject) unsubscribeSubject();
-
-    unsubscribeSubject = onSnapshot(subjectRef,
-      (subjectSnap) => {
-        if (subjectSnap.exists()) {
-          const data = subjectSnap.data();
-          subjectConfig = {
-            name: data.name || (SUBJECTS_CONFIG[subjectKey]?.name || 'Matière'),
-            description: data.description || '',
-            icon: data.icon || (SUBJECTS_CONFIG[subjectKey]?.icon || 'fa-book'),
-            color: data.color || (SUBJECTS_CONFIG[subjectKey]?.color || '#E0B84A')
-          };
-          renderHero();
+        // ✅ C2 — blocked : signOut tolérant + auth-choice.html
+        if (data.accountStatus === 'blocked') {
+          if (unsubscribeUser) { unsubscribeUser(); unsubscribeUser = null; }
+          if (unsubscribeSubject) { unsubscribeSubject(); unsubscribeSubject = null; }
+          if (unsubscribeChapters) { unsubscribeChapters(); unsubscribeChapters = null; }
+          clearSession();
+          try { sessionStorage.setItem('arvexa_account_blocked', '1'); } catch (e) {}
+          signOut(auth)
+            .catch((err) => console.warn('[Matiere] signOut bloqué :', err.code || err.message))
+            .finally(() => { window.location.replace('auth-choice.html'); });
+          return;
         }
-      },
-      (error) => {
-        console.warn('Firestore subject error:', error);
-      }
-    );
 
-    // 3. Charger les chapitres depuis Firestore
-    if (unsubscribeChapters) unsubscribeChapters();
-
-    const chaptersQuery = query(
-      collection(db, 'subjects', subjectKey, 'chapters'),
-      orderBy('order', 'asc')
-    );
-
-    unsubscribeChapters = onSnapshot(chaptersQuery,
-      (snap) => {
-        // ⚡ Si Firestore a des données, on les utilise
-        if (!snap.empty) {
-          chapters = snap.docs.map(d => {
-            const data = d.data();
-            return {
-              id: d.id,
-              title: data.title || '',
-              description: data.description || '',
-              isFree: data.isFree === true,
-              order: data.order || 0,
-              difficulty: data.difficulty || null,
-              estimatedMinutes: data.estimatedMinutes || 0,
-              totalParts: data.totalParts || 0
-            };
-          });
-          renderChapters();
-          renderProgress();
-          renderHero(); // ⚡ Rafraîchir le hero aussi
-        }
-        // Sinon, on garde le fallback déjà chargé
-      },
-      (error) => {
-        console.warn('Firestore chapters error:', error);
-        // En cas d'erreur, le fallback est déjà chargé
-      }
-    );
-  }
-    
-  function loadFallbackSubjectConfig() {
-    const cfg = SUBJECTS_CONFIG[subjectKey];
-    if (cfg) {
-      subjectConfig = {
-        name: cfg.name,
-        description: cfg.description || '',
-        icon: cfg.icon,
-        color: cfg.color
-      };
-      renderHero();
-    } else {
-      window.location.replace('index.html');
-    }
-  }
-
- function loadFallbackChapters() {
-    const fallback = DEFAULT_CHAPTERS[subjectKey] || [];
-    chapters = fallback.map((ch, i) => ({
-      title: typeof ch === 'string' ? ch : ch.title,
-      isFree: typeof ch === 'object' ? ch.isFree === true : (i === 0),
-      description: '',
-      order: i,
-      difficulty: null,
-      estimatedMinutes: 0,
-      totalParts: 0
-    }));
-
-    if (!subjectConfig) loadFallbackSubjectConfig();
-
-    renderHero();      // ⚡ IMPORTANT : mettre à jour le hero en premier
-    renderChapters();
-    renderProgress();
-  }
-    
-  // ================================================================
-  // CHARGEMENT UTILISATEUR (temps réel)
-  // ================================================================
-  function loadUserData(user) {
-    if (unsubscribeUser) {
-      unsubscribeUser();
-      unsubscribeUser = null;
-    }
-
-    const userRef = doc(db, 'users', user.uid);
-
-    unsubscribeUser = onSnapshot(userRef,
-      (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          const newPremium = isUserPremium(data);
-
-          if (newPremium !== isPremium) {
-            isPremium = newPremium;
-            if (chapters.length > 0) renderChapters();
-          }
-
+        // ✅ C2 — paused : ne pas déconnecter, message (via console), rester sur la page
+        if (data.accountStatus === 'paused') {
+          // On laisse le contenu accessible ; l'utilisateur ne peut de toute façon
+          // pas lire les chapitres verrouillés (règles Firestore le bloqueront).
           try {
             localStorage.setItem(USER_DATA_KEY, JSON.stringify({
               ...data,
@@ -1787,18 +1851,24 @@ function loadSubjectFromFirestore() {
               _cachedAt: Date.now()
             }));
           } catch (e) {}
-        } else {
-          const cached = getCachedUserData(user.uid);
-          if (cached) {
-            const newPremium = isUserPremium(cached);
-            if (newPremium !== isPremium) {
-              isPremium = newPremium;
-              if (chapters.length > 0) renderChapters();
-            }
-          }
+          return;
         }
-      },
-      (error) => {
+
+        // Cas normal
+        const newPremium = isUserPremium(data);
+        if (newPremium !== isPremium) {
+          isPremium = newPremium;
+          if (chapters.length > 0) renderChapters();
+        }
+
+        try {
+          localStorage.setItem(USER_DATA_KEY, JSON.stringify({
+            ...data,
+            _uid: user.uid,
+            _cachedAt: Date.now()
+          }));
+        } catch (e) {}
+      } else {
         const cached = getCachedUserData(user.uid);
         if (cached) {
           const newPremium = isUserPremium(cached);
@@ -1806,145 +1876,188 @@ function loadSubjectFromFirestore() {
             isPremium = newPremium;
             if (chapters.length > 0) renderChapters();
           }
+        } else {
+          // ✅ C3 — retry doux
+          handleMissingUserDoc(user.uid);
         }
       }
-    );
+    },
+    (error) => {
+      // ✅ C8 — warn au lieu du silence
+      console.warn('[Matiere] onSnapshot users:', error.code || error.message);
+      const cached = getCachedUserData(user.uid);
+      if (cached) {
+        const newPremium = isUserPremium(cached);
+        if (newPremium !== isPremium) {
+          isPremium = newPremium;
+          if (chapters.length > 0) renderChapters();
+        }
+      }
+    }
+  );
+}
+
+// ================================================================
+// REFRESH
+// ================================================================
+document.getElementById('refreshBtn').addEventListener('click', () => {
+  const btn = document.getElementById('refreshBtn');
+  const icon = btn?.querySelector('i');
+  if (icon) {
+    icon.style.transition = 'transform 0.6s ease';
+    icon.style.transform = 'rotate(360deg)';
+    setTimeout(() => {
+      icon.style.transition = 'none';
+      icon.style.transform = 'rotate(0deg)';
+    }, 600);
+  }
+  renderProgress();
+  renderChapters();
+});
+
+// ================================================================
+// AUTH ROBUSTE — ✅ C1/C7
+// ================================================================
+let isRedirecting = false;
+let isAuthResolved = false;
+let graceTimer = null;
+let maxTimer = null;
+
+// ✅ C1 — préserver les clés existantes
+function redirectToLogin() {
+  if (isRedirecting) return;
+  isRedirecting = true;
+
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) {
+    try { authUnsubscribe(); } catch (e) {}
+    authUnsubscribe = null;
   }
 
-  // ================================================================
-  // REFRESH
-  // ================================================================
-  document.getElementById('refreshBtn').addEventListener('click', () => {
-    const btn = document.getElementById('refreshBtn');
-    const icon = btn?.querySelector('i');
-    if (icon) {
-      icon.style.transition = 'transform 0.6s ease';
-      icon.style.transform = 'rotate(360deg)';
-      setTimeout(() => {
-        icon.style.transition = 'none';
-        icon.style.transform = 'rotate(0deg)';
-      }, 600);
-    }
-    renderProgress();
-    renderChapters();
-  });
-
-  // ================================================================
-  // AUTH ROBUSTE — Anti-flash
-  // ================================================================
-  let isRedirecting = false;
-  let isAuthResolved = false;
-  let graceTimer = null;
-  let maxTimer = null;
-
-  function redirectToLogin() {
-    if (isRedirecting) return;
-    isRedirecting = true;
-    try {
+  try {
+    const existing = sessionStorage.getItem('redirectAfterLogin')
+                  || sessionStorage.getItem('redirectAfterAuth');
+    if (!existing) {
       sessionStorage.setItem('redirectAfterLogin',
         window.location.pathname + window.location.search);
-    } catch (e) {}
-    window.location.replace('login.html');
-  }
+    }
+  } catch (e) {}
 
-  function initAuthGuard(onAuthenticated) {
-    auth.onAuthStateChanged((user) => {
-      if (isAuthResolved) {
-        if (user && user.uid !== currentUid) {
-          currentUid = user.uid;
-          saveSession(user);
-          onAuthenticated(user);
-        } else if (!user && currentUid) {
-          currentUid = null;
-          clearSession();
-          redirectToLogin();
-        }
-        return;
-      }
+  window.location.replace('login.html');
+}
 
-      if (!user) {
-        if (graceTimer) clearTimeout(graceTimer);
-        graceTimer = setTimeout(() => {
-          if (isAuthResolved) return;
-          if (auth.currentUser) return;
+function initAuthGuard(onAuthenticated) {
+  if (authUnsubscribe) return; // garde anti-double
 
-          const hasSession = localStorage.getItem(SESSION_KEY);
-          const hasUserData = localStorage.getItem(USER_DATA_KEY);
-
-          if ((hasSession || hasUserData) && !navigator.onLine) {
-            setTimeout(() => {
-              if (auth.currentUser) return;
-              if (!isAuthResolved) redirectToLogin();
-            }, 1500);
-            return;
-          }
-
-          if (hasSession && hasUserData) {
-            setTimeout(() => {
-              if (auth.currentUser) return;
-              if (!isAuthResolved) redirectToLogin();
-            }, 1500);
-            return;
-          }
-
-          redirectToLogin();
-        }, 600);
-        return;
-      }
-
-      if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
-      if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
-
-      isAuthResolved = true;
-      currentUid = user.uid;
-      saveSession(user);
-      onAuthenticated(user);
-    });
-
-    maxTimer = setTimeout(() => {
-      if (isAuthResolved) return;
-      if (auth.currentUser) {
-        isAuthResolved = true;
-        currentUid = auth.currentUser.uid;
-        saveSession(auth.currentUser);
-        onAuthenticated(auth.currentUser);
-      } else {
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
+    if (isAuthResolved) {
+      if (user && user.uid !== currentUid) {
+        currentUid = user.uid;
+        saveSession(user);
+        onAuthenticated(user);
+      } else if (!user && currentUid) {
+        currentUid = null;
+        clearSession();
         redirectToLogin();
       }
-    }, 5000);
+      return;
+    }
+
+    if (!user) {
+      if (graceTimer) return;
+      graceTimer = setTimeout(() => {
+        graceTimer = null;
+        if (isAuthResolved) return;
+        if (auth.currentUser) return;
+
+        const hasSession = localStorage.getItem(SESSION_KEY);
+        const hasUserData = localStorage.getItem(USER_DATA_KEY);
+
+        if ((hasSession || hasUserData) && !navigator.onLine) {
+          setTimeout(() => {
+            if (auth.currentUser) return;
+            if (!isAuthResolved) redirectToLogin();
+          }, 1500);
+          return;
+        }
+
+        if (hasSession && hasUserData) {
+          setTimeout(() => {
+            if (auth.currentUser) return;
+            if (!isAuthResolved) redirectToLogin();
+          }, 1500);
+          return;
+        }
+
+        redirectToLogin();
+      }, 600);
+      return;
+    }
+
+    if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+    if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+
+    isAuthResolved = true;
+    currentUid = user.uid;
+    saveSession(user);
+    onAuthenticated(user);
+  });
+
+  maxTimer = setTimeout(() => {
+    if (isAuthResolved) return;
+    if (auth.currentUser) {
+      isAuthResolved = true;
+      currentUid = auth.currentUser.uid;
+      saveSession(auth.currentUser);
+      onAuthenticated(auth.currentUser);
+    } else {
+      redirectToLogin();
+    }
+  }, 5000);
+}
+
+// ================================================================
+// LANCER LA PROTECTION
+// ================================================================
+initAuthGuard(async (user) => {
+  // Cache-first : récupérer Premium immédiatement
+  const cached = getCachedUserData(user.uid);
+  isPremium = cached ? isUserPremium(cached) : false;
+
+  // Charger les données
+  loadSubjectFromFirestore();
+  loadUserData(user);
+});
+
+// ================================================================
+// REFRESH AU RETOUR
+// ================================================================
+window.addEventListener('focus', () => {
+  if (chapters.length > 0) {
+    renderProgress();
+    renderChapters();
   }
+});
 
-  // ================================================================
-  // LANCER LA PROTECTION
-  // ================================================================
-  initAuthGuard(async (user) => {
-    // Cache-first : récupérer Premium immédiatement
-    const cached = getCachedUserData(user.uid);
-    isPremium = cached ? isUserPremium(cached) : false;
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && chapters.length > 0) {
+    renderProgress();
+    renderChapters();
+  }
+});
 
-    // Charger les données
-    loadSubjectFromFirestore();
-    loadUserData(user);
-  });
+// ✅ C7 — cleanup global
+window.addEventListener('beforeunload', () => {
+  if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+  if (maxTimer) { clearTimeout(maxTimer); maxTimer = null; }
+  if (authUnsubscribe) { try { authUnsubscribe(); } catch (e) {} authUnsubscribe = null; }
+  if (unsubscribeUser) { try { unsubscribeUser(); } catch (e) {} unsubscribeUser = null; }
+  if (unsubscribeSubject) { try { unsubscribeSubject(); } catch (e) {} unsubscribeSubject = null; }
+  if (unsubscribeChapters) { try { unsubscribeChapters(); } catch (e) {} unsubscribeChapters = null; }
+});
 
-  // ================================================================
-  // REFRESH AU RETOUR
-  // ================================================================
-  window.addEventListener('focus', () => {
-    if (chapters.length > 0) {
-      renderProgress();
-      renderChapters();
-    }
-  });
-
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && chapters.length > 0) {
-      renderProgress();
-      renderChapters();
-    }
-  });
-
-  console.log('🚀 ARVEXA — Matière (avec session robuste)');
-  </script>
+console.log('🚀 ARVEXA — Matière (version corrigée C1-C8)');
+</script>
 </body>
 </html>
