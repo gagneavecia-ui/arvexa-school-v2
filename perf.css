@@ -168,7 +168,7 @@ body:has(#notifList) .glow-3 {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PAGE 9 : formulaires.html  (ciblée par #constSearch... non, par #searchInput)
+   PAGE 9 : formulaires.html  (ciblée par #searchInput)
    ⚠️ Attention : #searchInput existe aussi dans groupe.html
    On utilise #activeTab ou un ID unique. Ici : #tabs
    ═══════════════════════════════════════════════════════════════ */
@@ -311,3 +311,65 @@ body:has(.tool-card.featured.premium) .glow-3 {
 }
 
 /* ⚠️ On NE TOUCHE PAS à .el (grille critique) ni .ptable */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ⚡ NOUVEAU — VIEW TRANSITIONS
+   Navigation fluide sans flash entre toutes les pages
+   Compatible avec tous les navigateurs modernes (2026)
+   Fallback silencieux sur anciens navigateurs : aucune régression
+   ═══════════════════════════════════════════════════════════════ */
+
+@view-transition {
+  navigation: auto;
+}
+
+/* L'ancienne page s'efface en glissant légèrement vers la gauche */
+::view-transition-old(root) {
+  animation: arvexaFadeOut 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* La nouvelle page apparaît en glissant légèrement depuis la droite */
+::view-transition-new(root) {
+  animation: arvexaFadeIn 0.28s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes arvexaFadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(-6px) scale(0.99);
+  }
+}
+
+@keyframes arvexaFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(6px) scale(0.99);
+  }
+}
+
+/* ⚡ Le header reste fixe pendant la transition (pas de clignotement) */
+.header {
+  view-transition-name: arvexa-header;
+}
+
+::view-transition-old(arvexa-header),
+::view-transition-new(arvexa-header) {
+  animation: none;
+}
+
+/* ⚡ Le fond sombre reste appliqué pendant toute la transition
+   → évite tout flash blanc entre deux pages */
+html {
+  background: #0A0A0A;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Accessibilité — Respect de prefers-reduced-motion
+   ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
