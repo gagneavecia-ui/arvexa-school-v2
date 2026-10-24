@@ -337,14 +337,14 @@ body:has(.tool-card.featured.premium) .glow-3 {
 @keyframes arvexaFadeOut {
   to {
     opacity: 0;
-    transform: translateX(-6px) scale(0.99);
+    transform: translateX(-20px) scale(0.97);
   }
 }
 
 @keyframes arvexaFadeIn {
   from {
     opacity: 0;
-    transform: translateX(6px) scale(0.99);
+    transform: translateX(20px) scale(0.97);
   }
 }
 
