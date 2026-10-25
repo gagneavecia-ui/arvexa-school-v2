@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-  <script src="arvexa-auth-core.js" defer></script>
   <script src="register-sw.js" defer></script>
 
   <style>
@@ -1990,9 +1989,16 @@ document.getElementById('themeBtn').addEventListener('click', () => {
 // URL PARAMS
 // ================================================================
 const params = new URLSearchParams(window.location.search);
-const subject = params.get('subject') || 'mathematiques';
+
+// ✅ SEC — params URL sanitisés (avant : injectés bruts dans les attributs href
+// des templates innerHTML → XSS par injection d'attribut).
+//  - subject : whitelist stricte [a-z0-9_] (protège aussi cours/${subject}.json)
+//  - tab     : whitelist stricte des 3 onglets
+const rawSubject = (params.get('subject') || '').toLowerCase();
+const subject = /^[a-z][a-z0-9_]{0,39}$/.test(rawSubject) ? rawSubject : 'mathematiques';
 const chapter = parseInt(params.get('chapter')) || 0;
-const tab = params.get('tab') || 'cours';
+const rawTab = params.get('tab') || 'cours';
+const tab = ['cours', 'exercices', 'corrections'].includes(rawTab) ? rawTab : 'cours';
 const partIndex = parseInt(params.get('part')) || 0;
 
 const TAB_LABELS = {
@@ -2305,8 +2311,67 @@ function showContentUnavailable() {
 }
 
 // ================================================================
-// AMÉLIORATIONS DU CONTENU
+// ✅ SEC — PAYWALL CORRECTIONS
+// Le drapeau isPremium existait mais n'était JAMAIS utilisé : les
+// corrections étaient librement accessibles à tous. Verrou désormais
+// appliqué côté client (la vraie garantie reste le serveur).
 // ================================================================
+let premiumGateShown = false;
+
+function getPremiumNow() {
+  if (isPremium) return true;
+  if (!currentUid) return false;
+  const cached = getCachedUserData(currentUid);
+  return cached ? isUserPremium(cached) : false;
+}
+
+function showPremiumPaywall() {
+  stopTTS();
+  contentBody.innerHTML = `
+    <div class="content-unavailable">
+      <div class="hourglass-wrap" style="font-size: 42px; color: var(--accent-bright, #B8860B);">
+        <i class="fas fa-lock"></i>
+      </div>
+      <h2>Corrections réservées aux membres Premium</h2>
+      <p>Débloque toutes les corrections d'exercices, les explications détaillées et bien plus avec ARVEXA Premium.</p>
+      <div class="cu-actions">
+        <a href="abonnement.html" class="cu-btn primary">
+          <i class="fas fa-crown"></i> Débloquer Premium
+        </a>
+        <a href="chapitre.html?subject=${subject}&chapter=${chapter}&tab=cours" class="cu-btn">
+          <i class="fas fa-book-open"></i> Retour au cours
+        </a>
+      </div>
+    </div>
+  `;
+  pageTitle.textContent = 'Contenu Premium';
+  document.title = 'ARVEXA - Contenu Premium';
+  prevBtn.style.display = 'none';
+  nextBtn.style.display = 'none';
+  partCounter.style.display = 'none';
+  notesBtn.style.display = 'none';
+  if (partDots) partDots.style.display = 'none';
+  if (ttsBtn) ttsBtn.style.display = 'none';
+}
+
+// Appelé quand le statut Premium change en direct (snapshot Firestore)
+function syncPremiumGate() {
+  if (tab !== 'corrections') return;
+  const premiumNow = getPremiumNow();
+  if (!premiumNow && !premiumGateShown) {
+    premiumGateShown = true;
+    showPremiumPaywall();
+  } else if (premiumNow && premiumGateShown) {
+    premiumGateShown = false;
+    loadContent();
+  }
+}
+
+function setPremium(v) {
+  const changed = v !== isPremium;
+  isPremium = v;
+  if (changed) syncPremiumGate();
+}
 let tocObserver = null;
 
 function initTocSpy() {
@@ -2384,6 +2449,13 @@ function updatePartDots() {
 // CHARGEMENT
 // ================================================================
 function loadContent() {
+  // ✅ SEC — verrou Premium sur l'onglet Corrections
+  if (tab === 'corrections' && !getPremiumNow()) {
+    premiumGateShown = true;
+    showPremiumPaywall();
+    return;
+  }
+
   const manifestPath = `cours/${subject}.json`;
 
   contentBody.innerHTML = `
@@ -2949,7 +3021,7 @@ async function handleMissingUserDoc(uid) {
         }));
       } catch (e) {}
       const newPremium = isUserPremium(data);
-      if (newPremium !== isPremium) isPremium = newPremium;
+      setPremium(newPremium);
       return;
     }
     console.warn('[Lecture] Profil utilisateur introuvable pour', uid);
@@ -3000,7 +3072,7 @@ function loadUserData(user) {
 
         // Cas normal
         const newPremium = isUserPremium(data);
-        if (newPremium !== isPremium) isPremium = newPremium;
+        setPremium(newPremium);
 
         try {
           localStorage.setItem(USER_DATA_KEY, JSON.stringify({
@@ -3013,7 +3085,7 @@ function loadUserData(user) {
         const cached = getCachedUserData(user.uid);
         if (cached) {
           const newPremium = isUserPremium(cached);
-          if (newPremium !== isPremium) isPremium = newPremium;
+          setPremium(newPremium);
         } else {
           // ✅ C3 — retry doux
           handleMissingUserDoc(user.uid);
@@ -3026,7 +3098,7 @@ function loadUserData(user) {
       const cached = getCachedUserData(user.uid);
       if (cached) {
         const newPremium = isUserPremium(cached);
-        if (newPremium !== isPremium) isPremium = newPremium;
+        setPremium(newPremium);
       }
     }
   );
