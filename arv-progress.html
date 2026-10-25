@@ -3459,66 +3459,84 @@ function openAddSectionModal(subject, chapterId) {
     });
   });
 
-  // ── Saisie vocale ──
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    voiceToggle.style.display = 'none';
-  } else {
-    let recognition = null;
-    let isRecording = false;
-    let baseValue = '';
+ // ── Saisie vocale (corrigée) ──
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SpeechRecognition) {
+  voiceToggle.style.display = 'none';
+} else {
+  let recognition = null;
+  let isRecording = false;
+  let savedBaseValue = '';       // texte déjà présent AVANT la dictée
+  let handledResults = new Set(); // indices de résultats déjà traités
 
-    voiceToggle.addEventListener('click', () => {
-      if (!recognition) {
-        recognition = new SpeechRecognition();
-        recognition.lang = 'fr-FR';
-        recognition.continuous = true;
-        recognition.interimResults = true;
+  voiceToggle.addEventListener('click', () => {
+    if (!recognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'fr-FR';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
 
-        recognition.onresult = (event) => {
-          let interim = '';
-          let finalText = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-            if (event.results[i].isFinal) finalText += transcript + ' ';
-            else interim += transcript;
+      recognition.onresult = (event) => {
+        let interim = '';
+        let newFinal = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            // ✅ Clé unique par résultat pour ne jamais le relire
+            const resultKey = `${i}-${result[0].transcript}`;
+            if (!handledResults.has(resultKey)) {
+              handledResults.add(resultKey);
+              newFinal += result[0].transcript + ' ';
+            }
+          } else {
+            interim += result[0].transcript;
           }
-          if (finalText) baseValue += finalText;
-          body.value = baseValue + interim;
-          updateReady();
-        };
-        recognition.onerror = (e) => {
-          console.warn('[Speech]', e.error);
+        }
+
+        if (newFinal) savedBaseValue += newFinal;
+        body.value = savedBaseValue + interim;
+        updateReady();
+      };
+
+      recognition.onerror = (e) => {
+        console.warn('[Speech]', e.error);
+        if (e.error !== 'no-speech' && e.error !== 'aborted') {
           showToast('Erreur de reconnaissance vocale', 'error');
-          isRecording = false;
-          voiceToggle.classList.remove('active');
-          voiceLabel.textContent = 'Dicter à la voix';
-        };
-        recognition.onend = () => {
-          if (isRecording) {
-            try { recognition.start(); } catch (e) {}
-          }
-        };
-      }
-
-      if (isRecording) {
+        }
         isRecording = false;
-        recognition.stop();
         voiceToggle.classList.remove('active');
         voiceLabel.textContent = 'Dicter à la voix';
-      } else {
-        baseValue = body.value;
-        try {
-          recognition.start();
-          isRecording = true;
-          voiceToggle.classList.add('active');
-          voiceLabel.textContent = 'Arrêter la dictée';
-        } catch (e) {
-          showToast('Impossible de démarrer la dictée', 'error');
+      };
+
+      recognition.onend = () => {
+        if (isRecording) {
+          try { recognition.start(); } catch (e) {}
         }
+      };
+    }
+
+    if (isRecording) {
+      isRecording = false;
+      recognition.stop();
+      voiceToggle.classList.remove('active');
+      voiceLabel.textContent = 'Dicter à la voix';
+    } else {
+      // ✅ Sauvegarder le contenu existant AVANT la dictée
+      savedBaseValue = body.value ? body.value + ' ' : '';
+      handledResults = new Set();
+      try {
+        recognition.start();
+        isRecording = true;
+        voiceToggle.classList.add('active');
+        voiceLabel.textContent = 'Arrêter la dictée';
+      } catch (e) {
+        showToast('Impossible de démarrer la dictée', 'error');
       }
-    });
-  }
+    }
+  });
+}
 
   submitBtn.addEventListener('click', async () => {
     const rawInput = body.value.trim();
