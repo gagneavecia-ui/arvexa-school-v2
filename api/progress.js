@@ -1,7 +1,7 @@
 // ================================================================
-// API PROGRESS v9.2 — ARVEXA School
-// v9.2 : questions exhaustives (pas de limite), explication profonde,
-//        QCM fixés à 5, JSON_ARRAY_LIMITS séparé
+// API PROGRESS v9.3 — ARVEXA School
+// v9.3 : maxTokens réduits, priorisation Groq, timeouts augmentés,
+//        fallback local pour explanation
 // ================================================================
 
 module.exports.config = { maxDuration: 120 };
@@ -520,8 +520,9 @@ function repairJson(str) {
 
 async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 4000, deadline }) {
   const controller = new AbortController();
-  const timeouts = { 'Groq': 25000, 'OpenRouter': 30000, 'Mistral': 15000 };
-  const baseTimeout = timeouts[provider.name] || 25000;
+  // ✅ v9.3 : timeouts augmentés
+  const timeouts = { 'Groq': 35000, 'OpenRouter': 40000, 'Mistral': 20000 };
+  const baseTimeout = timeouts[provider.name] || 30000;
   const remaining = deadline ? Math.max(5000, deadline - Date.now()) : baseTimeout;
   const timeoutMs = Math.min(baseTimeout, remaining);
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -535,7 +536,10 @@ async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 40
         { role: 'user', content: userPrompt }
       ]
     };
-    if (provider.jsonMode) body.response_format = { type: 'json_object' };
+    // ✅ v9.3 : json_object désactivé pour OpenRouter (support partiel)
+    if (provider.jsonMode && provider.name !== 'OpenRouter') {
+      body.response_format = { type: 'json_object' };
+    }
     const result = await fetch(provider.endpoint, {
       method: 'POST',
       headers: {
@@ -565,9 +569,21 @@ async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 40
   }
 }
 
+// ✅ v9.3 : priorisation Groq pour explanation et questions
 function distributeTasks(tasks, providers) {
   if (providers.length === 0) return [];
-  return tasks.map((task, i) => ({ ...task, provider: providers[i % providers.length] }));
+  const heavyTasks = ['explanation', 'questions'];
+  const lightTasks = ['extraction', 'structure', 'qcm'];
+  
+  return tasks.map((task) => {
+    if (heavyTasks.includes(task.name)) {
+      const groq = providers.find((p) => p.name === 'Groq');
+      return { ...task, provider: groq || providers[0] };
+    }
+    const lightProviders = providers.filter((p) => p.name !== 'Groq');
+    const idx = lightTasks.indexOf(task.name);
+    return { ...task, provider: lightProviders[idx % lightProviders.length] || providers[0] };
+  });
 }
 
 async function runParallelTasks(tasks, providers, deadline) {
@@ -635,7 +651,7 @@ function mergeAnalysis(results, profile) {
 }
 
 // ────────────────────────────────────────────────────────────────
-// PROMPTS — v9.2
+// PROMPTS
 // ────────────────────────────────────────────────────────────────
 const LATEX_RULES = `
 RÈGLE LATEX — OBLIGATOIRE :
@@ -729,7 +745,7 @@ ${JSON_STRICT_RULES}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'explanation', maxTokens: 8000,
+      name: 'explanation', maxTokens: 4000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
       userPrompt: `Tu es professeur expert du BAC. Explique cette section EN PROFONDEUR comme à un élève qui découvre le sujet pour la première fois.
 
@@ -762,7 +778,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'structure', maxTokens: 3500,
+      name: 'structure', maxTokens: 3000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Extrait la structure scientifique de cette section.
 
@@ -785,7 +801,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'questions', maxTokens: 12000,
+      name: 'questions', maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère une banque EXHAUSTIVE de questions basée UNIQUEMENT sur cette section.
 
@@ -806,7 +822,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'qcm', maxTokens: 5000,
+      name: 'qcm', maxTokens: 3000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère EXACTEMENT 5 QCM basés UNIQUEMENT sur cette section.
 
@@ -862,7 +878,7 @@ ${JSON_STRICT_RULES}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'explanation', maxTokens: 8000,
+      name: 'explanation', maxTokens: 4000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
       userPrompt: `Tu es professeur de SVT. Explique cette section EN PROFONDEUR comme à un élève qui découvre.
 
@@ -915,7 +931,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'questions', maxTokens: 12000,
+      name: 'questions', maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère une banque EXHAUSTIVE de questions de SVT sur cette section.
 
@@ -935,7 +951,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'qcm', maxTokens: 5000,
+      name: 'qcm', maxTokens: 3000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère EXACTEMENT 5 QCM de SVT sur cette section.
 
@@ -989,7 +1005,7 @@ ${JSON_STRICT_RULES}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'explanation', maxTokens: 8000,
+      name: 'explanation', maxTokens: 4000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
       userPrompt: `Tu es professeur de philosophie. Explique cette section EN PROFONDEUR comme à un élève qui n'y connaît RIEN.
 
@@ -1042,7 +1058,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'questions', maxTokens: 12000,
+      name: 'questions', maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère une banque EXHAUSTIVE de questions de philosophie sur cette section.
 
@@ -1062,7 +1078,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'qcm', maxTokens: 5000,
+      name: 'qcm', maxTokens: 3000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère EXACTEMENT 5 QCM de philosophie sur cette section.
 
@@ -1118,7 +1134,7 @@ ${JSON_STRICT_RULES}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'explanation', maxTokens: 5000,
+      name: 'explanation', maxTokens: 3000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Présente cette section d'histoire-géo de manière CLAIRE, CONCISE mais COMPLÈTE.
 
@@ -1162,7 +1178,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'questions', maxTokens: 12000,
+      name: 'questions', maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère une BANQUE MASSIVE de questions d'histoire-géo sur cette section.
 
@@ -1182,7 +1198,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'qcm', maxTokens: 5000,
+      name: 'qcm', maxTokens: 3000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère EXACTEMENT 5 QCM d'histoire-géo sur cette section.
 
@@ -1236,7 +1252,7 @@ ${JSON_STRICT_RULES}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'explanation', maxTokens: 6000,
+      name: 'explanation', maxTokens: 3500,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Tu es professeur de français. Explique cette section EN PROFONDEUR.
 
@@ -1287,7 +1303,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'questions', maxTokens: 12000,
+      name: 'questions', maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère une banque EXHAUSTIVE de questions de français sur cette section.
 
@@ -1307,7 +1323,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'qcm', maxTokens: 5000,
+      name: 'qcm', maxTokens: 3000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère EXACTEMENT 5 QCM de français sur cette section.
 
@@ -1361,7 +1377,7 @@ ${JSON_STRICT_RULES}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'explanation', maxTokens: 7000,
+      name: 'explanation', maxTokens: 4000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Tu es professeur d'anglais pour des FRANCOPHONES DÉBUTANTS. Explique EN PROFONDEUR.
 
@@ -1414,7 +1430,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'questions', maxTokens: 12000,
+      name: 'questions', maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère une banque EXHAUSTIVE de questions d'anglais.
 
@@ -1434,7 +1450,7 @@ ${JSON_ARRAY_LIMITS}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'qcm', maxTokens: 5000,
+      name: 'qcm', maxTokens: 3000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère EXACTEMENT 5 QCM d'anglais sur cette section.
 
@@ -1468,20 +1484,30 @@ function getPromptsForProfile(profile, context) {
   }
 }
 
+// ✅ v9.3 : fallback local amélioré (extrait plus de contenu)
 function buildFallbackAnalysis({ rawInput, profile }) {
+  const paragraphs = rawInput.split(/\n\n+|\.\s+/).filter(Boolean).slice(0, 6);
+  const parts = paragraphs.length > 0 ? paragraphs.map((p, i) => ({
+    partTitle: `Partie ${i + 1}`,
+    mainIdea: p.slice(0, 100),
+    simpleExplanation: p,
+    keyTerms: [],
+    toRemember: ''
+  })) : [{
+    partTitle: 'Contenu',
+    mainIdea: 'Contenu fourni',
+    simpleExplanation: rawInput.slice(0, 500),
+    keyTerms: [],
+    toRemember: 'Réessayer plus tard.'
+  }];
+
   return {
     profile,
     sectionTitle: 'Section',
     explanation: {
       sectionTitle: 'Section',
-      understanding: 'Analyse automatique indisponible. Contenu brut disponible ci-dessous.',
-      parts: [{
-        partTitle: 'Contenu',
-        mainIdea: 'Contenu fourni',
-        simpleExplanation: rawInput.slice(0, 500),
-        keyTerms: [],
-        toRemember: 'Réessayer plus tard.'
-      }]
+      understanding: `Voici le contenu de ta section (${rawInput.length} caractères). L'analyse pédagogique détaillée n'a pas pu être générée automatiquement cette fois-ci. Tu peux réessayer en cliquant sur "Actualiser" ou en créant une nouvelle section avec le même contenu.`,
+      parts
     },
     structure: null,
     questions: [],
@@ -1828,12 +1854,11 @@ async function createSection(uid, body) {
     analysis = mergeAnalysis(results, profile);
     analysis = deepClean(analysis);
 
-    if (!analysis.explanation || typeof analysis.explanation !== 'object') {
-      analysis.explanation = {
-        sectionTitle: analysis.sectionTitle || 'Section',
-        understanding: 'L\'explication pédagogique n\'a pas pu être générée pour cette section. Les questions et QCM restent disponibles ci-dessous.',
-        parts: []
-      };
+    // ✅ v9.3 : fallback local si explanation manquante
+    if (!analysis.explanation || typeof analysis.explanation !== 'object' || !analysis.explanation.parts || analysis.explanation.parts.length === 0) {
+      console.warn('[FAN-OUT] explanation manquante ou vide, fallback local');
+      const fallback = buildFallbackAnalysis({ rawInput: normalizedInput, profile });
+      analysis.explanation = fallback.explanation;
     }
 
     const hasContent = analysis.explanation || analysis.questions.length > 0;
@@ -2512,7 +2537,7 @@ module.exports = async function handler(request, response) {
   }
 
   const uid = user.uid;
-  console.log(`[PROGRESS v9.2] ${action} | uid=${uid.slice(0, 8)}`);
+  console.log(`[PROGRESS v9.3] ${action} | uid=${uid.slice(0, 8)}`);
 
   try {
     switch (action) {
@@ -2550,7 +2575,7 @@ module.exports = async function handler(request, response) {
         return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[PROGRESS v9.2] "${action}" failed:`, error.message);
+    console.error(`[PROGRESS v9.3] "${action}" failed:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
