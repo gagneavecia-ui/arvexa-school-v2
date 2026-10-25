@@ -20,6 +20,7 @@
 <script src="katex-utils.js" defer></script>
 <style>
 :root {
+  /* Palette — alignée sur index.html */
   --primary: #1A3A2A;
   --primary-dark: #0A1A12;
   --primary-light: #2A5A3A;
@@ -33,39 +34,44 @@
   --warning: #D4A017;
   --info: #4AAFE0;
 
+  /* Fonds */
   --bg-dark: #0A0A0A;
   --bg-surface: #141414;
-  --bg-card: rgba(20, 20, 20, 0.55);
-  --card-bg: rgba(20, 20, 20, 0.55);
+  --bg-card: rgba(20, 20, 20, 0.7);
+  --card-bg: rgba(20, 20, 20, 0.7);
   --block-bg: rgba(0, 0, 0, 0.25);
 
-  /* ✅ C3 : text-dim et text-muted alignés sur matiere.html */
+  /* Textes */
   --text-light: #F5F0E8;
-  --text-dim: #A0A090;
-  --text-muted: #7A7A6A;
+  --text-dim: #8A8A7A;
+  --text-muted: #5A5A4A;
   --text-body: #cfd0cc;
 
-  --card-border: rgba(255, 255, 255, 0.05);
-  --card-border-hover: rgba(224, 184, 74, 0.22);
+  /* Bordures dorées — identité ARVEXA */
+  --card-border: rgba(184, 134, 11, 0.06);
+  --card-border-hover: rgba(184, 134, 11, 0.2);
 
-  --transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+  /* Transitions & ombres */
+  --transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.42);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
 
+  /* Rayons */
   --radius: 16px;
   --radius-lg: 20px;
 
-  /* ✅ C3 : header 60px aligné sur matiere.html */
-  --header-height: 60px;
+  /* Layout */
+  --header-height: 64px;
   --sidebar-width: 280px;
 
+  /* Safe areas */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html { background: var(--bg-dark); color-scheme: dark; min-width: 320px; width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+html { background: var(--bg-dark); color-scheme: dark; min-width: 320px; width: 100%; }
 
 body {
   margin: 0;
@@ -82,70 +88,33 @@ body {
   font: 15px/1.6 'Inter', system-ui, sans-serif;
   padding-top: var(--safe-top);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 a { color: inherit; text-decoration: none; }
 button { cursor: pointer; font-family: inherit; border: none; background: none; color: inherit; }
 button:disabled { cursor: not-allowed; opacity: 0.55; }
 
-/* ✅ C3 : header harmonisé */
 .header {
   position: sticky; top: 0; flex-shrink: 0; z-index: 50;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: calc(10px + var(--safe-top)) 16px 10px;
+  padding: calc(12px + var(--safe-top)) 16px 12px;
   background: rgba(10, 10, 10, 0.94);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(224, 184, 74, 0.10);
+  border-bottom: 1px solid var(--card-border);
   min-height: var(--header-height);
-  position: sticky;
 }
-.header::after {
-  content: '';
-  position: absolute;
-  left: 0; right: 0; bottom: -1px; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(224, 184, 74, 0.35), transparent);
-  pointer-events: none;
-}
-.header-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+.header-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
 .back-btn {
   display: flex; align-items: center; justify-content: center;
-  width: 38px; height: 38px; border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.06); background: transparent;
+  width: 36px; height: 36px; border-radius: 10px;
+  border: 1px solid var(--card-border); background: transparent;
   color: var(--text-dim); transition: var(--transition); font-size: 14px; flex-shrink: 0;
 }
-.back-btn:hover {
-  border-color: rgba(224, 184, 74, 0.30);
-  color: var(--accent-bright);
-  background: rgba(224, 184, 74, 0.05);
-}
+.back-btn:hover { border-color: rgba(224, 184, 74, 0.3); color: var(--accent-bright); }
 .back-btn.hidden { display: none; }
 
-.brand-mark {
-  display: inline-flex;
-  align-items: baseline;
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 12.5px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  color: var(--text-light);
-  text-decoration: none;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.brand-mark span {
-  color: var(--accent-bright);
-  font-style: italic;
-  margin-left: 1px;
-}
-.header-divider {
-  width: 1px; height: 20px;
-  background: rgba(255, 255, 255, 0.08);
-  flex-shrink: 0;
-}
-
 .page-title {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 9px;
   font-size: 15px; font-weight: 700;
   font-family: 'Playfair Display', serif;
   color: var(--text-light);
@@ -156,23 +125,19 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .page-title i { color: var(--accent-bright); font-size: 14px; }
 .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .icon-btn {
-  width: 38px; height: 38px; border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.06); background: transparent;
+  width: 36px; height: 36px; border-radius: 10px;
+  border: 1px solid var(--card-border); background: transparent;
   color: var(--text-dim); transition: var(--transition); font-size: 14px;
   display: flex; align-items: center; justify-content: center;
 }
-.icon-btn:hover {
-  border-color: rgba(224, 184, 74, 0.30);
-  color: var(--accent-bright);
-  background: rgba(224, 184, 74, 0.05);
-}
+.icon-btn:hover { border-color: rgba(224, 184, 74, 0.3); color: var(--accent-bright); }
 
 .premium-badge {
   display: none;
   align-items: center;
   gap: 5px;
   padding: 5px 12px;
-  border-radius: 999px;
+  border-radius: 20px;
   background: linear-gradient(135deg, rgba(224, 184, 74, 0.15), rgba(184, 134, 11, 0.08));
   border: 1px solid rgba(224, 184, 74, 0.3);
   color: var(--accent-bright);
@@ -290,7 +255,7 @@ main {
   width: 38px; height: 38px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   font-size: 15px; flex-shrink: 0;
-  background: rgba(224, 184, 74, 0.10);
+  background: rgba(224, 184, 74, 0.1);
   color: var(--accent-bright);
   border: 1px solid rgba(224, 184, 74, 0.15);
 }
@@ -354,7 +319,7 @@ main {
 
 .cta-card {
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; padding: 15px 20px; border-radius: 14px;
+  width: 100%; padding: 15px 20px; border-radius: 30px;
   background: linear-gradient(135deg, var(--accent-bright), var(--accent));
   color: #0A0A0A; font-weight: 700; font-size: 14px;
   border: none; margin-bottom: 20px;
@@ -531,7 +496,6 @@ main {
   padding: 14px 12px; text-align: center;
   background: var(--block-bg); border-radius: 10px;
   margin-bottom: 8px; overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 .formula-block:last-child { margin-bottom: 0; }
 .formula-description {
@@ -918,7 +882,7 @@ main {
 .modal {
   width: 100%; max-width: 640px; max-height: 92vh;
   background: #141414;
-  border-top: 1px solid rgba(224, 184, 74, 0.2);
+  border-top: 1px solid rgba(184, 134, 11, 0.2);
   border-radius: 22px 22px 0 0;
   padding: 24px 20px;
   padding-bottom: calc(24px + var(--safe-bottom));
@@ -930,20 +894,26 @@ main {
   to { transform: translateY(0); }
 }
 .modal::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
   border-radius: 22px 22px 0 0;
-  background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
+  background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
+  background-size: 200% 100%;
+  animation: borderShimmer 4s linear infinite;
+}
+@keyframes borderShimmer {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
 }
 
 .modal-confirm {
   width: 100%; max-width: 400px;
   background: linear-gradient(145deg, #141414 0%, #0A0A0A 100%);
-  border: 1px solid rgba(224, 184, 74, 0.25);
+  border: 1px solid rgba(184, 134, 11, 0.25);
   border-radius: 20px;
   padding: 28px 24px 22px;
   text-align: center; position: relative;
   animation: popIn 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(184, 134, 11, 0.08);
   overflow: hidden;
 }
 @keyframes popIn {
@@ -954,8 +924,10 @@ main {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
+  background-size: 200% 100%;
+  animation: borderShimmer 4s linear infinite;
 }
 .modal-confirm .confirm-icon {
   width: 60px; height: 60px; border-radius: 16px;
@@ -977,7 +949,7 @@ main {
 .modal-confirm p strong { color: var(--text-light); }
 .modal-confirm-buttons { display: flex; gap: 10px; }
 .modal-confirm-buttons button {
-  flex: 1; min-height: 44px; border-radius: 14px;
+  flex: 1; min-height: 44px; border-radius: 30px;
   font-size: 13.5px; font-weight: 700;
   font-family: inherit; transition: var(--transition);
 }
@@ -1149,7 +1121,7 @@ main {
 
 .btn-full {
   width: 100%; min-height: 50px;
-  padding: 14px 24px; border-radius: 14px;
+  padding: 14px 24px; border-radius: 30px;
   border: none; font-size: 14.5px; font-weight: 700;
   font-family: inherit;
   display: flex; align-items: center; justify-content: center;
@@ -1207,6 +1179,7 @@ main {
   from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
 .katex {
   font-size: 1.05em;
   color: inherit;
@@ -1227,6 +1200,10 @@ main {
   padding: 1px 4px;
   border-radius: 3px;
 }
+.formula-block {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .part-explanation,
 .block-body,
 .qa-answer-text,
@@ -1237,7 +1214,7 @@ main {
 }
 
 @media (max-width: 640px) {
-  .header { padding: calc(8px + var(--safe-top)) 14px 8px; }
+  .header { padding: calc(10px + var(--safe-top)) 14px 10px; }
   main { padding: 18px 14px 55px; }
   .greeting h1 { font-size: 24px; }
   .streak-card { padding: 15px 18px; }
@@ -1268,55 +1245,43 @@ main {
 }
 
 @media (max-width: 480px) {
-  .brand-mark { font-size: 11.5px; }
-  .back-btn { width: 34px; height: 34px; font-size: 13px; }
+  .header .back-btn { width: 32px; height: 32px; font-size: 13px; }
   .page-title { font-size: 14px; }
-  .icon-btn { width: 34px; height: 34px; font-size: 13px; }
+  .icon-btn { width: 32px; height: 32px; font-size: 13px; }
   .premium-badge { font-size: 10px; padding: 4px 10px; }
 }
 
-@media (max-width: 380px) {
-  .brand-mark { display: none; }
-  .header-divider { display: none; }
+@media (max-width: 360px) {
   .header { padding: calc(8px + var(--safe-top)) 10px 8px; }
   main { padding: 12px 10px 40px; }
   .greeting h1 { font-size: 20px; }
   .page-title { font-size: 13px; }
-  .icon-btn, .back-btn { width: 32px; height: 32px; font-size: 12px; }
+  .icon-btn, .back-btn { width: 30px; height: 30px; font-size: 12px; }
 }
 
-/* ✅ C3 : prefers-reduced-motion complet */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }
 
-/* ✅ C3 : :focus-visible harmonisé */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
-textarea:focus-visible,
-select:focus-visible,
-[tabindex]:focus-visible {
-  outline: 2px solid var(--accent-bright);
-  outline-offset: 3px;
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
   border-radius: 6px;
 }
 
-::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(224, 184, 74, 0.25); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(224, 184, 74, 0.45); }
+::-webkit-scrollbar-thumb { background: rgba(184, 134, 11, 0.25); border-radius: 10px; }
 
-/* ══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    POP-UP PREMIUM UNIVERSEL
-   ══════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════════════ */
 .arvexa-popup-overlay {
   position: fixed;
   inset: 0;
@@ -1411,6 +1376,11 @@ select:focus-visible,
   color: var(--accent-bright);
   font-size: 26px;
   margin: 0 auto 16px;
+  animation: crownPulse 3s ease-in-out infinite;
+}
+@keyframes crownPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(224, 184, 74, 0.15); }
+  50% { transform: scale(1.04); box-shadow: 0 0 34px rgba(224, 184, 74, 0.32); }
 }
 .arvexa-popup-title {
   font-family: 'Playfair Display', Georgia, serif;
@@ -1466,16 +1436,63 @@ select:focus-visible,
   box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .arvexa-popup,
-  .arvexa-popup-overlay,
-  .arvexa-popup-icon,
-  .arvexa-popup-btn {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+/* --- Abdou : guide de révision ARVEXA --- */
+.abdou-welcome {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  overflow: hidden;
+  border: 1px solid rgba(224, 184, 74, .22);
+  border-radius: 18px;
+  background: linear-gradient(115deg, rgba(26, 58, 42, .48), rgba(10, 10, 10, .92));
 }
+.abdou-welcome__image {
+  display: block;
+  flex: 0 0 auto;
+  width: clamp(88px, 24vw, 132px);
+  height: auto;
+  object-fit: contain;
+  transform-origin: center bottom;
+  animation: abdou-welcome-float 3s ease-in-out infinite;
+}
+.abdou-welcome__copy { min-width: 0; }
+.abdou-welcome__eyebrow {
+  margin: 0 0 5px;
+  color: #E0B84A;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.abdou-welcome__title {
+  margin: 0 0 5px;
+  color: #F5F0E8;
+  font-size: clamp(1rem, 4vw, 1.25rem);
+  line-height: 1.25;
+}
+.abdou-welcome__message {
+  margin: 0;
+  color: rgba(245, 240, 232, .78);
+  font-size: .88rem;
+  line-height: 1.45;
+}
+@keyframes abdou-welcome-float {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  25% { transform: translateY(-4px) rotate(-1deg); }
+  50% { transform: translateY(-7px) rotate(1deg); }
+  75% { transform: translateY(-2px) rotate(-.5deg); }
+}
+@media (max-width: 420px) {
+  .abdou-welcome { gap: 10px; padding: 11px; }
+  .abdou-welcome__image { width: 82px; }
+  .abdou-welcome__message { font-size: .82rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .abdou-welcome__image { animation: none; }
+}
+
 </style>
 </head>
 
@@ -1486,8 +1503,6 @@ select:focus-visible,
     <button class="back-btn hidden" id="backBtn" aria-label="Retour">
       <i class="fas fa-arrow-left"></i>
     </button>
-    <span class="brand-mark" aria-hidden="true">ARVEX<span>A School</span></span>
-    <span class="header-divider" aria-hidden="true"></span>
     <h1 class="page-title" id="pageTitle">
       <span class="emoji">📓</span>
       <span id="pageTitleText">Mon cahier</span>
@@ -1498,7 +1513,7 @@ select:focus-visible,
       <i class="fas fa-crown"></i>
       <span>Premium</span>
     </div>
-    <button class="icon-btn" id="refreshBtn" title="Rafraîchir" aria-label="Rafraîchir">
+    <button class="icon-btn" id="refreshBtn" title="Rafraîchir">
       <i class="fas fa-rotate"></i>
     </button>
   </div>
@@ -1543,7 +1558,6 @@ select:focus-visible,
 
   </div>
 </div>
-
   <script type="importmap">
   { "imports": {
     "firebase/app": "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js",
@@ -1551,16 +1565,15 @@ select:focus-visible,
     "firebase/firestore": "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"
   } }
   </script>
- 
-   <script type="module">
-  import { initializeApp } from "firebase/app";
-  import { getAuth, getIdToken } from "firebase/auth";
-  import { getFirestore, doc, getDoc } from "firebase/firestore";
-  import { requireAuth } from './auth-guard.js';
 
-  // ══════════════════════════════════════════════════════════════
+  <script type="module">
+  import { initializeApp } from "firebase/app";
+  import { getAuth, onAuthStateChanged, getIdToken } from "firebase/auth";
+  import { getFirestore, doc, getDoc } from "firebase/firestore";
+
+  // ═══════════════════════════════════════════════════════════════
   // CONFIG
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   const firebaseConfig = {
     apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
     authDomain: "arvexa-fbf10.firebaseapp.com",
@@ -1600,12 +1613,12 @@ select:focus-visible,
   };
 
   const SYMBOL_GROUPS = [
-    { name: 'Opérations', symbols: ['+','−','×','÷','±','=','≠','≈','·','%','<','>','≤','≥','≡','∝'] },
-    { name: 'Puissances', symbols: ['²','³','⁴','⁵','⁶','⁰','¹','√','∛','^','_','½','⅓','¼','¾','⅛'] },
-    { name: 'Grecques',   symbols: ['π','θ','α','β','γ','δ','λ','μ','σ','ρ','φ','ψ','ω','Ω','Δ','ε'] },
-    { name: 'Analyse',    symbols: ['∫','∬','∮','∂','∇','∑','∏','⇌','⇋','∈','∉','∞','lim','d/dx','∝','≡'] },
-    { name: 'Ensembles',  symbols: ['∈','∉','⊂','⊃','∪','∩','∅','⊆','⊇','⊊','⊋','∀','∃','∄','∅','⊗'] },
-    { name: 'Physique',   symbols: ['℃','Å','°C','K','mol','pH','€','µ','η','λ','ν','ΔE','Δt','Δx','F'] }
+    { name: 'Opérations', symbols: ['+','−','×','÷','±','=','≠','≈','·','%','<','>','≤','≥','∝','∞'] },
+    { name: 'Puissances', symbols: ['²','³','⁴','⁵','ⁿ','⁰','¹','√','∛','^','_','½','⅓','¼','¾','⅔'] },
+    { name: 'Grecques',   symbols: ['π','θ','α','β','γ','δ','λ','μ','σ','ρ','φ','ψ','Δ','Ω','ħ','ε'] },
+    { name: 'Analyse',    symbols: ['∫','∑','∏','∂','→','←','↔','⇒','⇔','∇','Δ','∞','lim','d/dx','≈','∝'] },
+    { name: 'Ensembles',  symbols: ['∈','∉','⊂','⊃','∪','∩','∅','ℝ','ℕ','ℤ','ℚ','ℂ','∀','∃','∄','≡'] },
+    { name: 'Physique',   symbols: ['⇌','Å','°C','K','mol','pH','⌬','⚛','⚡','Ω','λ','ν','ΔE','Δt','Δx','F'] }
   ];
 
   const state = {
@@ -1619,9 +1632,9 @@ select:focus-visible,
 
   const $ = (id) => document.getElementById(id);
 
-  // ══════════════════════════════════════════════════════════════
-  // UTILITAIRES
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
+  // ✅ HELPER : Safe array
+  // ═══════════════════════════════════════════════════════════════
   function safeArray(v) {
     return Array.isArray(v) ? v : [];
   }
@@ -1635,21 +1648,13 @@ select:focus-visible,
       .replace(/'/g, '&#39;');
   }
 
-  // ✅ C1 : safeText corrigé — protège < > & dans les blocs mathématiques
   function safeText(text) {
     let s = String(text || '');
     s = s.replace(/&amp;(lt|gt|quot|amp|#39);/g, '&$1;');
 
     const parts = s.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$)/g);
     return parts.map((part, i) => {
-      if (i % 2 === 1) {
-        // Bloc mathématique : échapper les caractères HTML dangereux
-        // KaTeX décodera les entités (&lt;, &gt;, &amp;) et les interprétera correctement
-        return part
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
-      }
+      if (i % 2 === 1) return part;
       return part.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }).join('');
   }
@@ -1703,7 +1708,7 @@ select:focus-visible,
             <span>Banque de questions</span>
           </div>
           <div class="generating-step" data-step="5">
-            <span class="generating-step-icon">✅</span>
+            <span class="generating-step-icon">🎯</span>
             <span>QCM</span>
           </div>
         </div>
@@ -1750,27 +1755,17 @@ select:focus-visible,
     return state.userData?.firstName || state.userData?.displayName?.split(' ')[0] || 'Élève';
   }
 
-  // ✅ C2 : callApi avec gestion des erreurs réseau
   async function callApi(action, params = {}) {
     if (!state.user) throw new Error('Non authentifié.');
     const token = await getIdToken(state.user);
-
-    let response;
-    try {
-      response = await fetch('/api/progress', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ action, ...params })
-      });
-    } catch (networkErr) {
-      const err = new Error('Problème de connexion. Vérifie ton réseau et réessaie.');
-      err.code = 'NETWORK_ERROR';
-      throw err;
-    }
-
+    const response = await fetch('/api/progress', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ action, ...params })
+    });
     const data = await response.json().catch(() => null);
 
     if (response.status === 401 && data?.code === 'AUTH_REQUIRED') {
@@ -1847,10 +1842,10 @@ select:focus-visible,
   function updateHeader() {
     const map = {
       notebooks: { emoji: '📓', text: 'Mon cahier' },
-      notebook: { emoji: SUBJECTS[state.params.subject]?.emoji || '📘', text: SUBJECTS[state.params.subject]?.label || 'Cahier' },
-      chapter: { emoji: '📘', text: 'Chapitre' },
-      section: { emoji: '📙', text: 'Section' },
-      lesson: { emoji: '📗', text: 'Leçon' }
+      notebook: { emoji: SUBJECTS[state.params.subject]?.emoji || '📖', text: SUBJECTS[state.params.subject]?.label || 'Cahier' },
+      chapter: { emoji: '📖', text: 'Chapitre' },
+      section: { emoji: '📝', text: 'Section' },
+      lesson: { emoji: '📄', text: 'Leçon' }
     };
     const info = map[state.view] || map.notebooks;
     $('pageTitle').innerHTML = `<span class="emoji">${info.emoji}</span><span id="pageTitleText">${escapeHtml(info.text)}</span>`;
@@ -1862,9 +1857,9 @@ select:focus-visible,
 
   window.addEventListener('hashchange', () => applyRoute(routeFromHash()));
 
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   // VUE 1 — MES CAHIERS
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   async function renderNotebooksView() {
     const el = $('view-notebooks');
     showLoadingState(el, 'Chargement...');
@@ -1927,13 +1922,26 @@ select:focus-visible,
         : '';
 
       el.innerHTML = `
+        <div class="abdou-welcome" aria-label="Accueil par Abdou, guide de révision">
+          <img class="abdou-welcome__image"
+               src="/images/abdou-arv-progress.webp"
+               alt="Abdou, ton guide de révision, qui te salue"
+               loading="eager"
+               onerror="this.hidden=true">
+          <div class="abdou-welcome__copy">
+            <p class="abdou-welcome__eyebrow">Ton guide de révision</p>
+            <h2 class="abdou-welcome__title">Salut, prêt à avancer ?</h2>
+            <p class="abdou-welcome__message">On avance étape par étape. Choisis une matière et reprenons ensemble.</p>
+          </div>
+        </div>
+
         <div class="greeting">
           <h1>${getGreeting()}, <em>${escapeHtml(getFirstName())}</em></h1>
           <p>${totalSections > 0 ? 'Continue là où tu t\'es arrêté.' : 'Commence ton premier cahier.'}</p>
         </div>
 
         <div class="streak-card">
-          <div class="streak-icon">🔥</div>
+          <div class="streak-icon">⏱️</div>
           <div class="streak-content">
             <div class="streak-value">${studyTime.formatted.total} d'étude</div>
             <div class="streak-label">
@@ -1963,10 +1971,10 @@ select:focus-visible,
       showEmptyState(el, 'fa-exclamation-triangle', 'Impossible de charger', err.message || 'Erreur réseau.');
     }
   }
-  
-  // ══════════════════════════════════════════════════════════════
+
+  // ═══════════════════════════════════════════════════════════════
   // VUE 2 — CHAPITRES
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   async function renderNotebookView(params) {
     const el = $('view-notebook');
     const subject = params.subject;
@@ -2057,9 +2065,9 @@ select:focus-visible,
     }
   }
 
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   // VUE 3 — SECTIONS
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   async function renderChapterView(params) {
     const el = $('view-chapter');
     const { subject, chapterId } = params;
@@ -2160,9 +2168,9 @@ select:focus-visible,
     }
   }
 
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   // VUE 4 — SECTION DÉTAILLÉE
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   async function renderSectionView(params) {
     const el = $('view-section');
     const { subject, chapterId, sectionId } = params;
@@ -2294,9 +2302,9 @@ select:focus-visible,
     }
   }
 
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   // RENDU ANALYSE
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   function renderAnalysis(a, profile) {
     let html = '';
 
@@ -2384,7 +2392,7 @@ select:focus-visible,
       const examples = safeArray(p.examples);
       if (examples.length > 0) {
         extra += `<div class="part-terms" style="margin-top:10px;">
-          <div class="part-terms-title">📝 Exemples</div>
+          <div class="part-terms-title">🌐 Exemples</div>
           <div style="display:flex;flex-direction:column;gap:8px;">
             ${examples.map((ex) => `
               <div>
@@ -2419,9 +2427,9 @@ select:focus-visible,
       </div>`;
     }
 
-   if (profile === 'scientific' && p.example && typeof p.example === 'string') {
+    if (profile === 'scientific' && p.example && typeof p.example === 'string') {
       extra += `<div class="part-terms" style="margin-top:10px;">
-        <div class="part-terms-title">📙 Exemple</div>
+        <div class="part-terms-title">📝 Exemple</div>
         <div style="font-size:13.5px;color:var(--text-body);line-height:1.6;">${safeText(p.example)}</div>
       </div>`;
     }
@@ -2817,9 +2825,9 @@ select:focus-visible,
     `;
   }
 
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   // VUE 5 — LEÇON COMPLÈTE
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   async function renderLessonView(params) {
     const el = $('view-lesson');
     const { subject, chapterId } = params;
@@ -2856,7 +2864,7 @@ select:focus-visible,
           content += renderStructure(a.structure, s.profile || 'scientific');
         }
 
-if (s.userNotes && s.userNotes.trim()) {
+        if (s.userNotes && s.userNotes.trim()) {
           content += `<div class="block">
             <div class="block-head"><i class="fas fa-pen"></i>Mes notes</div>
             <div class="block-body" style="white-space:pre-wrap;">${safeText(s.userNotes)}</div>
@@ -2917,9 +2925,9 @@ if (s.userNotes && s.userNotes.trim()) {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   // MODALES
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   function closeModal() {
     $('modalBackdrop').classList.remove('show');
     $('modalBackdrop').classList.remove('center');
@@ -3101,26 +3109,6 @@ if (s.userNotes && s.userNotes.trim()) {
     const toggle = $('symbolsToggle');
     const panel = $('symbolsPanel');
 
-    const DRAFT_KEY = 'arvexa_section_draft_' + subject + '_' + chapterId;
-
-    try {
-      const saved = localStorage.getItem(DRAFT_KEY);
-      if (saved && saved.trim().length > 0) {
-        body.value = saved;
-        body.dispatchEvent(new Event('input'));
-      }
-    } catch (e) {}
-
-    body.addEventListener('input', () => {
-      try {
-        if (body.value.trim().length > 0) {
-          localStorage.setItem(DRAFT_KEY, body.value);
-        } else {
-          localStorage.removeItem(DRAFT_KEY);
-        }
-      } catch (e) {}
-    });
-
     const releaseGarde = () => { __isAddSectionModalOpen = false; };
     $('modalBackdrop')?.addEventListener('click', (e) => {
       if (e.target === $('modalBackdrop')) releaseGarde();
@@ -3188,7 +3176,6 @@ if (s.userNotes && s.userNotes.trim()) {
         const result = await callApi('createSection', { subject, chapterId, rawInput });
         cleanupProgress();
         showToast('Section analysée', 'success');
-        try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
         delete state.cache.chapter[`${subject}/${chapterId}`];
         applyRoute({ view: 'section', params: { subject, chapterId, sectionId: result.sectionId } });
       } catch (e) {
@@ -3206,9 +3193,9 @@ if (s.userNotes && s.userNotes.trim()) {
     setTimeout(() => body.focus(), 200);
   }
 
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   // ÉVÉNEMENTS
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   $('backBtn').addEventListener('click', () => window.history.back());
 
   $('refreshBtn').addEventListener('click', () => {
@@ -3223,9 +3210,9 @@ if (s.userNotes && s.userNotes.trim()) {
     else badge.classList.remove('show');
   }
 
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   // TRACKING TEMPS D'ÉTUDE
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   let studyLastSync = Date.now();
   const STUDY_SYNC_INTERVAL_MS = 2 * 60 * 1000;
 
@@ -3314,33 +3301,32 @@ if (s.userNotes && s.userNotes.trim()) {
 
   setInterval(cacheToken, 30 * 60 * 1000);
 
-  // ══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
   // AUTH
-  // ══════════════════════════════════════════════════════════════
-  requireAuth({
-    onUser: async (user) => {
-      state.user = user;
-
-      try {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        if (snap.exists()) {
-          state.userData = snap.data();
-          state.isPremium = isPremiumUser(state.userData);
-        }
-      } catch (_) {}
-
-      updatePremiumBadge();
-      applyRoute(routeFromHash());
-
-      if (!window.location.hash) {
-        window.history.replaceState(null, '', '#/notebooks');
-      }
-
-      cacheToken();
-    },
-    onNoUser: () => {
+  // ═══════════════════════════════════════════════════════════════
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
       window.location.replace('auth-choice.html');
+      return;
     }
+    state.user = user;
+
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        state.userData = snap.data();
+        state.isPremium = isPremiumUser(state.userData);
+      }
+    } catch (_) {}
+
+    updatePremiumBadge();
+    applyRoute(routeFromHash());
+
+    if (!window.location.hash) {
+      window.history.replaceState(null, '', '#/notebooks');
+    }
+
+    cacheToken();
   });
 
   function isPremiumUser(data) {
@@ -3361,7 +3347,7 @@ if (s.userNotes && s.userNotes.trim()) {
     return false;
   }
 
-  console.log('🚀 ARVEXA — Mon cahier v9.3 — C1/C2/C3 appliqués');
+  console.log('📓 ARVEXA — Mon cahier v9.2 — Corrections appliquées');
   </script>
 </body>
 </html>
