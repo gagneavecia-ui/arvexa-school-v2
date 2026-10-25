@@ -10,7 +10,6 @@
 const fs = require('fs');
 const path = require('path');
 
-module.exports.config = { maxDuration: 60 };
 
 // ────────────────────────────────────────────────────────────────
 // CONFIG
@@ -1142,6 +1141,10 @@ async function actionDeleteCahier(uid, body) {
 // HANDLER
 // ════════════════════════════════════════════════════════════════
 module.exports = async function handler(request, response) {
+
+// ✅ FIX — la config DOIT être assignée APRÈS module.exports, sinon elle
+// est écrasée et maxDuration retombe à la valeur par défaut (10s sur Vercel).
+module.exports.config = { maxDuration: 60 };
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST');
     return jsonError(response, 405, 'Méthode non autorisée.');

@@ -3,7 +3,6 @@
 // Corrections : Cas B, Notes strictes, Niveau BAC, Schémas Physique
 // ================================================================
 
-module.exports.config = { maxDuration: 90 };
 
 const WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW_LIGHT = 60;
@@ -1281,6 +1280,10 @@ async function loadNotebookContext(uid, subject, chapterId, chapterTitle) {
 }
 
 module.exports = async function handler(request, response) {
+
+// ✅ FIX — la config DOIT être assignée APRÈS module.exports, sinon elle
+// est écrasée et maxDuration retombe à la valeur par défaut (10s sur Vercel).
+module.exports.config = { maxDuration: 90 };
   applyCors(request, response);
   if (request.method === 'OPTIONS') return response.status(204).end();
   if (request.method !== 'POST') {

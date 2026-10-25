@@ -15,7 +15,6 @@ const PREMIUM_DAILY_LIMIT = 60;
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_HISTORY_MESSAGES = 10;
 
-module.exports.config = { maxDuration: 60 };
 
 let adminServices;
 
@@ -493,6 +492,10 @@ async function loadRecentMessages(uid, conversationId, limit = MAX_HISTORY_MESSA
 // HANDLER
 // ────────────────────────────────────────────────────────────────
 module.exports = async function handler(request, response) {
+
+// ✅ FIX — la config DOIT être assignée APRÈS module.exports, sinon elle
+// est écrasée et maxDuration retombe à la valeur par défaut (10s sur Vercel).
+module.exports.config = { maxDuration: 60 };
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST');
     return jsonError(response, 405, 'Méthode non autorisée.');

@@ -4,7 +4,6 @@
 //        fallback local pour explanation
 // ================================================================
 
-module.exports.config = { maxDuration: 120 };
 
 const WINDOW_MS = 60 * 1000;
 
@@ -2517,6 +2516,10 @@ async function computeStudyTime(uid) {
 // HANDLER
 // ═══════════════════════════════════════════════════════════════
 module.exports = async function handler(request, response) {
+
+// ✅ FIX — la config DOIT être assignée APRÈS module.exports, sinon elle
+// est écrasée et maxDuration retombe à la valeur par défaut (10s sur Vercel).
+module.exports.config = { maxDuration: 120 };
   applyCors(request, response);
   if (request.method === 'OPTIONS') return response.status(204).end();
   if (request.method !== 'POST') {
