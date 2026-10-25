@@ -1,5 +1,10 @@
-// api/saspay-webhook.js
-// Gère les notifications de SasPay et active les abonnements
+// api/saspay-webhook.mjs
+// 🔒 Version sécurisée (v2) :
+//  - BUG CORRIGÉ : usersSnap[0] → usersSnap.docs[0] (crash de la branche d'échec)
+//  - Le montant payé est vérifié contre l'enregistrement serveur
+//    (saspayPendingCheckouts) avant toute activation d'abonnement
+//  - Le plan d'abonnement vient du serveur, plus du document client
+//  - Idempotence : un webhook déjà traité ne réactive pas deux fois
 
 import crypto from 'crypto';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
@@ -66,51 +71,110 @@ export default async function handler(req, res) {
 
     console.log('📩 Webhook reçu :', { event, reference: data.reference, status: data.status });
 
-    // Activation de l'abonnement
+    // ─── Activation de l'abonnement ────────────────────────────────
     if (event === 'transaction.success' && (data.type === 'PAIEMENT' || !data.type)) {
       const reference = data.reference;
       if (!reference) return res.status(200).json({ received: true });
 
-      const usersSnap = await db.collection('users')
-        .where('saspayCheckoutReference', '==', reference)
-        .limit(1).get();
+      // 🔒 1. Retrouver le checkout enregistré par le serveur (creer-checkout)
+      const pendingRef = db.collection('saspayPendingCheckouts').doc(reference);
+      const pendingSnap = await pendingRef.get();
 
-      if (!usersSnap.empty) {
-        const userDoc = usersSnap.docs[0];
-        const userData = userDoc.data();
-
-        const now = new Date();
-        const endDate = new Date(now);
-        if (userData.subscriptionPlan === 'annual') {
-          endDate.setFullYear(endDate.getFullYear() + 1);
-        } else {
-          endDate.setMonth(endDate.getMonth() + 1);
-        }
-
-        await userDoc.ref.update({
-          subscriptionStatus: 'active',
-          premium: true,
-          isUnlocked: true,
-          subscriptionStartDate: Timestamp.fromDate(now),
-          subscriptionEndDate: Timestamp.fromDate(endDate),
-          saspayTransactionId: data.id || null,
-          saspayReference: reference,
-          saspayAmountPaid: parseFloat(data.charged || data.amount || '0'),
-          subscriptionPaidAt: FieldValue.serverTimestamp()
-        });
-        console.log('✅ Abonnement activé pour', userDoc.id);
+      if (!pendingSnap.exists) {
+        // Fail-closed : sans enregistrement serveur, on n'active rien.
+        console.error('🚫 Checkout inconnu (aucun enregistrement serveur) :', reference);
+        return res.status(200).json({ received: true, activated: false, reason: 'unknown_reference' });
       }
+
+      const pending = pendingSnap.data();
+
+      // 🔒 2. Idempotence : déjà traité → no-op
+      if (pending.status === 'processed') {
+        console.log('↩️  Webhook déjà traité (idempotent) :', reference);
+        return res.status(200).json({ received: true, idempotent: true });
+      }
+
+      // 🔒 3. Vérification du montant réellement payé
+      const paidAmount = parseFloat(data.charged || data.amount || '0');
+      const expectedAmount = Number(pending.amount || 0);
+      if (!paidAmount || paidAmount < expectedAmount) {
+        console.error(`🚫 Montant insuffisant : payé=${paidAmount}, attendu=${expectedAmount} (${reference})`);
+        return res.status(200).json({ received: true, activated: false, reason: 'amount_mismatch' });
+      }
+
+      // 🔒 4. Le plan vient du serveur (plus jamais du document client)
+      const userRef = db.collection('users').doc(pending.uid);
+      const userSnap = await userRef.get();
+      if (!userSnap.exists) {
+        console.error('🚫 Utilisateur introuvable pour le checkout :', pending.uid, reference);
+        return res.status(200).json({ received: true, activated: false, reason: 'user_not_found' });
+      }
+
+      const now = new Date();
+      const endDate = new Date(now);
+      if (pending.plan === 'annual') {
+        endDate.setFullYear(endDate.getFullYear() + 1);
+      } else {
+        endDate.setMonth(endDate.getMonth() + 1);
+      }
+
+      const batch = db.batch();
+      batch.update(userRef, {
+        subscriptionStatus: 'active',
+        premium: true,
+        isUnlocked: true,
+        subscriptionPlan: pending.plan,
+        subscriptionStartDate: Timestamp.fromDate(now),
+        subscriptionEndDate: Timestamp.fromDate(endDate),
+        saspayTransactionId: data.id || null,
+        saspayReference: reference,
+        saspayAmountPaid: paidAmount,
+        subscriptionPaidAt: FieldValue.serverTimestamp()
+      });
+      batch.update(pendingRef, {
+        status: 'processed',
+        processedAt: FieldValue.serverTimestamp(),
+        paidAmount
+      });
+      await batch.commit();
+
+      console.log('✅ Abonnement activé pour', pending.uid, `(${pending.plan}, ${paidAmount} XOF)`);
     }
 
-    // Gestion des échecs
+    // ─── Gestion des échecs ────────────────────────────────────────
     if (event === 'transaction.failed' || event === 'transaction.cancelled') {
       const reference = data.reference;
       if (reference) {
-        const usersSnap = await db.collection('users')
-          .where('saspayCheckoutReference', '==', reference)
-          .limit(1).get();
-        if (!usersSnap.empty) {
-          await usersSnap[0].ref.update({ subscriptionStatus: 'free' });
+        const pendingRef = db.collection('saspayPendingCheckouts').doc(reference);
+        const pendingSnap = await pendingRef.get();
+
+        if (pendingSnap.exists) {
+          const uid = pendingSnap.data().uid;
+          await pendingRef.update({ status: 'failed', processedAt: FieldValue.serverTimestamp() });
+
+          // On ne dégrade un compte QUE s'il n'a pas déjà un abonnement actif
+          // et que le checkout en cours est bien celui de cette référence.
+          const userRef = db.collection('users').doc(uid);
+          const userSnap = await userRef.get();
+          if (userSnap.exists) {
+            const u = userSnap.data();
+            if (u.subscriptionStatus !== 'active' && u.saspayCheckoutReference === reference) {
+              await userRef.update({ subscriptionStatus: 'free' });
+              console.log('⚪ Paiement échoué, statut remis à free :', uid);
+            }
+          }
+        } else {
+          // Ancien flux (checkout antérieur au v2) : recherche par référence.
+          // 🐛 BUG CORRIGÉ ici : usersSnap[0] n'existe pas → usersSnap.docs[0]
+          const usersSnap = await db.collection('users')
+            .where('saspayCheckoutReference', '==', reference)
+            .limit(1).get();
+          if (!usersSnap.empty) {
+            const u = usersSnap.docs[0].data();
+            if (u.subscriptionStatus !== 'active') {
+              await usersSnap.docs[0].ref.update({ subscriptionStatus: 'free' });
+            }
+          }
         }
       }
     }

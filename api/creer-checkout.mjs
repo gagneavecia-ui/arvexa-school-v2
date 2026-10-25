@@ -1,9 +1,22 @@
 // api/creer-checkout.mjs
+// 🔒 Version sécurisée (v2) :
+//  - Le montant est TOUJOURS calculé côté serveur (clientAmount ignoré/supprimé)
+//  - Remises promo plafonnées (-90 % max) et code sanitisé
+//  - Le checkout est enregistré côté serveur (saspayPendingCheckouts) :
+//    le webhook vérifie montant + plan contre cette référence avant d'activer
+
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 const PRICES = { monthly: 2000, annual: 18000 };
 const SITE_URL = 'https://arvexaschool.vercel.app';
 const BASE = 'https://api.saspay.me/api/v1';
-const PROJECT_ID = 'arvexa-fbf10';
+
+if (!getApps().length) {
+  const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
+  initializeApp({ credential: cert(sa) });
+}
+const db = getFirestore();
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', SITE_URL);
@@ -13,29 +26,26 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { uid, plan, promoCode, customerEmail, customerName, clientAmount } = req.body || {};
-    
+    // 🔒 clientAmount volontairement ignoré : seul le serveur décide du prix
+    const { uid, plan, promoCode, customerEmail, customerName } = req.body || {};
+
     if (!uid || !plan) return res.status(400).json({ error: 'Champs manquants' });
     if (!PRICES[plan]) return res.status(400).json({ error: 'Plan invalide' });
+    if (typeof uid !== 'string' || uid.length > 128) return res.status(400).json({ error: 'UID invalide' });
 
     let amount = PRICES[plan];
     let promoApplied = null;
 
-    // 1. Vérification Firestore (si la clé est là)
+    // 1. Vérification du code promo (lecture directe via SDK admin)
     if (promoCode && plan === 'annual') {
       try {
-        const codeUpper = promoCode.toUpperCase().trim();
-        const firebaseApiKey = process.env.FIREBASE_WEB_API_KEY;
-        
-        if (firebaseApiKey) {
-          const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/promoCodes/${codeUpper}?key=${firebaseApiKey}`;
-          const promoRes = await fetch(firestoreUrl);
-          
-          if (promoRes.ok) {
-            const promoData = await promoRes.json();
-            const discount = Number(promoData.fields?.discount?.integerValue || promoData.fields?.discount?.doubleValue || 0);
-            
-            if (discount > 0) {
+        const codeUpper = String(promoCode).toUpperCase().trim().replace(/[^A-Z0-9_-]/g, '');
+        if (codeUpper && codeUpper.length <= 40) {
+          const promoSnap = await db.collection('promoCodes').doc(codeUpper).get();
+          if (promoSnap.exists) {
+            const discount = Number(promoSnap.data()?.discount || 0);
+            // 🔒 Plafond de sécurité : jamais plus de 90 % de remise
+            if (discount > 0 && discount <= 90) {
               amount = Math.round(amount * (1 - discount / 100));
               promoApplied = { code: codeUpper, discount };
             }
@@ -46,26 +56,21 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2. On prend le montant calculé par le navigateur si le code n'a pas marché sur Firestore
-    if (clientAmount && clientAmount < amount) {
-      amount = clientAmount;
-      promoApplied = { code: promoCode || 'CLIENT', discount: 'client-side' };
-    }
+    // 2. Référence générée côté serveur
+    const reference = `ARV-${Date.now()}-${String(uid).slice(0, 6)}`;
 
     // 3. Appel SasPay
     const API_KEY = process.env.SASPAY_API_KEY;
     if (!API_KEY) return res.status(500).json({ error: 'SASPAY_API_KEY manquante' });
 
-    const reference = `ARV-${Date.now()}-${String(uid).slice(0, 6)}`;
-    
     const payload = {
       amount,
       currency: 'XOF',
       country: 'NE', // Force le Niger
       reference,
       description: `Abonnement ARVEXA ${plan}${promoApplied ? ` (promo ${promoApplied.code})` : ''}`,
-      customer_name: customerName || 'Élève ARVEXA',
-      customer_email: customerEmail || 'eleve@arvexaschool.com',
+      customer_name: String(customerName || 'Élève ARVEXA').substring(0, 80),
+      customer_email: String(customerEmail || 'eleve@arvexaschool.com').substring(0, 120),
       success_url: `${SITE_URL}/abonnement.html?statut=succes&ref=${reference}`,
       cancel_url: `${SITE_URL}/abonnement.html?statut=annule`,
       webhook_url: `${SITE_URL}/api/saspay-webhook`
@@ -89,6 +94,30 @@ export default async function handler(req, res) {
 
     const checkoutUrl = data.data?.checkout_url || data.data?.payment_url || data.data?.url;
     if (!checkoutUrl) return res.status(500).json({ error: 'URL absente', raw: data.data });
+
+    // 4. 🔒 Enregistrement serveur du checkout attendu :
+    //    le webhook comparera le montant réellement payé à `amount` ci-dessous.
+    try {
+      const batch = db.batch();
+      batch.set(db.collection('saspayPendingCheckouts').doc(reference), {
+        uid,
+        plan,
+        amount,
+        promo: promoApplied ? promoApplied.code : null,
+        status: 'pending',
+        createdAt: FieldValue.serverTimestamp()
+      });
+      batch.set(db.collection('users').doc(uid), {
+        saspayCheckoutReference: reference,
+        saspayCheckoutSessionId: data.data?.id || null,
+        saspayCheckoutStartedAt: FieldValue.serverTimestamp()
+      }, { merge: true });
+      await batch.commit();
+    } catch (e) {
+      // Échec d'écriture : le paiement peut continuer, mais le webhook refusera
+      // d'activer l'abonnement sans enregistrement serveur (fail-closed).
+      console.error('🔴 Écriture Firestore impossible pour', reference, ':', e.message);
+    }
 
     return res.status(200).json({ ok: true, reference, checkoutUrl, amount, promoApplied });
 

@@ -2467,12 +2467,13 @@ subscribeAutoBtn.addEventListener('click', async () => {
     const res = await fetch('/api/creer-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      // ✅ SEC — clientAmount supprimé : le montant est calculé et garanti
+      // côté serveur (creer-checkout), le navigateur ne peut plus le négocier.
       body: JSON.stringify({
         uid: currentUser.uid,
         plan: currentPlan,
         customerEmail: userEmail,
-        customerName: userName,
-        clientAmount: finalAmount
+        customerName: userName
       })
     });
 
@@ -2490,16 +2491,10 @@ subscribeAutoBtn.addEventListener('click', async () => {
       throw new Error(detail || 'Erreur lors de la création du paiement.');
     }
 
-    try {
-      const { updateDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js');
-      await updateDoc(doc(db, 'users', currentUser.uid), {
-        saspayCheckoutReference: data.reference,
-        saspayCheckoutSessionId: data.sessionId || null,
-        saspayCheckoutStartedAt: serverTimestamp()
-      });
-    } catch (e) {
-      console.warn('Impossible de sauvegarder la référence SasPay :', e.message);
-    }
+    // ✅ SEC — la référence de checkout est désormais enregistrée côté serveur
+    // (creer-checkout écrit saspayPendingCheckouts + users/{uid} via le SDK admin),
+    // ce qui permet au webhook de vérifier le montant réellement payé.
+    // L'écriture client a été retirée : les règles Firestore l'interdisent.
 
     window.location.href = data.checkoutUrl;
 
