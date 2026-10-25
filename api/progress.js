@@ -1,6 +1,7 @@
 // ================================================================
-// API PROGRESS v9.0 — ARVEXA School
+// API PROGRESS v9.1 — ARVEXA School
 // Cahier intelligent + Maîtrise + Objectifs + Planificateur
+// Fix v9.1 : docExists/docData + getChapter robuste
 // ================================================================
 
 module.exports.config = { maxDuration: 120 };
@@ -280,6 +281,20 @@ function deepClean(obj, depth = 0) {
     return cleaned;
   }
   return obj;
+}
+
+// ════════════════════════════════════════════════════════════════
+// ✅ HELPERS ROBUSTES — v9.1
+// ════════════════════════════════════════════════════════════════
+function docExists(snap) {
+  if (!snap) return false;
+  if (typeof snap.exists === 'function') return snap.exists();
+  return Boolean(snap.exists);
+}
+
+function docData(snap) {
+  if (!snap || typeof snap.data !== 'function') return {};
+  return snap.data() || {};
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -687,9 +702,6 @@ ${baseContext}
 
 ${PERIMETER_RULES}
 ${LATEX_RULES}
-
-RÈGLE : Chaque idée doit être EXPLIQUÉE en français simple.
-Pas de jargon non expliqué. Phrases complètes.
 
 Format JSON :
 {
@@ -1413,12 +1425,12 @@ async function reserveSectionQuota(uid) {
 
   return db.runTransaction(async (transaction) => {
     const userSnap = await transaction.get(userRef);
-    if (!userSnap.exists) throw new Error('profile_missing');
-    if (isPremiumUser(userSnap.data())) {
+    if (!docExists(userSnap)) throw new Error('profile_missing');
+    if (isPremiumUser(docData(userSnap))) {
       return { allowed: true, premium: true, used: 0, limit: Infinity, reserved: false };
     }
     const quotaSnap = await transaction.get(quotaRef);
-    const used = Number(quotaSnap.data()?.count || 0);
+    const used = Number(docData(quotaSnap)?.count || 0);
     if (used >= FREE_SECTION_LIMIT) {
       return { allowed: false, used, limit: FREE_SECTION_LIMIT, premium: false, reserved: false };
     }
@@ -1437,7 +1449,7 @@ async function releaseSectionQuota(uid) {
     const quotaRef = db.collection('users').doc(uid).collection('notebookQuota').doc(`sections-${period}`);
     await db.runTransaction(async (transaction) => {
       const snap = await transaction.get(quotaRef);
-      const used = Math.max(0, Number(snap.data()?.count || 0) - 1);
+      const used = Math.max(0, Number(docData(snap)?.count || 0) - 1);
       transaction.set(quotaRef, {
         count: used,
         updatedAt: FieldValue.serverTimestamp()
@@ -1493,9 +1505,10 @@ async function getDashboard(uid) {
   ALLOWED_SUBJECTS_ARRAY.forEach((subjectKey, index) => {
     const chaptersSnap = chaptersResults[index];
     const info = SUBJECT_INFO[subjectKey];
-    if (!chaptersSnap.docs || chaptersSnap.docs.length === 0) return;
-    const chapters = chaptersSnap.docs.map((d) => {
-      const data = d.data();
+    const docs = (chaptersSnap && Array.isArray(chaptersSnap.docs)) ? chaptersSnap.docs : [];
+    if (docs.length === 0) return;
+    const chapters = docs.map((d) => {
+      const data = docData(d);
       return {
         id: d.id,
         title: data.title || 'Chapitre',
@@ -1529,8 +1542,9 @@ async function getDashboard(uid) {
         .collection('notebooks').doc(topSubject.key)
         .collection('chapters')
         .orderBy('updatedAt', 'desc').limit(3).get();
-      recentActivity = lastChaptersSnap.docs.map((d) => {
-        const data = d.data();
+      const docs = (lastChaptersSnap && Array.isArray(lastChaptersSnap.docs)) ? lastChaptersSnap.docs : [];
+      recentActivity = docs.map((d) => {
+        const data = docData(d);
         return {
           subject: topSubject.key,
           subjectLabel: topSubject.label,
@@ -1557,9 +1571,10 @@ async function computeStreak(uid) {
     snap = await db.collection('users').doc(uid).collection('dailyActivity')
       .orderBy('date', 'desc').limit(90).get();
   } catch (e) { return { current: 0, best: 0 }; }
-  if (snap.docs.length === 0) return { current: 0, best: 0 };
+  const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
+  if (docs.length === 0) return { current: 0, best: 0 };
 
-  const activeDates = new Set(snap.docs.map((d) => d.data().date).filter(Boolean));
+  const activeDates = new Set(docs.map((d) => docData(d).date).filter(Boolean));
   let current = 0;
   const today = new Date();
   for (let i = 0; i < 90; i++) {
@@ -1594,8 +1609,9 @@ async function listChapters(uid, body) {
     .collection('chapters')
     .orderBy('updatedAt', 'desc').limit(100).get();
 
-  const chapters = snap.docs.map((d) => {
-    const data = d.data();
+  const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
+  const chapters = docs.map((d) => {
+    const data = docData(d);
     return {
       id: d.id,
       title: data.title || 'Chapitre',
@@ -1631,6 +1647,9 @@ async function createChapter(uid, body) {
   return { success: true, chapter: { id: ref.id, title: cleanTitle, sectionsCount: 0, sectionsStudied: 0, last: 'à l\'instant' } };
 }
 
+// ════════════════════════════════════════════════════════════════
+// ✅ getChapter CORRIGÉE v9.1
+// ════════════════════════════════════════════════════════════════
 async function getChapter(uid, body) {
   const { subject, chapterId } = body;
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
@@ -1642,13 +1661,14 @@ async function getChapter(uid, body) {
     .collection('chapters').doc(chapterId);
 
   const chapterSnap = await chapterRef.get();
-  if (!chapterSnap.exists) throw { status: 404, message: 'Chapitre introuvable.' };
+  if (!docExists(chapterSnap)) throw { status: 404, message: 'Chapitre introuvable.' };
 
-  const data = chapterSnap.data();
+  const data = docData(chapterSnap);
   const sectionsSnap = await chapterRef.collection('sections').orderBy('createdAt', 'asc').get();
+  const sectionDocs = (sectionsSnap && Array.isArray(sectionsSnap.docs)) ? sectionsSnap.docs : [];
 
-  const sections = sectionsSnap.docs.map((d) => {
-    const s = d.data();
+  const sections = sectionDocs.map((d) => {
+    const s = docData(d);
     const analysis = s.analysis || {};
     const questionsCount = Array.isArray(analysis.questions) ? analysis.questions.length : 0;
     const qcmCount = Array.isArray(analysis.qcm) ? analysis.qcm.length : 0;
@@ -1663,21 +1683,34 @@ async function getChapter(uid, body) {
     };
   });
 
-  const examSnap = await db.collection('users').doc(uid).collection('examResults')
-    .where('subject', '==', subject)
-    .where('chapterId', '==', chapterId)
-    .orderBy('date', 'desc').limit(1).get()
-    .catch(() => ({ docs: [] }));
-
+  // ✅ Lecture robuste des résultats d'examen — sans index composite, sans crash
   let latestResult = null;
-  if (!examSnap.empty) {
-    const r = examSnap.docs[0].data();
-    latestResult = {
-      id: examSnap.docs[0].id,
-      percentage: r.percentage,
-      masteryLevel: r.masteryLevel,
-      date: toISO(r.date)
-    };
+  try {
+    const examSnap = await db.collection('users').doc(uid).collection('examResults')
+      .where('subject', '==', subject)
+      .limit(50).get();
+
+    const examDocs = (examSnap && Array.isArray(examSnap.docs)) ? examSnap.docs : [];
+    const filtered = examDocs
+      .map((d) => ({ id: d.id, data: docData(d) }))
+      .filter((entry) => entry.data.chapterId === chapterId)
+      .sort((a, b) => {
+        const aTime = a.data.date?.toMillis?.() || 0;
+        const bTime = b.data.date?.toMillis?.() || 0;
+        return bTime - aTime;
+      });
+
+    if (filtered.length > 0) {
+      const entry = filtered[0];
+      latestResult = {
+        id: entry.id,
+        percentage: entry.data.percentage,
+        masteryLevel: entry.data.masteryLevel,
+        date: toISO(entry.data.date)
+      };
+    }
+  } catch (e) {
+    console.warn('[getChapter] examResults lookup failed:', e.message);
   }
 
   return {
@@ -1729,7 +1762,7 @@ async function createSection(uid, body) {
     .collection('chapters').doc(chapterId);
 
   const chapterSnap = await chapterRef.get();
-  if (!chapterSnap.exists) {
+  if (!docExists(chapterSnap)) {
     if (quota.reserved) await releaseSectionQuota(uid);
     throw { status: 404, message: 'Chapitre introuvable.' };
   }
@@ -1824,9 +1857,9 @@ async function getSection(uid, body) {
     .collection('sections').doc(sectionId);
 
   const snap = await ref.get();
-  if (!snap.exists) throw { status: 404, message: 'Section introuvable.' };
+  if (!docExists(snap)) throw { status: 404, message: 'Section introuvable.' };
 
-  const s = snap.data();
+  const s = docData(snap);
   return {
     success: true,
     section: {
@@ -1874,9 +1907,9 @@ async function deleteSection(uid, body) {
     .collection('chapters').doc(chapterId);
   const sectionRef = chapterRef.collection('sections').doc(sectionId);
   const snap = await sectionRef.get();
-  if (!snap.exists) throw { status: 404, message: 'Section introuvable.' };
+  if (!docExists(snap)) throw { status: 404, message: 'Section introuvable.' };
 
-  const wasStudied = Boolean(snap.data().studiedAt);
+  const wasStudied = Boolean(docData(snap).studiedAt);
   await sectionRef.delete();
   const updates = {
     sectionsCount: FieldValue.increment(-1),
@@ -1899,11 +1932,12 @@ async function deleteChapter(uid, body) {
     .collection('chapters').doc(chapterId);
 
   const snap = await chapterRef.get();
-  if (!snap.exists) throw { status: 404, message: 'Chapitre introuvable.' };
+  if (!docExists(snap)) throw { status: 404, message: 'Chapitre introuvable.' };
 
   const sectionsSnap = await chapterRef.collection('sections').get();
+  const sectionDocs = (sectionsSnap && Array.isArray(sectionsSnap.docs)) ? sectionsSnap.docs : [];
   const batch = db.batch();
-  sectionsSnap.docs.forEach((d) => batch.delete(d.ref));
+  sectionDocs.forEach((d) => batch.delete(d.ref));
   batch.delete(chapterRef);
   await batch.commit();
 
@@ -1921,11 +1955,12 @@ async function getFullLesson(uid, body) {
     .collection('chapters').doc(chapterId);
 
   const chapterSnap = await chapterRef.get();
-  if (!chapterSnap.exists) throw { status: 404, message: 'Chapitre introuvable.' };
+  if (!docExists(chapterSnap)) throw { status: 404, message: 'Chapitre introuvable.' };
 
   const sectionsSnap = await chapterRef.collection('sections').orderBy('createdAt', 'asc').get();
-  const sections = sectionsSnap.docs.map((d) => {
-    const s = d.data();
+  const sectionDocs = (sectionsSnap && Array.isArray(sectionsSnap.docs)) ? sectionsSnap.docs : [];
+  const sections = sectionDocs.map((d) => {
+    const s = docData(d);
     return {
       id: d.id,
       title: s.title || 'Section',
@@ -1937,7 +1972,7 @@ async function getFullLesson(uid, body) {
 
   return {
     success: true,
-    chapter: { id: chapterId, title: chapterSnap.data().title || 'Chapitre', subject },
+    chapter: { id: chapterId, title: docData(chapterSnap).title || 'Chapitre', subject },
     sections
   };
 }
@@ -1984,12 +2019,12 @@ async function listExamResults(uid, body) {
 
   let q = db.collection('users').doc(uid).collection('examResults');
   if (subject) q = q.where('subject', '==', subject);
-  if (chapterId) q = q.where('chapterId', '==', chapterId);
   q = q.orderBy('date', 'desc').limit(Math.min(200, limit));
 
   const snap = await q.get();
-  const results = snap.docs.map((d) => {
-    const data = d.data();
+  const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
+  let results = docs.map((d) => {
+    const data = docData(d);
     return {
       id: d.id,
       subject: data.subject,
@@ -2003,6 +2038,7 @@ async function listExamResults(uid, body) {
       date: toISO(data.date)
     };
   });
+  if (chapterId) results = results.filter((r) => r.chapterId === chapterId);
 
   return { success: true, results };
 }
@@ -2024,8 +2060,9 @@ async function getProgressionSummary(uid) {
   const allChapters = [];
   chaptersResults.forEach((snap, idx) => {
     const subjectKey = ALLOWED_SUBJECTS_ARRAY[idx];
-    snap.docs.forEach((d) => {
-      const data = d.data();
+    const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
+    docs.forEach((d) => {
+      const data = docData(d);
       totalSections += Number(data.sectionsCount || 0);
       totalStudied += Number(data.sectionsStudied || 0);
       allChapters.push({
@@ -2044,9 +2081,10 @@ async function getProgressionSummary(uid) {
     .orderBy('date', 'desc').limit(500).get()
     .catch(() => ({ docs: [] }));
 
+  const examDocs = (examSnap && Array.isArray(examSnap.docs)) ? examSnap.docs : [];
   const latestByChapter = new Map();
-  examSnap.docs.forEach((d) => {
-    const data = d.data();
+  examDocs.forEach((d) => {
+    const data = docData(d);
     if (!data.chapterId) return;
     const key = `${data.subject}_${data.chapterId}`;
     if (!latestByChapter.has(key)) {
@@ -2110,9 +2148,9 @@ async function markSectionStudied(uid, body) {
     .collection('sections').doc(sectionId);
 
   const snap = await sectionRef.get();
-  if (!snap.exists) throw { status: 404, message: 'Section introuvable.' };
+  if (!docExists(snap)) throw { status: 404, message: 'Section introuvable.' };
 
-  if (snap.data().studiedAt) return { success: true, alreadyStudied: true };
+  if (docData(snap).studiedAt) return { success: true, alreadyStudied: true };
 
   await sectionRef.set({ studiedAt: FieldValue.serverTimestamp() }, { merge: true });
 
@@ -2156,8 +2194,9 @@ async function listGoals(uid) {
   const snap = await db.collection('users').doc(uid).collection('goals')
     .orderBy('createdAt', 'desc').limit(100).get();
 
-  const goals = snap.docs.map((d) => {
-    const data = d.data();
+  const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
+  const goals = docs.map((d) => {
+    const data = docData(d);
     return {
       id: d.id,
       type: data.type,
@@ -2182,12 +2221,12 @@ async function updateGoal(uid, body) {
   const { db, FieldValue } = getAdminServices();
   const ref = db.collection('users').doc(uid).collection('goals').doc(goalId);
   const snap = await ref.get();
-  if (!snap.exists) throw { status: 404, message: 'Objectif introuvable.' };
+  if (!docExists(snap)) throw { status: 404, message: 'Objectif introuvable.' };
 
   const updates = { updatedAt: FieldValue.serverTimestamp() };
   if (typeof current === 'number') {
     updates.current = Math.max(0, current);
-    const data = snap.data();
+    const data = docData(snap);
     if (updates.current >= data.target) updates.status = 'achieved';
     else if (updates.current > 0) updates.status = 'in_progress';
   }
@@ -2242,8 +2281,9 @@ async function listClassGrades(uid, body) {
   q = q.orderBy('date', 'desc').limit(Math.min(200, limit));
 
   const snap = await q.get();
-  const grades = snap.docs.map((d) => {
-    const data = d.data();
+  const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
+  const grades = docs.map((d) => {
+    const data = docData(d);
     return {
       id: d.id,
       subject: data.subject,
@@ -2267,15 +2307,16 @@ async function updateClassGrade(uid, body) {
   const { db } = getAdminServices();
   const ref = db.collection('users').doc(uid).collection('classGrades').doc(gradeId);
   const snap = await ref.get();
-  if (!snap.exists) throw { status: 404, message: 'Note introuvable.' };
+  if (!docExists(snap)) throw { status: 404, message: 'Note introuvable.' };
 
   const updates = {};
   if (typeof score === 'number') updates.score = score;
   if (typeof maxScore === 'number') updates.maxScore = maxScore;
   if (typeof comment === 'string') updates.comment = comment.slice(0, 500);
 
-  const finalScore = updates.score !== undefined ? updates.score : snap.data().score;
-  const finalMax = updates.maxScore !== undefined ? updates.maxScore : snap.data().maxScore;
+  const existing = docData(snap);
+  const finalScore = updates.score !== undefined ? updates.score : existing.score;
+  const finalMax = updates.maxScore !== undefined ? updates.maxScore : existing.maxScore;
   if (finalScore > finalMax) throw { status: 400, message: 'Note supérieure au barème.' };
 
   await ref.set(updates, { merge: true });
@@ -2292,15 +2333,16 @@ async function deleteClassGrade(uid, body) {
 
 async function generatePlan(uid, body) {
   const { weekStart, sessionsPerWeek = 3, duration = 45 } = body;
-  const { db } = getAdminServices();
+  const { db, FieldValue } = getAdminServices();
 
   const examSnap = await db.collection('users').doc(uid).collection('examResults')
     .orderBy('date', 'desc').limit(100).get()
     .catch(() => ({ docs: [] }));
 
+  const examDocs = (examSnap && Array.isArray(examSnap.docs)) ? examSnap.docs : [];
   const latestByChapter = new Map();
-  examSnap.docs.forEach((d) => {
-    const data = d.data();
+  examDocs.forEach((d) => {
+    const data = docData(d);
     if (!data.chapterId) return;
     const key = `${data.subject}_${data.chapterId}`;
     if (!latestByChapter.has(key)) {
@@ -2318,7 +2360,6 @@ async function generatePlan(uid, body) {
     .sort((a, b) => a.percentage - b.percentage)
     .slice(0, sessionsPerWeek);
 
-  const { FieldValue } = getAdminServices();
   const startDate = weekStart ? new Date(weekStart) : new Date();
   const generatedSessions = [];
 
@@ -2361,8 +2402,9 @@ async function listSessions(uid, body) {
   q = q.orderBy('date', 'asc').limit(Math.min(200, limit));
 
   const snap = await q.get();
-  const sessions = snap.docs.map((d) => {
-    const data = d.data();
+  const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
+  const sessions = docs.map((d) => {
+    const data = docData(d);
     return {
       id: d.id,
       date: toISO(data.date),
@@ -2407,7 +2449,7 @@ async function updateSession(uid, body) {
   const { db } = getAdminServices();
   const ref = db.collection('users').doc(uid).collection('sessions').doc(sessionId);
   const snap = await ref.get();
-  if (!snap.exists) throw { status: 404, message: 'Séance introuvable.' };
+  if (!docExists(snap)) throw { status: 404, message: 'Séance introuvable.' };
 
   const updates = {};
   if (date) updates.date = new Date(date);
@@ -2434,9 +2476,10 @@ async function getRecommendations(uid) {
     .orderBy('date', 'desc').limit(50).get()
     .catch(() => ({ docs: [] }));
 
+  const examDocs = (examSnap && Array.isArray(examSnap.docs)) ? examSnap.docs : [];
   const latest = new Map();
-  examSnap.docs.forEach((d) => {
-    const data = d.data();
+  examDocs.forEach((d) => {
+    const data = docData(d);
     if (!data.chapterId) return;
     const key = `${data.subject}_${data.chapterId}`;
     if (!latest.has(key)) latest.set(key, data);
@@ -2459,8 +2502,9 @@ async function getRecommendations(uid) {
     .where('status', 'in', ['pending', 'in_progress']).limit(20).get()
     .catch(() => ({ docs: [] }));
 
-  goalsSnap.docs.forEach((d) => {
-    const data = d.data();
+  const goalDocs = (goalsSnap && Array.isArray(goalsSnap.docs)) ? goalsSnap.docs : [];
+  goalDocs.forEach((d) => {
+    const data = docData(d);
     const deadline = toISO(data.deadline);
     if (deadline && new Date(deadline) < new Date()) {
       recos.push({
@@ -2479,8 +2523,9 @@ async function getRecommendations(uid) {
     .where('status', '==', 'planned').get()
     .catch(() => ({ docs: [] }));
 
-  sessionsSnap.docs.forEach((d) => {
-    const data = d.data();
+  const sessionDocs = (sessionsSnap && Array.isArray(sessionsSnap.docs)) ? sessionsSnap.docs : [];
+  sessionDocs.forEach((d) => {
+    const data = docData(d);
     recos.push({
       priority: 0,
       type: 'session',
@@ -2506,12 +2551,12 @@ async function getQuotaStatus(uid) {
     quotaRef.get()
   ]);
 
-  if (!userSnap.exists) throw { status: 404, message: 'Profil introuvable.' };
-  if (isPremiumUser(userSnap.data())) {
+  if (!docExists(userSnap)) throw { status: 404, message: 'Profil introuvable.' };
+  if (isPremiumUser(docData(userSnap))) {
     return { success: true, premium: true, used: 0, limit: null, remaining: null };
   }
 
-  const used = Number(quotaSnap.data()?.count || 0);
+  const used = Number(docData(quotaSnap)?.count || 0);
   return {
     success: true,
     premium: false,
@@ -2567,8 +2612,9 @@ async function computeStudyTime(uid) {
   let totalMinutes = 0, todayMinutes = 0, weekMinutes = 0;
   const bySubject = {};
 
-  snap.docs.forEach((d) => {
-    const data = d.data();
+  const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
+  docs.forEach((d) => {
+    const data = docData(d);
     const minutes = Number(data.studyMinutes || 0);
     totalMinutes += minutes;
     if (data.date === today) todayMinutes += minutes;
@@ -2617,7 +2663,7 @@ module.exports = async function handler(request, response) {
   }
 
   const uid = user.uid;
-  console.log(`[PROGRESS v9.0] ${action} | uid=${uid.slice(0, 8)}`);
+  console.log(`[PROGRESS v9.1] ${action} | uid=${uid.slice(0, 8)}`);
 
   try {
     switch (action) {
@@ -2655,7 +2701,7 @@ module.exports = async function handler(request, response) {
         return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[PROGRESS v9.0] "${action}" failed:`, error.message);
+    console.error(`[PROGRESS v9.1] "${action}" failed:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
