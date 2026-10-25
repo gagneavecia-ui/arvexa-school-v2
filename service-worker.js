@@ -3,7 +3,7 @@
 // Version : OFFLINE v2.2 — Navigation instantanée
 // ================================================================
 
-const SW_VERSION = 'arvexa-offline-v2.2';
+const SW_VERSION = 'arvexa-offline-v2.3'; // v2.3 : correctifs sécurité + contenu
 const CACHE_STATIC = `${SW_VERSION}-static`;
 const CACHE_HTML = `${SW_VERSION}-html`;
 
@@ -24,8 +24,8 @@ const PRECACHE = [
   './formulaires.html',
   './planificateur.html',
   './tableau-periodique.html',
-  './arv-pilot.html',
   './arv-progress.html',
+  './groupe.html',
   './offline.html',
   './manifest.json',
   './perf.css',

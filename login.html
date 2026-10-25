@@ -1040,7 +1040,20 @@
     'formulaires.html',
     'exam.html',
     'tableau-periodique.html',
-    'outils.html'
+    'outils.html',
+    // ✅ FIX — 10 pages protégées manquantes : les élèves renvoyés vers login
+    // après une session expirée retournaient toujours sur index.html au lieu
+    // de la page d'origine.
+    'lecture.html',
+    'chapitre.html',
+    'groupe.html',
+    'reviseur.html',
+    'exam-history.html',
+    'reviseur-history.html',
+    'planificateur.html',
+    'mathmind.html',
+    'arv.html',
+    'diagnostic.html'
   ]);
 
   function saveSession(user) {

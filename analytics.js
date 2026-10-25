@@ -10,6 +10,18 @@
   if (window.__arvexaAnalyticsInit) return;
   window.__arvexaAnalyticsInit = true;
 
+  // ✅ PRIV — mécanisme d'opt-out conforme à la politique de confidentialité :
+  // l'élève peut désactiver la télémétrie locale à tout moment :
+  //   localStorage.setItem('arvexa_analytics_optout', '1')
+  // (aucune donnée n'est collectée ni envoyée tant que ce drapeau est présent)
+  try {
+    if (localStorage.getItem('arvexa_analytics_optout') === '1'
+        || navigator.doNotTrack === '1') {
+      console.info('[Analytics] Collecte désactivée (opt-out).');
+      return;
+    }
+  } catch (e) {}
+
   // ⚡ Protection globale : n'importe quelle erreur ici ne doit pas
   //    affecter la page
   try {
