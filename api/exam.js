@@ -78,14 +78,22 @@ function jsonError(response, status, error, code) {
 }
 
 function applyCors(request, response) {
-  const ALLOWED_ORIGINS = [
+  const ALLOWED_ORIGINS = new Set([
     'https://arvexaschool.vercel.app',
     'https://admin-89.vercel.app',
     'http://localhost:3000',
     'http://localhost:5000'
-  ];
+  ]);
+  // ✅ FIX (2026-10-26) — autoriser l'origine du déploiement courant (déduite
+  // des en-têtes Vercel) et APP_ORIGIN, pour que le changement de domaine
+  // Vercel ne casse plus les appels cross-origin.
+  const envOrigin = (process.env.APP_ORIGIN || '').trim().replace(/\/+$/, '');
+  if (envOrigin) ALLOWED_ORIGINS.add(envOrigin.startsWith('http') ? envOrigin : `https://${envOrigin}`);
+  const selfProto = String(request.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+  const selfHost = String(request.headers['x-forwarded-host'] || request.headers.host || '').split(',')[0].trim();
+  if (selfHost) ALLOWED_ORIGINS.add(`${selfProto}://${selfHost}`);
   const origin = request.headers.origin || '';
-  if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+  if (ALLOWED_ORIGINS.has(origin)) {
     response.setHeader('Access-Control-Allow-Origin', origin);
   }
   response.setHeader('Vary', 'Origin');

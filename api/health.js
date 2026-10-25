@@ -5,10 +5,16 @@
 // Firebase admin fonctionne réellement.
 // Aucune donnée sensible n'est exposée : uniquement des booléens.
 
-const SITE_URL = 'https://arvexaschool.vercel.app';
+function resolveSiteUrl(req) {
+  const envOrigin = (process.env.APP_ORIGIN || '').trim().replace(/\/+$/, '');
+  if (envOrigin) return envOrigin.startsWith('http') ? envOrigin : `https://${envOrigin}`;
+  const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+  const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
+  return host ? `${proto}://${host}` : 'https://arvexaschool.vercel.app';
+}
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', SITE_URL);
+  res.setHeader('Access-Control-Allow-Origin', resolveSiteUrl(req));
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });

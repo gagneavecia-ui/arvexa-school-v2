@@ -9,8 +9,23 @@ import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 const PRICES = { monthly: 2000, annual: 18000 };
-const SITE_URL = 'https://arvexaschool.vercel.app';
 const BASE = 'https://api.saspay.me/api/v1';
+
+// ✅ FIX (2026-10-26) — SITE_URL n'est plus codée en dur : l'ancien domaine
+// arvexaschool.vercel.app est mort (404), ce qui cassait success_url,
+// cancel_url et surtout webhook_url (SasPay ne pouvait plus joindre le
+// webhook → abonnement jamais activé). L'origine est maintenant déduite
+// de la requête (x-forwarded-host), avec APP_ORIGIN en priorité.
+function resolveSiteUrl(req) {
+  const envOrigin = (process.env.APP_ORIGIN || '').trim().replace(/\/+$/, '');
+  if (envOrigin) {
+    return envOrigin.startsWith('http') ? envOrigin : `https://${envOrigin}`;
+  }
+  const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+  const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
+  if (host) return `${proto}://${host}`;
+  return 'https://arvexaschool.vercel.app';
+}
 
 // ✅ FIX CRITIQUE (2026-10-26) — même correction que le webhook : init
 // paresseuse + FIREBASE_ADMIN_CREDENTIALS (la variable réellement présente
@@ -47,6 +62,7 @@ function ensureFirebase() {
 }
 
 export default async function handler(req, res) {
+  const SITE_URL = resolveSiteUrl(req);
   res.setHeader('Access-Control-Allow-Origin', SITE_URL);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
