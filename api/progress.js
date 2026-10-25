@@ -1,7 +1,7 @@
 // ================================================================
-// API PROGRESS v9.1 — ARVEXA School
-// Cahier intelligent + Maîtrise + Objectifs + Planificateur
-// Fix v9.1 : docExists/docData + getChapter robuste
+// API PROGRESS v9.2 — ARVEXA School
+// v9.2 : questions exhaustives (pas de limite), explication profonde,
+//        QCM fixés à 5, JSON_ARRAY_LIMITS séparé
 // ================================================================
 
 module.exports.config = { maxDuration: 120 };
@@ -284,7 +284,7 @@ function deepClean(obj, depth = 0) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// ✅ HELPERS ROBUSTES — v9.1
+// HELPERS ROBUSTES
 // ════════════════════════════════════════════════════════════════
 function docExists(snap) {
   if (!snap) return false;
@@ -520,8 +520,8 @@ function repairJson(str) {
 
 async function callProvider(provider, { systemPrompt, userPrompt, maxTokens = 4000, deadline }) {
   const controller = new AbortController();
-  const timeouts = { 'Groq': 15000, 'OpenRouter': 20000, 'Mistral': 8000 };
-  const baseTimeout = timeouts[provider.name] || 15000;
+  const timeouts = { 'Groq': 25000, 'OpenRouter': 30000, 'Mistral': 15000 };
+  const baseTimeout = timeouts[provider.name] || 25000;
   const remaining = deadline ? Math.max(5000, deadline - Date.now()) : baseTimeout;
   const timeoutMs = Math.min(baseTimeout, remaining);
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -635,7 +635,7 @@ function mergeAnalysis(results, profile) {
 }
 
 // ────────────────────────────────────────────────────────────────
-// PROMPTS
+// PROMPTS — v9.2
 // ────────────────────────────────────────────────────────────────
 const LATEX_RULES = `
 RÈGLE LATEX — OBLIGATOIRE :
@@ -657,7 +657,42 @@ RÈGLE JSON STRICTE :
 - Pas de texte avant ou après le JSON.
 - Pas de markdown (\`\`\`).
 - Échappe correctement les guillemets doubles (\\").
-- Maximum 5 éléments dans les tableaux longs (parts, questions, etc.).
+`.trim();
+
+const JSON_ARRAY_LIMITS = `
+RÈGLE TABLEAUX :
+- Maximum 5 éléments dans les tableaux : parts, keyTerms, relations, examples, traps, definitions, mechanisms, formulas, classifications, theses, vocabulary, plans, timeline, causesConsequences, keyFigures, literaryDevices, texts, grammar, phrases.
+- EXCEPTION IMPORTANTE : le tableau "questions" n'a AUCUNE limite. Génère autant de questions que nécessaire pour couvrir TOUTES les notions du cours.
+- EXCEPTION : le tableau "qcm" doit contenir EXACTEMENT 5 QCM (pas plus, pas moins).
+`.trim();
+
+const QUESTION_GEN_RULES = `
+RÈGLES DE GÉNÉRATION DES QUESTIONS :
+- Génère 2 à 4 questions par notion importante du cours.
+- Cours court (5-10 lignes) : 8 à 12 questions MINIMUM.
+- Cours moyen (15-20 lignes) : 15 à 25 questions MINIMUM.
+- Cours long (30+ lignes) : 25 à 40 questions MINIMUM.
+- Couvre TOUTES les définitions, formules, propriétés, méthodes et exemples du cours.
+- Ne te limite JAMAIS à 5 questions — le tableau "questions" n'a pas de limite.
+- Chaque question doit avoir : level (1=facile, 2=moyen, 3=difficile), importance (1=utile, 2=important, 3=indispensable), mustHave (2 à 4 éléments clés attendus).
+`.trim();
+
+const QCM_GEN_RULES = `
+RÈGLES DE GÉNÉRATION DES QCM :
+- Génère EXACTEMENT 5 QCM (ni plus, ni moins).
+- Chaque QCM a 4 options (A, B, C, D) avec une seule réponse correcte.
+- Les options incorrectes doivent être plausibles (pas d'options absurdes).
+- Chaque QCM doit avoir une explication pédagogique.
+`.trim();
+
+const EXPLANATION_DEPTH_RULES = `
+RÈGLES DE PROFONDEUR D'EXPLICATION :
+- Chaque simpleExplanation doit contenir 5 à 10 phrases complètes (PAS 3-6).
+- Ne te contente pas de reformuler le cours : ajoute des analogies, des exemples concrets, des mises en garde.
+- Décompose les raisonnements complexes étape par étape.
+- Pour chaque formule : à quoi elle sert, quand l'utiliser, ses conditions de validité.
+- toRemember : 2 à 3 phrases de synthèse.
+- Maximum 8 parties (parts) — utilisez 6-8 si le cours est riche.
 `.trim();
 
 function buildScientificPrompts({ subjectLabel, rawInput }) {
@@ -694,33 +729,35 @@ ${JSON_STRICT_RULES}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'explanation', maxTokens: 5000,
+      name: 'explanation', maxTokens: 8000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
-      userPrompt: `Tu es professeur expert du BAC. Explique cette section comme à un élève qui découvre.
+      userPrompt: `Tu es professeur expert du BAC. Explique cette section EN PROFONDEUR comme à un élève qui découvre le sujet pour la première fois.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
 ${LATEX_RULES}
+${EXPLANATION_DEPTH_RULES}
 
 Format JSON :
 {
   "sectionTitle": "...",
-  "understanding": "Ce que tu dois comprendre en 2-3 phrases.",
+  "understanding": "Ce que tu dois comprendre en 3-4 phrases.",
   "parts": [
     {
       "partTitle": "Partie 1",
       "mainIdea": "Idée principale",
-      "simpleExplanation": "Explication en français simple (3-6 phrases).",
+      "simpleExplanation": "Explication en français simple (5-10 phrases détaillées).",
       "keyTerms": [{"term": "...", "meaning": "..."}],
       "relations": ["relation 1"],
       "example": "Exemple chiffré si présent",
-      "toRemember": "Ce qu'il faut retenir"
+      "toRemember": "2-3 phrases de synthèse."
     }
   ]
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
@@ -743,18 +780,20 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'questions', maxTokens: 4000,
+      name: 'questions', maxTokens: 12000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Génère une banque de questions basée UNIQUEMENT sur cette section.
+      userPrompt: `Génère une banque EXHAUSTIVE de questions basée UNIQUEMENT sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
 ${LATEX_RULES}
+${QUESTION_GEN_RULES}
 
 Format JSON :
 {
@@ -762,18 +801,20 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'qcm', maxTokens: 3000,
+      name: 'qcm', maxTokens: 5000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Génère des QCM UNIQUEMENT sur cette section.
+      userPrompt: `Génère EXACTEMENT 5 QCM basés UNIQUEMENT sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
 ${LATEX_RULES}
+${QCM_GEN_RULES}
 
 Format JSON :
 {
@@ -781,6 +822,7 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     }
@@ -820,32 +862,34 @@ ${JSON_STRICT_RULES}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'explanation', maxTokens: 5000,
+      name: 'explanation', maxTokens: 8000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
-      userPrompt: `Tu es professeur de SVT. Explique cette section comme à un élève qui découvre.
+      userPrompt: `Tu es professeur de SVT. Explique cette section EN PROFONDEUR comme à un élève qui découvre.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${EXPLANATION_DEPTH_RULES}
 
 Format JSON :
 {
   "sectionTitle": "...",
-  "understanding": "...",
+  "understanding": "3-4 phrases.",
   "parts": [
     {
       "partTitle": "...",
       "mainIdea": "...",
-      "simpleExplanation": "...",
+      "simpleExplanation": "5-10 phrases détaillées.",
       "terms": [{"term": "...", "meaning": "..."}],
       "mechanism": {"description": "...", "steps": ["Étape 1"]},
       "relations": ["relation 1"],
-      "toRemember": "..."
+      "toRemember": "2-3 phrases."
     }
   ]
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
@@ -866,17 +910,19 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'questions', maxTokens: 4000,
+      name: 'questions', maxTokens: 12000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Génère une banque de questions de SVT sur cette section.
+      userPrompt: `Génère une banque EXHAUSTIVE de questions de SVT sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTION_GEN_RULES}
 
 Format JSON :
 {
@@ -884,17 +930,19 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'qcm', maxTokens: 3000,
+      name: 'qcm', maxTokens: 5000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `QCM de SVT sur cette section.
+      userPrompt: `Génère EXACTEMENT 5 QCM de SVT sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QCM_GEN_RULES}
 
 Format JSON :
 {
@@ -902,6 +950,7 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     }
@@ -940,32 +989,34 @@ ${JSON_STRICT_RULES}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'explanation', maxTokens: 5000,
+      name: 'explanation', maxTokens: 8000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide, sans commentaire.',
-      userPrompt: `Tu es professeur de philosophie. Explique cette section COMME SI L'ÉLÈVE N'Y CONNAISSAIT RIEN.
+      userPrompt: `Tu es professeur de philosophie. Explique cette section EN PROFONDEUR comme à un élève qui n'y connaît RIEN.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${EXPLANATION_DEPTH_RULES}
 
 Format JSON :
 {
   "sectionTitle": "...",
-  "understanding": "...",
+  "understanding": "3-4 phrases.",
   "parts": [
     {
       "partTitle": "...",
       "mainIdea": "...",
-      "simpleExplanation": "Explication longue (5-10 phrases).",
+      "simpleExplanation": "5-10 phrases détaillées.",
       "keyTerms": [{"term": "...", "meaning": "..."}],
       "arguments": ["Argument 1"],
       "everydayExamples": ["Exemple 1"],
-      "toRemember": "..."
+      "toRemember": "2-3 phrases."
     }
   ]
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
@@ -986,17 +1037,19 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'questions', maxTokens: 4000,
+      name: 'questions', maxTokens: 12000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Génère des questions de philosophie sur cette section.
+      userPrompt: `Génère une banque EXHAUSTIVE de questions de philosophie sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTION_GEN_RULES}
 
 Format JSON :
 {
@@ -1004,17 +1057,19 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'qcm', maxTokens: 2500,
+      name: 'qcm', maxTokens: 5000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `QCM de philosophie sur cette section.
+      userPrompt: `Génère EXACTEMENT 5 QCM de philosophie sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QCM_GEN_RULES}
 
 Format JSON :
 {
@@ -1022,6 +1077,7 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     }
@@ -1062,9 +1118,9 @@ ${JSON_STRICT_RULES}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'explanation', maxTokens: 2500,
+      name: 'explanation', maxTokens: 5000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Présente cette section d'histoire-géo de manière CLAIRE et CONCISE.
+      userPrompt: `Présente cette section d'histoire-géo de manière CLAIRE, CONCISE mais COMPLÈTE.
 
 ${baseContext}
 
@@ -1073,12 +1129,13 @@ ${PERIMETER_RULES}
 Format JSON :
 {
   "sectionTitle": "...",
-  "understanding": "Résumé en 5-8 phrases.",
+  "understanding": "Résumé en 6-10 phrases.",
   "context": "...",
   "keyFacts": ["fait 1"]
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
@@ -1100,17 +1157,19 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'questions', maxTokens: 4500,
+      name: 'questions', maxTokens: 12000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
       userPrompt: `Génère une BANQUE MASSIVE de questions d'histoire-géo sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTION_GEN_RULES}
 
 Format JSON :
 {
@@ -1118,17 +1177,19 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'qcm', maxTokens: 3500,
+      name: 'qcm', maxTokens: 5000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `QCM d'histoire-géo sur cette section.
+      userPrompt: `Génère EXACTEMENT 5 QCM d'histoire-géo sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QCM_GEN_RULES}
 
 Format JSON :
 {
@@ -1136,6 +1197,7 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     }
@@ -1174,30 +1236,32 @@ ${JSON_STRICT_RULES}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'explanation', maxTokens: 4000,
+      name: 'explanation', maxTokens: 6000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Tu es professeur de français. Explique cette section clairement.
+      userPrompt: `Tu es professeur de français. Explique cette section EN PROFONDEUR.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${EXPLANATION_DEPTH_RULES}
 
 Format JSON :
 {
   "sectionTitle": "...",
-  "understanding": "...",
+  "understanding": "3-4 phrases.",
   "parts": [
     {
       "partTitle": "...",
       "mainIdea": "...",
-      "simpleExplanation": "...",
+      "simpleExplanation": "5-10 phrases détaillées.",
       "keyTerms": [{"term": "...", "meaning": "..."}],
-      "toRemember": "..."
+      "toRemember": "2-3 phrases."
     }
   ]
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
@@ -1218,17 +1282,19 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'questions', maxTokens: 3500,
+      name: 'questions', maxTokens: 12000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Génère des questions de français sur cette section.
+      userPrompt: `Génère une banque EXHAUSTIVE de questions de français sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTION_GEN_RULES}
 
 Format JSON :
 {
@@ -1236,17 +1302,19 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'qcm', maxTokens: 2500,
+      name: 'qcm', maxTokens: 5000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `QCM de français sur cette section.
+      userPrompt: `Génère EXACTEMENT 5 QCM de français sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QCM_GEN_RULES}
 
 Format JSON :
 {
@@ -1254,6 +1322,7 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     }
@@ -1292,32 +1361,34 @@ ${JSON_STRICT_RULES}
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'explanation', maxTokens: 4500,
+      name: 'explanation', maxTokens: 7000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Tu es professeur d'anglais pour des FRANCOPHONES DÉBUTANTS.
+      userPrompt: `Tu es professeur d'anglais pour des FRANCOPHONES DÉBUTANTS. Explique EN PROFONDEUR.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${EXPLANATION_DEPTH_RULES}
 
 Format JSON :
 {
   "sectionTitle": "...",
-  "understanding": "...",
+  "understanding": "3-4 phrases.",
   "parts": [
     {
       "partTitle": "...",
       "mainIdea": "...",
-      "simpleExplanation": "Explication EN FRANÇAIS (5-10 phrases).",
+      "simpleExplanation": "5-10 phrases en français.",
       "keyTerms": [{"english": "word", "french": "traduction", "example": "example"}],
       "examples": [{"english": "English sentence.", "french": "Traduction."}],
       "commonMistakes": [{"mistake": "...", "correction": "..."}],
-      "toRemember": "..."
+      "toRemember": "2-3 phrases."
     }
   ]
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
@@ -1338,17 +1409,19 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'questions', maxTokens: 3500,
+      name: 'questions', maxTokens: 12000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `Génère des questions d'anglais.
+      userPrompt: `Génère une banque EXHAUSTIVE de questions d'anglais.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QUESTION_GEN_RULES}
 
 Format JSON :
 {
@@ -1356,17 +1429,19 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     },
     {
-      name: 'qcm', maxTokens: 2500,
+      name: 'qcm', maxTokens: 5000,
       systemPrompt: 'Tu produis EXCLUSIVEMENT du JSON valide.',
-      userPrompt: `QCM d'anglais sur cette section.
+      userPrompt: `Génère EXACTEMENT 5 QCM d'anglais sur cette section.
 
 ${baseContext}
 
 ${PERIMETER_RULES}
+${QCM_GEN_RULES}
 
 Format JSON :
 {
@@ -1374,6 +1449,7 @@ Format JSON :
 }
 
 ${JSON_STRICT_RULES}
+${JSON_ARRAY_LIMITS}
 
 Réponds UNIQUEMENT avec le JSON.`
     }
@@ -1472,35 +1548,25 @@ async function markDailyActivity(uid, inc = {}) {
 }
 
 // ────────────────────────────────────────────────────────────────
-// ACTIONS EXISTANTES
+// ACTIONS
 // ────────────────────────────────────────────────────────────────
 async function getDashboard(uid) {
   const { db } = getAdminServices();
-
   const chaptersPromises = ALLOWED_SUBJECTS_ARRAY.map((subjectKey) =>
-    db.collection('users').doc(uid)
-      .collection('notebooks').doc(subjectKey)
-      .collection('chapters')
-      .orderBy('updatedAt', 'desc')
-      .limit(50).get()
+    db.collection('users').doc(uid).collection('notebooks').doc(subjectKey)
+      .collection('chapters').orderBy('updatedAt', 'desc').limit(50).get()
       .catch(() => ({ docs: [] }))
   );
-
   const streakPromise = computeStreak(uid);
   const studyTimePromise = computeStudyTime(uid);
   const quotaPromise = getQuotaStatus(uid).catch(() => null);
 
   const [chaptersResults, streak, studyTime, quota] = await Promise.all([
-    Promise.all(chaptersPromises),
-    streakPromise,
-    studyTimePromise,
-    quotaPromise
+    Promise.all(chaptersPromises), streakPromise, studyTimePromise, quotaPromise
   ]);
 
   const subjects = [];
-  let totalChapters = 0;
-  let totalSections = 0;
-  let totalStudied = 0;
+  let totalChapters = 0, totalSections = 0, totalStudied = 0;
 
   ALLOWED_SUBJECTS_ARRAY.forEach((subjectKey, index) => {
     const chaptersSnap = chaptersResults[index];
@@ -1523,11 +1589,9 @@ async function getDashboard(uid) {
     totalSections += subjectSections;
     totalStudied += subjectStudied;
     subjects.push({
-      key: subjectKey,
-      label: info.label,
+      key: subjectKey, label: info.label,
       chaptersCount: chapters.length,
-      sectionsCount: subjectSections,
-      sectionsStudied: subjectStudied,
+      sectionsCount: subjectSections, sectionsStudied: subjectStudied,
       last: chapters[0]?.last || ''
     });
   });
@@ -1539,17 +1603,14 @@ async function getDashboard(uid) {
     const topSubject = subjects[0];
     try {
       const lastChaptersSnap = await db.collection('users').doc(uid)
-        .collection('notebooks').doc(topSubject.key)
-        .collection('chapters')
+        .collection('notebooks').doc(topSubject.key).collection('chapters')
         .orderBy('updatedAt', 'desc').limit(3).get();
       const docs = (lastChaptersSnap && Array.isArray(lastChaptersSnap.docs)) ? lastChaptersSnap.docs : [];
       recentActivity = docs.map((d) => {
         const data = docData(d);
         return {
-          subject: topSubject.key,
-          subjectLabel: topSubject.label,
-          chapterId: d.id,
-          chapterTitle: data.title || 'Chapitre',
+          subject: topSubject.key, subjectLabel: topSubject.label,
+          chapterId: d.id, chapterTitle: data.title || 'Chapitre',
           sectionsCount: data.sectionsCount || 0,
           time: formatRelativeDate(data.updatedAt || data.createdAt)
         };
@@ -1573,7 +1634,6 @@ async function computeStreak(uid) {
   } catch (e) { return { current: 0, best: 0 }; }
   const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
   if (docs.length === 0) return { current: 0, best: 0 };
-
   const activeDates = new Set(docs.map((d) => docData(d).date).filter(Boolean));
   let current = 0;
   const today = new Date();
@@ -1584,7 +1644,6 @@ async function computeStreak(uid) {
     if (activeDates.has(key)) current++;
     else break;
   }
-
   const sorted = Array.from(activeDates).sort();
   let best = 0, run = 0, prev = null;
   sorted.forEach((dateStr) => {
@@ -1595,34 +1654,27 @@ async function computeStreak(uid) {
     best = Math.max(best, run);
     prev = dateStr;
   });
-
   return { current, best };
 }
 
 async function listChapters(uid, body) {
   const { subject } = body;
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
-
   const { db } = getAdminServices();
   const snap = await db.collection('users').doc(uid)
-    .collection('notebooks').doc(subject)
-    .collection('chapters')
+    .collection('notebooks').doc(subject).collection('chapters')
     .orderBy('updatedAt', 'desc').limit(100).get();
-
   const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
   const chapters = docs.map((d) => {
     const data = docData(d);
     return {
-      id: d.id,
-      title: data.title || 'Chapitre',
+      id: d.id, title: data.title || 'Chapitre',
       sectionsCount: data.sectionsCount || 0,
       sectionsStudied: data.sectionsStudied || 0,
-      createdAt: toISO(data.createdAt),
-      updatedAt: toISO(data.updatedAt),
+      createdAt: toISO(data.createdAt), updatedAt: toISO(data.updatedAt),
       last: formatRelativeDate(data.updatedAt || data.createdAt)
     };
   });
-
   return { success: true, chapters };
 }
 
@@ -1635,21 +1687,15 @@ async function createChapter(uid, body) {
   const { db, FieldValue } = getAdminServices();
   const cleanTitle = title.trim().slice(0, 100);
   const ref = db.collection('users').doc(uid)
-    .collection('notebooks').doc(subject)
-    .collection('chapters').doc();
+    .collection('notebooks').doc(subject).collection('chapters').doc();
   await ref.set({
-    title: cleanTitle,
-    sectionsCount: 0,
-    sectionsStudied: 0,
+    title: cleanTitle, sectionsCount: 0, sectionsStudied: 0,
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp()
   });
   return { success: true, chapter: { id: ref.id, title: cleanTitle, sectionsCount: 0, sectionsStudied: 0, last: 'à l\'instant' } };
 }
 
-// ════════════════════════════════════════════════════════════════
-// ✅ getChapter CORRIGÉE v9.1
-// ════════════════════════════════════════════════════════════════
 async function getChapter(uid, body) {
   const { subject, chapterId } = body;
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
@@ -1657,8 +1703,7 @@ async function getChapter(uid, body) {
 
   const { db } = getAdminServices();
   const chapterRef = db.collection('users').doc(uid)
-    .collection('notebooks').doc(subject)
-    .collection('chapters').doc(chapterId);
+    .collection('notebooks').doc(subject).collection('chapters').doc(chapterId);
 
   const chapterSnap = await chapterRef.get();
   if (!docExists(chapterSnap)) throw { status: 404, message: 'Chapitre introuvable.' };
@@ -1673,23 +1718,18 @@ async function getChapter(uid, body) {
     const questionsCount = Array.isArray(analysis.questions) ? analysis.questions.length : 0;
     const qcmCount = Array.isArray(analysis.qcm) ? analysis.qcm.length : 0;
     return {
-      id: d.id,
-      title: s.title || 'Section',
+      id: d.id, title: s.title || 'Section',
       questionsCount, qcmCount,
-      studied: Boolean(s.studiedAt),
-      studiedAt: toISO(s.studiedAt),
+      studied: Boolean(s.studiedAt), studiedAt: toISO(s.studiedAt),
       time: formatRelativeDate(s.createdAt),
       status: s.studiedAt ? 'studied' : 'created'
     };
   });
 
-  // ✅ Lecture robuste des résultats d'examen — sans index composite, sans crash
   let latestResult = null;
   try {
     const examSnap = await db.collection('users').doc(uid).collection('examResults')
-      .where('subject', '==', subject)
-      .limit(50).get();
-
+      .where('subject', '==', subject).limit(50).get();
     const examDocs = (examSnap && Array.isArray(examSnap.docs)) ? examSnap.docs : [];
     const filtered = examDocs
       .map((d) => ({ id: d.id, data: docData(d) }))
@@ -1699,14 +1739,11 @@ async function getChapter(uid, body) {
         const bTime = b.data.date?.toMillis?.() || 0;
         return bTime - aTime;
       });
-
     if (filtered.length > 0) {
       const entry = filtered[0];
       latestResult = {
-        id: entry.id,
-        percentage: entry.data.percentage,
-        masteryLevel: entry.data.masteryLevel,
-        date: toISO(entry.data.date)
+        id: entry.id, percentage: entry.data.percentage,
+        masteryLevel: entry.data.masteryLevel, date: toISO(entry.data.date)
       };
     }
   } catch (e) {
@@ -1716,16 +1753,12 @@ async function getChapter(uid, body) {
   return {
     success: true,
     chapter: {
-      id: chapterId,
-      title: data.title || 'Chapitre',
-      subject,
+      id: chapterId, title: data.title || 'Chapitre', subject,
       sectionsCount: sections.length,
       sectionsStudied: sections.filter((s) => s.studied).length,
-      createdAt: toISO(data.createdAt),
-      updatedAt: toISO(data.updatedAt)
+      createdAt: toISO(data.createdAt), updatedAt: toISO(data.updatedAt)
     },
-    sections,
-    latestResult
+    sections, latestResult
   };
 }
 
@@ -1758,8 +1791,7 @@ async function createSection(uid, body) {
 
   const { db, FieldValue } = getAdminServices();
   const chapterRef = db.collection('users').doc(uid)
-    .collection('notebooks').doc(subject)
-    .collection('chapters').doc(chapterId);
+    .collection('notebooks').doc(subject).collection('chapters').doc(chapterId);
 
   const chapterSnap = await chapterRef.get();
   if (!docExists(chapterSnap)) {
@@ -1837,10 +1869,8 @@ async function createSection(uid, body) {
     success: true,
     sectionId,
     section: {
-      id: sectionId,
-      title: analysis.sectionTitle || 'Section',
-      rawInput: trimmed,
-      profile, analysis, userNotes: ''
+      id: sectionId, title: analysis.sectionTitle || 'Section',
+      rawInput: trimmed, profile, analysis, userNotes: ''
     }
   };
 }
@@ -1852,8 +1882,7 @@ async function getSection(uid, body) {
 
   const { db } = getAdminServices();
   const ref = db.collection('users').doc(uid)
-    .collection('notebooks').doc(subject)
-    .collection('chapters').doc(chapterId)
+    .collection('notebooks').doc(subject).collection('chapters').doc(chapterId)
     .collection('sections').doc(sectionId);
 
   const snap = await ref.get();
@@ -1863,15 +1892,10 @@ async function getSection(uid, body) {
   return {
     success: true,
     section: {
-      id: sectionId,
-      title: s.title || 'Section',
-      subject, chapterId,
-      rawInput: s.rawInput || '',
-      profile: s.profile || 'scientific',
-      analysis: s.analysis || {},
-      userNotes: s.userNotes || '',
-      createdAt: toISO(s.createdAt),
-      time: formatRelativeDate(s.createdAt)
+      id: sectionId, title: s.title || 'Section', subject, chapterId,
+      rawInput: s.rawInput || '', profile: s.profile || 'scientific',
+      analysis: s.analysis || {}, userNotes: s.userNotes || '',
+      createdAt: toISO(s.createdAt), time: formatRelativeDate(s.createdAt)
     }
   };
 }
@@ -1881,18 +1905,14 @@ async function updateNotes(uid, body) {
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
   if (!chapterId || !sectionId) throw { status: 400, message: 'IDs manquants.' };
   if (typeof userNotes !== 'string') throw { status: 400, message: 'userNotes invalide.' };
-
   const { db, FieldValue } = getAdminServices();
   const ref = db.collection('users').doc(uid)
-    .collection('notebooks').doc(subject)
-    .collection('chapters').doc(chapterId)
+    .collection('notebooks').doc(subject).collection('chapters').doc(chapterId)
     .collection('sections').doc(sectionId);
-
   await ref.set({
     userNotes: userNotes.slice(0, 8000),
     updatedAt: FieldValue.serverTimestamp()
   }, { merge: true });
-
   return { success: true };
 }
 
@@ -1900,15 +1920,12 @@ async function deleteSection(uid, body) {
   const { subject, chapterId, sectionId } = body;
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
   if (!chapterId || !sectionId) throw { status: 400, message: 'IDs manquants.' };
-
   const { db, FieldValue } = getAdminServices();
   const chapterRef = db.collection('users').doc(uid)
-    .collection('notebooks').doc(subject)
-    .collection('chapters').doc(chapterId);
+    .collection('notebooks').doc(subject).collection('chapters').doc(chapterId);
   const sectionRef = chapterRef.collection('sections').doc(sectionId);
   const snap = await sectionRef.get();
   if (!docExists(snap)) throw { status: 404, message: 'Section introuvable.' };
-
   const wasStudied = Boolean(docData(snap).studiedAt);
   await sectionRef.delete();
   const updates = {
@@ -1917,7 +1934,6 @@ async function deleteSection(uid, body) {
   };
   if (wasStudied) updates.sectionsStudied = FieldValue.increment(-1);
   await chapterRef.set(updates, { merge: true });
-
   return { success: true };
 }
 
@@ -1925,22 +1941,17 @@ async function deleteChapter(uid, body) {
   const { subject, chapterId } = body;
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
   if (!chapterId) throw { status: 400, message: 'chapterId requis.' };
-
   const { db } = getAdminServices();
   const chapterRef = db.collection('users').doc(uid)
-    .collection('notebooks').doc(subject)
-    .collection('chapters').doc(chapterId);
-
+    .collection('notebooks').doc(subject).collection('chapters').doc(chapterId);
   const snap = await chapterRef.get();
   if (!docExists(snap)) throw { status: 404, message: 'Chapitre introuvable.' };
-
   const sectionsSnap = await chapterRef.collection('sections').get();
   const sectionDocs = (sectionsSnap && Array.isArray(sectionsSnap.docs)) ? sectionsSnap.docs : [];
   const batch = db.batch();
   sectionDocs.forEach((d) => batch.delete(d.ref));
   batch.delete(chapterRef);
   await batch.commit();
-
   return { success: true };
 }
 
@@ -1948,28 +1959,21 @@ async function getFullLesson(uid, body) {
   const { subject, chapterId } = body;
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
   if (!chapterId) throw { status: 400, message: 'chapterId requis.' };
-
   const { db } = getAdminServices();
   const chapterRef = db.collection('users').doc(uid)
-    .collection('notebooks').doc(subject)
-    .collection('chapters').doc(chapterId);
-
+    .collection('notebooks').doc(subject).collection('chapters').doc(chapterId);
   const chapterSnap = await chapterRef.get();
   if (!docExists(chapterSnap)) throw { status: 404, message: 'Chapitre introuvable.' };
-
   const sectionsSnap = await chapterRef.collection('sections').orderBy('createdAt', 'asc').get();
   const sectionDocs = (sectionsSnap && Array.isArray(sectionsSnap.docs)) ? sectionsSnap.docs : [];
   const sections = sectionDocs.map((d) => {
     const s = docData(d);
     return {
-      id: d.id,
-      title: s.title || 'Section',
+      id: d.id, title: s.title || 'Section',
       profile: s.profile || 'scientific',
-      analysis: s.analysis || {},
-      userNotes: s.userNotes || ''
+      analysis: s.analysis || {}, userNotes: s.userNotes || ''
     };
   });
-
   return {
     success: true,
     chapter: { id: chapterId, title: docData(chapterSnap).title || 'Chapitre', subject },
@@ -1977,36 +1981,21 @@ async function getFullLesson(uid, body) {
   };
 }
 
-// ────────────────────────────────────────────────────────────────
-// NOUVELLES ACTIONS
-// ────────────────────────────────────────────────────────────────
 async function saveExamResult(uid, body) {
-  const { subject, chapterId, chapterTitle, score, maxScore, percentage, answers, examType } = body;
-
+  const { subject, chapterId, chapterTitle, score, maxScore, answers, examType } = body;
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
   if (typeof score !== 'number' || score < 0) throw { status: 400, message: 'Score invalide.' };
   if (typeof maxScore !== 'number' || maxScore <= 0) throw { status: 400, message: 'maxScore invalide.' };
-
   const { db, FieldValue } = getAdminServices();
   const ref = db.collection('users').doc(uid).collection('examResults').doc();
-
   const pct = Math.min(100, Math.max(0, Math.round((score / maxScore) * 100)));
   const masteryLevel = pct >= 80 ? 'mastered' : 'to_review';
-
   await ref.set({
-    subject,
-    chapterId: chapterId || null,
-    chapterTitle: chapterTitle || null,
-    score, maxScore,
-    percentage: pct,
-    masteryLevel,
-    answers: answers || {},
-    examType: examType || 'arvexa',
-    type: 'arvexa',
-    date: FieldValue.serverTimestamp(),
-    createdAt: FieldValue.serverTimestamp()
+    subject, chapterId: chapterId || null, chapterTitle: chapterTitle || null,
+    score, maxScore, percentage: pct, masteryLevel,
+    answers: answers || {}, examType: examType || 'arvexa', type: 'arvexa',
+    date: FieldValue.serverTimestamp(), createdAt: FieldValue.serverTimestamp()
   });
-
   return {
     success: true,
     result: { id: ref.id, subject, chapterId: chapterId || null, percentage: pct, masteryLevel }
@@ -2016,46 +2005,30 @@ async function saveExamResult(uid, body) {
 async function listExamResults(uid, body) {
   const { subject, chapterId, limit = 50 } = body;
   const { db } = getAdminServices();
-
   let q = db.collection('users').doc(uid).collection('examResults');
   if (subject) q = q.where('subject', '==', subject);
   q = q.orderBy('date', 'desc').limit(Math.min(200, limit));
-
   const snap = await q.get();
   const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
   let results = docs.map((d) => {
     const data = docData(d);
     return {
-      id: d.id,
-      subject: data.subject,
-      chapterId: data.chapterId,
-      chapterTitle: data.chapterTitle,
-      score: data.score,
-      maxScore: data.maxScore,
-      percentage: data.percentage,
-      masteryLevel: data.masteryLevel,
-      examType: data.examType,
-      date: toISO(data.date)
+      id: d.id, subject: data.subject, chapterId: data.chapterId, chapterTitle: data.chapterTitle,
+      score: data.score, maxScore: data.maxScore, percentage: data.percentage,
+      masteryLevel: data.masteryLevel, examType: data.examType, date: toISO(data.date)
     };
   });
   if (chapterId) results = results.filter((r) => r.chapterId === chapterId);
-
   return { success: true, results };
 }
 
 async function getProgressionSummary(uid) {
   const { db } = getAdminServices();
-
-  let totalSections = 0;
-  let totalStudied = 0;
-
+  let totalSections = 0, totalStudied = 0;
   const chaptersPromises = ALLOWED_SUBJECTS_ARRAY.map((subjectKey) =>
-    db.collection('users').doc(uid)
-      .collection('notebooks').doc(subjectKey)
-      .collection('chapters').get()
-      .catch(() => ({ docs: [] }))
+    db.collection('users').doc(uid).collection('notebooks').doc(subjectKey)
+      .collection('chapters').get().catch(() => ({ docs: [] }))
   );
-
   const chaptersResults = await Promise.all(chaptersPromises);
   const allChapters = [];
   chaptersResults.forEach((snap, idx) => {
@@ -2066,9 +2039,7 @@ async function getProgressionSummary(uid) {
       totalSections += Number(data.sectionsCount || 0);
       totalStudied += Number(data.sectionsStudied || 0);
       allChapters.push({
-        subject: subjectKey,
-        chapterId: d.id,
-        title: data.title,
+        subject: subjectKey, chapterId: d.id, title: data.title,
         sectionsCount: Number(data.sectionsCount || 0),
         sectionsStudied: Number(data.sectionsStudied || 0)
       });
@@ -2076,11 +2047,8 @@ async function getProgressionSummary(uid) {
   });
 
   const advancementPercent = totalSections > 0 ? Math.round((totalStudied / totalSections) * 100) : 0;
-
   const examSnap = await db.collection('users').doc(uid).collection('examResults')
-    .orderBy('date', 'desc').limit(500).get()
-    .catch(() => ({ docs: [] }));
-
+    .orderBy('date', 'desc').limit(500).get().catch(() => ({ docs: [] }));
   const examDocs = (examSnap && Array.isArray(examSnap.docs)) ? examSnap.docs : [];
   const latestByChapter = new Map();
   examDocs.forEach((d) => {
@@ -2089,22 +2057,17 @@ async function getProgressionSummary(uid) {
     const key = `${data.subject}_${data.chapterId}`;
     if (!latestByChapter.has(key)) {
       latestByChapter.set(key, {
-        subject: data.subject,
-        chapterId: data.chapterId,
-        percentage: Number(data.percentage || 0),
-        masteryLevel: data.masteryLevel
+        subject: data.subject, chapterId: data.chapterId,
+        percentage: Number(data.percentage || 0), masteryLevel: data.masteryLevel
       });
     }
   });
 
-  let totalEvaluated = 0;
-  let totalMastered = 0;
+  let totalEvaluated = 0, totalMastered = 0;
   const bySubject = {};
-
   ALLOWED_SUBJECTS_ARRAY.forEach((subj) => {
     bySubject[subj] = { evaluated: 0, mastered: 0, advancement: 0, sectionsStudied: 0, sectionsTotal: 0 };
   });
-
   latestByChapter.forEach((v) => {
     totalEvaluated++;
     if (v.masteryLevel === 'mastered' || v.percentage >= 80) {
@@ -2113,21 +2076,17 @@ async function getProgressionSummary(uid) {
     }
     if (bySubject[v.subject]) bySubject[v.subject].evaluated++;
   });
-
   const masteryPercent = totalEvaluated > 0 ? Math.round((totalMastered / totalEvaluated) * 100) : 0;
-
   allChapters.forEach((c) => {
     if (bySubject[c.subject]) {
       bySubject[c.subject].sectionsStudied += c.sectionsStudied;
       bySubject[c.subject].sectionsTotal += c.sectionsCount;
     }
   });
-
   Object.keys(bySubject).forEach((s) => {
     const b = bySubject[s];
     b.advancement = b.sectionsTotal > 0 ? Math.round((b.sectionsStudied / b.sectionsTotal) * 100) : 0;
   });
-
   return {
     success: true,
     advancement: { totalSections, totalStudied, percent: advancementPercent },
@@ -2140,26 +2099,19 @@ async function markSectionStudied(uid, body) {
   const { subject, chapterId, sectionId } = body;
   if (!ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
   if (!chapterId || !sectionId) throw { status: 400, message: 'IDs manquants.' };
-
   const { db, FieldValue } = getAdminServices();
   const sectionRef = db.collection('users').doc(uid)
-    .collection('notebooks').doc(subject)
-    .collection('chapters').doc(chapterId)
+    .collection('notebooks').doc(subject).collection('chapters').doc(chapterId)
     .collection('sections').doc(sectionId);
-
   const snap = await sectionRef.get();
   if (!docExists(snap)) throw { status: 404, message: 'Section introuvable.' };
-
   if (docData(snap).studiedAt) return { success: true, alreadyStudied: true };
-
   await sectionRef.set({ studiedAt: FieldValue.serverTimestamp() }, { merge: true });
-
   const chapterRef = sectionRef.parent.parent;
   await chapterRef.set({
     sectionsStudied: FieldValue.increment(1),
     updatedAt: FieldValue.serverTimestamp()
   }, { merge: true });
-
   return { success: true, alreadyStudied: false };
 }
 
@@ -2169,23 +2121,17 @@ async function createGoal(uid, body) {
   if (type === 'subject' && !ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
   if (!title || title.trim().length < 2) throw { status: 400, message: 'Titre trop court.' };
   if (typeof target !== 'number' || target <= 0) throw { status: 400, message: 'Cible invalide.' };
-
   const { db, FieldValue } = getAdminServices();
   const ref = db.collection('users').doc(uid).collection('goals').doc();
-
   await ref.set({
-    type,
-    subject: type === 'subject' ? subject : null,
-    chapterId: chapterId || null,
-    title: title.trim().slice(0, 200),
-    target: Number(target),
-    current: 0,
+    type, subject: type === 'subject' ? subject : null,
+    chapterId: chapterId || null, title: title.trim().slice(0, 200),
+    target: Number(target), current: 0,
     deadline: deadline ? new Date(deadline) : null,
     status: 'pending',
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp()
   });
-
   return { success: true, goalId: ref.id };
 }
 
@@ -2193,36 +2139,26 @@ async function listGoals(uid) {
   const { db } = getAdminServices();
   const snap = await db.collection('users').doc(uid).collection('goals')
     .orderBy('createdAt', 'desc').limit(100).get();
-
   const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
   const goals = docs.map((d) => {
     const data = docData(d);
     return {
-      id: d.id,
-      type: data.type,
-      subject: data.subject,
-      chapterId: data.chapterId,
-      title: data.title,
-      target: data.target,
-      current: data.current,
-      deadline: toISO(data.deadline),
-      status: data.status,
+      id: d.id, type: data.type, subject: data.subject, chapterId: data.chapterId,
+      title: data.title, target: data.target, current: data.current,
+      deadline: toISO(data.deadline), status: data.status,
       progress: data.target > 0 ? Math.min(100, Math.round((data.current / data.target) * 100)) : 0
     };
   });
-
   return { success: true, goals };
 }
 
 async function updateGoal(uid, body) {
   const { goalId, current, status } = body;
   if (!goalId) throw { status: 400, message: 'goalId requis.' };
-
   const { db, FieldValue } = getAdminServices();
   const ref = db.collection('users').doc(uid).collection('goals').doc(goalId);
   const snap = await ref.get();
   if (!docExists(snap)) throw { status: 404, message: 'Objectif introuvable.' };
-
   const updates = { updatedAt: FieldValue.serverTimestamp() };
   if (typeof current === 'number') {
     updates.current = Math.max(0, current);
@@ -2233,7 +2169,6 @@ async function updateGoal(uid, body) {
   if (status && ['pending', 'in_progress', 'achieved', 'overdue'].includes(status)) {
     updates.status = status;
   }
-
   await ref.set(updates, { merge: true });
   return { success: true };
 }
@@ -2253,72 +2188,53 @@ async function createClassGrade(uid, body) {
   if (typeof score !== 'number' || score < 0) throw { status: 400, message: 'Note invalide.' };
   if (typeof maxScore !== 'number' || maxScore <= 0) throw { status: 400, message: 'Barème invalide.' };
   if (score > maxScore) throw { status: 400, message: 'Note supérieure au barème.' };
-
   const { db, FieldValue } = getAdminServices();
   const ref = db.collection('users').doc(uid).collection('classGrades').doc();
-
   await ref.set({
-    subject,
-    chapterId: chapterId || null,
-    gradeType,
-    score: Number(score),
-    maxScore: Number(maxScore),
+    subject, chapterId: chapterId || null, gradeType,
+    score: Number(score), maxScore: Number(maxScore),
     date: date ? new Date(date) : new Date(),
     comment: comment ? String(comment).slice(0, 500) : '',
     type: 'manual',
     createdAt: FieldValue.serverTimestamp()
   });
-
   return { success: true, gradeId: ref.id };
 }
 
 async function listClassGrades(uid, body) {
   const { subject, limit = 100 } = body;
   const { db } = getAdminServices();
-
   let q = db.collection('users').doc(uid).collection('classGrades');
   if (subject) q = q.where('subject', '==', subject);
   q = q.orderBy('date', 'desc').limit(Math.min(200, limit));
-
   const snap = await q.get();
   const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
   const grades = docs.map((d) => {
     const data = docData(d);
     return {
-      id: d.id,
-      subject: data.subject,
-      chapterId: data.chapterId,
-      gradeType: data.gradeType,
-      score: data.score,
-      maxScore: data.maxScore,
-      date: toISO(data.date),
-      comment: data.comment,
-      type: data.type
+      id: d.id, subject: data.subject, chapterId: data.chapterId,
+      gradeType: data.gradeType, score: data.score, maxScore: data.maxScore,
+      date: toISO(data.date), comment: data.comment, type: data.type
     };
   });
-
   return { success: true, grades };
 }
 
 async function updateClassGrade(uid, body) {
   const { gradeId, score, maxScore, comment } = body;
   if (!gradeId) throw { status: 400, message: 'gradeId requis.' };
-
   const { db } = getAdminServices();
   const ref = db.collection('users').doc(uid).collection('classGrades').doc(gradeId);
   const snap = await ref.get();
   if (!docExists(snap)) throw { status: 404, message: 'Note introuvable.' };
-
   const updates = {};
   if (typeof score === 'number') updates.score = score;
   if (typeof maxScore === 'number') updates.maxScore = maxScore;
   if (typeof comment === 'string') updates.comment = comment.slice(0, 500);
-
   const existing = docData(snap);
   const finalScore = updates.score !== undefined ? updates.score : existing.score;
   const finalMax = updates.maxScore !== undefined ? updates.maxScore : existing.maxScore;
   if (finalScore > finalMax) throw { status: 400, message: 'Note supérieure au barème.' };
-
   await ref.set(updates, { merge: true });
   return { success: true };
 }
@@ -2334,11 +2250,8 @@ async function deleteClassGrade(uid, body) {
 async function generatePlan(uid, body) {
   const { weekStart, sessionsPerWeek = 3, duration = 45 } = body;
   const { db, FieldValue } = getAdminServices();
-
   const examSnap = await db.collection('users').doc(uid).collection('examResults')
-    .orderBy('date', 'desc').limit(100).get()
-    .catch(() => ({ docs: [] }));
-
+    .orderBy('date', 'desc').limit(100).get().catch(() => ({ docs: [] }));
   const examDocs = (examSnap && Array.isArray(examSnap.docs)) ? examSnap.docs : [];
   const latestByChapter = new Map();
   examDocs.forEach((d) => {
@@ -2347,76 +2260,55 @@ async function generatePlan(uid, body) {
     const key = `${data.subject}_${data.chapterId}`;
     if (!latestByChapter.has(key)) {
       latestByChapter.set(key, {
-        subject: data.subject,
-        chapterId: data.chapterId,
-        chapterTitle: data.chapterTitle,
-        percentage: Number(data.percentage || 0)
+        subject: data.subject, chapterId: data.chapterId,
+        chapterTitle: data.chapterTitle, percentage: Number(data.percentage || 0)
       });
     }
   });
-
   const toReview = Array.from(latestByChapter.values())
     .filter((c) => c.percentage < 80)
     .sort((a, b) => a.percentage - b.percentage)
     .slice(0, sessionsPerWeek);
-
   const startDate = weekStart ? new Date(weekStart) : new Date();
   const generatedSessions = [];
-
   for (let i = 0; i < toReview.length; i++) {
     const c = toReview[i];
     const sessionDate = new Date(startDate);
     sessionDate.setDate(sessionDate.getDate() + i * 2);
-
     const ref = db.collection('users').doc(uid).collection('sessions').doc();
     await ref.set({
-      date: sessionDate,
-      duration: Number(duration),
-      subject: c.subject,
-      chapterId: c.chapterId,
-      chapterTitle: c.chapterTitle,
+      date: sessionDate, duration: Number(duration),
+      subject: c.subject, chapterId: c.chapterId, chapterTitle: c.chapterTitle,
       reason: `Maîtrise ${c.percentage}% < 80%`,
       status: 'planned',
       createdAt: FieldValue.serverTimestamp()
     });
-
     generatedSessions.push({
-      id: ref.id,
-      date: sessionDate.toISOString(),
-      subject: c.subject,
-      chapterTitle: c.chapterTitle,
+      id: ref.id, date: sessionDate.toISOString(),
+      subject: c.subject, chapterTitle: c.chapterTitle,
       reason: `Maîtrise ${c.percentage}% < 80%`
     });
   }
-
   return { success: true, sessions: generatedSessions, generated: generatedSessions.length };
 }
 
 async function listSessions(uid, body) {
   const { from, to, limit = 100 } = body;
   const { db } = getAdminServices();
-
   let q = db.collection('users').doc(uid).collection('sessions');
   if (from) q = q.where('date', '>=', new Date(from));
   if (to) q = q.where('date', '<=', new Date(to));
   q = q.orderBy('date', 'asc').limit(Math.min(200, limit));
-
   const snap = await q.get();
   const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
   const sessions = docs.map((d) => {
     const data = docData(d);
     return {
-      id: d.id,
-      date: toISO(data.date),
-      duration: data.duration,
-      subject: data.subject,
-      chapterId: data.chapterId,
-      chapterTitle: data.chapterTitle,
-      reason: data.reason,
-      status: data.status
+      id: d.id, date: toISO(data.date), duration: data.duration,
+      subject: data.subject, chapterId: data.chapterId,
+      chapterTitle: data.chapterTitle, reason: data.reason, status: data.status
     };
   });
-
   return { success: true, sessions };
 }
 
@@ -2424,38 +2316,28 @@ async function createSession(uid, body) {
   const { date, duration, subject, chapterId, chapterTitle } = body;
   if (!date) throw { status: 400, message: 'date requise.' };
   if (!subject || !ALLOWED_SUBJECTS.has(subject)) throw { status: 400, message: 'Matière invalide.' };
-
   const { db, FieldValue } = getAdminServices();
   const ref = db.collection('users').doc(uid).collection('sessions').doc();
-
   await ref.set({
-    date: new Date(date),
-    duration: Number(duration) || 45,
-    subject,
-    chapterId: chapterId || null,
-    chapterTitle: chapterTitle || null,
-    reason: 'session_manuelle',
-    status: 'planned',
+    date: new Date(date), duration: Number(duration) || 45,
+    subject, chapterId: chapterId || null, chapterTitle: chapterTitle || null,
+    reason: 'session_manuelle', status: 'planned',
     createdAt: FieldValue.serverTimestamp()
   });
-
   return { success: true, sessionId: ref.id };
 }
 
 async function updateSession(uid, body) {
   const { sessionId, date, duration, status } = body;
   if (!sessionId) throw { status: 400, message: 'sessionId requis.' };
-
   const { db } = getAdminServices();
   const ref = db.collection('users').doc(uid).collection('sessions').doc(sessionId);
   const snap = await ref.get();
   if (!docExists(snap)) throw { status: 404, message: 'Séance introuvable.' };
-
   const updates = {};
   if (date) updates.date = new Date(date);
   if (typeof duration === 'number') updates.duration = duration;
   if (status && ['planned', 'done', 'postponed'].includes(status)) updates.status = status;
-
   await ref.set(updates, { merge: true });
   return { success: true };
 }
@@ -2471,11 +2353,8 @@ async function deleteSession(uid, body) {
 async function getRecommendations(uid) {
   const { db } = getAdminServices();
   const recos = [];
-
   const examSnap = await db.collection('users').doc(uid).collection('examResults')
-    .orderBy('date', 'desc').limit(50).get()
-    .catch(() => ({ docs: [] }));
-
+    .orderBy('date', 'desc').limit(50).get().catch(() => ({ docs: [] }));
   const examDocs = (examSnap && Array.isArray(examSnap.docs)) ? examSnap.docs : [];
   const latest = new Map();
   examDocs.forEach((d) => {
@@ -2484,56 +2363,44 @@ async function getRecommendations(uid) {
     const key = `${data.subject}_${data.chapterId}`;
     if (!latest.has(key)) latest.set(key, data);
   });
-
   latest.forEach((data) => {
     if (data.percentage < 80) {
       recos.push({
-        priority: 1,
-        type: 'review',
-        subject: data.subject,
-        chapterId: data.chapterId,
+        priority: 1, type: 'review',
+        subject: data.subject, chapterId: data.chapterId,
         title: `Revoir ${data.chapterTitle || 'un chapitre'}`,
         reason: `Dernière évaluation : ${data.percentage}% (< 80%)`
       });
     }
   });
-
   const goalsSnap = await db.collection('users').doc(uid).collection('goals')
-    .where('status', 'in', ['pending', 'in_progress']).limit(20).get()
-    .catch(() => ({ docs: [] }));
-
+    .where('status', 'in', ['pending', 'in_progress']).limit(20).get().catch(() => ({ docs: [] }));
   const goalDocs = (goalsSnap && Array.isArray(goalsSnap.docs)) ? goalsSnap.docs : [];
   goalDocs.forEach((d) => {
     const data = docData(d);
     const deadline = toISO(data.deadline);
     if (deadline && new Date(deadline) < new Date()) {
       recos.push({
-        priority: 2,
-        type: 'goal',
+        priority: 2, type: 'goal',
         title: `Objectif en retard : ${data.title}`,
         reason: `Échéance dépassée`
       });
     }
   });
-
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
   const sessionsSnap = await db.collection('users').doc(uid).collection('sessions')
     .where('date', '>=', today).where('date', '<', tomorrow)
-    .where('status', '==', 'planned').get()
-    .catch(() => ({ docs: [] }));
-
+    .where('status', '==', 'planned').get().catch(() => ({ docs: [] }));
   const sessionDocs = (sessionsSnap && Array.isArray(sessionsSnap.docs)) ? sessionsSnap.docs : [];
   sessionDocs.forEach((d) => {
     const data = docData(d);
     recos.push({
-      priority: 0,
-      type: 'session',
+      priority: 0, type: 'session',
       title: `Séance aujourd'hui : ${data.chapterTitle || data.subject}`,
       reason: `${data.duration} min prévues`
     });
   });
-
   return {
     success: true,
     recommendations: recos.sort((a, b) => a.priority - b.priority).slice(0, 5)
@@ -2543,24 +2410,17 @@ async function getRecommendations(uid) {
 async function getQuotaStatus(uid) {
   const { db } = getAdminServices();
   const period = monthKey();
-  const quotaRef = db.collection('users').doc(uid)
-    .collection('notebookQuota').doc(`sections-${period}`);
-
+  const quotaRef = db.collection('users').doc(uid).collection('notebookQuota').doc(`sections-${period}`);
   const [userSnap, quotaSnap] = await Promise.all([
-    db.collection('users').doc(uid).get(),
-    quotaRef.get()
+    db.collection('users').doc(uid).get(), quotaRef.get()
   ]);
-
   if (!docExists(userSnap)) throw { status: 404, message: 'Profil introuvable.' };
   if (isPremiumUser(docData(userSnap))) {
     return { success: true, premium: true, used: 0, limit: null, remaining: null };
   }
-
   const used = Number(docData(quotaSnap)?.count || 0);
   return {
-    success: true,
-    premium: false,
-    used,
+    success: true, premium: false, used,
     limit: FREE_SECTION_LIMIT,
     remaining: Math.max(0, FREE_SECTION_LIMIT - used)
   };
@@ -2569,23 +2429,18 @@ async function getQuotaStatus(uid) {
 async function trackStudyTime(uid, body) {
   const minutes = Math.min(120, Math.max(1, Math.round(Number(body.minutes) || 0)));
   if (minutes <= 0) return { success: true, skipped: true };
-
   const subject = body.subject && ALLOWED_SUBJECTS.has(body.subject) ? body.subject : null;
   const { db, FieldValue } = getAdminServices();
   const today = todayKey();
   const ref = db.collection('users').doc(uid).collection('dailyActivity').doc(today);
-
   const updates = {
-    date: today,
-    studyMinutes: FieldValue.increment(minutes),
+    date: today, studyMinutes: FieldValue.increment(minutes),
     lastAt: FieldValue.serverTimestamp()
   };
-
   if (subject) {
     updates.subjectMinutes = {};
     updates.subjectMinutes[subject] = FieldValue.increment(minutes);
   }
-
   await ref.set(updates, { merge: true });
   return { success: true, addedMinutes: minutes, subject };
 }
@@ -2599,19 +2454,15 @@ async function computeStudyTime(uid) {
   } catch (e) {
     return {
       totalMinutes: 0, totalHours: 0, todayMinutes: 0, weekMinutes: 0,
-      bySubject: {},
-      formatted: { total: '0 min', week: '0 min', today: '0 min' }
+      bySubject: {}, formatted: { total: '0 min', week: '0 min', today: '0 min' }
     };
   }
-
   const today = new Date().toISOString().slice(0, 10);
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
   const weekAgoKey = weekAgo.toISOString().slice(0, 10);
-
   let totalMinutes = 0, todayMinutes = 0, weekMinutes = 0;
   const bySubject = {};
-
   const docs = (snap && Array.isArray(snap.docs)) ? snap.docs : [];
   docs.forEach((d) => {
     const data = docData(d);
@@ -2626,10 +2477,8 @@ async function computeStudyTime(uid) {
       });
     }
   });
-
   return {
-    totalMinutes,
-    totalHours: Math.round((totalMinutes / 60) * 10) / 10,
+    totalMinutes, totalHours: Math.round((totalMinutes / 60) * 10) / 10,
     todayMinutes, weekMinutes, bySubject,
     formatted: {
       total: formatMinutes(totalMinutes),
@@ -2663,7 +2512,7 @@ module.exports = async function handler(request, response) {
   }
 
   const uid = user.uid;
-  console.log(`[PROGRESS v9.1] ${action} | uid=${uid.slice(0, 8)}`);
+  console.log(`[PROGRESS v9.2] ${action} | uid=${uid.slice(0, 8)}`);
 
   try {
     switch (action) {
@@ -2701,7 +2550,7 @@ module.exports = async function handler(request, response) {
         return jsonError(response, 400, `Action inconnue : "${action}"`);
     }
   } catch (error) {
-    console.error(`[PROGRESS v9.1] "${action}" failed:`, error.message);
+    console.error(`[PROGRESS v9.2] "${action}" failed:`, error.message);
     if (error.status) return jsonError(response, error.status, error.message, error.code);
     return jsonError(response, 500, error.message || 'Erreur serveur.');
   }
