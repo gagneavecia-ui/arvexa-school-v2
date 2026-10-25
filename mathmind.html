@@ -1,0 +1,4039 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="description" content="ARVEXA Math — un jeu de révision complet pour maîtriser les 11 chapitres de mathématiques de Terminale.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0A0A'/%3E%3Ctext x='32' y='46' font-size='42' text-anchor='middle' fill='%23E0B84A' font-family='Georgia'%3E%E2%88%91%3C/text%3E%3C/svg%3E">
+  <title>ARVEXA Math · Objectif 33 étoiles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================================
+       ARVEXA MATH — Design system
+       ============================================================ */
+    :root{
+      --primary:#1A3A2A;
+      --primary-dark:#0A1A12;
+      --primary-light:#2A5A3A;
+      --accent:#B8860B;
+      --accent-bright:#E0B84A;
+      --accent-soft:rgba(184,134,11,.08);
+      --accent-line:rgba(184,134,11,.16);
+      --success:#2D7D5A;
+      --success-bright:#4CC38A;
+      --danger:#B85C3A;
+      --danger-bright:#D97A3A;
+      --bg-dark:#0A0A0A;
+      --bg-surface:#141414;
+      --bg-card:rgba(20,20,20,.72);
+      --bg-card-solid:#141414;
+      --text-light:#F5F0E8;
+      --text-dim:#9C9887;
+      --text-muted:#757563;
+      --card-border:rgba(184,134,11,.08);
+      --card-border-hover:rgba(184,134,11,.24);
+      --transition:all .3s cubic-bezier(.25,1,.5,1);
+      --shadow:0 8px 32px rgba(0,0,0,.4);
+      --shadow-gold:0 10px 34px rgba(184,134,11,.16);
+      --radius:16px;
+      --radius-sm:12px;
+      --sidebar-width:240px;
+      --header-height:64px;
+      --safe-top:env(safe-area-inset-top,0px);
+      --safe-bottom:env(safe-area-inset-bottom,0px);
+      --font:'Inter','Segoe UI','Helvetica Neue',Arial,sans-serif;
+      --serif:'Playfair Display','Georgia',serif;
+      --math:'Cambria Math','STIX Two Math','Times New Roman',Georgia,serif;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html{scroll-behavior:smooth;width:100%;overflow-x:hidden;background:var(--bg-dark)}
+    body{
+      width:100%;
+      min-height:100vh;
+      min-height:100dvh;
+      display:flex;
+      overflow-x:hidden;
+      background:var(--bg-dark);
+      color:var(--text-light);
+      font-family:var(--font);
+      font-size:14px;
+      line-height:1.6;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+    body.modal-open,body.drawer-open{overflow:hidden}
+    button,input,textarea{font:inherit}
+    button{cursor:pointer}
+    a{color:inherit}
+    svg{display:block}
+    h1,h2,h3,p{margin:0}
+    [hidden]{display:none!important}
+    ::selection{background:rgba(224,184,74,.26);color:#fff}
+    :focus-visible{outline:2px solid var(--accent-bright);outline-offset:3px;border-radius:6px}
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(184,134,11,.28);border-radius:10px}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(184,134,11,.48)}
+    .icon{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .skip-link{
+      position:fixed;left:12px;top:10px;z-index:10001;padding:9px 15px;
+      border:1px solid rgba(184,134,11,.35);border-radius:20px;
+      color:#0A0A0A;background:var(--accent-bright);font-size:11px;font-weight:700;
+      transform:translateY(-160%);transition:transform .2s;
+    }
+    .skip-link:focus{transform:translateY(0)}
+    .icon-sm{width:14px;height:14px}
+    .svg-sprite{position:absolute;width:0;height:0;overflow:hidden}
+    .math{font-family:var(--math);font-size:1.04em;line-height:1.3;letter-spacing:0}
+    .ovl{text-decoration:overline}
+
+    /* ============================================================
+       BACKGROUND
+       ============================================================ */
+    .gradient-bg{
+      position:fixed;inset:0;z-index:-3;pointer-events:none;
+      background:
+        radial-gradient(ellipse 40% 30% at 26% 11%,rgba(26,58,42,.22) 0%,transparent 70%),
+        radial-gradient(ellipse 34% 24% at 83% 88%,rgba(184,134,11,.07) 0%,transparent 64%),
+        linear-gradient(180deg,#0A0A0A 0%,#060606 100%);
+    }
+    .backdrop-grid{
+      position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.22;
+      background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
+      background-size:64px 64px;
+      -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 0%,transparent 80%);
+      mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 0%,transparent 80%);
+    }
+    .glow{
+      position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:-1;opacity:.16;
+      animation:glowMove 12s ease-in-out infinite alternate;
+    }
+    .glow-1{width:360px;height:360px;background:rgba(26,58,42,.42);top:-110px;right:-90px}
+    .glow-2{width:250px;height:250px;background:rgba(184,134,11,.2);bottom:-20px;left:-30px;animation-delay:-4s}
+    .glow-3{width:270px;height:270px;background:rgba(26,58,42,.32);top:35%;left:58%;animation-delay:-8s}
+    @keyframes glowMove{0%{transform:translate(0,0) scale(1)}100%{transform:translate(24px,-18px) scale(1.08)}}
+
+    /* ============================================================
+       SIDEBAR
+       ============================================================ */
+    .sidebar-overlay{
+      display:none;position:fixed;inset:0;z-index:98;
+      background:rgba(0,0,0,.68);opacity:0;visibility:hidden;
+      transition:opacity .3s ease,visibility .3s ease;
+      -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+    }
+    .sidebar-overlay.active{display:block;opacity:1;visibility:visible}
+    .sidebar{
+      position:fixed;top:0;left:-300px;width:280px;height:100vh;height:100dvh;
+      display:flex;flex-direction:column;z-index:99;
+      padding:calc(22px + var(--safe-top)) 14px calc(18px + var(--safe-bottom));
+      overflow-y:auto;
+      background:rgba(10,10,10,.985);
+      -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+      border-right:1px solid rgba(184,134,11,.09);
+      transition:left .32s cubic-bezier(.25,1,.5,1);
+    }
+    .sidebar.open{left:0}
+    .sidebar-top{position:relative;padding-bottom:18px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,.05)}
+    .sidebar-close{
+      position:absolute;top:-3px;right:0;width:32px;height:32px;
+      display:none;align-items:center;justify-content:center;
+      border:1px solid rgba(255,255,255,.07);border-radius:50%;
+      color:var(--text-muted);background:rgba(255,255,255,.03);
+      transition:var(--transition);
+    }
+    .sidebar-close:hover{color:var(--text-light);background:rgba(255,255,255,.07);transform:rotate(90deg)}
+    .logo{
+      display:flex;align-items:center;text-decoration:none;
+      color:var(--text-light);font-family:var(--serif);
+      font-size:21px;font-weight:700;letter-spacing:2px;
+      line-height:1.1;
+    }
+    .logo span{
+      margin-left:4px;font-style:italic;
+      color:transparent;
+      background:linear-gradient(90deg,var(--accent),var(--accent-bright),var(--accent));
+      background-size:200% auto;
+      -webkit-background-clip:text;background-clip:text;
+      -webkit-text-fill-color:transparent;
+      animation:shimmerText 4s linear infinite;
+    }
+    @keyframes shimmerText{0%{background-position:0% center}100%{background-position:200% center}}
+    .logo-sub{margin-top:7px;color:var(--text-muted);font-size:8px;font-weight:700;letter-spacing:.22em;text-transform:uppercase}
+    .nav{display:flex;flex-direction:column;gap:3px;flex:1}
+    .nav-link{
+      display:flex;align-items:center;gap:11px;min-height:41px;
+      padding:9px 12px;border:1px solid transparent;border-radius:10px;
+      color:var(--text-dim);text-decoration:none;background:none;
+      font-size:12.5px;font-weight:500;text-align:left;
+      transition:var(--transition);
+    }
+    .nav-link .icon{color:var(--text-muted);width:17px;height:17px;transition:var(--transition)}
+    .nav-link:hover{color:var(--text-light);background:rgba(255,255,255,.035)}
+    .nav-link:hover .icon{color:var(--text-dim)}
+    .nav-link.active{color:var(--text-light);background:rgba(184,134,11,.08);border-color:rgba(184,134,11,.11)}
+    .nav-link.active .icon{color:var(--accent-bright)}
+    .nav-link.nav-highlight{
+      margin-top:4px;color:var(--accent-bright);background:rgba(184,134,11,.055);
+      border-color:rgba(184,134,11,.14);
+    }
+    .nav-link.nav-highlight .icon{color:var(--accent-bright);animation:starPulse 2.4s ease-in-out infinite}
+    .nav-link.nav-highlight:hover{background:rgba(184,134,11,.12);color:#F3D385}
+    .nav-badge{
+      margin-left:auto;min-width:22px;height:19px;padding:0 6px;border-radius:10px;
+      display:grid;place-items:center;background:rgba(184,134,11,.13);color:var(--accent-bright);
+      font-size:8px;font-weight:800;letter-spacing:.06em;
+    }
+    @keyframes starPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.13)}}
+    .nav-divider{height:1px;background:rgba(255,255,255,.045);margin:7px 0}
+    .sidebar-level{margin-top:auto;padding:13px 12px;border:1px solid rgba(184,134,11,.1);border-radius:12px;background:rgba(184,134,11,.035)}
+    .sidebar-level-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+    .sidebar-level-head strong{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--text-light)}
+    .sidebar-level-head span{font-size:8px;font-weight:800;letter-spacing:.08em;color:var(--accent-bright);text-transform:uppercase}
+    .sidebar-meter{height:4px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.065)}
+    .sidebar-meter span{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--accent-bright));transition:width .7s cubic-bezier(.25,1,.5,1)}
+    .sidebar-level-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px;color:var(--text-muted);font-size:9px;font-weight:600;font-variant-numeric:tabular-nums}
+    .nav-bottom{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.045)}
+    .sidebar-link{
+      width:100%;display:flex;align-items:center;gap:9px;padding:8px 10px;
+      border:0;border-radius:8px;background:none;color:var(--text-muted);
+      font-size:11px;text-align:left;transition:var(--transition);
+    }
+    .sidebar-link:hover{color:var(--danger-bright);background:rgba(184,92,58,.06)}
+    .sidebar-link .icon{width:14px;height:14px}
+    .sidebar-foot{margin-top:10px;color:var(--text-muted);font-size:8px;line-height:1.6;opacity:.7}
+
+    /* ============================================================
+       MAIN / HEADER
+       ============================================================ */
+    .main-content{flex:1;min-width:0;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+    .header{
+      position:sticky;top:0;z-index:50;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      min-height:var(--header-height);
+      padding:calc(9px + var(--safe-top)) 16px 9px;
+      background:rgba(10,10,10,.91);
+      -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+      border-bottom:1px solid rgba(184,134,11,.075);
+    }
+    .header-left{display:flex;align-items:center;gap:11px;min-width:0}
+    .menu-toggle{
+      width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex:none;
+      border:1px solid rgba(255,255,255,.06);border-radius:10px;
+      color:var(--text-dim);background:transparent;transition:var(--transition);
+    }
+    .menu-toggle:hover{color:var(--text-light);border-color:rgba(184,134,11,.2);background:rgba(255,255,255,.03)}
+    .greeting{
+      display:flex;align-items:center;flex-wrap:wrap;gap:4px;
+      color:var(--text-light);font-size:clamp(12px,1.5vw,14px);font-weight:600;line-height:1.35;
+    }
+    .greeting #greetingText{color:var(--text-dim);font-weight:400}
+    .greeting #userFirstName{color:var(--accent-bright);font-weight:700}
+    .greeting #greetingEmoji{font-size:15px;line-height:1}
+    .header-actions{display:flex;align-items:center;gap:6px;flex:none}
+    .xp-pill{
+      display:flex;align-items:center;gap:6px;min-height:32px;padding:0 11px;
+      border:1px solid rgba(184,134,11,.14);border-radius:20px;
+      background:rgba(184,134,11,.055);color:var(--text-dim);
+      font-size:10px;white-space:nowrap;
+    }
+    .xp-pill .xp-rank{color:var(--accent-bright);font-weight:800;font-size:9px;letter-spacing:.04em}
+    .xp-pill strong{color:var(--text-light);font-size:11px;font-variant-numeric:tabular-nums}
+    .xp-divider{width:1px;height:10px;background:rgba(255,255,255,.1)}
+    .header-icon{
+      width:34px;height:34px;display:grid;place-items:center;flex:none;
+      border:0;border-radius:50%;color:var(--text-dim);background:rgba(255,255,255,.04);
+      transition:var(--transition);
+    }
+    .header-icon:hover{color:var(--text-light);background:rgba(255,255,255,.08)}
+    .header-icon .icon{width:16px;height:16px}
+    .header-avatar{
+      width:34px;height:34px;display:grid;place-items:center;flex:none;padding:0;
+      border:1px solid rgba(184,134,11,.25);border-radius:50%;
+      color:var(--accent-bright);background:linear-gradient(145deg,rgba(184,134,11,.16),rgba(26,58,42,.2));
+      font-family:var(--serif);font-size:16px;font-weight:700;cursor:pointer;transition:var(--transition);
+    }
+    .header-avatar:hover{background:linear-gradient(145deg,rgba(184,134,11,.25),rgba(26,58,42,.28));border-color:rgba(224,184,74,.45)}
+
+    /* ============================================================
+       LAYOUT / TYPOGRAPHY
+       ============================================================ */
+    .container{width:100%;max-width:980px;margin:0 auto;padding:16px 16px 38px;flex:1}
+    .container:focus{outline:none}
+    .view{display:none}
+    .view.is-active{display:block;animation:viewIn .34s cubic-bezier(.25,1,.5,1) both}
+    @keyframes viewIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+    .card{
+      background:var(--bg-card);
+      -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+      border:1px solid var(--card-border);border-radius:var(--radius);
+      padding:18px;
+      transition:var(--transition);
+    }
+    .card:hover{border-color:var(--card-border-hover)}
+    .eyebrow{
+      display:inline-block;color:var(--accent-bright);
+      font-size:9px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
+    }
+    .page-title,.section-title h3,.hero-title,.next-card .title,.final-card h3,.result-title,.modal-title,.view-head h1,.view-head h2,.library-card h3,.confirm-title{
+      font-family:var(--serif);
+    }
+    .section-title{
+      display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+      margin:25px 0 11px;
+    }
+    .section-title:first-child{margin-top:0}
+    .section-title h3{font-size:clamp(15px,1.7vw,18px);font-weight:600;color:var(--text-light);line-height:1.25}
+    .section-note,.section-link{
+      flex:none;border:0;background:none;color:var(--text-muted);
+      font-size:10px;font-weight:600;text-decoration:none;transition:var(--transition);
+    }
+    .section-link{padding:3px 0;cursor:pointer}
+    .section-link:hover{color:var(--accent-bright)}
+    .view-head{max-width:680px;margin:4px 0 20px}
+    .view-head .eyebrow{margin-bottom:6px}
+    .view-head h1,.view-head h2{font-size:clamp(27px,4.2vw,40px);font-weight:600;letter-spacing:-.025em;line-height:1.1;color:var(--text-light)}
+    .view-head p{margin-top:8px;color:var(--text-dim);font-size:12.5px;line-height:1.65}
+    .page-kicker{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+
+    /* ============================================================
+       BUTTONS / TAGS / PROGRESS
+       ============================================================ */
+    .btn{
+      min-height:42px;padding:0 18px;border:1px solid transparent;border-radius:23px;
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      font-size:12px;font-weight:700;line-height:1;text-decoration:none;
+      transition:var(--transition);white-space:nowrap;
+    }
+    .btn .icon{width:14px;height:14px}
+    .btn:hover{transform:translateY(-1px)}
+    .btn:active{transform:translateY(0) scale(.98)}
+    .btn-gold{
+      color:#0A0A0A;
+      background:linear-gradient(135deg,var(--accent-bright),var(--accent));
+      box-shadow:0 5px 18px rgba(184,134,11,.22);
+    }
+    .btn-gold:hover{box-shadow:0 8px 26px rgba(184,134,11,.35)}
+    .btn-outline{
+      color:var(--text-dim);border-color:rgba(255,255,255,.09);
+      background:rgba(255,255,255,.025);
+    }
+    .btn-outline:hover{color:var(--text-light);border-color:rgba(184,134,11,.23);background:rgba(255,255,255,.045)}
+    .btn-danger{
+      color:#fff;
+      background:linear-gradient(135deg,var(--danger-bright),var(--danger));
+      box-shadow:0 5px 18px rgba(184,92,58,.2);
+    }
+    .btn-sm{min-height:34px;padding:0 13px;border-radius:18px;font-size:10.5px;gap:6px}
+    .btn-sm .icon{width:12px;height:12px}
+    .btn-block{width:100%}
+    .btn:disabled{opacity:.42;cursor:not-allowed;transform:none;box-shadow:none}
+    .progress-track{width:100%;height:4px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.065)}
+    .progress-fill{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--accent-bright));transition:width 1s cubic-bezier(.25,1,.5,1)}
+    .status-pill{
+      display:inline-flex;align-items:center;gap:6px;flex:none;
+      padding:5px 12px;border:1px solid rgba(184,134,11,.18);border-radius:20px;
+      color:var(--accent-bright);background:rgba(184,134,11,.08);
+      font-size:10px;font-weight:600;white-space:nowrap;
+    }
+    .status-pill.early{color:#82D4A6;background:rgba(45,125,90,.1);border-color:rgba(45,125,90,.2)}
+    .status-pill.mid{color:var(--accent-bright);background:rgba(184,134,11,.08);border-color:rgba(184,134,11,.2)}
+    .status-pill.late{color:var(--danger-bright);background:rgba(184,92,58,.08);border-color:rgba(184,92,58,.2)}
+    .status-pill.done{color:#7EE0A9;background:rgba(45,125,90,.12);border-color:rgba(76,195,138,.25)}
+    .badge{
+      display:inline-flex;align-items:center;gap:5px;
+      color:var(--accent-bright);font-size:9px;font-weight:700;
+      letter-spacing:.1em;text-transform:uppercase;
+    }
+    .empty-state{
+      grid-column:1/-1;padding:30px 20px;border:1px dashed rgba(184,134,11,.18);border-radius:14px;
+      color:var(--text-dim);text-align:center;font-size:12px;line-height:1.65;background:rgba(255,255,255,.012);
+    }
+    .empty-state strong{display:block;color:var(--text-light);font-family:var(--serif);font-size:18px;font-weight:600;margin-bottom:5px}
+    .empty-state .icon{width:28px;height:28px;margin:0 auto 8px;color:var(--accent);opacity:.6}
+
+    /* ============================================================
+       HOME — HERO
+       ============================================================ */
+    .hero-card{position:relative;overflow:hidden;padding:22px 24px}
+    .hero-card::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-bright),var(--accent))}
+    .hero-card::after{content:"";position:absolute;width:300px;height:300px;right:-150px;top:-170px;border-radius:50%;background:rgba(184,134,11,.1);filter:blur(60px);pointer-events:none}
+    .hero-head{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}
+    .hero-title-wrap{display:flex;align-items:center;gap:13px;min-width:0}
+    .hero-symbol{
+      width:47px;height:47px;display:grid;place-items:center;flex:none;
+      border:1px solid rgba(184,134,11,.23);border-radius:13px;
+      color:var(--accent-bright);background:linear-gradient(145deg,rgba(184,134,11,.13),rgba(26,58,42,.16));
+      font-family:var(--serif);font-size:26px;font-weight:700;line-height:1;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .hero-title{font-size:clamp(22px,3.5vw,32px);font-weight:500;line-height:1.08;letter-spacing:-.02em;color:var(--text-light)}
+    .hero-title em{color:var(--accent-bright);font-style:italic}
+    .hero-sub{position:relative;z-index:1;max-width:640px;margin:7px 0 14px;color:var(--text-dim);font-size:12.5px;line-height:1.65}
+    .hero-card .progress-track{position:relative;z-index:1;height:3px;margin-bottom:13px}
+    .hero-display{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px}
+    .hero-block{
+      display:flex;flex-direction:column;align-items:center;gap:2px;
+      padding:8px 8px 7px;border:1px solid rgba(255,255,255,.045);border-radius:10px;
+      background:rgba(255,255,255,.018);
+    }
+    .hero-number{font-family:var(--serif);font-size:clamp(24px,3.4vw,34px);font-weight:500;line-height:1.1;color:var(--text-light);font-variant-numeric:tabular-nums}
+    .hero-label{color:var(--text-muted);font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-align:center}
+    .hero-actions{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:8px}
+    .hero-actions .btn{min-height:40px}
+    .rank-row{position:relative;z-index:1;display:flex;align-items:center;gap:10px;margin-top:14px;color:var(--text-muted);font-size:9.5px;font-weight:600}
+    .rank-name{display:flex;align-items:center;gap:6px;flex:none;color:var(--text-dim)}
+    .rank-dot{width:6px;height:6px;border-radius:50%;background:var(--accent-bright);box-shadow:0 0 10px rgba(224,184,74,.45)}
+    .rank-track{height:3px;flex:1;min-width:60px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.06)}
+    .rank-track span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--accent-bright));transition:width .7s}
+    .rank-next{flex:none;font-variant-numeric:tabular-nums;color:var(--text-muted);font-size:9px}
+
+    /* ============================================================
+       HOME — RECOMMENDATION / STATS / TIP
+       ============================================================ */
+    .next-card{
+      position:relative;overflow:hidden;padding:16px 18px;
+      border:1px solid rgba(184,134,11,.15);border-radius:var(--radius);
+      background:linear-gradient(135deg,rgba(184,134,11,.065),rgba(26,58,42,.075));
+    }
+    .next-card::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-bright))}
+    .next-card .title{margin:4px 0 4px;font-family:var(--serif);font-size:clamp(17px,2vw,21px);font-weight:600;color:var(--text-light);line-height:1.25}
+    .next-card .message{max-width:670px;color:var(--text-dim);font-size:12px;line-height:1.65}
+    .next-card .message strong{color:var(--text-light);font-weight:600}
+    .next-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+    .next-actions .btn{min-height:35px;padding:0 14px;font-size:10.5px}
+    .overview-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+    .stat-card{
+      display:flex;align-items:center;gap:10px;min-height:68px;padding:12px;
+      border:1px solid var(--card-border);border-radius:13px;background:var(--bg-card);
+      transition:var(--transition);
+    }
+    .stat-card:hover{border-color:var(--card-border-hover);transform:translateY(-2px)}
+    .stat-icon{
+      width:34px;height:34px;display:grid;place-items:center;flex:none;
+      border-radius:9px;color:var(--accent-bright);background:rgba(184,134,11,.08);
+      font-size:14px;
+    }
+    .stat-icon .icon{width:16px;height:16px}
+    .stat-copy{display:flex;flex-direction:column;gap:1px;min-width:0}
+    .stat-copy strong{font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.15;color:var(--text-light);font-variant-numeric:tabular-nums}
+    .stat-copy span{color:var(--text-muted);font-size:8px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;line-height:1.25}
+    .tip-card{
+      display:flex;align-items:flex-start;gap:12px;padding:15px 16px;
+      border:1px solid var(--card-border);border-radius:var(--radius);background:var(--bg-card);
+    }
+    .tip-icon{
+      width:38px;height:38px;display:grid;place-items:center;flex:none;
+      border-radius:10px;color:var(--accent-bright);background:rgba(184,134,11,.09);
+      font-size:16px;
+    }
+    .tip-copy{min-width:0}
+    .tip-copy .eyebrow{font-size:8px;letter-spacing:.13em}
+    .tip-title{margin:1px 0 3px;color:var(--text-light);font-size:13px;font-weight:700}
+    .tip-text{color:var(--text-dim);font-size:12px;line-height:1.62}
+
+    /* ============================================================
+       CHAPTERS
+       ============================================================ */
+    .chapter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .chapter-card{
+      position:relative;isolation:isolate;display:flex;flex-direction:column;
+      min-height:235px;overflow:hidden;padding:15px;scroll-margin-top:90px;
+      border:1px solid var(--card-border);border-radius:14px;
+      background:var(--bg-card);
+      -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+      transition:var(--transition);
+    }
+    .chapter-card::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--accent),transparent 78%);opacity:.8}
+    .chapter-card:hover{transform:translateY(-3px);border-color:var(--card-border-hover);box-shadow:0 8px 30px rgba(0,0,0,.25)}
+    .chapter-card.mastered{border-color:rgba(45,125,90,.22);background:linear-gradient(160deg,rgba(45,125,90,.06),var(--bg-card))}
+    .chapter-head{display:flex;align-items:flex-start;justify-content:space-between;gap:9px;margin-bottom:12px}
+    .chapter-no{color:var(--text-muted);font-family:var(--serif);font-size:10px;font-weight:600;letter-spacing:.1em}
+    .chapter-icon{
+      width:38px;height:38px;display:grid;place-items:center;flex:none;
+      border:1px solid rgba(184,134,11,.16);border-radius:10px;
+      color:var(--accent-bright);background:rgba(184,134,11,.075);
+      font-family:var(--math);font-size:18px;font-weight:700;line-height:1;
+    }
+    .chapter-card h3{font-size:16px;font-weight:600;line-height:1.28;color:var(--text-light)}
+    .chapter-desc{min-height:36px;margin-top:4px;color:var(--text-dim);font-size:12px;line-height:1.52}
+    .chapter-mastery{display:inline-flex;align-items:center;gap:4px;margin-top:8px;color:#7EE0A9;font-size:8.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+    .chapter-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:13px}
+    .stars{display:inline-flex;gap:2px;color:rgba(255,255,255,.12);font-size:13px;line-height:1}
+    .stars .on{color:var(--accent-bright);text-shadow:0 0 12px rgba(224,184,74,.28)}
+    .record{color:var(--text-muted);font-size:9px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .chapter-progress{height:3px;margin:8px 0 10px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.055)}
+    .chapter-progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--accent-bright));transition:width .6s}
+    .chapter-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .sheet-btn,.play-btn{
+      display:inline-flex;align-items:center;gap:5px;
+      min-height:30px;padding:0 9px;border-radius:8px;
+      font-size:9.5px;font-weight:700;transition:var(--transition);
+    }
+    .sheet-btn{border:1px solid transparent;background:none;color:var(--text-muted)}
+    .sheet-btn:hover{color:var(--text-light);background:rgba(255,255,255,.045);border-color:rgba(255,255,255,.06)}
+    .sheet-btn .icon{width:11px;height:11px}
+    .play-btn{border:1px solid rgba(184,134,11,.17);background:rgba(184,134,11,.07);color:var(--accent-bright)}
+    .play-btn:hover{background:rgba(184,134,11,.13);border-color:rgba(184,134,11,.3)}
+    .play-btn .icon{width:12px;height:12px}
+    .filters{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .filter-chip{
+      min-height:30px;padding:0 12px;border:1px solid rgba(255,255,255,.06);border-radius:18px;
+      color:var(--text-muted);background:transparent;font-size:10px;font-weight:600;
+      transition:var(--transition);white-space:nowrap;
+    }
+    .filter-chip:hover{color:var(--text-dim);border-color:rgba(255,255,255,.1)}
+    .filter-chip.active{color:var(--accent-bright);border-color:rgba(184,134,11,.25);background:rgba(184,134,11,.1)}
+    .filter-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .filter-count{color:var(--text-muted);font-size:9px;font-weight:600;white-space:nowrap}
+
+    /* ============================================================
+       FINAL CARD / MINI LIBRARY
+       ============================================================ */
+    .final-card{
+      position:relative;display:flex;align-items:center;justify-content:space-between;gap:22px;overflow:hidden;
+      padding:20px 22px;border:1px solid rgba(184,134,11,.2);border-radius:var(--radius);
+      background:
+        radial-gradient(ellipse at 96% 0%,rgba(184,134,11,.14),transparent 45%),
+        linear-gradient(135deg,rgba(26,58,42,.18),rgba(184,134,11,.035));
+    }
+    .final-card::before{content:"∞";position:absolute;right:-6px;bottom:-54px;color:rgba(184,134,11,.055);font-family:var(--serif);font-size:170px;line-height:1;pointer-events:none}
+    .final-card::after{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-bright),transparent 80%)}
+    .final-copy{position:relative;z-index:1;min-width:0}
+    .final-copy h3{margin:4px 0;font-size:clamp(20px,2.5vw,25px);font-weight:600;color:var(--text-light);line-height:1.15}
+    .final-copy p{max-width:520px;color:var(--text-dim);font-size:11.5px;line-height:1.6}
+    .final-side{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-end;gap:9px;flex:none}
+    .final-stars{display:flex;gap:2px;color:rgba(255,255,255,.13);font-size:14px;line-height:1}
+    .final-stars .on{color:var(--accent-bright)}
+    .final-best{color:var(--text-muted);font-size:8.5px;font-weight:600;white-space:nowrap}
+    .final-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+    .final-actions .btn{min-height:34px;padding:0 13px;font-size:10px}
+    .mini-library{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    .mini-fiche{
+      display:flex;align-items:center;gap:9px;min-height:64px;padding:10px 11px;
+      border:1px solid var(--card-border);border-radius:12px;background:var(--bg-card);
+      color:var(--text-light);text-align:left;transition:var(--transition);
+    }
+    .mini-fiche:hover{border-color:var(--card-border-hover);transform:translateY(-2px)}
+    .mini-fiche .mini-icon{
+      width:30px;height:30px;display:grid;place-items:center;flex:none;
+      border-radius:8px;color:var(--accent-bright);background:rgba(184,134,11,.08);
+      font-family:var(--math);font-size:14px;font-weight:700;
+    }
+    .mini-copy{min-width:0;display:flex;flex-direction:column}
+    .mini-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10.5px;font-weight:600;color:var(--text-light)}
+    .mini-copy span{color:var(--text-muted);font-size:8px;margin-top:1px}
+    .mini-fiche .icon{width:12px;height:12px;margin-left:auto;color:var(--text-muted)}
+
+    /* ============================================================
+       LIBRARY
+       ============================================================ */
+    .library-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:13px}
+    .search-box{
+      position:relative;flex:1;min-width:210px;max-width:430px;
+    }
+    .search-box .icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-muted);pointer-events:none}
+    .search-input{
+      width:100%;height:40px;padding:0 14px 0 37px;
+      border:1px solid rgba(255,255,255,.07);border-radius:21px;
+      color:var(--text-light);background:rgba(255,255,255,.025);
+      font-size:11.5px;outline:none;transition:var(--transition);
+    }
+    .search-input::placeholder{color:var(--text-muted)}
+    .search-input:focus{border-color:rgba(184,134,11,.3);background:rgba(184,134,11,.025);box-shadow:0 0 0 3px rgba(184,134,11,.05)}
+    .library-count{color:var(--text-muted);font-size:9px;font-weight:600;white-space:nowrap}
+    .library-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .library-card{
+      position:relative;overflow:hidden;padding:15px;
+      border:1px solid var(--card-border);border-radius:14px;background:var(--bg-card);
+      -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+      transition:var(--transition);
+    }
+    .library-card:hover{border-color:var(--card-border-hover)}
+    .library-card::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--accent),transparent 78%);opacity:.65}
+    .library-head{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+    .library-icon{
+      width:35px;height:35px;display:grid;place-items:center;flex:none;
+      border:1px solid rgba(184,134,11,.16);border-radius:9px;
+      color:var(--accent-bright);background:rgba(184,134,11,.075);
+      font-family:var(--math);font-size:16px;font-weight:700;
+    }
+    .library-head-copy{min-width:0}
+    .library-head-copy small{display:block;color:var(--text-muted);font-size:7.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase}
+    .library-card h3{font-size:14.5px;font-weight:600;line-height:1.2;color:var(--text-light)}
+    .library-card .stars{margin-left:auto;flex:none}
+    .formula-list{display:grid;gap:5px;margin:10px 0 11px}
+    .formula-row{
+      display:grid;grid-template-columns:minmax(70px,.85fr) minmax(0,1.35fr);align-items:center;gap:8px;
+      padding:7px 9px;border:1px solid rgba(255,255,255,.045);border-radius:8px;
+      background:rgba(255,255,255,.016);
+    }
+    .formula-label{color:var(--text-muted);font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1.35}
+    .formula-value{color:#E9E2D4;font-family:var(--math);font-size:12px;line-height:1.5;text-align:right;overflow-wrap:anywhere}
+    .library-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:2px}
+    .library-actions .stars{font-size:11px}
+    .library-actions .btn{min-height:30px;padding:0 10px;font-size:9.5px}
+    .library-buttons{display:flex;gap:5px;flex:none}
+
+    /* ============================================================
+       PROGRESS
+       ============================================================ */
+    .progress-overview{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:26px;padding:22px}
+    .progress-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:7px}
+    .progress-ring{
+      --p:0;
+      position:relative;width:142px;height:142px;border-radius:50%;
+      background:conic-gradient(var(--accent-bright) calc(var(--p) * 1%),rgba(255,255,255,.055) calc(var(--p) * 1%));
+      display:grid;place-items:center;
+      transition:background .8s ease;
+    }
+    .progress-ring::before{content:"";position:absolute;inset:9px;border-radius:50%;background:#0C0C0C;border:1px solid rgba(255,255,255,.035)}
+    .ring-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:0}
+    .ring-content strong{font-family:var(--serif);font-size:30px;font-weight:500;line-height:1.1;color:var(--text-light);font-variant-numeric:tabular-nums}
+    .ring-content span{color:var(--text-muted);font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+    .ring-caption{color:var(--text-muted);font-size:9px;font-weight:600}
+    .progress-copy{min-width:0}
+    .progress-copy h2{font-family:var(--serif);font-size:clamp(22px,3vw,29px);font-weight:600;line-height:1.12;color:var(--text-light)}
+    .progress-copy p{margin-top:4px;color:var(--text-dim);font-size:11.5px;line-height:1.6}
+    .progress-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:13px}
+    .progress-stat{display:flex;align-items:baseline;gap:6px;padding:7px 9px;border:1px solid rgba(255,255,255,.045);border-radius:8px;background:rgba(255,255,255,.015)}
+    .progress-stat strong{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--accent-bright);line-height:1}
+    .progress-stat span{color:var(--text-muted);font-size:8px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+    .trophy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    .trophy{
+      display:flex;align-items:center;gap:9px;min-height:66px;padding:10px 11px;
+      border:1px solid rgba(255,255,255,.045);border-radius:12px;background:rgba(255,255,255,.015);
+      transition:var(--transition);
+    }
+    .trophy.unlocked{border-color:rgba(184,134,11,.18);background:rgba(184,134,11,.035)}
+    .trophy-icon{
+      width:32px;height:32px;display:grid;place-items:center;flex:none;
+      border:1px solid rgba(255,255,255,.06);border-radius:9px;
+      color:var(--text-muted);background:rgba(255,255,255,.025);
+      font-family:var(--math);font-size:13px;font-weight:700;
+    }
+    .trophy.unlocked .trophy-icon{color:var(--accent-bright);border-color:rgba(184,134,11,.22);background:rgba(184,134,11,.08)}
+    .trophy-copy{min-width:0}
+    .trophy-copy strong{display:block;color:var(--text-dim);font-size:10px;font-weight:700;line-height:1.3}
+    .trophy.unlocked .trophy-copy strong{color:var(--text-light)}
+    .trophy-copy span{display:block;margin-top:1px;color:var(--text-muted);font-size:8px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .trophy.locked{opacity:.55}
+    .trophy-state{margin-left:auto;flex:none;color:var(--text-muted);font-size:7px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .trophy.unlocked .trophy-state{color:var(--accent-bright)}
+    .progress-chapters{display:grid;gap:0;padding:5px 16px}
+    .progress-row{
+      display:grid;grid-template-columns:32px minmax(0,1.25fr) minmax(70px,.7fr) auto auto;align-items:center;gap:10px;
+      padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);
+    }
+    .progress-row:last-child{border-bottom:0}
+    .progress-row-icon{
+      width:30px;height:30px;display:grid;place-items:center;
+      border:1px solid rgba(184,134,11,.13);border-radius:8px;background:rgba(184,134,11,.055);
+      color:var(--accent-bright);font-family:var(--math);font-size:13px;font-weight:700;
+    }
+    .progress-info{min-width:0}
+    .progress-info strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-light);font-size:11.5px;font-weight:600}
+    .progress-info span{display:block;color:var(--text-muted);font-size:8.5px;margin-top:1px}
+    .progress-mini{height:3px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.06)}
+    .progress-mini span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--accent-bright))}
+    .progress-row .stars{font-size:10px}
+    .progress-row .btn{min-height:28px;padding:0 9px;font-size:8.5px}
+    .history-list{padding:5px 16px}
+    .history-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+    .history-item:last-child{border-bottom:0}
+    .history-dot{width:7px;height:7px;flex:none;border-radius:50%;background:var(--accent-bright);box-shadow:0 0 8px rgba(224,184,74,.35)}
+    .history-copy{min-width:0;flex:1}
+    .history-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-light);font-size:11px;font-weight:600}
+    .history-copy span{display:block;color:var(--text-muted);font-size:8.5px;margin-top:1px}
+    .history-score{flex:none;text-align:right}
+    .history-score strong{display:block;color:var(--accent-bright);font-family:var(--serif);font-size:14px;font-weight:600;line-height:1}
+    .history-score span{color:var(--text-muted);font-size:7.5px;font-weight:600}
+    .history-stars{flex:none;font-size:10px;color:rgba(255,255,255,.12)}
+    .history-stars .on{color:var(--accent-bright)}
+
+    /* ============================================================
+       GAME
+       ============================================================ */
+    .game-shell{max-width:860px;margin:0 auto}
+    .game-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 0 12px}
+    .back-btn{
+      display:inline-flex;align-items:center;gap:5px;flex:none;
+      min-height:32px;padding:0 8px;border:1px solid transparent;border-radius:8px;
+      color:var(--text-dim);background:none;font-size:10px;font-weight:600;
+      transition:var(--transition);
+    }
+    .back-btn:hover{color:var(--text-light);background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.06)}
+    .back-btn .icon{width:13px;height:13px}
+    .game-crumb{display:flex;align-items:center;gap:8px;min-width:0}
+    .game-icon{
+      width:31px;height:31px;display:grid;place-items:center;flex:none;
+      border:1px solid rgba(184,134,11,.2);border-radius:8px;
+      color:var(--accent-bright);background:rgba(184,134,11,.065);
+      font-family:var(--math);font-size:14px;font-weight:700;
+    }
+    .game-crumb-text{min-width:0}
+    .game-kicker{display:block;margin-bottom:1px;color:var(--text-muted);font-size:7px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+    .game-crumb strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-light);font-size:12.5px;font-weight:600}
+    .game-scoreboard{display:flex;align-items:center;gap:16px;flex:none}
+    .game-stat{display:flex;flex-direction:column;align-items:flex-end;gap:0}
+    .game-stat small{color:var(--text-muted);font-size:7px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+    .game-stat strong{font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.15;color:var(--text-light);font-variant-numeric:tabular-nums}
+    .game-stat.streak strong{color:var(--text-dim)}
+    .game-stat.streak.hot strong{color:var(--accent-bright);text-shadow:0 0 18px rgba(224,184,74,.25)}
+    .game-stat.streak .flame{margin-left:2px;font-size:10px;color:var(--accent-bright)}
+    .segments{display:flex;gap:4px;margin:0 0 13px}
+    .segment{height:3px;flex:1;border-radius:99px;background:rgba(255,255,255,.07);transition:background .25s}
+    .segment.is-current{background:rgba(255,255,255,.28);animation:segPulse 1.8s ease-in-out infinite}
+    .segment.is-correct{background:var(--accent-bright)}
+    .segment.is-wrong{background:var(--danger-bright)}
+    @keyframes segPulse{0%,100%{opacity:1}50%{opacity:.45}}
+    .quiz-card{
+      position:relative;overflow:hidden;padding:24px 26px 21px;
+      border:1px solid var(--card-border);border-radius:18px;
+      background:linear-gradient(155deg,rgba(22,22,22,.94),rgba(12,12,12,.97));
+      box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.025);
+    }
+    .quiz-card::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-bright),transparent)}
+    .quiz-card.q-animate{animation:qIn .35s cubic-bezier(.25,1,.5,1) both}
+    @keyframes qIn{from{opacity:.6;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .quiz-card.q-shake{animation:qShake .34s ease}
+    @keyframes qShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
+    .quiz-top{display:flex;align-items:center;gap:8px;min-height:27px}
+    .question-count{color:var(--text-muted);font-size:8px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+    .source-tag{
+      max-width:190px;overflow:hidden;padding:4px 8px;border:1px solid rgba(184,134,11,.18);border-radius:14px;
+      color:var(--accent-bright);background:rgba(184,134,11,.055);
+      font-size:7.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;text-overflow:ellipsis;white-space:nowrap;
+    }
+    .timer-pill{
+      position:relative;min-width:66px;margin-left:auto;overflow:hidden;
+      padding:5px 9px;border:1px solid rgba(184,134,11,.18);border-radius:16px;
+      color:var(--text-dim);background:rgba(255,255,255,.022);
+      font-size:10px;font-variant-numeric:tabular-nums;transition:color .2s,border-color .2s;
+    }
+    .timer-fill{position:absolute;inset:0 auto 0 0;z-index:0;width:100%;background:rgba(184,134,11,.09);transition:width .12s linear,background .2s}
+    .timer-content{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:4px}
+    .timer-content .icon{width:11px;height:11px}
+    .timer-pill.low{color:#E69B7E;border-color:rgba(184,92,58,.38)}
+    .timer-pill.low .timer-fill{background:rgba(184,92,58,.14)}
+    .timer-pill.low .timer-content .icon{animation:clockNudge .9s ease-in-out infinite}
+    .timer-pill.no-timer{color:var(--accent-bright);border-color:rgba(184,134,11,.24)}
+    .timer-pill.no-timer .timer-fill{background:rgba(45,125,90,.1)}
+    .timer-pill.no-timer .timer-content>span:last-child{display:none}
+    .search-input{font-size:16px}
+    @keyframes clockNudge{0%,100%{transform:rotate(0)}50%{transform:rotate(-11deg)}}
+    .question-text{margin:18px 0 18px;font-size:clamp(21px,3vw,28px);font-weight:600;line-height:1.45;letter-spacing:-.015em;color:var(--text-light)}
+    .question-text:focus{outline:none}
+    .question-text .math{color:#FFF8E8}
+    .choices{display:grid;gap:7px}
+    .choice{
+      position:relative;display:flex;align-items:center;gap:10px;width:100%;
+      padding:11px 12px;border:1px solid rgba(255,255,255,.065);border-radius:11px;
+      color:var(--text-light);background:rgba(255,255,255,.02);
+      font-size:13px;line-height:1.48;text-align:left;
+      transition:border-color .18s,background .18s,transform .18s,opacity .18s;
+    }
+    .choice:hover:not(:disabled){border-color:rgba(184,134,11,.3);background:rgba(255,255,255,.04);transform:translateX(2px)}
+    .choice-key{
+      width:26px;height:26px;display:grid;place-items:center;flex:none;
+      border:1px solid rgba(255,255,255,.07);border-radius:7px;
+      color:var(--text-muted);background:rgba(255,255,255,.025);
+      font-size:9px;font-weight:800;transition:var(--transition);
+    }
+    .choice-text{min-width:0}
+    .choice.selected{border-color:rgba(184,134,11,.5);background:rgba(184,134,11,.08)}
+    .choice.selected .choice-key{color:#0A0A0A;border-color:transparent;background:var(--accent-bright)}
+    .choice.correct{border-color:rgba(76,195,138,.45);background:rgba(45,125,90,.1);opacity:1}
+    .choice.correct .choice-key{color:#06140D;border-color:transparent;background:var(--success-bright)}
+    .choice.correct::after{content:"✓";margin-left:auto;flex:none;color:var(--success-bright);font-size:13px;font-weight:900}
+    .choice.wrong{border-color:rgba(184,92,58,.45);background:rgba(184,92,58,.09)}
+    .choice.wrong .choice-key{color:#1A0904;border-color:transparent;background:var(--danger-bright)}
+    .choice.wrong::after{content:"×";margin-left:auto;flex:none;color:var(--danger-bright);font-size:15px;font-weight:800}
+    .choice.dim{opacity:.32}
+    .choice:disabled{cursor:default}
+    .feedback{
+      margin-top:14px;padding:12px 13px;border:1px solid rgba(255,255,255,.06);
+      border-left-width:3px;border-radius:10px;background:rgba(255,255,255,.02);
+      animation:feedbackIn .3s cubic-bezier(.25,1,.5,1) both;
+    }
+    @keyframes feedbackIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+    .feedback.is-good{border-color:rgba(76,195,138,.18);border-left-color:var(--success-bright);background:rgba(45,125,90,.055)}
+    .feedback.is-bad{border-color:rgba(184,92,58,.18);border-left-color:var(--danger-bright);background:rgba(184,92,58,.045)}
+    .feedback-head{display:flex;align-items:center;gap:8px;margin-bottom:3px;font-size:11px;font-weight:700}
+    .feedback-icon{width:20px;height:20px;display:grid;place-items:center;flex:none;border-radius:6px;font-size:10px;font-weight:900}
+    .feedback.is-good .feedback-icon{color:#06140D;background:var(--success-bright)}
+    .feedback.is-bad .feedback-icon{color:#1A0904;background:var(--danger-bright)}
+    .feedback-points{margin-left:auto;color:var(--success-bright);font-size:10px;font-variant-numeric:tabular-nums}
+    .feedback.is-bad .feedback-points{color:var(--text-muted)}
+    .feedback p{color:#B5AB9A;font-size:11.5px;line-height:1.6}
+    .feedback p strong{color:var(--text-light)}
+    .feedback .math{color:#F4ECDD}
+    .quiz-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:17px}
+    .key-hint{color:var(--text-muted);font-size:8px;font-weight:500}
+    .quiz-actions .btn{min-width:142px;min-height:39px;font-size:11px}
+    .score-bump{animation:scoreBump .38s cubic-bezier(.25,1,.5,1)}
+    @keyframes scoreBump{0%{transform:scale(1)}40%{transform:scale(1.2);color:var(--accent-bright)}100%{transform:scale(1)}}
+
+    /* ============================================================
+       RESULT
+       ============================================================ */
+    .result-shell{max-width:780px;margin:0 auto}
+    .result-card{
+      position:relative;overflow:hidden;padding:30px 30px 24px;
+      border:1px solid var(--card-border);border-radius:20px;text-align:center;
+      background:
+        radial-gradient(ellipse at 50% -8%,rgba(184,134,11,.12),transparent 44%),
+        linear-gradient(155deg,rgba(22,22,22,.96),rgba(9,9,9,.98));
+      box-shadow:var(--shadow);
+    }
+    .result-card::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,transparent,var(--accent-bright),transparent)}
+    .result-emblem{
+      width:59px;height:59px;display:grid;place-items:center;margin:0 auto 10px;
+      border:1px solid rgba(184,134,11,.24);border-radius:17px;
+      color:var(--accent-bright);background:rgba(184,134,11,.08);
+      font-family:var(--math);font-size:27px;font-weight:700;
+    }
+    .result-eyebrow{color:var(--text-muted);font-size:8px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    .result-title{margin-top:6px;font-family:var(--serif);font-size:clamp(29px,4.8vw,42px);font-weight:500;line-height:1.08;color:var(--text-light)}
+    .result-title:focus{outline:none}
+    .result-stars{display:flex;justify-content:center;gap:5px;margin:14px 0 8px;font-size:37px;line-height:1}
+    .result-star{display:inline-block;color:rgba(255,255,255,.1)}
+    .result-star.on{color:var(--accent-bright);text-shadow:0 0 28px rgba(224,184,74,.3);animation:starPop .55s cubic-bezier(.25,.9,.3,1.15) both;animation-delay:var(--d)}
+    @keyframes starPop{0%{opacity:0;transform:scale(.35) rotate(-18deg)}70%{opacity:1;transform:scale(1.1) rotate(4deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+    .result-message{max-width:540px;margin:0 auto;color:var(--text-dim);font-size:12px;line-height:1.65}
+    .result-score{display:flex;align-items:baseline;justify-content:center;gap:7px;margin:16px 0 12px}
+    .result-score strong{font-family:var(--serif);font-size:34px;font-weight:500;line-height:1;color:var(--text-light);font-variant-numeric:tabular-nums}
+    .result-score span{color:var(--text-muted);font-size:8px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+    .result-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;overflow:hidden;border:1px solid rgba(255,255,255,.055);border-radius:11px;background:rgba(255,255,255,.055)}
+    .metric{display:flex;flex-direction:column;gap:2px;padding:10px 8px;background:#101010}
+    .metric strong{font-family:var(--serif);font-size:17px;font-weight:600;color:var(--text-light);line-height:1.1;font-variant-numeric:tabular-nums}
+    .metric span{color:var(--text-muted);font-size:7px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+    .xp-earned{display:inline-flex;align-items:baseline;gap:7px;margin-top:11px;padding:6px 11px;border:1px solid rgba(184,134,11,.17);border-radius:15px;background:rgba(184,134,11,.05)}
+    .xp-earned strong{color:var(--accent-bright);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+    .xp-earned span{color:var(--text-muted);font-size:8px;font-weight:600}
+    .result-record{min-height:17px;margin-top:7px;color:var(--text-muted);font-size:9px;font-weight:600}
+    .record-badge{display:inline-flex;align-items:center;gap:4px;color:var(--accent-bright);font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .result-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin-top:14px}
+    .result-actions .btn{min-height:38px;font-size:10.5px}
+    .review{margin-top:22px;padding-top:15px;border-top:1px solid rgba(255,255,255,.055);text-align:left}
+    .review summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 0;color:var(--text-dim);font-size:10.5px;font-weight:700;cursor:pointer;list-style:none}
+    .review summary::-webkit-details-marker{display:none}
+    .review summary::after{content:"+";color:var(--text-muted);font-size:16px;font-weight:400}
+    .review[open] summary::after{content:"−"}
+    .review-count{color:var(--text-muted);font-size:8px;font-weight:600}
+    .review-list{display:grid;gap:5px;margin-top:10px}
+    .review-item{overflow:hidden;border:1px solid rgba(255,255,255,.05);border-radius:9px;background:rgba(255,255,255,.012)}
+    .review-item summary{display:flex;align-items:center;gap:8px;padding:8px 9px;color:var(--text-dim);font-size:10px;font-weight:500;line-height:1.4;cursor:pointer;list-style:none}
+    .review-item summary::-webkit-details-marker{display:none}
+    .review-item summary::after{content:none}
+    .review-num{width:20px;height:20px;display:grid;place-items:center;flex:none;border-radius:6px;background:rgba(255,255,255,.035);color:var(--text-muted);font-size:7px;font-weight:800}
+    .review-q{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .review-status{width:18px;height:18px;display:grid;place-items:center;flex:none;margin-left:auto;border-radius:50%;font-size:9px;font-weight:900}
+    .review-item.ok .review-status{background:var(--success-bright);color:#06140D}
+    .review-item.ko .review-status{background:var(--danger-bright);color:#1A0904}
+    .review-body{padding:2px 9px 10px 37px;color:var(--text-dim);font-size:10px;line-height:1.55}
+    .review-body p{margin-top:3px}
+    .review-body strong{color:var(--text-light)}
+    .review-source{color:var(--accent-bright);font-size:7px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+    .review-explain{color:#A89D8C!important}
+    .review-choice{color:var(--text-muted)!important}
+
+    /* ============================================================
+       MODALS / TOAST
+       ============================================================ */
+    .modal-overlay{
+      position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+      padding:18px;background:rgba(0,0,0,.84);
+      -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+      animation:fadeIn .25s ease both;
+    }
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .modal-card{
+      position:relative;width:100%;max-width:520px;max-height:91vh;max-height:91dvh;overflow-y:auto;
+      padding:25px 25px 21px;border:1px solid rgba(184,134,11,.22);border-radius:18px;
+      background:linear-gradient(145deg,#151515 0%,#0A0A0A 100%);
+      box-shadow:0 24px 80px rgba(0,0,0,.7),0 0 42px rgba(184,134,11,.06);
+      animation:modalIn .3s cubic-bezier(.25,1,.5,1) both;
+    }
+    .modal-card::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-bright),var(--accent));background-size:200% 100%;animation:borderShimmer 4s linear infinite}
+    @keyframes borderShimmer{0%{background-position:0 0}100%{background-position:300% 0}}
+    @keyframes modalIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+    .modal-close{
+      position:absolute;top:12px;right:12px;width:30px;height:30px;
+      display:grid;place-items:center;border:1px solid rgba(255,255,255,.06);border-radius:50%;
+      color:var(--text-muted);background:rgba(255,255,255,.03);transition:var(--transition);
+    }
+    .modal-close:hover{color:var(--text-light);background:rgba(255,255,255,.08);transform:rotate(90deg)}
+    .modal-close .icon{width:13px;height:13px}
+    .modal-icon{
+      width:43px;height:43px;display:grid;place-items:center;margin-bottom:10px;
+      border:1px solid rgba(184,134,11,.23);border-radius:12px;color:var(--accent-bright);background:rgba(184,134,11,.08);
+      font-family:var(--math);font-size:20px;font-weight:700;
+    }
+    .modal-kicker{color:var(--text-muted);font-size:7px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    .modal-title{margin-top:4px;padding-right:28px;font-size:clamp(22px,3.5vw,28px);font-weight:600;line-height:1.12;color:var(--text-light)}
+    .modal-sub{margin-top:5px;color:var(--text-dim);font-size:11px;line-height:1.6}
+    .modal-actions{display:flex;gap:7px;margin-top:14px}
+    .modal-actions .btn{flex:1;min-height:39px;font-size:10.5px}
+    .modal-note{margin-top:8px;color:var(--text-muted);font-size:8px;text-align:center}
+    .confirm-card{max-width:390px;text-align:center;padding:27px 23px 21px}
+    .confirm-icon{width:55px;height:55px;display:grid;place-items:center;margin:0 auto 13px;border:1px solid rgba(184,92,58,.24);border-radius:15px;background:rgba(184,92,58,.07);font-size:24px;animation:confirmPulse 2.2s ease-in-out infinite}
+    @keyframes confirmPulse{0%,100%{box-shadow:0 0 0 0 rgba(184,92,58,.12)}50%{box-shadow:0 0 0 10px rgba(184,92,58,0)}}
+    .confirm-title{font-size:22px;font-weight:600;line-height:1.2;color:var(--text-light)}
+    .confirm-divider{width:38px;height:2px;margin:10px auto 13px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+    .confirm-message{color:var(--text-dim);font-size:12px;line-height:1.65}
+    .confirm-message strong{color:var(--text-light);font-weight:600}
+    .toast{
+      position:fixed;left:50%;bottom:calc(22px + var(--safe-bottom));z-index:10000;
+      max-width:min(90vw,460px);padding:10px 15px;
+      border:1px solid rgba(184,134,11,.2);border-radius:20px;
+      color:var(--text-light);background:rgba(18,18,18,.97);
+      box-shadow:0 16px 40px rgba(0,0,0,.45);
+      font-size:10px;font-weight:600;text-align:center;
+      opacity:0;pointer-events:none;transform:translate(-50%,14px);
+      transition:opacity .25s,transform .25s;
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    #confetti{position:fixed;inset:0;z-index:9998;pointer-events:none}
+
+    /* ============================================================
+       FOOTER / BOTTOM NAV
+       ============================================================ */
+    .footer{margin-top:auto;padding:17px 16px 13px;border-top:1px solid rgba(184,134,11,.065);background:rgba(10,10,10,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+    .footer-content{max-width:980px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+    .footer-logo{font-family:var(--serif);font-size:16px;font-weight:600;letter-spacing:1px;color:var(--text-light)}
+    .footer-logo span{color:var(--accent-bright);font-style:italic}
+    .footer-links{display:flex;flex-wrap:wrap;justify-content:center;gap:13px}
+    .footer-links button{border:0;background:none;color:var(--text-muted);font-size:9px;font-weight:500;transition:var(--transition)}
+    .footer-links button:hover{color:var(--text-light)}
+    .footer-copy{color:var(--text-muted);font-size:8px;opacity:.65}
+    .bottom-nav{display:none}
+    body.quiz-active .bottom-nav{transform:translateY(110%);pointer-events:none}
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (min-width:768px){
+      .sidebar{left:0;width:var(--sidebar-width)}
+      .sidebar-close{display:none}
+      .sidebar-overlay{display:none!important}
+      .main-content{margin-left:var(--sidebar-width)}
+      .menu-toggle{display:none}
+      .sidebar.open{left:0}
+      .chapter-grid,.library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (max-width:1023px){
+      .container{max-width:900px}
+      .progress-chapters{padding:5px 14px}
+    }
+    @media (max-width:900px) and (min-width:768px){
+      .chapter-grid,.library-grid{grid-template-columns:1fr}
+      .overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .final-card{align-items:flex-start;flex-direction:column}
+      .final-side{align-items:flex-start}
+    }
+    @media (max-width:767px){
+      .sidebar{left:-300px}
+      .sidebar-close{display:flex}
+      .container{padding:12px 12px 24px}
+      .header{padding-left:12px;padding-right:12px}
+      .greeting{font-size:12px}
+      .menu-toggle{display:flex}
+      .chapter-grid{grid-template-columns:1fr}
+      .library-grid{grid-template-columns:1fr}
+      .overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .mini-library{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .mini-fiche:last-child{display:none}
+      .final-card{align-items:flex-start;flex-direction:column;gap:14px}
+      .final-side{width:100%;align-items:flex-start}
+      .final-actions{justify-content:flex-start}
+      .trophy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .progress-overview{grid-template-columns:1fr;gap:16px;text-align:center}
+      .progress-stats{max-width:360px;margin-left:auto;margin-right:auto}
+      .bottom-nav{
+        display:flex;position:fixed;left:0;right:0;bottom:0;z-index:70;
+        padding:7px 6px calc(7px + var(--safe-bottom));
+        background:rgba(10,10,10,.96);
+        -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+        border-top:1px solid rgba(184,134,11,.1);
+        transition:transform .3s cubic-bezier(.25,1,.5,1);
+      }
+      .bottom-nav button{
+        flex:1;min-height:43px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+        border:0;background:none;color:var(--text-muted);font-size:7px;font-weight:700;letter-spacing:.04em;
+        transition:var(--transition);
+      }
+      .bottom-nav button .icon{width:17px;height:17px}
+      .bottom-nav button.active{color:var(--accent-bright)}
+      .bottom-nav button.active .icon{filter:drop-shadow(0 0 7px rgba(224,184,74,.3))}
+      .main-content{padding-bottom:0}
+      .toast{bottom:calc(76px + var(--safe-bottom))}
+      .quiz-card{padding:20px 17px 17px;border-radius:15px}
+      .question-text{font-size:clamp(20px,5.3vw,26px);margin:15px 0}
+      .choice{font-size:12px;padding:10px}
+      .quiz-actions .btn{min-width:128px}
+      .key-hint{display:none}
+      .result-card{padding:24px 17px 19px;border-radius:17px}
+      .result-stars{font-size:32px}
+      .result-actions .btn{flex:1;min-width:130px}
+      .review-body{padding-left:9px}
+      .footer{padding-bottom:calc(70px + var(--safe-bottom))}
+      .progress-row{grid-template-columns:28px minmax(0,1fr) auto auto;gap:8px}
+      .progress-row .progress-mini{display:none}
+      .progress-row .btn{min-height:27px;padding:0 8px}
+      .modal-card{max-width:100%}
+    }
+    @media (max-width:520px){
+      .header{gap:8px}
+      .xp-pill{padding:0 8px;min-height:30px}
+      .xp-pill .xp-rank,.xp-divider{display:none}
+      .header-icon,.header-avatar{width:31px;height:31px}
+      .greeting{font-size:11.5px}
+      .hero-card{padding:18px 16px}
+      .hero-title{font-size:clamp(21px,6vw,27px)}
+      .hero-symbol{width:42px;height:42px;font-size:23px;border-radius:11px}
+      .hero-head{gap:10px}
+      .hero-status{font-size:9px;padding:4px 9px}
+      .hero-sub{font-size:11.5px}
+      .hero-display{gap:6px}
+      .hero-block{padding:7px 4px}
+      .hero-number{font-size:clamp(22px,7vw,28px)}
+      .hero-label{font-size:7px;letter-spacing:.08em}
+      .hero-actions .btn{flex:1;min-width:130px;font-size:10.5px}
+      .overview-grid{gap:7px}
+      .stat-card{min-height:58px;padding:9px;gap:8px}
+      .stat-icon{width:29px;height:29px}
+      .stat-icon .icon{width:14px;height:14px}
+      .stat-copy strong{font-size:15px}
+      .stat-copy span{font-size:7px}
+      .section-title{margin:21px 0 9px}
+      .section-title h3{font-size:14px}
+      .chapter-card{min-height:220px;padding:14px}
+      .chapter-card h3{font-size:14.5px}
+      .chapter-desc{font-size:11px}
+      .next-card{padding:14px}
+      .next-card .title{font-size:18px}
+      .next-actions .btn{flex:1;min-width:120px}
+      .final-card{padding:16px}
+      .final-copy h3{font-size:21px}
+      .final-copy p{font-size:10.5px}
+      .final-actions{width:100%}
+      .final-actions .btn{flex:1}
+      .mini-library{grid-template-columns:1fr}
+      .mini-fiche:last-child{display:flex}
+      .library-tools{flex-direction:column;align-items:stretch}
+      .search-box{max-width:none}
+      .library-count{text-align:right}
+      .formula-row{grid-template-columns:minmax(60px,.8fr) minmax(0,1.2fr)}
+      .formula-label{font-size:7px}
+      .formula-value{font-size:10.5px}
+      .trophy-grid{grid-template-columns:1fr}
+      .trophy{min-height:57px}
+      .progress-ring{width:126px;height:126px}
+      .ring-content strong{font-size:27px}
+      .progress-stats{gap:5px}
+      .progress-stat{padding:6px 8px}
+      .progress-stat strong{font-size:15px}
+      .progress-chapters{padding:3px 12px}
+      .history-list{padding:3px 12px}
+      .game-top{gap:6px}
+      .back-btn{padding:0 5px}
+      .back-btn .label{display:none}
+      .game-crumb{gap:6px}
+      .game-icon{width:28px;height:28px;font-size:12px}
+      .game-scoreboard{gap:11px}
+      .game-stat.streak{display:none}
+      .segment{gap:3px}
+      .segments{gap:3px}
+      .quiz-top{gap:6px}
+      .source-tag{max-width:95px;font-size:6.5px;padding:3px 6px}
+      .timer-pill{min-width:57px;font-size:9px;padding:4px 7px}
+      .question-count{font-size:7px;letter-spacing:.08em}
+      .choice{font-size:11.5px;padding:9px;gap:8px}
+      .choice-key{width:23px;height:23px;border-radius:6px;font-size:8px}
+      .feedback p{font-size:10.5px}
+      .quiz-actions .btn{min-width:114px;font-size:10px;min-height:37px}
+      .result-metrics{grid-template-columns:1fr;gap:1px}
+      .metric{flex-direction:row;align-items:baseline;justify-content:space-between;padding:8px 12px}
+      .modal-card{padding:21px 16px 17px;border-radius:16px}
+      .modal-title{font-size:22px}
+      .modal-actions{flex-direction:column-reverse}
+      .modal-actions .btn{width:100%}
+      .confirm-card{padding:24px 18px 19px}
+      .footer-links{gap:10px}
+    }
+    @media (max-width:420px){
+      .formula-row{grid-template-columns:1fr;gap:4px}
+      .formula-value{text-align:left}
+    }
+    @media (max-width:360px){
+      .container{padding-left:9px;padding-right:9px}
+      .hero-card{padding:15px 13px}
+      .hero-title{font-size:20px}
+      .hero-symbol{width:38px;height:38px;font-size:21px}
+      .hero-status{font-size:8px}
+      .hero-actions .btn{min-width:100%}
+      .hero-number{font-size:24px}
+      .overview-grid{grid-template-columns:1fr}
+      .stat-card{min-height:52px}
+      .chapter-card{padding:12px}
+      .xp-pill strong{font-size:10px}
+      .greeting #greetingEmoji{display:none}
+      .bottom-nav button{font-size:6.5px}
+      .game-crumb strong{font-size:11px}
+      .game-kicker{font-size:6px}
+      .question-text{font-size:19px}
+      .choice{font-size:11px}
+      .result-score strong{font-size:30px}
+    }
+    @media (prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#mainContainer">Aller au contenu</a>
+  <div class="gradient-bg" aria-hidden="true"></div>
+  <div class="backdrop-grid" aria-hidden="true"></div>
+  <div class="glow glow-1" aria-hidden="true"></div>
+  <div class="glow glow-2" aria-hidden="true"></div>
+  <div class="glow glow-3" aria-hidden="true"></div>
+
+  <svg class="svg-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5v16"/><path d="M8 7h7M8 11h7"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></symbol>
+    <symbol id="i-infinity" viewBox="0 0 24 24"><path d="M18.2 8.5c2.4 0 3.8 1.6 3.8 3.5s-1.4 3.5-3.8 3.5c-3.6 0-4.9-7-9.4-7C6.4 8.5 5 10.1 5 12s1.4 3.5 3.8 3.5c4.5 0 5.8-7 9.4-7Z"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="m17 9 5 5M22 9l-5 5"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.8-4L3 10"/><path d="M3 5v5h5"/><path d="M4 13a8 8 0 0 0 14.8 4L21 14"/><path d="M21 19v-5h-5"/></symbol>
+  </svg>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+  <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
+    <div class="sidebar-top">
+      <button class="sidebar-close" id="sidebarClose" type="button" aria-label="Fermer le menu">
+        <svg class="icon"><use href="#i-close"></use></svg>
+      </button>
+      <a href="#dashboard" class="logo" data-nav="home">ARVEX<span>A Math</span></a>
+      <p class="logo-sub">MathMind · Terminale</p>
+    </div>
+
+    <nav class="nav">
+      <a href="#dashboard" class="nav-link active" data-nav="home" aria-current="page">
+        <svg class="icon"><use href="#i-home"></use></svg><span>Tableau de bord</span>
+      </a>
+      <a href="#chapitres" class="nav-link" data-nav="chapters">
+        <svg class="icon"><use href="#i-grid"></use></svg><span>Les chapitres</span>
+      </a>
+      <a href="#bibliotheque" class="nav-link" data-nav="library">
+        <svg class="icon"><use href="#i-book"></use></svg><span>Bibliothèque</span>
+      </a>
+      <a href="#progression" class="nav-link" data-nav="progress">
+        <svg class="icon"><use href="#i-chart"></use></svg><span>Ma progression</span>
+      </a>
+      <div class="nav-divider"></div>
+      <a href="#grand-mix" class="nav-link nav-highlight" data-action="mixed">
+        <svg class="icon"><use href="#i-infinity"></use></svg><span>Le Grand Mix</span><span class="nav-badge">11</span>
+      </a>
+      <div class="nav-divider"></div>
+
+      <div class="sidebar-level">
+        <div class="sidebar-level-head"><strong id="sidebarName">Curieux</strong><span id="sidebarLevel">Niv. 1</span></div>
+        <div class="sidebar-meter" aria-hidden="true"><span id="sidebarMeter"></span></div>
+        <div class="sidebar-level-foot"><span id="sidebarXp">0 XP</span><span id="sidebarStars">0 / 33 ★</span></div>
+      </div>
+
+      <div class="nav-bottom">
+        <button class="sidebar-link" id="resetBtn" type="button">
+          <svg class="icon"><use href="#i-trash"></use></svg><span>Réinitialiser la progression</span>
+        </button>
+      </div>
+      <p class="sidebar-foot">Progression sauvegardée localement.<br>Aucune donnée envoyée.</p>
+    </nav>
+  </aside>
+
+  <div class="main-content">
+    <header class="header">
+      <div class="header-left">
+        <button class="menu-toggle" id="menuToggle" type="button" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar">
+          <svg class="icon"><use href="#i-menu"></use></svg>
+        </button>
+        <div class="greeting">
+          <span id="greetingText">Bonjour</span>
+          <span id="userFirstName">Élève</span>
+          <span id="greetingEmoji" aria-hidden="true">🌱</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="xp-pill" id="xpPill" title="Niveau 1 · Curieux · 0 XP">
+          <span class="xp-rank" id="headerLevel">Niv. 1</span>
+          <span class="xp-divider" aria-hidden="true"></span>
+          <strong id="headerXp">0</strong>
+          <span>XP</span>
+        </div>
+        <button class="header-icon" id="soundBtn" type="button" aria-label="Couper le son" aria-pressed="true">
+          <svg class="icon" id="soundOnIcon"><use href="#i-volume"></use></svg>
+          <svg class="icon" id="soundOffIcon" hidden><use href="#i-mute"></use></svg>
+        </button>
+        <button class="header-avatar" type="button" data-nav="progress" aria-label="Voir ma progression">∑</button>
+      </div>
+    </header>
+
+    <main class="container" id="mainContainer" tabindex="-1">
+      <section class="view is-active" id="homeScreen" aria-labelledby="homeTitle">
+        <div class="card hero-card">
+          <div class="hero-head">
+            <div class="hero-title-wrap">
+              <span class="hero-symbol" aria-hidden="true">∑</span>
+              <div>
+                <span class="eyebrow">Parcours Terminale · Mathématiques</span>
+                <h1 class="hero-title" id="homeTitle">Objectif <em>33 étoiles</em></h1>
+              </div>
+            </div>
+            <span class="status-pill early" id="heroStatus">🌱 À toi de jouer</span>
+          </div>
+          <p class="hero-sub" id="heroSub">Révise les 11 chapitres essentiels, gagne de l’XP et transforme chaque erreur en progrès.</p>
+          <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="heroFill" style="width:0%"></div></div>
+          <div class="hero-display">
+            <div class="hero-block"><span class="hero-number" id="heroStars">0</span><span class="hero-label">étoiles / 33</span></div>
+            <div class="hero-block"><span class="hero-number" id="heroXp">0</span><span class="hero-label">XP total</span></div>
+            <div class="hero-block"><span class="hero-number" id="heroAccuracy">0%</span><span class="hero-label">précision</span></div>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-gold" id="continueBtn" type="button"><span id="continueLabel">Commencer l’aventure</span><svg class="icon"><use href="#i-arrow"></use></svg></button>
+            <button class="btn btn-outline" id="finalHeroBtn" type="button"><svg class="icon"><use href="#i-infinity"></use></svg>Grand Mix</button>
+          </div>
+          <div class="rank-row" aria-label="Progression de niveau">
+            <span class="rank-name"><span class="rank-dot" aria-hidden="true"></span><span id="rankName">Curieux</span></span>
+            <div class="rank-track" aria-hidden="true"><span id="rankFill"></span></div>
+            <span class="rank-next" id="rankNext">250 XP</span>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <h3>💡 Ton prochain objectif</h3>
+          <span class="section-note" id="recommendNote">Plan personnalisé</span>
+        </div>
+        <div class="next-card" id="recommendCard">
+          <span class="badge" id="recommendBadge">Prochaine étape</span>
+          <div class="title" id="recommendTitle">Nombres complexes</div>
+          <div class="message" id="recommendText">Commence par ce chapitre pour poser des bases solides.</div>
+          <div class="next-actions" id="recommendActions"></div>
+        </div>
+
+        <div class="section-title"><h3>📊 Vue d’ensemble</h3><span class="section-note" id="homeOverviewNote">Ta progression en un coup d’œil</span></div>
+        <div class="overview-grid">
+          <div class="stat-card">
+            <div class="stat-icon"><svg class="icon"><use href="#i-grid"></use></svg></div>
+            <div class="stat-copy"><strong id="homeStatChapters">0/11</strong><span>chapitres explorés</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg class="icon"><use href="#i-target"></use></svg></div>
+            <div class="stat-copy"><strong id="homeStatAnswered">0</strong><span>questions répondues</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg class="icon"><use href="#i-star"></use></svg></div>
+            <div class="stat-copy"><strong id="homeStatBest">0</strong><span>meilleure série</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg class="icon"><use href="#i-refresh"></use></svg></div>
+            <div class="stat-copy"><strong id="homeStatSessions">0</strong><span>sessions terminées</span></div>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <h3>📐 Mes chapitres</h3>
+          <button class="section-link" type="button" data-nav="chapters">Tout voir →</button>
+        </div>
+        <div class="chapter-grid" id="chapterGrid"></div>
+
+        <div class="section-title"><h3>🏆 Mode final</h3><span class="section-note">11 questions · 11 chapitres</span></div>
+        <div class="final-card">
+          <div class="final-copy">
+            <span class="badge">Défi final</span>
+            <h3>Le Grand Mix</h3>
+            <p>Un chapitre par question, tous les thèmes mélangés. Le vrai test pour vérifier que tout est connecté.</p>
+          </div>
+          <div class="final-side">
+            <div class="final-stars" id="finalStars" aria-label="0 étoile sur 3"></div>
+            <span class="final-best" id="finalBest">Pas encore joué</span>
+            <div class="final-actions">
+              <button class="btn btn-gold btn-sm" id="finalBtn" type="button"><svg class="icon"><use href="#i-play"></use></svg>Lancer</button>
+              <button class="btn btn-outline btn-sm" id="finalRelaxBtn" type="button">Sans chrono</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <h3>📚 Bibliothèque de fiches</h3>
+          <button class="section-link" type="button" data-nav="library">Explorer →</button>
+        </div>
+        <div class="mini-library" id="homeLibrary"></div>
+
+        <div class="section-title"><h3>🌿 Conseil du jour</h3><span class="section-note">Pour réviser mieux</span></div>
+        <div class="tip-card">
+          <div class="tip-icon" aria-hidden="true">💡</div>
+          <div class="tip-copy">
+            <span class="eyebrow">Conseil du jour</span>
+            <div class="tip-title" id="tipTitle">Méthode de travail</div>
+            <div class="tip-text" id="tipText">Chargement du conseil…</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="chaptersScreen" aria-labelledby="chaptersTitle">
+        <div class="view-head">
+          <span class="eyebrow">Programme complet</span>
+          <h1 id="chaptersTitle">Les 11 chapitres</h1>
+          <p>Des nombres complexes aux statistiques : 88 questions corrigées, des fiches de formules et un défi final pour tout relier.</p>
+        </div>
+        <div class="filter-row">
+          <div class="filters" id="chaptersFilter" role="group" aria-label="Filtrer les chapitres">
+            <button class="filter-chip active" type="button" data-filter="all">Tous</button>
+            <button class="filter-chip" type="button" data-filter="todo">À découvrir</button>
+            <button class="filter-chip" type="button" data-filter="progress">En cours</button>
+            <button class="filter-chip" type="button" data-filter="mastered">Maîtrisés</button>
+          </div>
+          <span class="filter-count" id="chaptersCount">11 chapitres</span>
+        </div>
+        <div class="chapter-grid" id="allChaptersGrid"></div>
+      </section>
+
+      <section class="view" id="libraryScreen" aria-labelledby="libraryTitle">
+        <div class="view-head">
+          <span class="eyebrow">Toutes les formules</span>
+          <h1 id="libraryTitle">Bibliothèque de fiches</h1>
+          <p>Les formules essentielles de chaque chapitre, réunies dans un seul endroit. Cherche une notion, révise, puis lance le quiz.</p>
+        </div>
+        <div class="library-tools">
+          <div class="search-box">
+            <svg class="icon"><use href="#i-search"></use></svg>
+            <input class="search-input" id="librarySearch" type="search" placeholder="Rechercher une formule, un chapitre…" autocomplete="off" aria-label="Rechercher dans la bibliothèque">
+          </div>
+          <span class="library-count" id="libraryCount">11 fiches · 44 formules</span>
+        </div>
+        <div class="library-grid" id="libraryGrid"></div>
+      </section>
+
+      <section class="view" id="progressScreen" aria-labelledby="progressTitle">
+        <div class="view-head">
+          <span class="eyebrow">Suivi personnalisé</span>
+          <h1 id="progressTitle">Ma progression</h1>
+          <p>Visualise ta maîtrise, repère les chapitres à consolider et garde une trace de tes dernières sessions.</p>
+        </div>
+        <div class="card progress-overview">
+          <div class="progress-ring-wrap">
+            <div class="progress-ring" id="progressRing" style="--p:0" role="img" aria-label="0 pour cent de maîtrise">
+              <div class="ring-content"><strong id="progressValue">0%</strong><span>maîtrise</span></div>
+            </div>
+            <span class="ring-caption" id="progressCaption">0 / 33 étoiles</span>
+          </div>
+          <div class="progress-copy">
+            <h2>Chaque étoile compte.</h2>
+            <p id="progressMessage">Commence un chapitre pour lancer ta progression.</p>
+            <div class="progress-stats" id="progressStats"></div>
+          </div>
+        </div>
+
+        <div class="section-title"><h3>🏅 Trophées</h3><span class="section-note" id="trophyCount">0 / 6 débloqués</span></div>
+        <div class="trophy-grid" id="trophyGrid"></div>
+
+        <div class="section-title"><h3>📈 Détail par chapitre</h3><span class="section-note">Record et maîtrise</span></div>
+        <div class="card progress-chapters" id="progressChapters"></div>
+
+        <div class="section-title"><h3>🕘 Dernières sessions</h3><span class="section-note" id="historyCount">0 session</span></div>
+        <div class="card history-list" id="historyList"></div>
+      </section>
+
+      <section class="view" id="gameScreen" aria-labelledby="gameChapterLabel">
+        <div class="game-shell">
+          <div class="game-top">
+            <button class="back-btn" id="quitBtn" type="button" aria-label="Quitter la partie">
+              <svg class="icon"><use href="#i-back"></use></svg><span class="label">Quitter</span>
+            </button>
+            <div class="game-crumb">
+              <span class="game-icon" id="gameIcon" aria-hidden="true">i</span>
+              <div class="game-crumb-text">
+                <span class="game-kicker" id="gameKicker">Chapitre en cours</span>
+                <strong id="gameChapterLabel">Nombres complexes</strong>
+              </div>
+            </div>
+            <div class="game-scoreboard">
+              <div class="game-stat"><small>Score</small><strong id="scoreValue">0</strong></div>
+              <div class="game-stat streak" id="streakBox"><small>Série</small><strong><span id="streakValue">0</span><span class="flame" aria-hidden="true">×</span></strong></div>
+            </div>
+          </div>
+
+          <div class="segments" id="gameSegments" aria-hidden="true"></div>
+
+          <article class="quiz-card" id="quizCard">
+            <div class="quiz-top">
+              <span class="question-count" id="questionCount">Question 1 sur 8</span>
+              <span class="source-tag" id="sourceTag" hidden></span>
+              <div class="timer-pill" id="timerPill" aria-label="Temps restant">
+                <span class="timer-fill" id="timerFill"></span>
+                <span class="timer-content">
+                  <svg class="icon"><use href="#i-clock"></use></svg>
+                  <span id="timerValue">60</span><span>s</span>
+                </span>
+              </div>
+            </div>
+
+            <h2 class="question-text" id="questionText" tabindex="-1"></h2>
+            <div class="choices" id="choices" role="group" aria-labelledby="questionText"></div>
+            <div class="feedback" id="feedback" hidden aria-live="polite"></div>
+
+            <div class="quiz-actions">
+              <span class="key-hint" id="keyHint">1–4 pour choisir · Entrée pour valider</span>
+              <button class="btn btn-gold" id="nextBtn" type="button" disabled>Valider</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="resultScreen" aria-labelledby="resultTitle">
+        <div class="result-shell">
+          <article class="result-card">
+            <div class="result-emblem" id="resultEmblem" aria-hidden="true">★</div>
+            <p class="result-eyebrow" id="resultEyebrow">Chapitre terminé</p>
+            <h1 class="result-title" id="resultTitle" tabindex="-1">Excellent travail !</h1>
+            <div class="result-stars" id="resultStars" aria-label="0 étoile sur 3"></div>
+            <p class="result-message" id="resultMessage"></p>
+            <div class="result-score"><strong id="resultPoints">0</strong><span>points</span></div>
+            <div class="result-metrics" id="resultMetrics"></div>
+            <div class="xp-earned"><strong id="resultXp">+0 XP</strong><span>gagnés pendant la session</span></div>
+            <div class="result-record" id="resultRecord"></div>
+            <div class="result-actions">
+              <button class="btn btn-gold" id="retryBtn" type="button">Rejouer</button>
+              <button class="btn btn-outline" id="homeBtn" type="button">Retour au tableau de bord</button>
+            </div>
+            <details class="review" id="reviewBlock">
+              <summary><span>Revoir les corrections <span class="review-count" id="reviewCount"></span></span></summary>
+              <div class="review-list" id="reviewList"></div>
+            </details>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-logo">ARVEX<span>A Math</span></div>
+        <div class="footer-links">
+          <button type="button" data-nav="home">Tableau de bord</button>
+          <button type="button" data-nav="chapters">Chapitres</button>
+          <button type="button" data-nav="library">Bibliothèque</button>
+          <button type="button" data-nav="progress">Progression</button>
+        </div>
+        <div class="footer-copy">© 2026 ARVEXA Math · MathMind Terminale · Progression locale, aucune donnée envoyée</div>
+      </div>
+    </footer>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Navigation rapide">
+    <button type="button" class="active" data-nav="home"><svg class="icon"><use href="#i-home"></use></svg><span>Accueil</span></button>
+    <button type="button" data-nav="chapters"><svg class="icon"><use href="#i-grid"></use></svg><span>Chapitres</span></button>
+    <button type="button" data-nav="library"><svg class="icon"><use href="#i-book"></use></svg><span>Fiches</span></button>
+    <button type="button" data-nav="progress"><svg class="icon"><use href="#i-chart"></use></svg><span>Progrès</span></button>
+  </nav>
+
+  <div class="modal-overlay" id="sheetModal" hidden>
+    <div class="modal-card" id="sheetPanel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <button class="modal-close" id="sheetClose" type="button" aria-label="Fermer la fiche">
+        <svg class="icon"><use href="#i-close"></use></svg>
+      </button>
+      <div class="modal-icon" id="sheetIcon" aria-hidden="true">i</div>
+      <p class="modal-kicker" id="sheetKicker">Fiche éclair · chapitre 01</p>
+      <h2 class="modal-title" id="sheetTitle">Nombres complexes</h2>
+      <p class="modal-sub" id="sheetSub">L’essentiel à avoir en tête avant de jouer.</p>
+      <div class="formula-list" id="sheetFormulas"></div>
+      <div class="modal-actions">
+        <button class="btn btn-gold" id="sheetPlayBtn" type="button">Jouer avec chrono</button>
+        <button class="btn btn-outline" id="sheetPlayRelaxBtn" type="button">Sans chrono</button>
+      </div>
+      <p class="modal-note">Astuce : révise la fiche, puis tente les 3 étoiles.</p>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirmModal" hidden>
+    <div class="modal-card confirm-card" id="confirmPanel" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <button class="modal-close" id="confirmClose" type="button" aria-label="Fermer">
+        <svg class="icon"><use href="#i-close"></use></svg>
+      </button>
+      <div class="confirm-icon" id="confirmIcon" aria-hidden="true">⚠️</div>
+      <h2 class="confirm-title" id="confirmTitle">Confirmation</h2>
+      <div class="confirm-divider" aria-hidden="true"></div>
+      <p class="confirm-message" id="confirmMessage">Es-tu sûr de vouloir continuer ?</p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="confirmCancel" type="button">Annuler</button>
+        <button class="btn btn-danger" id="confirmOk" type="button">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <script>
+
+
+(() => {
+  'use strict';
+
+  const CHAPTERS = [
+    {
+      id: 'complexes',
+      no: 1,
+      title: 'Nombres complexes',
+      short: 'Complexes',
+      icon: 'i',
+      accent: '#8fa8ff',
+      desc: 'Modules, arguments et écritures exponentielles.',
+      fiche: [
+        ['Forme algébrique', '$z=a+ib$'],
+        ['Module', '$|z|=√(a²+b²)$'],
+        ['Forme exponentielle', '$z=r e<sup>iθ</sup>$'],
+        ['Conjugué', '$z<span class="ovl">z</span>=|z|²$']
+      ],
+      questions: [
+        {
+          q: 'Quelle est la forme algébrique de $z=(2+3i)(1-i)$ ?',
+          choices: ['$5+i$', '$5+5i$', '$5-i$', '$-1+i$'],
+          answer: 0,
+          explain: 'On développe : $(2+3i)(1-i)=2-2i+3i-3i²=2+i+3=5+i$.'
+        },
+        {
+          q: 'Le module de $z=3-4i$ est égal à…',
+          choices: ['$5$', '$7$', '$√7$', '$25$'],
+          answer: 0,
+          explain: '$|3-4i|=√(3²+(-4)²)=√(9+16)=√25=5$.'
+        },
+        {
+          q: 'À quoi est égal $i<sup>2026</sup>$ ?',
+          choices: ['$1$', '$-1$', '$i$', '$-i$'],
+          answer: 1,
+          explain: 'On divise 2026 par 4 : $2026=4×506+2$. Donc $i<sup>2026</sup>=i²=-1$.'
+        },
+        {
+          q: 'L’argument principal de $z=-1$ est…',
+          choices: ['$π$', '$0$', '$π/2$', '$-π/2$'],
+          answer: 0,
+          explain: '$-1$ est sur l’axe réel négatif. Sa forme exponentielle est $-1=e<sup>iπ</sup>$. L’argument principal est donc $π$ (il appartient à $]-π;π]$).'
+        },
+        {
+          q: 'Les solutions de l’équation $z²=-9$ sont…',
+          choices: ['$3i$ et $-3i$', '$3$ et $-3$', '$9i$ et $-9i$', '$i$ et $-i$'],
+          answer: 0,
+          explain: '$(3i)²=9i²=-9$ et $(-3i)²=9i²=-9$. Les deux solutions sont donc $3i$ et $-3i$.'
+        },
+        {
+          q: 'La forme exponentielle de $z=1+i$ est…',
+          choices: ['$√2 e<sup>iπ/4</sup>$', '$2e<sup>iπ/4</sup>$', '$√2e<sup>iπ/2</sup>$', '$e<sup>iπ/4</sup>$'],
+          answer: 0,
+          explain: '$|1+i|=√(1²+1²)=√2$ et $arg(1+i)=π/4$. Donc $1+i=√2e<sup>iπ/4</sup>$.'
+        },
+        {
+          q: 'Que vaut $(1+i)²$ ?',
+          choices: ['$2i$', '$2$', '$0$', '$1+2i$'],
+          answer: 0,
+          explain: '$(1+i)²=1+2i+i²=1+2i-1=2i$.'
+        },
+        {
+          q: 'Pour $z=2-3i$, que vaut $|z|²$ ?',
+          choices: ['$13$', '$5$', '$-5$', '$4-9i$'],
+          answer: 0,
+          explain: '$|z|²=2²+(-3)²=4+9=13$. On peut aussi écrire $|z|²=z×<span class="ovl">z</span>$.'
+        }
+      ]
+    },
+    {
+      id: 'similitudes',
+      no: 2,
+      title: 'Similitudes planes directes',
+      short: 'Similitudes',
+      icon: '↻',
+      accent: '#b39bff',
+      desc: 'Rotations, rapports et points fixes.',
+      fiche: [
+        ['Écriture complexe', '$z′=az+b$, avec $a≠0$'],
+        ['Rapport', '$k=|a|$'],
+        ['Angle', '$θ=arg(a)$'],
+        ['Point fixe', '$z=b/(1-a)$ si $a≠1$']
+      ],
+      questions: [
+        {
+          q: 'La forme générale de l’écriture complexe d’une similitude plane directe est…',
+          choices: ['$z′=az+b$ avec $a≠0$', '$z′=az+b$ avec $a$ réel', '$z′=az²+b$', '$z′=<span class="ovl">z</span>+b$'],
+          answer: 0,
+          explain: 'Toute similitude directe s’écrit $z′=az+b$ avec $a$ complexe non nul. Le cas $a=0$ ne conserve pas les distances.'
+        },
+        {
+          q: 'Dans l’écriture $z′=az+b$, le rapport de la similitude est…',
+          choices: ['$|a|$', '$arg(a)$', '$|b|$', '$Re(a)$'],
+          answer: 0,
+          explain: 'Le rapport est le facteur d’agrandissement : $k=|a|$. L’angle est $arg(a)$ et $b$ traduit la translation.'
+        },
+        {
+          q: 'La rotation de centre $O$ et d’angle $π/3$ a pour écriture complexe…',
+          choices: ['$z′=e<sup>iπ/3</sup>z$', '$z′=e<sup>iπ/3</sup>+z$', '$z′=3z$', '$z′=e<sup>i3</sup>z$'],
+          answer: 0,
+          explain: 'Une rotation de centre $O$ et d’angle $θ$ multiplie l’affixe par $e<sup>iθ</sup>$ : ici $z′=e<sup>iπ/3</sup>z$.'
+        },
+        {
+          q: 'La similitude $z′=2e<sup>iπ/4</sup>z+1$ a pour rapport et angle…',
+          choices: ['$2$ et $π/4$', '$π/4$ et $2$', '$2$ et $1$', '$1$ et $π/4$'],
+          answer: 0,
+          explain: 'On identifie $a=2e<sup>iπ/4</sup>$ : son module vaut $2$ (le rapport) et son argument vaut $π/4$ (l’angle).'
+        },
+        {
+          q: 'Le point fixe de $z′=iz+2$ a pour affixe…',
+          choices: ['$1+i$', '$2$', '$1-i$', '$-2i$'],
+          answer: 0,
+          explain: 'On résout $z=iz+2$, donc $z(1-i)=2$ et $z=2/(1-i)=1+i$.'
+        },
+        {
+          q: 'Une similitude directe de rapport $1$ est…',
+          choices: ['une isométrie directe (rotation ou translation)', 'toujours une homothétie', 'une symétrie axiale', 'toujours une translation'],
+          answer: 0,
+          explain: 'Si $|a|=1$, les distances sont conservées : c’est une isométrie directe, donc une rotation ou une translation (l’identité étant un cas particulier).'
+        },
+        {
+          q: 'La composée d’une similitude de rapport $2$ et d’angle $π/3$ avec une similitude de rapport $3$ et d’angle $π/6$ a pour rapport et angle…',
+          choices: ['$6$ et $π/2$', '$5$ et $π/2$', '$6$ et $π/9$', '$5$ et $π/9$'],
+          answer: 0,
+          explain: 'Les rapports se multiplient : $2×3=6$. Les angles s’additionnent : $π/3+π/6=π/2$.'
+        },
+        {
+          q: 'Une similitude directe de rapport $k≠1$ transforme un cercle de rayon $R$ en un cercle de rayon…',
+          choices: ['$kR$', '$R$', '$R/k$', '$k²R$'],
+          answer: 0,
+          explain: 'Une similitude multiplie toutes les longueurs par son rapport $k$. Le rayon de l’image est donc $kR$.'
+        }
+      ]
+    },
+    {
+      id: 'probabilites',
+      no: 3,
+      title: 'Calcul de probabilités',
+      short: 'Probabilités',
+      icon: '%',
+      accent: '#ffb86b',
+      desc: 'Issues, arbres et probabilités conditionnelles.',
+      fiche: [
+        ['Réunion', '$P(A∪B)=P(A)+P(B)-P(A∩B)$'],
+        ['Conditionnement', '$P(A|B)=P(A∩B)/P(B)$'],
+        ['Indépendance', '$P(A∩B)=P(A)P(B)$'],
+        ['Complémentaire', '$P(<span class="ovl">A</span>)=1-P(A)$']
+      ],
+      questions: [
+        {
+          q: 'On lance deux dés équilibrés. Quelle est la probabilité d’obtenir une somme égale à $7$ ?',
+          choices: ['$1/6$', '$1/12$', '$7/36$', '$1/9$'],
+          answer: 0,
+          explain: 'Il y a $6$ issues favorables sur $36$ : $(1,6),(2,5),(3,4),(4,3),(5,2),(6,1)$. Donc $P=6/36=1/6$.'
+        },
+        {
+          q: 'On tire une carte au hasard dans un jeu de $52$ cartes. Quelle est la probabilité d’obtenir un roi ou un cœur ?',
+          choices: ['$4/13$', '$17/52$', '$1/4$', '$5/13$'],
+          answer: 0,
+          explain: '$P(roi)+P(cœur)-P(roi et cœur)=4/52+13/52-1/52=16/52=4/13$.'
+        },
+        {
+          q: 'On sait que $P(A)=0,4$, $P(B)=0,5$ et $P(A∩B)=0,2$. Alors $P(A∪B)$ vaut…',
+          choices: ['$0,7$', '$0,9$', '$0,2$', '$0,1$'],
+          answer: 0,
+          explain: '$P(A∪B)=P(A)+P(B)-P(A∩B)=0,4+0,5-0,2=0,7$.'
+        },
+        {
+          q: 'La probabilité conditionnelle $P(A|B)$ est égale à…',
+          choices: ['$P(A∩B)/P(B)$', '$P(A∩B)/P(A)$', '$P(A)×P(B)$', '$P(A∪B)/P(B)$'],
+          answer: 0,
+          explain: 'Par définition, $P(A|B)=P(A∩B)/P(B)$, avec $P(B)≠0$. On divise par la probabilité de l’événement qui est déjà réalisé.'
+        },
+        {
+          q: 'Les événements $A$ et $B$ sont indépendants, avec $P(A)=0,3$ et $P(B)=0,5$. Alors $P(A∩B)$ vaut…',
+          choices: ['$0,15$', '$0,8$', '$0,2$', '$0,35$'],
+          answer: 0,
+          explain: 'L’indépendance donne $P(A∩B)=P(A)×P(B)=0,3×0,5=0,15$.'
+        },
+        {
+          q: 'Une urne contient $3$ boules rouges et $5$ boules bleues. On tire simultanément $2$ boules. Quelle est la probabilité d’obtenir deux boules rouges ?',
+          choices: ['$3/28$', '$3/8$', '$9/64$', '$1/4$'],
+          answer: 0,
+          explain: 'Il y a $C(8,2)=28$ tirages possibles et $C(3,2)=3$ tirages favorables. Donc $P=3/28$.'
+        },
+        {
+          q: 'On lance deux dés. Quelle est la probabilité d’obtenir au moins un $6$ ?',
+          choices: ['$11/36$', '$1/6$', '$1/36$', '$1/3$'],
+          answer: 0,
+          explain: 'On utilise le contraire : $P(au moins un 6)=1-P(aucun 6)=1-(5/6)²=1-25/36=11/36$.'
+        },
+        {
+          q: 'Si $P(<span class="ovl">A</span>)=0,35$, alors $P(A)$ vaut…',
+          choices: ['$0,65$', '$0,35$', '$1,35$', '$0,5$'],
+          answer: 0,
+          explain: 'L’événement $A$ et son contraire $<span class="ovl">A</span>$ sont complémentaires : $P(A)=1-P(<span class="ovl">A</span>)=1-0,35=0,65$.'
+        }
+      ]
+    },
+    {
+      id: 'variable-aleatoire',
+      no: 4,
+      title: 'Variable aléatoire',
+      short: 'Variable aléatoire',
+      icon: 'X',
+      accent: '#ff92b2',
+      desc: 'Espérance, variance et loi binomiale.',
+      fiche: [
+        ['Espérance', '$E(X)=Σ x<sub>i</sub>p<sub>i</sub>$'],
+        ['Variance', '$V(X)=E(X²)-(E(X))²$'],
+        ['Binomiale', '$E(X)=np$, $V(X)=np(1-p)$'],
+        ['Écart-type', '$σ(X)=√(V(X))$']
+      ],
+      questions: [
+        {
+          q: 'L’espérance d’une variable aléatoire $X$ se calcule par…',
+          choices: ['$Σ x<sub>i</sub>p<sub>i</sub>$', '$Σ p<sub>i</sub>$', '$Σ x<sub>i</sub>²p<sub>i</sub>$', '$(Σx<sub>i</sub>)/n$'],
+          answer: 0,
+          explain: 'L’espérance est la moyenne pondérée des valeurs par leurs probabilités : $E(X)=Σx<sub>i</sub>p<sub>i</sub>$.'
+        },
+        {
+          q: '$X$ prend les valeurs $1$, $2$, $3$ avec $P(X=1)=0,2$, $P(X=2)=0,5$ et $P(X=3)=0,3$. Alors $E(X)$ vaut…',
+          choices: ['$2,1$', '$2$', '$1,8$', '$6$'],
+          answer: 0,
+          explain: '$E(X)=1×0,2+2×0,5+3×0,3=0,2+1+0,9=2,1$.'
+        },
+        {
+          q: 'La variance d’une variable aléatoire $X$ se calcule par…',
+          choices: ['$E(X²)-(E(X))²$', '$(E(X))²-E(X²)$', '$E(X²)+(E(X))²$', '$(E(X))²$'],
+          answer: 0,
+          explain: 'La formule de König donne $V(X)=E(X²)-(E(X))²$. C’est la formule la plus rapide pour calculer une variance.'
+        },
+        {
+          q: 'Pour la loi de la question 2, la variance $V(X)$ vaut…',
+          choices: ['$0,49$', '$0,7$', '$2,1$', '$4,41$'],
+          answer: 0,
+          explain: '$E(X²)=1²×0,2+2²×0,5+3²×0,3=0,2+2+2,7=4,9$. Donc $V(X)=4,9-2,1²=4,9-4,41=0,49$.'
+        },
+        {
+          q: '$X$ suit une loi binomiale $B(10 ; 0,3)$. Son espérance est…',
+          choices: ['$3$', '$2,1$', '$0,3$', '$7$'],
+          answer: 0,
+          explain: 'Pour une loi binomiale $B(n ; p)$, $E(X)=np=10×0,3=3$.'
+        },
+        {
+          q: '$X$ suit une loi binomiale $B(10 ; 0,3)$. Sa variance est…',
+          choices: ['$2,1$', '$3$', '$7$', '$0,21$'],
+          answer: 0,
+          explain: '$V(X)=np(1-p)=10×0,3×0,7=2,1$.'
+        },
+        {
+          q: 'Si $Y=2X+1$, alors $E(Y)$ vaut…',
+          choices: ['$2E(X)+1$', '$2E(X)$', '$E(X)+1$', '$4E(X)+1$'],
+          answer: 0,
+          explain: 'L’espérance est linéaire : $E(aX+b)=aE(X)+b$. Ici $E(2X+1)=2E(X)+1$.'
+        },
+        {
+          q: 'La variance d’une loi de Bernoulli de paramètre $p$ est maximale lorsque…',
+          choices: ['$p=0,5$', '$p=0$', '$p=1$', '$p=0,25$'],
+          answer: 0,
+          explain: 'La variance vaut $p(1-p)$. Cette expression est maximale en $p=0,5$, où elle vaut $0,25$.'
+        }
+      ]
+    },
+    {
+      id: 'fonctions',
+      no: 5,
+      title: 'Fonction numérique',
+      short: 'Fonctions',
+      icon: 'ƒ',
+      accent: '#61e4d5',
+      desc: 'Limites, dérivées et variations.',
+      fiche: [
+        ['Dérivée et sens', 'Le signe de $f′$ donne les variations de $f$.'],
+        ['Tangente', '$y=f′(a)(x-a)+f(a)$'],
+        ['Asymptote verticale', 'Si $f(x)→±∞$ quand $x→a$.'],
+        ['Asymptote horizontale', 'Si $f(x)→ℓ$ quand $x→±∞$.']
+      ],
+      questions: [
+        {
+          q: '$lim<sub>x→+∞</sub> (3x²-2x+1)/(x²+5)$ est égale à…',
+          choices: ['$3$', '$0$', '$+∞$', '$1$'],
+          answer: 0,
+          explain: 'On divise numérateur et dénominateur par $x²$ : $lim (3-2/x+1/x²)/(1+5/x²)=3/1=3$.'
+        },
+        {
+          q: 'La dérivée de $f(x)=(x²+1)³$ est…',
+          choices: ['$6x(x²+1)²$', '$3(x²+1)²$', '$2x(x²+1)²$', '$6x(x²+1)³$'],
+          answer: 0,
+          explain: 'On utilise $(u³)′=3u²u′$ avec $u=x²+1$ et $u′=2x$. On obtient $3(x²+1)²×2x=6x(x²+1)²$.'
+        },
+        {
+          q: 'La courbe de $f(x)=(x-1)/(x+2)$ admet une asymptote verticale d’équation…',
+          choices: ['$x=-2$', '$x=2$', '$x=1$', '$y=1$'],
+          answer: 0,
+          explain: 'Le dénominateur s’annule en $x=-2$ et le numérateur n’y est pas nul. La droite $x=-2$ est donc une asymptote verticale.'
+        },
+        {
+          q: '$f(x)=x³-3x$. Sur lequel de ces intervalles $f$ est-elle croissante ?',
+          choices: ['$]-∞;-1[$', '$]-1;1[$', '$]0;+∞[$', '$]-1;+∞[$'],
+          answer: 0,
+          explain: '$f′(x)=3x²-3=3(x-1)(x+1)$. Elle est positive sur $]-∞;-1[$ et sur $]1;+∞[$, donc $f$ y est croissante.'
+        },
+        {
+          q: '$lim<sub>x→0</sub> (sin x)/x$ est égale à…',
+          choices: ['$1$', '$0$', '$+∞$', 'n’existe pas'],
+          answer: 0,
+          explain: 'C’est une limite de référence : $lim<sub>x→0</sub> (sin x)/x=1$. On l’obtient aussi avec le taux d’accroissement de sinus en $0$.'
+        },
+        {
+          q: 'L’équation de la tangente à la courbe de $f(x)=x²$ au point d’abscisse $1$ est…',
+          choices: ['$y=2x-1$', '$y=2x+1$', '$y=x²$', '$y=2x$'],
+          answer: 0,
+          explain: '$f(1)=1$ et $f′(x)=2x$, donc $f′(1)=2$. La tangente est $y=2(x-1)+1=2x-1$.'
+        },
+        {
+          q: 'La dérivée de $f(x)=√(x²+1)$ est…',
+          choices: ['$x/√(x²+1)$', '$2x/√(x²+1)$', '$1/(2√(x²+1))$', '$√(x²+1)/x$'],
+          answer: 0,
+          explain: 'Avec $u=x²+1$, $(√u)′=u′/(2√u)$. Donc $f′(x)=2x/(2√(x²+1))=x/√(x²+1)$. '
+        },
+        {
+          q: 'La fonction $f(x)=x³ cos x$ est…',
+          choices: ['impaire', 'paire', 'ni paire ni impaire', 'périodique de période $π$'],
+          answer: 0,
+          explain: '$f(-x)=(-x)³cos(-x)=-x³ cos x=-f(x)$. La fonction est donc impaire sur $ℝ$.'
+        }
+      ]
+    },
+    {
+      id: 'logarithme',
+      no: 6,
+      title: 'Fonction logarithme',
+      short: 'Logarithme',
+      icon: 'ln',
+      accent: '#a3e77a',
+      desc: 'ln, équations et dérivées.',
+      fiche: [
+        ['Produit', '$ln(ab)=ln a+ln b$'],
+        ['Quotient', '$ln(a/b)=ln a-ln b$'],
+        ['Dérivée', '$(ln u)′=u′/u$'],
+        ['Domaine', '$ln x$ est défini pour $x>0$.']
+      ],
+      questions: [
+        {
+          q: '$ln(e)$ est égal à…',
+          choices: ['$1$', '$0$', '$e$', '$1/e$'],
+          answer: 0,
+          explain: 'Le logarithme népérien est la fonction réciproque de l’exponentielle : $ln(e)=1$ car $e¹=e$.'
+        },
+        {
+          q: 'Pour $a>0$ et $b>0$, $ln(ab)$ est égal à…',
+          choices: ['$ln a+ln b$', '$ln a×ln b$', '$ln a-ln b$', '$ln(a+b)$'],
+          answer: 0,
+          explain: 'Le logarithme transforme un produit en somme : $ln(ab)=ln a+ln b$. C’est la propriété fondamentale de $ln$.'
+        },
+        {
+          q: '$e<sup>ln 5</sup>$ est égal à…',
+          choices: ['$5$', '$ln 5$', '$e⁵$', '$1/5$'],
+          answer: 0,
+          explain: 'Pour $x>0$, $e<sup>ln x</sup>=x$. Donc $e<sup>ln 5</sup>=5$.'
+        },
+        {
+          q: 'L’équation $ln x=2$ a pour solution…',
+          choices: ['$x=e²$', '$x=2e$', '$x=ln 2$', '$x=e/2$'],
+          answer: 0,
+          explain: 'On applique l’exponentielle aux deux membres : $e<sup>ln x</sup>=e²$, donc $x=e²$.'
+        },
+        {
+          q: 'La dérivée de $f(x)=ln(2x+1)$ est…',
+          choices: ['$2/(2x+1)$', '$1/(2x+1)$', '$2ln(2x+1)$', '$1/(2x)$'],
+          answer: 0,
+          explain: 'Avec $u=2x+1$, $(ln u)′=u′/u=2/(2x+1)$, sur l’intervalle où $2x+1>0$.'
+        },
+        {
+          q: 'L’ensemble de définition de $ln(x-3)$ est…',
+          choices: ['$]3;+∞[$', '$[3;+∞[$', '$]-∞;3[$', '$ℝ$'],
+          answer: 0,
+          explain: 'Le logarithme n’est défini que pour un argument strictement positif : $x-3>0$, donc $x>3$.'
+        },
+        {
+          q: '$ln(e³)+ln(e<sup>-1</sup>)$ est égal à…',
+          choices: ['$2$', '$4$', '$e²$', '$3$'],
+          answer: 0,
+          explain: '$ln(e³)=3$ et $ln(e<sup>-1</sup>)=-1$. Donc la somme vaut $3-1=2$.'
+        },
+        {
+          q: '$lim<sub>x→0+</sub> ln x$ est égale à…',
+          choices: ['$-∞$', '$+∞$', '$0$', '$1$'],
+          answer: 0,
+          explain: 'Quand $x$ se rapproche de $0$ par valeurs positives, $ln x$ tend vers $-∞$. L’axe des ordonnées est une asymptote verticale.'
+        }
+      ]
+    },
+    {
+      id: 'exponentielle',
+      no: 7,
+      title: 'Fonction exponentielle',
+      short: 'Exponentielle',
+      icon: 'eˣ',
+      accent: '#ffd36e',
+      desc: 'Propriétés, dérivées et limites.',
+      fiche: [
+        ['Produit', '$e<sup>a+b</sup>=e<sup>a</sup>e<sup>b</sup>$'],
+        ['Dérivée', '$(e<sup>u</sup>)′=u′e<sup>u</sup>$'],
+        ['Réciprocité', '$e<sup>ln x</sup>=x$ pour $x>0$'],
+        ['Limites', '$lim<sub>x→-∞</sub>e<sup>x</sup>=0$']
+      ],
+      questions: [
+        {
+          q: '$e<sup>a+b</sup>$ est égal à…',
+          choices: ['$e<sup>a</sup>×e<sup>b</sup>$', '$e<sup>a</sup>+e<sup>b</sup>$', '$e<sup>ab</sup>$', '$e<sup>a</sup>-e<sup>b</sup>$'],
+          answer: 0,
+          explain: 'L’exponentielle transforme les sommes en produits : $e<sup>a+b</sup>=e<sup>a</sup>e<sup>b</sup>$.'
+        },
+        {
+          q: 'La dérivée de $f(x)=e<sup>3x</sup>$ est…',
+          choices: ['$3e<sup>3x</sup>$', '$e<sup>3x</sup>$', '$3xe<sup>3x</sup>$', '$e³$'],
+          answer: 0,
+          explain: 'On utilise $(e<sup>u</sup>)′=u′e<sup>u</sup>$ avec $u=3x$ et $u′=3$ : $f′(x)=3e<sup>3x</sup>$.'
+        },
+        {
+          q: '$e<sup>2ln 3</sup>$ est égal à…',
+          choices: ['$9$', '$6$', '$e⁶$', '$ln 9$'],
+          answer: 0,
+          explain: '$e<sup>2ln 3</sup>=(e<sup>ln 3</sup>)²=3²=9$. On peut aussi écrire $2ln 3=ln 9$.'
+        },
+        {
+          q: 'L’équation $e<sup>x</sup>=5$ a pour solution…',
+          choices: ['$x=ln 5$', '$x=5$', '$x=e⁵$', '$x=1/ln 5$'],
+          answer: 0,
+          explain: 'On applique $ln$ aux deux membres : $ln(e<sup>x</sup>)=ln 5$, donc $x=ln 5$.'
+        },
+        {
+          q: 'Pour tout réel $x$, $e<sup>x</sup>$ est…',
+          choices: ['strictement positif', 'négatif ou nul', 'négatif', 'nul'],
+          answer: 0,
+          explain: 'La fonction exponentielle est à valeurs dans $]0;+∞[$. En particulier, $e<sup>x</sup>>0$ pour tout réel $x$.'
+        },
+        {
+          q: 'La dérivée de $f(x)=e<sup>-x²</sup>$ est…',
+          choices: ['$-2xe<sup>-x²</sup>$', '$2xe<sup>-x²</sup>$', '$e<sup>-2x</sup>$', '$-e<sup>-x²</sup>$'],
+          answer: 0,
+          explain: 'Avec $u=-x²$, on a $u′=-2x$. Donc $f′(x)=u′e<sup>u</sup>=-2xe<sup>-x²</sup>$.'
+        },
+        {
+          q: '$lim<sub>x→-∞</sub> e<sup>x</sup>$ est égale à…',
+          choices: ['$0$', '$+∞$', '$-∞$', '$1$'],
+          answer: 0,
+          explain: 'La courbe de l’exponentielle se rapproche de l’axe des abscisses quand $x→-∞$ : la limite est $0$.'
+        },
+        {
+          q: 'La fonction exponentielle est…',
+          choices: ['strictement croissante sur $ℝ$', 'strictement décroissante sur $ℝ$', 'croissante puis décroissante', 'constante'],
+          answer: 0,
+          explain: 'Sa dérivée est $e<sup>x</sup>$, toujours strictement positive. La fonction exponentielle est donc strictement croissante sur $ℝ$.'
+        }
+      ]
+    },
+    {
+      id: 'integrales',
+      no: 8,
+      title: 'Calcul intégral',
+      short: 'Intégrales',
+      icon: '∫',
+      accent: '#74c7ff',
+      desc: 'Primitives, aires et intégrales définies.',
+      fiche: [
+        ['Théorème fondamental', '$∫<sub>a</sub><sup>b</sup>f(x)dx=F(b)-F(a)$'],
+        ['Linéarité', '$∫(αf+βg)=α∫f+β∫g$'],
+        ['Positivité', 'Si $f≥0$, alors $∫<sub>a</sub><sup>b</sup>f≥0$'],
+        ['Aire', 'L’aire sous la courbe de $f≥0$ vaut $∫<sub>a</sub><sup>b</sup>f$.'] 
+      ],
+      questions: [
+        {
+          q: '$∫<sub>0</sub><sup>1</sup>x dx$ est égale à…',
+          choices: ['$1/2$', '$1$', '$0$', '$2$'],
+          answer: 0,
+          explain: 'Une primitive de $x$ est $x²/2$. Donc $∫<sub>0</sub><sup>1</sup>x dx=[x²/2]<sub>0</sub><sup>1</sup>=1/2$.'
+        },
+        {
+          q: '$∫<sub>0</sub><sup>1</sup>e<sup>x</sup>dx$ est égale à…',
+          choices: ['$e-1$', '$e$', '$1$', '$1-e$'],
+          answer: 0,
+          explain: 'Une primitive de $e<sup>x</sup>$ est $e<sup>x</sup>$. Donc $∫<sub>0</sub><sup>1</sup>e<sup>x</sup>dx=e¹-e⁰=e-1$.'
+        },
+        {
+          q: '$∫<sub>1</sub><sup>e</sup>(1/x)dx$ est égale à…',
+          choices: ['$1$', '$0$', '$e$', '$e-1$'],
+          answer: 0,
+          explain: 'Une primitive de $1/x$ est $ln x$. Donc $∫<sub>1</sub><sup>e</sup>(1/x)dx=ln e-ln 1=1-0=1$.'
+        },
+        {
+          q: 'Une primitive de $f(x)=2x(x²+1)³$ est…',
+          choices: ['$(1/4)(x²+1)⁴$', '$(x²+1)⁴$', '$2(x²+1)³$', '$(1/2)(x²+1)⁴$'],
+          answer: 0,
+          explain: 'On pose $u=x²+1$, donc $u′=2x$. Alors $∫u³u′dx=u⁴/4=(1/4)(x²+1)⁴+C$.'
+        },
+        {
+          q: '$∫<sub>0</sub><sup>π</sup>sin x dx$ est égale à…',
+          choices: ['$2$', '$0$', '$1$', '$π$'],
+          answer: 0,
+          explain: 'Une primitive de $sin x$ est $-cos x$. Donc $[-cos x]<sub>0</sub><sup>π</sup>=-cos π+cos 0=1+1=2$.'
+        },
+        {
+          q: '$∫<sub>0</sub><sup>1</sup>xe<sup>x</sup>dx$ est égale à…',
+          choices: ['$1$', '$e-1$', '$e$', '$0$'],
+          answer: 0,
+          explain: 'Une intégration par parties avec $u=x$ et $v′=e<sup>x</sup>$ donne $[xe<sup>x</sup>-e<sup>x</sup>]<sub>0</sub><sup>1</sup>=(e-e)-(0-1)=1$.'
+        },
+        {
+          q: '$∫<sub>1</sub><sup>2</sup>(1/x²)dx$ est égale à…',
+          choices: ['$1/2$', '$1$', '$ln 2$', '$2$'],
+          answer: 0,
+          explain: 'Une primitive de $1/x²=x<sup>-2</sup>$ est $-1/x$. Donc $[-1/x]<sub>1</sub><sup>2</sup>=-1/2+1=1/2$.'
+        },
+        {
+          q: 'Si $f$ est continue et positive sur $[a;b]$, l’aire sous la courbe entre $a$ et $b$ vaut…',
+          choices: ['$∫<sub>a</sub><sup>b</sup>f(x)dx$', '$f(b)-f(a)$', '$f′(b)-f′(a)$', '$(b-a)f(a)$'],
+          answer: 0,
+          explain: 'Pour une fonction positive, l’intégrale mesure exactement l’aire comprise entre la courbe, l’axe des abscisses et les droites $x=a$ et $x=b$.'
+        }
+      ]
+    },
+    {
+      id: 'equations-differentielles',
+      no: 9,
+      title: 'Équations différentielles',
+      short: 'Équations diff.',
+      icon: 'y′',
+      accent: '#ff9b7d',
+      desc: 'Solutions, conditions initiales et oscillations.',
+      fiche: [
+        ['Équation homogène', '$y′=ay$ et $y=Ce<sup>ax</sup>$'],
+        ['Avec second membre', '$y′=ay+b$ et $y=Ce<sup>ax</sup>-b/a$'],
+        ['Oscillateur', '$y″+ω²y=0$, $ω>0$ : $y=A cos(ωx)+B sin(ωx)$'],
+        ['Condition initiale', 'Elle détermine la constante $C$.']
+      ],
+      questions: [
+        {
+          q: 'Les solutions de l’équation $y′=2y$ sont…',
+          choices: ['$y=Ce<sup>2x</sup>$', '$y=Ce<sup>x/2</sup>$', '$y=2x+C$', '$y=Ce<sup>-2x</sup>$'],
+          answer: 0,
+          explain: 'Pour $y′=ay$, les solutions sont $y=Ce<sup>ax</sup>$. Ici $a=2$, donc $y=Ce<sup>2x</sup>$.'
+        },
+        {
+          q: 'La solution de $y′=3y$ vérifiant $y(0)=2$ est…',
+          choices: ['$y=2e<sup>3x</sup>$', '$y=3e<sup>2x</sup>$', '$y=2e<sup>x</sup>$', '$y=e<sup>3x</sup>+2$'],
+          answer: 0,
+          explain: 'Les solutions sont $y=Ce<sup>3x</sup>$. La condition $y(0)=2$ donne $C=2$, donc $y=2e<sup>3x</sup>$.'
+        },
+        {
+          q: 'Les solutions de $y″+ω²y=0$, avec $ω>0$, sont…',
+          choices: ['$y=A cos(ωx)+B sin(ωx)$', '$y=Ae<sup>ωx</sup>+Be<sup>-ωx</sup>$', '$y=Ax+B$', '$y=A cos x+B sin x$'],
+          answer: 0,
+          explain: 'C’est l’équation de l’oscillateur harmonique, avec $ω>0$. Ses solutions sont de la forme $A cos(ωx)+B sin(ωx)$ avec $A,B$ réels.'
+        },
+        {
+          q: 'La fonction $y=e<sup>-x</sup>$ est solution de…',
+          choices: ['$y′+y=0$', '$y′-y=0$', '$y″+y=0$', '$y′=e<sup>-x</sup>+1$'],
+          answer: 0,
+          explain: 'Si $y=e<sup>-x</sup>$, alors $y′=-e<sup>-x</sup>$. Donc $y′+y=-e<sup>-x</sup>+e<sup>-x</sup>=0$.'
+        },
+        {
+          q: 'Les solutions de $y′=2x$ sont…',
+          choices: ['$y=x²+C$', '$y=2x+C$', '$y=2+C$', '$y=x²/2+C$'],
+          answer: 0,
+          explain: 'On cherche une primitive de $2x$ : c’est $x²$. Les solutions sont donc $y=x²+C$.'
+        },
+        {
+          q: 'Les solutions de $y″=0$ sont…',
+          choices: ['$y=ax+b$', '$y=a$', '$y=ax²+bx+c$', '$y=e<sup>x</sup>$'],
+          answer: 0,
+          explain: 'En intégrant deux fois : $y′=a$, puis $y=ax+b$. Les solutions sont les fonctions affines.'
+        },
+        {
+          q: 'La solution de $y′=y$ avec $y(0)=3$ est…',
+          choices: ['$y=3e<sup>x</sup>$', '$y=e<sup>3x</sup>$', '$y=3e<sup>-x</sup>$', '$y=e<sup>x</sup>+3$'],
+          answer: 0,
+          explain: 'Les solutions de $y′=y$ sont $y=Ce<sup>x</sup>$. Avec $y(0)=3$, on obtient $C=3$.'
+        },
+        {
+          q: 'Les solutions de $y″+4y=0$ sont…',
+          choices: ['$y=A cos(2x)+B sin(2x)$', '$y=A cos(4x)+B sin(4x)$', '$y=Ae<sup>2x</sup>+Be<sup>-2x</sup>$', '$y=Ax+B$'],
+          answer: 0,
+          explain: 'On identifie $ω²=4$, donc $ω=2$. Les solutions sont $A cos(2x)+B sin(2x)$.'
+        }
+      ]
+    },
+    {
+      id: 'suites',
+      no: 10,
+      title: 'Suites numériques',
+      short: 'Suites',
+      icon: 'uₙ',
+      accent: '#c0a8ff',
+      desc: 'Suites arithmétiques, géométriques et limites.',
+      fiche: [
+        ['Arithmétique', '$u<sub>n</sub>=u<sub>0</sub>+nr$'],
+        ['Géométrique', '$u<sub>n</sub>=u<sub>0</sub>q<sup>n</sup>$'],
+        ['Somme géométrique', '$1+q+…+q<sup>n</sup>=(1-q<sup>n+1</sup>)/(1-q)$'],
+        ['Convergence', 'Si $|q|<1$, alors $q<sup>n</sup>→0$.']
+      ],
+      questions: [
+        {
+          q: 'Une suite arithmétique a pour premier terme $u<sub>0</sub>=3$ et pour raison $2$. Alors $u<sub>10</sub>$ vaut…',
+          choices: ['$23$', '$20$', '$25$', '$21$'],
+          answer: 0,
+          explain: '$u<sub>n</sub>=u<sub>0</sub>+nr=3+10×2=23$.'
+        },
+        {
+          q: 'La suite géométrique est définie par $u<sub>n</sub>=2×3<sup>n</sup>$. Alors $u<sub>4</sub>$ vaut…',
+          choices: ['$162$', '$54$', '$96$', '$486$'],
+          answer: 0,
+          explain: '$u<sub>4</sub>=2×3⁴=2×81=162$.'
+        },
+        {
+          q: '$1+2+3+…+100$ est égal à…',
+          choices: ['$5050$', '$5000$', '$10100$', '$4950$'],
+          answer: 0,
+          explain: 'La somme des $n$ premiers entiers vaut $n(n+1)/2$. Ici $100×101/2=5050$.'
+        },
+        {
+          q: '$lim<sub>n→+∞</sub>(2n+1)/(n+3)$ est égale à…',
+          choices: ['$2$', '$1$', '$+∞$', '$0$'],
+          answer: 0,
+          explain: 'On divise par $n$ : $(2+1/n)/(1+3/n)→2/1=2$ quand $n→+∞$.'
+        },
+        {
+          q: 'La suite vérifie $u<sub>n+1</sub>=0,5u<sub>n</sub>$ et $u<sub>0</sub>=8$. Elle converge vers…',
+          choices: ['$0$', '$8$', '$4$', '$+∞$'],
+          answer: 0,
+          explain: 'C’est une suite géométrique de raison $0,5$. Comme $|0,5|<1$, $u<sub>n</sub>=8×0,5<sup>n</sup>→0$.'
+        },
+        {
+          q: 'La suite $u<sub>n</sub>=(-1)<sup>n</sup>$…',
+          choices: ['n’a pas de limite', 'converge vers $0$', 'converge vers $1$', 'converge vers $-1$'],
+          answer: 0,
+          explain: 'La suite vaut alternativement $1$ et $-1$. Elle ne se rapproche d’aucun réel : elle n’a pas de limite.'
+        },
+        {
+          q: 'Pour une suite arithmétique de raison $r$, on a…',
+          choices: ['$u<sub>n+1</sub>=u<sub>n</sub>+r$', '$u<sub>n+1</sub>=u<sub>n</sub>×r$', '$u<sub>n+1</sub>=u<sub>n</sub>-r$', '$u<sub>n+1</sub>=ru<sub>n</sub>+1$'],
+          answer: 0,
+          explain: 'Par définition, on passe d’un terme au suivant en ajoutant la raison : $u<sub>n+1</sub>=u<sub>n</sub>+r$.'
+        },
+        {
+          q: 'La somme infinie $1+1/2+1/4+1/8+…$ vaut…',
+          choices: ['$2$', '$1$', '$+∞$', '$1/2$'],
+          answer: 0,
+          explain: 'C’est la somme d’une suite géométrique de premier terme $1$ et de raison $1/2$. Elle vaut $1/(1-1/2)=2$.'
+        }
+      ]
+    },
+    {
+      id: 'statistiques',
+      no: 11,
+      title: 'Statistiques',
+      short: 'Statistiques',
+      icon: 'x̄',
+      accent: '#7ee7a6',
+      desc: 'Moyennes, dispersion et corrélation.',
+      fiche: [
+        ['Moyenne', '$x̄=(Σn<sub>i</sub>x<sub>i</sub>)/N$'],
+        ['Variance', '$V=(Σn<sub>i</sub>(x<sub>i</sub>-x̄)²)/N$'],
+        ['Écart-type', '$σ=√V$'],
+        ['Corrélation', 'Le coefficient $r$ est compris entre $-1$ et $1$.']
+      ],
+      questions: [
+        {
+          q: 'La moyenne de la série $4$, $6$, $8$, $10$ est…',
+          choices: ['$7$', '$6$', '$8$', '$7,5$'],
+          answer: 0,
+          explain: 'On additionne puis on divise par $4$ : $(4+6+8+10)/4=28/4=7$.'
+        },
+        {
+          q: 'La médiane de la série $2$, $3$, $7$, $8$, $10$ est…',
+          choices: ['$7$', '$6$', '$8$', '$3$'],
+          answer: 0,
+          explain: 'Les valeurs sont ordonnées et il y en a $5$. La médiane est la valeur du milieu : $7$.'
+        },
+        {
+          q: 'L’étendue d’une série statistique est…',
+          choices: ['la différence entre la plus grande et la plus petite valeur', 'la moyenne des valeurs extrêmes', 'le quotient de la plus grande par la plus petite', 'le produit des valeurs extrêmes'],
+          answer: 0,
+          explain: 'L’étendue mesure l’amplitude totale de la série : $étendue=max-min$.'
+        },
+        {
+          q: 'La variance (population) de la série $2$, $4$, $6$, $8$ est…',
+          choices: ['$5$', '$4$', '$√5$', '$20$'],
+          answer: 0,
+          explain: 'La moyenne est $5$. Les écarts au carré sont $9,1,1,9$, de somme $20$. Donc $V=20/4=5$.'
+        },
+        {
+          q: 'Si on ajoute $10$ à chaque valeur d’une série, alors…',
+          choices: ['la moyenne augmente de $10$ et l’écart-type ne change pas', 'la moyenne et l’écart-type augmentent de $10$', 'la moyenne ne change pas', 'l’écart-type double'],
+          answer: 0,
+          explain: 'Ajouter une constante décale toutes les valeurs : la moyenne augmente de $10$, mais la dispersion autour de la moyenne ne change pas.'
+        },
+        {
+          q: 'Si on multiplie chaque valeur d’une série par $2$, alors…',
+          choices: ['la moyenne et l’écart-type doublent', 'seule la moyenne double', 'seul l’écart-type double', 'rien ne change'],
+          answer: 0,
+          explain: 'La moyenne et l’écart-type sont tous deux multipliés par $2$ lorsque les valeurs le sont. La variance, elle, est multipliée par $4$.'
+        },
+        {
+          q: 'Le coefficient de corrélation linéaire est toujours…',
+          choices: ['compris entre $-1$ et $1$', 'positif', 'compris entre $0$ et $1$', 'égal à la moyenne'],
+          answer: 0,
+          explain: 'Le coefficient $r$ mesure l’intensité d’une liaison linéaire et vérifie $-1≤r≤1$. Il peut être négatif.'
+        },
+        {
+          q: 'La valeur la plus fréquente d’une série s’appelle…',
+          choices: ['le mode', 'la médiane', 'l’étendue', 'le quartile'],
+          answer: 0,
+          explain: 'Le mode est la valeur qui apparaît le plus souvent dans la série. Il peut ne pas être unique.'
+        }
+      ]
+    }
+  ];
+
+  const LEVELS = [
+    { min: 0, name: 'Curieux' },
+    { min: 250, name: 'Apprenti' },
+    { min: 700, name: 'Analyste' },
+    { min: 1500, name: 'Géomètre' },
+    { min: 2800, name: 'Mathématicien' },
+    { min: 4500, name: 'Légende' }
+  ];
+
+  const ACHIEVEMENTS = [
+    { id: 'first', icon: '01', title: 'Premier pas', desc: 'Jouer un premier chapitre', test: () => Object.keys(state.chapters || {}).length > 0 },
+    { id: 'stars', icon: '★', title: 'Maîtrise', desc: 'Décrocher 3 étoiles sur un chapitre', test: () => CHAPTERS.some(c => (state.chapters[c.id]?.stars || 0) === 3) },
+    { id: 'explorer', icon: '05', title: 'Explorateur', desc: 'Jouer 5 chapitres différents', test: () => CHAPTERS.filter(c => (state.chapters[c.id]?.plays || 0) > 0).length >= 5 },
+    { id: 'combo', icon: '×5', title: 'En feu', desc: 'Atteindre une série de 5', test: () => (state.stats?.bestStreak || 0) >= 5 },
+    { id: 'marathon', icon: '50', title: 'Marathonien', desc: 'Répondre à 50 questions', test: () => (state.stats?.answered || 0) >= 50 },
+    { id: 'legend', icon: '∞', title: 'Légende', desc: 'Obtenir 3 étoiles partout', test: () => CHAPTERS.every(c => (state.chapters[c.id]?.stars || 0) === 3) }
+  ];
+
+  const MATH_TIPS = [
+    { title: 'Répétition espacée', text: 'Revois une notion aujourd’hui, puis dans 3 jours, puis dans une semaine. C’est le rythme qui fait mémoriser, pas la durée d’une seule séance.' },
+    { title: 'Explique à voix haute', text: 'Si tu peux expliquer une formule sans regarder la fiche, tu la maîtrises. Essaie de la raconter à un ami ou à ton chat.' },
+    { title: 'Une erreur = une info', text: 'Après une erreur, lis l’explication et note la règle qui manquait. C’est exactement là que ton cerveau progresse.' },
+    { title: 'Mélange les chapitres', text: 'Alterner les thèmes force le cerveau à choisir la bonne méthode. C’est pour cela que le Grand Mix est un excellent entraînement.' },
+    { title: '25 minutes, puis 5', text: 'Travaille 25 minutes sans téléphone, puis fais une vraie pause de 5 minutes. La concentration se construit par cycles.' },
+    { title: 'Refais sans regarder', text: 'Une fiche lue n’est pas une fiche sue. Cache la correction, refais l’exercice, puis compare.' },
+    { title: 'Les formules ont un sens', text: 'Ne retiens pas seulement la formule : demande-toi à quoi elle sert et dans quel cas elle s’applique.' },
+    { title: 'Vise la régularité', text: '15 minutes par jour valent mieux que 3 heures le dimanche. La progression aime les petits rendez-vous répétés.' },
+    { title: 'Écris les étapes', text: 'Même quand tu trouves la bonne réponse, écris le raisonnement. C’est ce qui compte le jour du contrôle.' },
+    { title: 'Dors sur tes révisions', text: 'Le cerveau consolide les apprentissages pendant le sommeil. Réviser tard en sacrifiant la nuit est rarement rentable.' },
+    { title: 'Commence par le difficile', text: 'Attaque le chapitre où tu es le moins à l’aise quand ton énergie est la plus haute, puis termine par un chapitre plaisir.' },
+    { title: 'Teste-toi avant de relire', text: 'Essaie de retrouver la formule de mémoire avant d’ouvrir la fiche. Le rappel actif est plus efficace que la relecture passive.' }
+  ];
+
+  const STORAGE_KEY = 'mathmind.v1';
+  const QUESTION_TIME = 60;
+  const LETTERS = ['A', 'B', 'C', 'D'];
+  const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const NUMBER_FORMAT = new Intl.NumberFormat('fr-FR');
+
+  function defaultState() {
+    return {
+      version: 2,
+      xp: 0,
+      settings: { sound: true },
+      stats: { answered: 0, correct: 0, bestStreak: 0, sessions: 0 },
+      chapters: {},
+      mixed: { bestScore: 0, stars: 0, plays: 0, bestCorrect: 0 },
+      history: [],
+      lastMode: null,
+      lastChapter: null
+    };
+  }
+
+  function loadState() {
+    const base = defaultState();
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return base;
+      const saved = JSON.parse(raw);
+      if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return base;
+      const savedStats = saved.stats && typeof saved.stats === 'object' ? saved.stats : {};
+      const savedMixed = saved.mixed && typeof saved.mixed === 'object' ? saved.mixed : {};
+      const savedChapters = saved.chapters && typeof saved.chapters === 'object' && !Array.isArray(saved.chapters) ? saved.chapters : {};
+      const savedHistory = Array.isArray(saved.history) ? saved.history.filter(entry => entry && typeof entry === 'object').slice(0, 16) : [];
+      return {
+        ...base,
+        xp: Math.max(0, Number(saved.xp) || 0),
+        settings: { ...base.settings, ...(saved.settings || {}) },
+        stats: {
+          answered: Math.max(0, Number(savedStats.answered) || 0),
+          correct: Math.max(0, Number(savedStats.correct) || 0),
+          bestStreak: Math.max(0, Number(savedStats.bestStreak) || 0),
+          sessions: Math.max(0, Number(savedStats.sessions) || 0)
+        },
+        chapters: savedChapters,
+        mixed: {
+          bestScore: Math.max(0, Number(savedMixed.bestScore) || 0),
+          stars: Math.min(3, Math.max(0, Number(savedMixed.stars) || 0)),
+          plays: Math.max(0, Number(savedMixed.plays) || 0),
+          bestCorrect: Math.max(0, Number(savedMixed.bestCorrect) || 0)
+        },
+        history: savedHistory,
+        lastMode: saved.lastMode === 'mixed' ? 'mixed' : (saved.lastMode === 'chapter' ? 'chapter' : null),
+        lastChapter: typeof saved.lastChapter === 'string' ? saved.lastChapter : null
+      };
+    } catch (error) {
+      return base;
+    }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (error) {
+      // La progression reste utilisable en mémoire si le stockage est indisponible.
+    }
+  }
+
+  let state = loadState();
+  let session = null;
+  let timerId = null;
+  let timerEnd = 0;
+  let currentView = 'home';
+  let chapterFilter = 'all';
+  let libraryQuery = '';
+  let sheetChapterId = null;
+  let sheetReturnFocus = null;
+  let confirmAction = null;
+  let confirmActionCancel = null;
+  let confirmReturnFocus = null;
+  let sidebarTimerPaused = false;
+  let toastTimer = null;
+  let audioContext = null;
+
+  const confetti = {
+    canvas: null,
+    ctx: null,
+    parts: [],
+    raf: 0,
+    dpr: 1
+  };
+
+  const byId = id => document.getElementById(id);
+
+  const els = {
+    xpPill: byId('xpPill'),
+    headerLevel: byId('headerLevel'),
+    headerXp: byId('headerXp'),
+    soundBtn: byId('soundBtn'),
+    soundOnIcon: byId('soundOnIcon'),
+    soundOffIcon: byId('soundOffIcon'),
+    sidebar: byId('sidebar'),
+    sidebarOverlay: byId('sidebarOverlay'),
+    sidebarClose: byId('sidebarClose'),
+    menuToggle: byId('menuToggle'),
+    sidebarName: byId('sidebarName'),
+    sidebarLevel: byId('sidebarLevel'),
+    sidebarMeter: byId('sidebarMeter'),
+    sidebarXp: byId('sidebarXp'),
+    sidebarStars: byId('sidebarStars'),
+    greetingText: byId('greetingText'),
+    userFirstName: byId('userFirstName'),
+    greetingEmoji: byId('greetingEmoji'),
+    homeScreen: byId('homeScreen'),
+    chaptersScreen: byId('chaptersScreen'),
+    libraryScreen: byId('libraryScreen'),
+    progressScreen: byId('progressScreen'),
+    gameScreen: byId('gameScreen'),
+    resultScreen: byId('resultScreen'),
+    continueBtn: byId('continueBtn'),
+    continueLabel: byId('continueLabel'),
+    finalHeroBtn: byId('finalHeroBtn'),
+    finalRelaxBtn: byId('finalRelaxBtn'),
+    rankName: byId('rankName'),
+    rankFill: byId('rankFill'),
+    rankNext: byId('rankNext'),
+    heroStars: byId('heroStars'),
+    heroXp: byId('heroXp'),
+    heroAccuracy: byId('heroAccuracy'),
+    heroStatus: byId('heroStatus'),
+    heroSub: byId('heroSub'),
+    heroFill: byId('heroFill'),
+    recommendBadge: byId('recommendBadge'),
+    recommendTitle: byId('recommendTitle'),
+    recommendText: byId('recommendText'),
+    recommendActions: byId('recommendActions'),
+    recommendNote: byId('recommendNote'),
+    homeStatChapters: byId('homeStatChapters'),
+    homeStatAnswered: byId('homeStatAnswered'),
+    homeStatBest: byId('homeStatBest'),
+    homeStatSessions: byId('homeStatSessions'),
+    homeOverviewNote: byId('homeOverviewNote'),
+    chapterGrid: byId('chapterGrid'),
+    allChaptersGrid: byId('allChaptersGrid'),
+    chaptersFilter: byId('chaptersFilter'),
+    chaptersCount: byId('chaptersCount'),
+    finalStars: byId('finalStars'),
+    finalBest: byId('finalBest'),
+    finalBtn: byId('finalBtn'),
+    homeLibrary: byId('homeLibrary'),
+    librarySearch: byId('librarySearch'),
+    libraryCount: byId('libraryCount'),
+    libraryGrid: byId('libraryGrid'),
+    progressRing: byId('progressRing'),
+    progressValue: byId('progressValue'),
+    progressCaption: byId('progressCaption'),
+    progressMessage: byId('progressMessage'),
+    progressStats: byId('progressStats'),
+    trophyCount: byId('trophyCount'),
+    trophyGrid: byId('trophyGrid'),
+    progressChapters: byId('progressChapters'),
+    historyCount: byId('historyCount'),
+    historyList: byId('historyList'),
+    tipTitle: byId('tipTitle'),
+    tipText: byId('tipText'),
+    resetBtn: byId('resetBtn'),
+    quitBtn: byId('quitBtn'),
+    gameIcon: byId('gameIcon'),
+    gameKicker: byId('gameKicker'),
+    gameChapterLabel: byId('gameChapterLabel'),
+    scoreValue: byId('scoreValue'),
+    streakBox: byId('streakBox'),
+    streakValue: byId('streakValue'),
+    gameSegments: byId('gameSegments'),
+    quizCard: byId('quizCard'),
+    questionCount: byId('questionCount'),
+    sourceTag: byId('sourceTag'),
+    timerPill: byId('timerPill'),
+    timerFill: byId('timerFill'),
+    timerValue: byId('timerValue'),
+    questionText: byId('questionText'),
+    choices: byId('choices'),
+    feedback: byId('feedback'),
+    keyHint: byId('keyHint'),
+    nextBtn: byId('nextBtn'),
+    resultEmblem: byId('resultEmblem'),
+    resultEyebrow: byId('resultEyebrow'),
+    resultTitle: byId('resultTitle'),
+    resultStars: byId('resultStars'),
+    resultMessage: byId('resultMessage'),
+    resultPoints: byId('resultPoints'),
+    resultMetrics: byId('resultMetrics'),
+    resultXp: byId('resultXp'),
+    resultRecord: byId('resultRecord'),
+    retryBtn: byId('retryBtn'),
+    homeBtn: byId('homeBtn'),
+    reviewBlock: byId('reviewBlock'),
+    reviewCount: byId('reviewCount'),
+    reviewList: byId('reviewList'),
+    sheetModal: byId('sheetModal'),
+    sheetPanel: byId('sheetPanel'),
+    sheetClose: byId('sheetClose'),
+    sheetIcon: byId('sheetIcon'),
+    sheetKicker: byId('sheetKicker'),
+    sheetTitle: byId('sheetTitle'),
+    sheetSub: byId('sheetSub'),
+    sheetFormulas: byId('sheetFormulas'),
+    sheetPlayBtn: byId('sheetPlayBtn'),
+    sheetPlayRelaxBtn: byId('sheetPlayRelaxBtn'),
+    confirmModal: byId('confirmModal'),
+    confirmPanel: byId('confirmPanel'),
+    confirmClose: byId('confirmClose'),
+    confirmIcon: byId('confirmIcon'),
+    confirmTitle: byId('confirmTitle'),
+    confirmMessage: byId('confirmMessage'),
+    confirmOk: byId('confirmOk'),
+    confirmCancel: byId('confirmCancel'),
+    toast: byId('toast'),
+    confettiCanvas: byId('confetti')
+  };
+
+  function fmt(value) {
+    return NUMBER_FORMAT.format(Math.round(Number(value) || 0));
+  }
+
+  function pad(value) {
+    return String(value).padStart(2, '0');
+  }
+
+  function mathify(value) {
+    return String(value).replace(/\$([^$]+)\$/g, '<span class="math">$1</span>');
+  }
+
+  function shuffle(items) {
+    for (let i = items.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+    return items;
+  }
+
+  function getChapter(id) {
+    return CHAPTERS.find(chapter => chapter.id === id) || null;
+  }
+
+  function levelFor(xp) {
+    const safeXp = Math.max(0, Number(xp) || 0);
+    let index = 0;
+    for (let i = 0; i < LEVELS.length; i += 1) {
+      if (safeXp >= LEVELS[i].min) index = i;
+    }
+    const level = LEVELS[index];
+    const next = LEVELS[index + 1] || null;
+    const progress = next
+      ? Math.min(1, Math.max(0, (safeXp - level.min) / (next.min - level.min)))
+      : 1;
+    return { index: index + 1, level, next, progress, xp: safeXp };
+  }
+
+  function starsFor(correct, total) {
+    const ratio = total > 0 ? correct / total : 0;
+    if (ratio >= 0.85) return 3;
+    if (ratio >= 0.6) return 2;
+    if (ratio >= 0.4) return 1;
+    return 0;
+  }
+
+  function starMarkup(stars) {
+    return [0, 1, 2].map(index => `<span class="${index < stars ? 'on' : ''}">★</span>`).join('');
+  }
+
+  function getChapterRecord(id) {
+    const record = state.chapters && state.chapters[id];
+    if (!record || typeof record !== 'object') return { bestScore: 0, stars: 0, plays: 0, bestCorrect: 0 };
+    return {
+      bestScore: Math.max(0, Number(record.bestScore) || 0),
+      stars: Math.min(3, Math.max(0, Number(record.stars) || 0)),
+      plays: Math.max(0, Number(record.plays) || 0),
+      bestCorrect: Math.max(0, Number(record.bestCorrect) || 0)
+    };
+  }
+
+  function recommendedChapter() {
+    const unseen = CHAPTERS.find(chapter => getChapterRecord(chapter.id).plays === 0);
+    if (unseen) return unseen;
+    const byStars = [...CHAPTERS].sort((a, b) => getChapterRecord(a.id).stars - getChapterRecord(b.id).stars);
+    return byStars.length && getChapterRecord(byStars[0].id).stars < 3 ? byStars[0] : null;
+  }
+
+  function getTotals() {
+    const explored = CHAPTERS.filter(chapter => getChapterRecord(chapter.id).plays > 0).length;
+    const mastered = CHAPTERS.filter(chapter => getChapterRecord(chapter.id).stars === 3).length;
+    const stars = CHAPTERS.reduce((sum, chapter) => sum + getChapterRecord(chapter.id).stars, 0);
+    const answered = Math.max(0, Number(state.stats.answered) || 0);
+    const correct = Math.max(0, Number(state.stats.correct) || 0);
+    return {
+      explored,
+      mastered,
+      stars,
+      answered,
+      correct,
+      accuracy: answered > 0 ? Math.round((correct / answered) * 100) : 0,
+      sessions: Math.max(0, Number(state.stats.sessions) || 0),
+      bestStreak: Math.max(0, Number(state.stats.bestStreak) || 0)
+    };
+  }
+
+  function updateHeader() {
+    const info = levelFor(state.xp);
+    els.headerLevel.textContent = `Niv. ${info.index}`;
+    els.headerXp.textContent = fmt(state.xp);
+    els.xpPill.title = `${info.level.name} · ${fmt(state.xp)} XP`;
+  }
+
+  function updateSidebar() {
+    const info = levelFor(state.xp);
+    const totals = getTotals();
+    els.sidebarName.textContent = info.level.name;
+    els.sidebarLevel.textContent = `Niv. ${info.index}`;
+    els.sidebarMeter.style.width = `${(info.progress * 100).toFixed(1)}%`;
+    els.sidebarXp.textContent = `${fmt(state.xp)} XP`;
+    els.sidebarStars.textContent = `${totals.stars} / 33 ★`;
+  }
+
+  function updateGreeting() {
+    const hour = new Date().getHours();
+    let text = 'Bonsoir';
+    let emoji = '🌙';
+    if (hour >= 5 && hour < 12) {
+      text = 'Bonjour';
+      emoji = '🌅';
+    } else if (hour >= 12 && hour < 18) {
+      text = 'Bon après-midi';
+      emoji = '☀️';
+    }
+    els.greetingText.textContent = text;
+    els.greetingEmoji.textContent = emoji;
+    els.userFirstName.textContent = 'Élève';
+  }
+
+  function updateHero() {
+    const totals = getTotals();
+    const info = levelFor(state.xp);
+    const pct = Math.round((totals.stars / 33) * 100);
+
+    els.heroStars.textContent = String(totals.stars);
+    els.heroXp.textContent = fmt(state.xp);
+    els.heroAccuracy.textContent = `${totals.accuracy}%`;
+    els.heroFill.style.width = `${pct}%`;
+    els.rankName.textContent = info.level.name;
+    els.rankFill.style.width = `${(info.progress * 100).toFixed(1)}%`;
+    els.rankNext.textContent = info.next
+      ? `${fmt(Math.max(0, info.next.min - state.xp))} XP avant ${info.next.name}`
+      : 'Niveau maximal';
+
+    let statusClass = 'early';
+    let statusText = '🌱 À toi de jouer';
+    let subtitle = 'Révise les 11 chapitres essentiels, gagne de l’XP et transforme chaque erreur en progrès.';
+
+    if (totals.stars >= 33) {
+      statusClass = 'done';
+      statusText = '🏆 Maîtrise totale';
+      subtitle = 'Les 33 étoiles sont à toi. Rejoue le Grand Mix pour garder le rythme avant l’examen.';
+    } else if (totals.stars >= 24) {
+      statusClass = 'late';
+      statusText = '🔥 Dernière ligne droite';
+      subtitle = `${totals.mastered} chapitre${totals.mastered > 1 ? 's' : ''} maîtrisé${totals.mastered > 1 ? 's' : ''} · encore ${33 - totals.stars} étoiles à conquérir.`;
+    } else if (totals.stars >= 12) {
+      statusClass = 'mid';
+      statusText = '⚡ Bon rythme';
+      subtitle = `${totals.explored} chapitre${totals.explored > 1 ? 's' : ''} exploré${totals.explored > 1 ? 's' : ''} · ${totals.stars} étoiles gagnées. Continue sur cette lancée.`;
+    } else if (totals.explored > 0) {
+      statusClass = 'mid';
+      statusText = '🌿 En progression';
+      subtitle = `${totals.explored} chapitre${totals.explored > 1 ? 's' : ''} exploré${totals.explored > 1 ? 's' : ''}. La régularité fait toute la différence.`;
+    }
+
+    els.heroStatus.className = `status-pill ${statusClass}`;
+    els.heroStatus.textContent = statusText;
+    els.heroSub.textContent = subtitle;
+  }
+
+  function updateHomeStats() {
+    const totals = getTotals();
+    els.homeStatChapters.textContent = `${totals.explored}/${CHAPTERS.length}`;
+    els.homeStatAnswered.textContent = fmt(totals.answered);
+    els.homeStatBest.textContent = fmt(totals.bestStreak);
+    els.homeStatSessions.textContent = fmt(totals.sessions);
+    els.homeOverviewNote.textContent = `${totals.mastered} chapitre${totals.mastered > 1 ? 's' : ''} maîtrisé${totals.mastered > 1 ? 's' : ''} sur 11`;
+  }
+
+  function updateRecommendation() {
+    const chapter = recommendedChapter();
+    if (!chapter) {
+      els.recommendNote.textContent = 'Programme terminé';
+      els.recommendBadge.textContent = 'Dernière étape';
+      els.recommendTitle.textContent = 'Le Grand Mix';
+      els.recommendText.innerHTML = 'Tous les chapitres sont à 3 étoiles. Il ne reste plus qu’à tout mélanger pour vérifier que les réflexes sont là.';
+      els.recommendActions.innerHTML = `
+        <button class="btn btn-gold btn-sm" type="button" data-action="mixed"><svg class="icon"><use href="#i-infinity"></use></svg>Lancer le Grand Mix</button>
+        <button class="btn btn-outline btn-sm" type="button" data-nav="progress"><svg class="icon"><use href="#i-chart"></use></svg>Voir ma progression</button>
+      `;
+      return;
+    }
+
+    const record = getChapterRecord(chapter.id);
+    const stars = record.stars;
+    els.recommendNote.textContent = `Chapitre ${pad(chapter.no)} · ${chapter.questions.length} questions`;
+    els.recommendBadge.textContent = record.plays === 0 ? 'À découvrir' : (stars === 0 ? 'À consolider' : 'Prochaine étape');
+    els.recommendTitle.textContent = chapter.title;
+    els.recommendText.innerHTML = `${chapter.desc} ${record.plays > 0 ? `Record actuel : <strong>${fmt(record.bestScore)} pts</strong> · ${stars}/3 étoiles.` : `Encore <strong>${chapter.questions.length} questions</strong> pour décrocher tes premières étoiles.`}`;
+    els.recommendActions.innerHTML = `
+      <button class="btn btn-gold btn-sm" type="button" data-play="${chapter.id}"><svg class="icon"><use href="#i-play"></use></svg>Lancer le quiz</button>
+      <button class="btn btn-outline btn-sm" type="button" data-sheet="${chapter.id}"><svg class="icon"><use href="#i-book"></use></svg>Voir la fiche</button>
+    `;
+  }
+
+  function chapterCardHTML(chapter) {
+    const record = getChapterRecord(chapter.id);
+    const recordLabel = record.plays > 0 ? `Record ${fmt(record.bestScore)} pts` : 'Pas encore joué';
+    const starLabel = `${record.stars} étoile${record.stars > 1 ? 's' : ''} sur 3`;
+    return `
+      <article class="chapter-card${record.stars === 3 ? ' mastered' : ''}">
+        <div class="chapter-head">
+          <span class="chapter-no">CHAPITRE ${pad(chapter.no)}</span>
+          <span class="chapter-icon" aria-hidden="true">${chapter.icon}</span>
+        </div>
+        <h3>${chapter.title}</h3>
+        <p class="chapter-desc">${chapter.desc}</p>
+        ${record.stars === 3 ? '<span class="chapter-mastery">★ Maîtrisé</span>' : ''}
+        <div class="chapter-meta">
+          <span class="stars" role="img" aria-label="${starLabel}">${starMarkup(record.stars)}</span>
+          <span class="record">${recordLabel}</span>
+        </div>
+        <div class="chapter-progress" aria-hidden="true"><span style="width:${(record.stars / 3) * 100}%"></span></div>
+        <div class="chapter-foot">
+          <button class="sheet-btn" type="button" data-sheet="${chapter.id}" aria-label="Voir la fiche de ${chapter.title}">
+            <svg class="icon"><use href="#i-info"></use></svg><span>Fiche</span>
+          </button>
+          <button class="play-btn" type="button" data-play="${chapter.id}" aria-label="Jouer le chapitre ${chapter.title}">
+            <span>Jouer</span><svg class="icon"><use href="#i-arrow"></use></svg>
+          </button>
+        </div>
+      </article>
+    `;
+  }
+
+  function chapterMatchesFilter(chapter) {
+    const record = getChapterRecord(chapter.id);
+    if (chapterFilter === 'todo') return record.plays === 0;
+    if (chapterFilter === 'progress') return record.plays > 0 && record.stars < 3;
+    if (chapterFilter === 'mastered') return record.stars === 3;
+    return true;
+  }
+
+  function renderChapters() {
+    const preview = CHAPTERS.slice(0, 4);
+    els.chapterGrid.innerHTML = preview.map(chapterCardHTML).join('');
+
+    const filtered = CHAPTERS.filter(chapterMatchesFilter);
+    [...els.chaptersFilter.querySelectorAll('[data-filter]')].forEach(button => {
+      button.classList.toggle('active', button.dataset.filter === chapterFilter);
+    });
+    els.chaptersCount.textContent = `${filtered.length} chapitre${filtered.length > 1 ? 's' : ''}`;
+    if (!filtered.length) {
+      els.allChaptersGrid.innerHTML = `
+        <div class="empty-state">
+          <svg class="icon"><use href="#i-target"></use></svg>
+          <strong>Aucun chapitre dans ce filtre</strong>
+          Termine ou lance un chapitre pour le voir apparaître ici.
+        </div>
+      `;
+    } else {
+      els.allChaptersGrid.innerHTML = filtered.map(chapterCardHTML).join('');
+    }
+  }
+
+  function updateFinalCard() {
+    const record = state.mixed || {};
+    const stars = Math.min(3, Math.max(0, Number(record.stars) || 0));
+    els.finalStars.innerHTML = starMarkup(stars);
+    els.finalStars.setAttribute('aria-label', `${stars} étoile${stars > 1 ? 's' : ''} sur 3`);
+    els.finalBest.textContent = record.plays
+      ? `Record ${fmt(record.bestScore)} pts`
+      : 'Pas encore joué';
+  }
+
+  function renderHomeLibrary() {
+    els.homeLibrary.innerHTML = CHAPTERS.slice(0, 3).map(chapter => `
+      <button class="mini-fiche" type="button" data-sheet="${chapter.id}" aria-label="Ouvrir la fiche ${chapter.title}">
+        <span class="mini-icon" aria-hidden="true">${chapter.icon}</span>
+        <span class="mini-copy"><strong>${chapter.title}</strong><span>${chapter.fiche.length} formules clés</span></span>
+        <svg class="icon"><use href="#i-arrow"></use></svg>
+      </button>
+    `).join('');
+  }
+
+  function normalizeSearch(value) {
+    return String(value)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  }
+
+  function renderLibrary() {
+    const query = normalizeSearch(libraryQuery.trim());
+    const filtered = CHAPTERS.filter(chapter => {
+      if (!query) return true;
+      const haystack = normalizeSearch([
+        chapter.title,
+        chapter.desc,
+        ...chapter.fiche.flat()
+      ].join(' ').replace(/\$|<[^>]+>/g, ' '));
+      return haystack.includes(query);
+    });
+    const formulaCount = filtered.reduce((sum, chapter) => sum + chapter.fiche.length, 0);
+    els.libraryCount.textContent = `${filtered.length} fiche${filtered.length > 1 ? 's' : ''} · ${formulaCount} formule${formulaCount > 1 ? 's' : ''}`;
+
+    if (!filtered.length) {
+      els.libraryGrid.innerHTML = `
+        <div class="empty-state">
+          <svg class="icon"><use href="#i-search"></use></svg>
+          <strong>Aucune formule trouvée</strong>
+          Essaie un autre mot-clé, par exemple « dérivée », « limite » ou « probabilité ».
+        </div>
+      `;
+      return;
+    }
+
+    els.libraryGrid.innerHTML = filtered.map(chapter => {
+      const record = getChapterRecord(chapter.id);
+      return `
+        <article class="library-card">
+          <div class="library-head">
+            <span class="library-icon" aria-hidden="true">${chapter.icon}</span>
+            <div class="library-head-copy"><small>Fiche ${pad(chapter.no)}</small><h3>${chapter.title}</h3></div>
+            <span class="stars" role="img" aria-label="${record.stars} étoile${record.stars > 1 ? 's' : ''} sur 3">${starMarkup(record.stars)}</span>
+          </div>
+          <div class="formula-list">
+            ${chapter.fiche.map(([label, value]) => `
+              <div class="formula-row">
+                <span class="formula-label">${label}</span>
+                <span class="formula-value">${mathify(value)}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="library-actions">
+            <span class="record">${record.plays ? `Record ${fmt(record.bestScore)} pts` : 'Pas encore joué'}</span>
+            <div class="library-buttons">
+              <button class="btn btn-outline btn-sm" type="button" data-sheet="${chapter.id}">Fiche</button>
+              <button class="btn btn-gold btn-sm" type="button" data-play="${chapter.id}">Quiz</button>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  function renderAchievements() {
+    const unlocked = ACHIEVEMENTS.filter(achievement => achievement.test());
+    els.trophyCount.textContent = `${unlocked.length} / ${ACHIEVEMENTS.length} débloqués`;
+    els.trophyGrid.innerHTML = ACHIEVEMENTS.map(achievement => {
+      const isUnlocked = achievement.test();
+      return `
+        <div class="trophy ${isUnlocked ? 'unlocked' : 'locked'}" aria-label="${achievement.title} : ${isUnlocked ? 'débloqué' : 'verrouillé'}">
+          <span class="trophy-icon" aria-hidden="true">${achievement.icon}</span>
+          <div class="trophy-copy"><strong>${achievement.title}</strong><span>${achievement.desc}</span></div>
+          <span class="trophy-state">${isUnlocked ? 'Débloqué' : 'À venir'}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function formatHistoryDate(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Session récente';
+    try {
+      return new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(date);
+    } catch (error) {
+      return date.toLocaleString('fr-FR');
+    }
+  }
+
+  function renderHistory() {
+    const allHistory = Array.isArray(state.history) ? state.history : [];
+    const history = allHistory.slice(0, 8);
+    els.historyCount.textContent = `${allHistory.length} session${allHistory.length > 1 ? 's' : ''}`;
+    if (!history.length) {
+      els.historyList.innerHTML = `
+        <div class="empty-state">
+          <svg class="icon"><use href="#i-clock"></use></svg>
+          <strong>Pas encore de session</strong>
+          Termine un quiz pour retrouver ton score et tes étoiles ici.
+        </div>
+      `;
+      return;
+    }
+    els.historyList.innerHTML = history.map(entry => {
+      const stars = Math.min(3, Math.max(0, Number(entry.stars) || 0));
+      const modeLabel = entry.mode === 'mixed' ? 'Grand Mix' : 'Chapitre';
+      const timerLabel = entry.timerEnabled === false ? ' · sans chrono' : '';
+      return `
+        <div class="history-item">
+          <span class="history-dot" aria-hidden="true"></span>
+          <div class="history-copy">
+            <strong>${entry.title || 'Session'}</strong>
+            <span>${modeLabel}${timerLabel} · ${formatHistoryDate(entry.date)} · ${entry.correct || 0}/${entry.total || 0} bonnes réponses</span>
+          </div>
+          <div class="history-score"><strong>${fmt(entry.score)}</strong><span>points</span></div>
+          <span class="history-stars" aria-label="${stars} étoile${stars > 1 ? 's' : ''}">${[0, 1, 2].map(i => `<span class="${i < stars ? 'on' : ''}">★</span>`).join('')}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderProgress() {
+    const totals = getTotals();
+    const pct = Math.round((totals.stars / 33) * 100);
+    els.progressRing.style.setProperty('--p', String(pct));
+    els.progressRing.setAttribute('aria-label', `${pct} pour cent de maîtrise`);
+    els.progressValue.textContent = `${pct}%`;
+    els.progressCaption.textContent = `${totals.stars} / 33 étoiles`;
+    els.progressMessage.textContent = totals.stars === 33
+      ? 'Maîtrise complète : tous les chapitres sont validés. Entretiens tes réflexes avec le Grand Mix.'
+      : (totals.explored > 0
+        ? `${totals.mastered} chapitre${totals.mastered > 1 ? 's' : ''} maîtrisé${totals.mastered > 1 ? 's' : ''} · ${totals.accuracy}% de précision globale.`
+        : 'Commence un chapitre pour lancer ta progression et gagner tes premières étoiles.');
+
+    els.progressStats.innerHTML = `
+      <div class="progress-stat"><strong>${totals.explored}/11</strong><span>explorés</span></div>
+      <div class="progress-stat"><strong>${fmt(totals.correct)}</strong><span>bonnes réponses</span></div>
+      <div class="progress-stat"><strong>×${fmt(totals.bestStreak)}</strong><span>série max</span></div>
+      <div class="progress-stat"><strong>${fmt(state.xp)}</strong><span>XP</span></div>
+    `;
+
+    els.progressChapters.innerHTML = CHAPTERS.map(chapter => {
+      const record = getChapterRecord(chapter.id);
+      const accuracy = record.plays > 0 ? Math.round((record.bestCorrect / chapter.questions.length) * 100) : 0;
+      return `
+        <div class="progress-row">
+          <span class="progress-row-icon" aria-hidden="true">${chapter.icon}</span>
+          <div class="progress-info">
+            <strong>${chapter.title}</strong>
+            <span>${record.plays ? `Record ${fmt(record.bestScore)} pts · ${accuracy}%` : 'Pas encore joué'}</span>
+          </div>
+          <div class="progress-mini" aria-hidden="true"><span style="width:${(record.stars / 3) * 100}%"></span></div>
+          <span class="stars" role="img" aria-label="${record.stars} étoile${record.stars > 1 ? 's' : ''} sur 3">${starMarkup(record.stars)}</span>
+          <button class="btn btn-outline btn-sm" type="button" data-play="${chapter.id}">${record.plays ? 'Rejouer' : 'Jouer'}</button>
+        </div>
+      `;
+    }).join('');
+
+    renderHistory();
+  }
+
+  function renderTip() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const dayOfYear = Math.floor((now - start) / 86400000);
+    const tip = MATH_TIPS[dayOfYear % MATH_TIPS.length] || MATH_TIPS[0];
+    els.tipTitle.textContent = tip.title;
+    els.tipText.textContent = tip.text;
+  }
+
+  function updateHome() {
+    updateHeader();
+    updateSidebar();
+    updateGreeting();
+    updateHero();
+    updateRecommendation();
+    updateHomeStats();
+    renderChapters();
+    updateFinalCard();
+    renderHomeLibrary();
+    renderLibrary();
+    renderProgress();
+    renderAchievements();
+    renderTip();
+    updateNav(currentView);
+  }
+
+  function updateNav(view) {
+    document.querySelectorAll('[data-nav]').forEach(element => {
+      const active = element.dataset.nav === view && (element.classList.contains('nav-link') || element.classList.contains('bottom-nav') || element.closest('.bottom-nav'));
+      if (element.classList.contains('nav-link') || element.closest('.bottom-nav')) {
+        element.classList.toggle('active', active);
+        if (element.classList.contains('nav-link') || element.closest('.bottom-nav')) {
+          if (active) element.setAttribute('aria-current', 'page');
+          else element.removeAttribute('aria-current');
+        }
+      }
+    });
+  }
+
+  function syncSidebarInert() {
+    const mobile = window.matchMedia('(max-width:767px)').matches;
+    const closed = !els.sidebar.classList.contains('open');
+    if (mobile && closed) els.sidebar.setAttribute('inert', '');
+    else els.sidebar.removeAttribute('inert');
+  }
+
+  function openSidebar() {
+    els.sidebar.classList.add('open');
+    els.sidebarOverlay.classList.add('active');
+    els.menuToggle.setAttribute('aria-expanded', 'true');
+    els.menuToggle.setAttribute('aria-label', 'Fermer le menu');
+    els.sidebar.removeAttribute('inert');
+    document.body.classList.add('drawer-open');
+    if (currentView === 'game' && session && !session.answered && session.timerEnabled && timerId !== null) {
+      pauseTimer();
+      sidebarTimerPaused = true;
+    }
+    if (window.matchMedia('(max-width:767px)').matches) {
+      window.setTimeout(() => {
+        try { els.sidebarClose.focus({ preventScroll: true }); } catch (error) { els.sidebarClose.focus(); }
+      }, 50);
+    }
+  }
+
+  function closeSidebar() {
+    const wasFocusInside = els.sidebar.contains(document.activeElement);
+    els.sidebar.classList.remove('open');
+    els.sidebarOverlay.classList.remove('active');
+    els.menuToggle.setAttribute('aria-expanded', 'false');
+    els.menuToggle.setAttribute('aria-label', 'Ouvrir le menu');
+    document.body.classList.remove('drawer-open');
+    syncSidebarInert();
+    if (sidebarTimerPaused) {
+      sidebarTimerPaused = false;
+      if (currentView === 'game' && session && !session.answered) resumeTimer();
+    }
+    if (wasFocusInside && window.matchMedia('(max-width:767px)').matches) {
+      try { els.menuToggle.focus({ preventScroll: true }); } catch (error) { els.menuToggle.focus(); }
+    }
+  }
+
+  function showScreen(view, focus = true) {
+    const screens = {
+      home: els.homeScreen,
+      chapters: els.chaptersScreen,
+      library: els.libraryScreen,
+      progress: els.progressScreen,
+      game: els.gameScreen,
+      result: els.resultScreen
+    };
+    const target = screens[view] || els.homeScreen;
+    Object.values(screens).forEach(screen => {
+      if (screen) screen.classList.toggle('is-active', screen === target);
+    });
+    currentView = view;
+    document.body.classList.toggle('quiz-active', view === 'game' || view === 'result');
+    updateNav(view === 'game' || view === 'result' ? 'chapters' : view);
+    closeSidebar();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    if (!focus || !target) return;
+    const heading = target.querySelector('h1, h2');
+    if (heading) {
+      heading.setAttribute('tabindex', '-1');
+      window.setTimeout(() => {
+        try { heading.focus({ preventScroll: true }); } catch (error) { heading.focus(); }
+      }, 60);
+    }
+  }
+
+  function navigate(view) {
+    if (currentView === 'game' && session && !session.finished && view !== 'game') {
+      openQuitConfirm(() => showScreen(view, true));
+      return;
+    }
+    showScreen(view, true);
+  }
+
+  function makeGameQuestion(chapter, question) {
+    const options = question.choices.map((text, index) => ({
+      text,
+      correct: index === question.answer
+    }));
+    shuffle(options);
+    return {
+      q: question.q,
+      explain: question.explain,
+      options,
+      source: chapter.title,
+      sourceId: chapter.id,
+      sourceNo: chapter.no,
+      accent: '#E0B84A',
+      icon: chapter.icon,
+      chosen: null,
+      correct: false,
+      points: 0,
+      timedOut: false,
+      timeLeft: QUESTION_TIME
+    };
+  }
+
+  function startChapter(chapterId, options = {}) {
+    const chapter = getChapter(chapterId);
+    if (!chapter) return;
+    stopTimer();
+    const timerEnabled = options.timer !== false;
+    const questions = shuffle(chapter.questions.map(question => makeGameQuestion(chapter, question)));
+    startSession({
+      mode: 'chapter',
+      chapterId: chapter.id,
+      chapterNo: chapter.no,
+      title: chapter.title,
+      icon: chapter.icon,
+      accent: '#E0B84A',
+      timerEnabled,
+      questions
+    });
+  }
+
+  function startMixed(options = {}) {
+    stopTimer();
+    const timerEnabled = options.timer !== false;
+    const questions = shuffle(CHAPTERS.map(chapter => {
+      const question = chapter.questions[Math.floor(Math.random() * chapter.questions.length)];
+      return makeGameQuestion(chapter, question);
+    }));
+    startSession({
+      mode: 'mixed',
+      chapterId: null,
+      chapterNo: null,
+      title: 'Le Grand Mix',
+      icon: '∞',
+      accent: '#E0B84A',
+      timerEnabled,
+      questions
+    });
+  }
+
+  function startSession(config) {
+    stopTimer();
+    session = {
+      ...config,
+      index: 0,
+      score: 0,
+      streak: 0,
+      maxStreak: 0,
+      correctCount: 0,
+      selected: null,
+      answered: false,
+      answers: [],
+      finished: false,
+      timerEnabled: config.timerEnabled !== false,
+      timerPaused: false,
+      timeLeft: QUESTION_TIME
+    };
+
+    els.gameChapterLabel.textContent = config.title;
+    const modeSuffix = session.timerEnabled ? '' : ' · sans chrono';
+    els.gameKicker.textContent = (config.mode === 'mixed'
+      ? 'Défi final · 11 questions'
+      : `Chapitre ${pad(config.chapterNo)} · ${config.questions.length} questions`) + modeSuffix;
+    els.gameIcon.textContent = config.icon;
+    els.gameIcon.setAttribute('aria-hidden', 'true');
+    els.gameScreen.style.setProperty('--accent', '#E0B84A');
+    els.scoreValue.textContent = '0';
+    els.streakValue.textContent = '0';
+    els.streakBox.classList.remove('hot');
+
+    buildSegments();
+    showScreen('game', false);
+    renderQuestion();
+    sound('start');
+  }
+
+  function buildSegments() {
+    if (!session) return;
+    els.gameSegments.innerHTML = session.questions.map(() => '<span class="segment"></span>').join('');
+  }
+
+  function updateSegments() {
+    if (!session) return;
+    const segments = [...els.gameSegments.children];
+    segments.forEach((segment, index) => {
+      segment.className = 'segment';
+      const answer = session.answers[index];
+      if (answer) {
+        segment.classList.add(answer.correct ? 'is-correct' : 'is-wrong');
+      } else if (index === session.index) {
+        segment.classList.add('is-current');
+      }
+    });
+  }
+
+  function updateGameHud() {
+    if (!session) return;
+    els.scoreValue.textContent = fmt(session.score);
+    els.streakValue.textContent = String(session.streak);
+    els.streakBox.classList.toggle('hot', session.streak >= 3);
+    updateSegments();
+  }
+
+  function renderQuestion() {
+    if (!session) return;
+    const question = session.questions[session.index];
+    if (!question) return;
+    const total = session.questions.length;
+    const accent = '#E0B84A';
+
+    session.selected = null;
+    session.answered = false;
+    session.timerPaused = false;
+    session.timeLeft = QUESTION_TIME;
+
+    els.gameScreen.style.setProperty('--accent', accent);
+    els.sourceTag.hidden = session.mode !== 'mixed';
+    els.sourceTag.textContent = question.source;
+    els.questionCount.textContent = `Question ${session.index + 1} sur ${total}`;
+    els.questionText.innerHTML = mathify(question.q);
+    els.choices.innerHTML = question.options.map((option, index) => `
+      <button class="choice" type="button" data-index="${index}" aria-pressed="false">
+        <span class="choice-key" aria-hidden="true">${LETTERS[index]}</span>
+        <span class="choice-text">${mathify(option.text)}</span>
+      </button>
+    `).join('');
+    els.feedback.hidden = true;
+    els.feedback.className = 'feedback';
+    els.feedback.innerHTML = '';
+    els.nextBtn.disabled = true;
+    els.nextBtn.textContent = 'Valider';
+    els.nextBtn.classList.remove('is-next');
+    els.timerPill.classList.remove('low');
+    els.questionText.scrollTop = 0;
+
+    updateGameHud();
+    if (session.timerEnabled) startQuestionTimer();
+    else updateNoTimerUI();
+
+    els.quizCard.classList.remove('q-animate', 'q-shake');
+    void els.quizCard.offsetWidth;
+    els.quizCard.classList.add('q-animate');
+    window.setTimeout(() => {
+      if (session && session.index === session.questions.indexOf(question)) {
+        try { els.questionText.focus({ preventScroll: true }); } catch (error) { els.questionText.focus(); }
+      }
+    }, 70);
+  }
+
+  function selectChoice(index) {
+    if (!session || session.answered) return;
+    if (!session.questions[session.index].options[index]) return;
+    if (session.selected === index) return;
+    session.selected = index;
+    [...els.choices.children].forEach((choice, choiceIndex) => {
+      const selected = choiceIndex === index;
+      choice.classList.toggle('selected', selected);
+      choice.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
+    els.nextBtn.disabled = false;
+    sound('select');
+  }
+
+  function validateSelected() {
+    if (!session || session.answered) return;
+    if (session.selected === null || session.selected === undefined) {
+      els.quizCard.classList.remove('q-shake');
+      void els.quizCard.offsetWidth;
+      els.quizCard.classList.add('q-shake');
+      showToast('Choisis une réponse avant de valider.');
+      return;
+    }
+    evaluateAnswer(session.selected, false);
+  }
+
+  function evaluateAnswer(selectedIndex, timedOut) {
+    if (!session || session.answered) return;
+    const question = session.questions[session.index];
+    if (!question) return;
+
+    const correct = selectedIndex !== null && selectedIndex !== undefined && Boolean(question.options[selectedIndex]?.correct);
+    const timeLeft = Math.max(0, Math.min(QUESTION_TIME, Number(session.timeLeft) || 0));
+    const streakBefore = session.streak;
+    const timeBonus = correct && session.timerEnabled ? Math.round((timeLeft / QUESTION_TIME) * 50) : 0;
+    const streakBonus = correct ? Math.min(streakBefore, 4) * 25 : 0;
+    const points = correct ? 100 + timeBonus + streakBonus : 0;
+    const correctIndex = question.options.findIndex(option => option.correct);
+    const lastQuestion = session.index === session.questions.length - 1;
+
+    session.answered = true;
+    session.timerPaused = false;
+    if (timedOut) session.selected = null;
+    stopTimer();
+
+    question.chosen = selectedIndex;
+    question.correct = correct;
+    question.points = points;
+    question.timedOut = Boolean(timedOut);
+    question.timeLeft = timeLeft;
+    session.answers.push(question);
+
+    if (correct) {
+      session.score += points;
+      session.correctCount += 1;
+      session.streak += 1;
+      session.maxStreak = Math.max(session.maxStreak, session.streak);
+    } else {
+      session.streak = 0;
+    }
+
+    [...els.choices.children].forEach((choice, index) => {
+      choice.disabled = true;
+      choice.classList.remove('selected');
+      choice.setAttribute('aria-pressed', index === selectedIndex ? 'true' : 'false');
+      if (index === correctIndex) choice.classList.add('correct');
+      if (index === selectedIndex && !correct) choice.classList.add('wrong');
+      if (index !== correctIndex && index !== selectedIndex) choice.classList.add('dim');
+    });
+
+    const title = correct ? 'Bonne réponse !' : (timedOut ? 'Temps écoulé' : 'Pas tout à fait…');
+    const pointsLabel = correct ? `+${fmt(points)} pts` : '0 pt';
+    els.feedback.className = `feedback ${correct ? 'is-good' : 'is-bad'}`;
+    els.feedback.innerHTML = `
+      <div class="feedback-head">
+        <span class="feedback-icon" aria-hidden="true">${correct ? '✓' : '×'}</span>
+        <strong>${title}</strong>
+        <span class="feedback-points">${pointsLabel}</span>
+      </div>
+      <p>${mathify(question.explain)}</p>
+    `;
+    els.feedback.hidden = false;
+    els.nextBtn.disabled = false;
+    els.nextBtn.textContent = lastQuestion ? 'Voir mon bilan' : 'Question suivante';
+    els.nextBtn.classList.add('is-next');
+
+    updateGameHud();
+    els.scoreValue.classList.remove('score-bump');
+    void els.scoreValue.offsetWidth;
+    if (correct) els.scoreValue.classList.add('score-bump');
+
+    if (correct && session.streak === 5) {
+      showToast('Série de 5 bonnes réponses. Tu es en feu !');
+    }
+
+    sound(correct ? 'correct' : 'wrong');
+    window.setTimeout(() => {
+      if (session && session.answered) {
+        try { els.nextBtn.focus({ preventScroll: true }); } catch (error) { els.nextBtn.focus(); }
+      }
+    }, 140);
+  }
+
+  function nextQuestion() {
+    if (!session) return;
+    if (session.index < session.questions.length - 1) {
+      session.index += 1;
+      renderQuestion();
+    } else {
+      finishSession();
+    }
+  }
+
+  function finishSession() {
+    if (!session || session.finished) return;
+    session.finished = true;
+    session.timerPaused = false;
+    stopTimer();
+
+    const total = session.questions.length;
+    const correctCount = session.correctCount;
+    const stars = starsFor(correctCount, total);
+    const xpEarned = Math.round(session.score / 5) + correctCount * 10 + (stars === 3 ? 40 : 0);
+    const oldLevel = levelFor(state.xp);
+    const previous = session.mode === 'mixed'
+      ? { ...defaultState().mixed, ...(state.mixed || {}) }
+      : getChapterRecord(session.chapterId);
+    const previousBest = Math.max(0, Number(previous.bestScore) || 0);
+    const previousPlays = Math.max(0, Number(previous.plays) || 0);
+    const isNewBest = session.score > previousBest;
+    const bestScore = Math.max(previousBest, session.score);
+
+    if (session.mode === 'mixed') {
+      state.mixed = {
+        bestScore,
+        stars: Math.max(Number(state.mixed?.stars) || 0, stars),
+        plays: previousPlays + 1,
+        bestCorrect: Math.max(Number(state.mixed?.bestCorrect) || 0, correctCount)
+      };
+      state.lastMode = 'mixed';
+      state.lastChapter = null;
+    } else {
+      state.chapters[session.chapterId] = {
+        bestScore,
+        stars: Math.max(Number(previous.stars) || 0, stars),
+        plays: previousPlays + 1,
+        bestCorrect: Math.max(Number(previous.bestCorrect) || 0, correctCount)
+      };
+      state.lastMode = 'chapter';
+      state.lastChapter = session.chapterId;
+    }
+
+    state.xp = Math.max(0, (Number(state.xp) || 0) + xpEarned);
+    state.stats.answered = (Number(state.stats.answered) || 0) + total;
+    state.stats.correct = (Number(state.stats.correct) || 0) + correctCount;
+    state.stats.bestStreak = Math.max(Number(state.stats.bestStreak) || 0, session.maxStreak);
+    state.stats.sessions = Math.max(0, Number(state.stats.sessions) || 0) + 1;
+    state.history = Array.isArray(state.history) ? state.history : [];
+    state.history.unshift({
+      date: new Date().toISOString(),
+      mode: session.mode,
+      chapterId: session.mode === 'chapter' ? session.chapterId : null,
+      title: session.mode === 'mixed' ? 'Le Grand Mix' : session.title,
+      score: session.score,
+      correct: correctCount,
+      total,
+      stars,
+      accuracy: total > 0 ? Math.round((correctCount / total) * 100) : 0,
+      xp: xpEarned,
+      timerEnabled: session.timerEnabled
+    });
+    state.history = state.history.slice(0, 16);
+    saveState();
+
+    const newLevel = levelFor(state.xp);
+    updateHeader();
+    updateHome();
+
+    renderResults({
+      stars,
+      xpEarned,
+      correctCount,
+      total,
+      isNewBest,
+      bestScore,
+      firstPlay: previousPlays === 0,
+      oldLevel,
+      newLevel
+    });
+    showScreen('result', true);
+    sound(stars > 0 ? 'win' : 'complete');
+
+    if (stars === 3 || newLevel.index > oldLevel.index) {
+      window.setTimeout(launchConfetti, 260);
+    }
+    if (newLevel.index > oldLevel.index) {
+      window.setTimeout(() => {
+        if (currentView === 'result') showToast(`Niveau ${newLevel.index} débloqué : ${newLevel.level.name} !`);
+      }, 850);
+    }
+  }
+
+  function renderResults(data) {
+    if (!session) return;
+    const { stars, xpEarned, correctCount, total, isNewBest, bestScore, firstPlay } = data;
+    const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+    els.resultScreen.style.setProperty('--accent', '#E0B84A');
+
+    const copy = {
+      3: ['Maîtrise totale !', 'Tu as dominé cette session. Les 3 étoiles sont à toi — la suite t’attend.'],
+      2: ['Belle performance !', 'Presque parfait. Revois les explications manquées et vise les 3 étoiles.'],
+      1: ['C’est un bon début !', 'Les bases sont là. Relis la fiche éclair et retente pour gagner plus d’étoiles.'],
+      0: ['On ne lâche rien !', 'Chaque erreur t’apprend quelque chose. Ouvre la fiche du chapitre, puis retente.']
+    };
+    const [title, message] = copy[stars];
+
+    els.resultEmblem.textContent = stars === 3 ? '★' : (stars === 2 ? '✦' : (session.mode === 'mixed' ? '∞' : session.icon));
+    els.resultEyebrow.textContent = session.mode === 'mixed'
+      ? `Défi final · ${total} questions`
+      : `Chapitre ${pad(session.chapterNo)} · ${session.title}`;
+    els.resultTitle.textContent = title;
+    els.resultMessage.textContent = message;
+    els.resultStars.innerHTML = [0, 1, 2].map(index => `
+      <span class="result-star ${index < stars ? 'on' : ''}" style="--d:${index * 120}ms">★</span>
+    `).join('');
+    els.resultStars.setAttribute('aria-label', `${stars} étoile${stars > 1 ? 's' : ''} sur 3`);
+    els.resultPoints.textContent = fmt(session.score);
+    els.resultMetrics.innerHTML = `
+      <div class="metric"><strong>${correctCount}/${total}</strong><span>bonnes réponses</span></div>
+      <div class="metric"><strong>${accuracy}%</strong><span>précision</span></div>
+      <div class="metric"><strong>×${session.maxStreak}</strong><span>meilleure série</span></div>
+    `;
+    els.resultXp.textContent = `+${fmt(xpEarned)} XP`;
+    if (isNewBest) {
+      els.resultRecord.innerHTML = '<span class="record-badge">★ Nouveau record personnel</span>';
+    } else if (firstPlay) {
+      els.resultRecord.textContent = 'Première session terminée.';
+    } else if (bestScore > 0) {
+      els.resultRecord.textContent = `Record personnel : ${fmt(bestScore)} pts`;
+    } else {
+      els.resultRecord.textContent = 'Continue, chaque essai compte.';
+    }
+    els.retryBtn.textContent = session.mode === 'mixed' ? 'Refaire le défi' : 'Rejouer';
+    if (!session.timerEnabled) {
+      els.resultEyebrow.textContent += ' · sans chrono';
+    }
+
+    renderReview();
+  }
+
+  function renderReview() {
+    if (!session) return;
+    els.reviewBlock.open = false;
+    els.reviewCount.textContent = `${session.answers.length} questions`;
+    els.reviewList.innerHTML = session.answers.map((question, index) => {
+      const correctOption = question.options.find(option => option.correct);
+      const chosenOption = question.chosen !== null && question.chosen !== undefined
+        ? question.options[question.chosen]
+        : null;
+      const chosenText = chosenOption ? mathify(chosenOption.text) : 'Temps écoulé — aucune réponse validée';
+      return `
+        <details class="review-item ${question.correct ? 'ok' : 'ko'}">
+          <summary>
+            <span class="review-num" aria-hidden="true">${pad(index + 1)}</span>
+            <span class="review-q">${mathify(question.q)}</span>
+            <span class="review-status" aria-label="${question.correct ? 'bonne réponse' : 'à revoir'}">${question.correct ? '✓' : '×'}</span>
+          </summary>
+          <div class="review-body">
+            ${session.mode === 'mixed' ? `<p class="review-source">${question.source}</p>` : ''}
+            <p><strong>Bonne réponse :</strong> ${correctOption ? mathify(correctOption.text) : '—'}</p>
+            ${question.correct ? '' : `<p class="review-choice"><strong>Ta réponse :</strong> ${chosenText}</p>`}
+            <p class="review-explain">${mathify(question.explain)}</p>
+          </div>
+        </details>
+      `;
+    }).join('');
+  }
+
+  function retrySession() {
+    if (!session) return;
+    const timer = session.timerEnabled !== false;
+    if (session.mode === 'mixed') startMixed({ timer });
+    else if (session.chapterId) startChapter(session.chapterId, { timer });
+  }
+
+  function goHome() {
+    stopTimer();
+    session = null;
+    showScreen('home', true);
+    updateHome();
+  }
+
+  function quitGame() {
+    if (!session) {
+      goHome();
+      return;
+    }
+    if (session.answers.length > 0) {
+      openQuitConfirm(goHome);
+      return;
+    }
+    goHome();
+  }
+
+  function startQuestionTimer() {
+    if (!session || !session.timerEnabled) return;
+    beginTimer(QUESTION_TIME);
+  }
+
+  function beginTimer(seconds) {
+    stopTimer();
+    if (!session || session.answered || !session.timerEnabled) return;
+    session.timerPaused = false;
+    session.timeLeft = Math.max(0, Number(seconds) || 0);
+    timerEnd = performance.now() + session.timeLeft * 1000;
+    updateTimerUI(session.timeLeft);
+    timerId = window.setInterval(tickTimer, 100);
+  }
+
+  function tickTimer() {
+    if (!session || session.answered) {
+      stopTimer();
+      return;
+    }
+    const remaining = Math.max(0, (timerEnd - performance.now()) / 1000);
+    session.timeLeft = remaining;
+    updateTimerUI(remaining);
+    if (remaining <= 0) {
+      stopTimer();
+      evaluateAnswer(null, true);
+    }
+  }
+
+  function updateTimerUI(seconds) {
+    const safe = Math.max(0, Number(seconds) || 0);
+    const ratio = Math.min(1, safe / QUESTION_TIME);
+    els.timerPill.classList.remove('no-timer');
+    els.timerFill.style.width = `${ratio * 100}%`;
+    els.timerValue.textContent = String(Math.ceil(safe));
+    els.timerPill.classList.toggle('low', safe <= 15);
+    els.timerPill.setAttribute('aria-label', `Temps restant : ${Math.ceil(safe)} secondes`);
+  }
+
+  function updateNoTimerUI() {
+    els.timerPill.classList.add('no-timer');
+    els.timerPill.classList.remove('low');
+    els.timerFill.style.width = '100%';
+    els.timerValue.textContent = '∞';
+    els.timerPill.setAttribute('aria-label', 'Sans chrono');
+  }
+
+  function stopTimer() {
+    if (timerId !== null) {
+      window.clearInterval(timerId);
+      timerId = null;
+    }
+  }
+
+  function pauseTimer() {
+    if (!session || session.answered || !session.timerEnabled || timerId === null) return;
+    session.timeLeft = Math.max(0, (timerEnd - performance.now()) / 1000);
+    session.timerPaused = true;
+    stopTimer();
+  }
+
+  function resumeTimer() {
+    if (!session || session.answered || !session.timerEnabled || !session.timerPaused) return;
+    if (document.body.classList.contains('drawer-open')) return;
+    beginTimer(session.timeLeft);
+  }
+
+  function openSheet(chapterId, trigger) {
+    const chapter = getChapter(chapterId);
+    if (!chapter) return;
+    sheetChapterId = chapter.id;
+    sheetReturnFocus = trigger && typeof trigger.focus === 'function' ? trigger : document.activeElement;
+    els.sheetModal.style.setProperty('--accent', '#E0B84A');
+    els.sheetIcon.textContent = chapter.icon;
+    els.sheetKicker.textContent = `Fiche éclair · chapitre ${pad(chapter.no)}`;
+    els.sheetTitle.textContent = chapter.title;
+    els.sheetSub.textContent = `${chapter.desc} L’essentiel à avoir en tête avant de jouer.`;
+    els.sheetFormulas.innerHTML = chapter.fiche.map(([label, value]) => `
+      <div class="formula-row">
+        <span class="formula-label">${label}</span>
+        <span class="formula-value">${mathify(value)}</span>
+      </div>
+    `).join('');
+    els.sheetPlayBtn.textContent = 'Jouer avec chrono';
+    els.sheetPlayRelaxBtn.textContent = 'Sans chrono';
+    els.sheetModal.hidden = false;
+    syncModalLock();
+    window.setTimeout(() => {
+      try { els.sheetClose.focus({ preventScroll: true }); } catch (error) { els.sheetClose.focus(); }
+    }, 40);
+  }
+
+  function closeSheet(restoreFocus = true) {
+    if (els.sheetModal.hidden) return;
+    els.sheetModal.hidden = true;
+    syncModalLock();
+    if (restoreFocus && sheetReturnFocus && typeof sheetReturnFocus.focus === 'function' && document.contains(sheetReturnFocus)) {
+      try { sheetReturnFocus.focus({ preventScroll: true }); } catch (error) { sheetReturnFocus.focus(); }
+    }
+    sheetReturnFocus = null;
+  }
+
+  function syncModalLock() {
+    const locked = !els.sheetModal.hidden || !els.confirmModal.hidden;
+    document.body.classList.toggle('modal-open', locked);
+  }
+
+  function trapFocus(event, panel) {
+    if (event.key !== 'Tab' || !panel) return;
+    const focusable = [...panel.querySelectorAll('button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')];
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  function openConfirm(config = {}) {
+    confirmAction = typeof config.onConfirm === 'function' ? config.onConfirm : null;
+    confirmActionCancel = typeof config.onCancel === 'function' ? config.onCancel : null;
+    confirmReturnFocus = document.activeElement;
+    els.confirmIcon.textContent = config.icon || (config.danger ? '⚠️' : '★');
+    els.confirmTitle.textContent = config.title || 'Confirmation';
+    els.confirmMessage.innerHTML = config.message || 'Es-tu sûr de vouloir continuer ?';
+    els.confirmOk.textContent = config.confirmText || 'Confirmer';
+    els.confirmOk.className = `btn ${config.danger ? 'btn-danger' : 'btn-gold'}`;
+    els.confirmModal.hidden = false;
+    syncModalLock();
+    window.setTimeout(() => {
+      try { els.confirmCancel.focus({ preventScroll: true }); } catch (error) { els.confirmCancel.focus(); }
+    }, 40);
+  }
+
+  function closeConfirm(restoreFocus = true) {
+    if (els.confirmModal.hidden) return;
+    els.confirmModal.hidden = true;
+    confirmAction = null;
+    confirmActionCancel = null;
+    syncModalLock();
+    if (restoreFocus && confirmReturnFocus && typeof confirmReturnFocus.focus === 'function' && document.contains(confirmReturnFocus)) {
+      try { confirmReturnFocus.focus({ preventScroll: true }); } catch (error) { confirmReturnFocus.focus(); }
+    }
+    confirmReturnFocus = null;
+  }
+
+  function acceptConfirm() {
+    const action = confirmAction;
+    closeConfirm(false);
+    if (action) action();
+  }
+
+  function cancelConfirm() {
+    const action = confirmActionCancel;
+    closeConfirm(true);
+    if (action) action();
+  }
+
+  function openQuitConfirm(afterLeave) {
+    const shouldResume = Boolean(session && session.timerEnabled && !session.answered && timerId !== null);
+    if (shouldResume) pauseTimer();
+    openConfirm({
+      title: 'Quitter la partie ?',
+      message: 'Les points de cette session ne seront pas enregistrés. Tu peux continuer ton quiz ou revenir au tableau de bord.',
+      confirmText: 'Quitter',
+      danger: true,
+      icon: '⚠️',
+      onConfirm: () => {
+        stopTimer();
+        session = null;
+        if (typeof afterLeave === 'function') afterLeave();
+      },
+      onCancel: () => {
+        if (shouldResume) resumeTimer();
+      }
+    });
+  }
+
+  function showToast(message) {
+    els.toast.textContent = message;
+    els.toast.classList.add('show');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => els.toast.classList.remove('show'), 2900);
+  }
+
+  function resetProgress() {
+    const shouldResume = Boolean(session && session.timerEnabled && !session.answered && timerId !== null);
+    if (shouldResume) pauseTimer();
+    openConfirm({
+      title: 'Réinitialiser la progression ?',
+      message: 'Toutes tes étoiles, ton XP et ton historique seront effacés de cet appareil. Cette action est définitive.',
+      confirmText: 'Tout effacer',
+      danger: true,
+      icon: '↺',
+      onConfirm: () => {
+        stopTimer();
+        state = defaultState();
+        session = null;
+        chapterFilter = 'all';
+        libraryQuery = '';
+        els.librarySearch.value = '';
+        saveState();
+        renderSound();
+        showScreen('home', true);
+        updateHome();
+        showToast('Progression réinitialisée. Nouveau départ !');
+      },
+      onCancel: () => {
+        if (shouldResume) resumeTimer();
+      }
+    });
+  }
+
+  function renderSound() {
+    const enabled = Boolean(state.settings.sound);
+    els.soundOnIcon.hidden = !enabled;
+    els.soundOffIcon.hidden = enabled;
+    els.soundBtn.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+    els.soundBtn.setAttribute('aria-label', enabled ? 'Couper le son' : 'Activer le son');
+  }
+
+  function toggleSound() {
+    state.settings.sound = !state.settings.sound;
+    saveState();
+    renderSound();
+    if (state.settings.sound) sound('select');
+  }
+
+  function getAudio() {
+    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtor) return null;
+    try {
+      if (!audioContext) audioContext = new AudioCtor();
+      if (audioContext.state === 'suspended') audioContext.resume().catch(() => {});
+      return audioContext;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function sound(name) {
+    if (!state.settings.sound) return;
+    const ctx = getAudio();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      const note = (frequency, offset, duration, type, volume) => {
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+        oscillator.type = type || 'sine';
+        oscillator.frequency.setValueAtTime(frequency, now + offset);
+        gain.gain.setValueAtTime(0.0001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(volume || 0.03, now + offset + 0.014);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + duration);
+        oscillator.connect(gain).connect(ctx.destination);
+        oscillator.start(now + offset);
+        oscillator.stop(now + offset + duration + 0.04);
+      };
+
+      if (name === 'select') {
+        note(390, 0, 0.07, 'sine', 0.018);
+      } else if (name === 'correct') {
+        note(659.25, 0, 0.12, 'triangle', 0.035);
+        note(987.77, 0.08, 0.2, 'sine', 0.03);
+      } else if (name === 'wrong') {
+        note(196, 0, 0.15, 'sawtooth', 0.022);
+        note(146.83, 0.08, 0.22, 'triangle', 0.025);
+      } else if (name === 'start') {
+        note(440, 0, 0.08, 'sine', 0.025);
+        note(659.25, 0.07, 0.14, 'sine', 0.024);
+      } else if (name === 'win') {
+        [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => {
+          note(frequency, index * 0.09, 0.22, index === 3 ? 'sine' : 'triangle', 0.03);
+        });
+      } else if (name === 'complete') {
+        note(392, 0, 0.14, 'triangle', 0.025);
+        note(523.25, 0.08, 0.22, 'sine', 0.025);
+      }
+    } catch (error) {
+      // Le son est un bonus : on ignore silencieusement les erreurs audio.
+    }
+  }
+
+  function resizeConfetti() {
+    if (!els.confettiCanvas) return;
+    confetti.canvas = els.confettiCanvas;
+    confetti.dpr = Math.min(2, window.devicePixelRatio || 1);
+    confetti.canvas.width = Math.round(window.innerWidth * confetti.dpr);
+    confetti.canvas.height = Math.round(window.innerHeight * confetti.dpr);
+    confetti.ctx = confetti.canvas.getContext('2d');
+    if (confetti.ctx) confetti.ctx.setTransform(confetti.dpr, 0, 0, confetti.dpr, 0, 0);
+  }
+
+  function launchConfetti() {
+    if (REDUCED_MOTION.matches || !els.confettiCanvas) return;
+    resizeConfetti();
+    const ctx = confetti.ctx;
+    if (!ctx) return;
+    const colors = ['#E0B84A', '#B8860B', '#2D7D5A', '#4CC38A', '#F5F0E8', '#D97A3A'];
+    const originX = window.innerWidth / 2;
+    const originY = Math.min(window.innerHeight * 0.3, 260);
+    for (let i = 0; i < 150; i += 1) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 3.8 + Math.random() * 10.5;
+      confetti.parts.push({
+        x: originX + (Math.random() - 0.5) * 40,
+        y: originY + (Math.random() - 0.5) * 20,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 2.8,
+        gravity: 0.18 + Math.random() * 0.08,
+        drag: 0.988,
+        size: 4 + Math.random() * 6,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.25,
+        life: 1,
+        decay: 0.007 + Math.random() * 0.007
+      });
+    }
+    if (!confetti.raf) confetti.raf = window.requestAnimationFrame(tickConfetti);
+  }
+
+  function tickConfetti() {
+    const ctx = confetti.ctx;
+    if (!ctx) {
+      confetti.raf = 0;
+      return;
+    }
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    confetti.parts.forEach(part => {
+      part.vy += part.gravity;
+      part.vx *= part.drag;
+      part.vy *= part.drag;
+      part.x += part.vx;
+      part.y += part.vy;
+      part.rotation += part.spin;
+      part.life -= part.decay;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, part.life * 1.7));
+      ctx.translate(part.x, part.y);
+      ctx.rotate(part.rotation);
+      ctx.fillStyle = part.color;
+      ctx.fillRect(-part.size / 2, -part.size / 3, part.size, part.size * 0.66);
+      ctx.restore();
+    });
+    confetti.parts = confetti.parts.filter(part => part.life > 0 && part.y < window.innerHeight + 60);
+    if (confetti.parts.length) {
+      confetti.raf = window.requestAnimationFrame(tickConfetti);
+    } else {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      confetti.raf = 0;
+    }
+  }
+
+  function handleKeydown(event) {
+    if (!els.confirmModal.hidden) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        cancelConfirm();
+        return;
+      }
+      trapFocus(event, els.confirmPanel);
+      return;
+    }
+    if (!els.sheetModal.hidden) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeSheet();
+        return;
+      }
+      trapFocus(event, els.sheetPanel);
+      return;
+    }
+    if (els.sidebar.classList.contains('open')) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeSidebar();
+        return;
+      }
+      if (event.key === 'Tab' && window.matchMedia('(max-width:767px)').matches) {
+        trapFocus(event, els.sidebar);
+        return;
+      }
+    }
+    if (currentView !== 'game' || !session) return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    const target = event.target instanceof Element ? event.target : document.body;
+
+    if (event.key === 'Enter') {
+      if (event.target.closest && event.target.closest('#nextBtn')) return;
+      if (session.answered) {
+        if (target.closest('button, summary, a, input, textarea, select')) return;
+        event.preventDefault();
+        nextQuestion();
+        return;
+      }
+      if (target.closest('.choice')) {
+        event.preventDefault();
+        validateSelected();
+        return;
+      }
+      if (target.closest('button, summary, a, input, textarea, select')) return;
+      event.preventDefault();
+      validateSelected();
+      return;
+    }
+
+    if (!session.answered && /^[1-4]$/.test(event.key)) {
+      const index = Number(event.key) - 1;
+      if (index < session.questions[session.index].options.length) {
+        event.preventDefault();
+        selectChoice(index);
+      }
+    }
+  }
+
+  function bindEvents() {
+    els.menuToggle.addEventListener('click', openSidebar);
+    els.sidebarClose.addEventListener('click', closeSidebar);
+    els.sidebarOverlay.addEventListener('click', closeSidebar);
+    els.soundBtn.addEventListener('click', toggleSound);
+
+    els.continueBtn.addEventListener('click', () => {
+      const next = recommendedChapter();
+      if (next) startChapter(next.id);
+      else startMixed();
+    });
+    els.finalHeroBtn.addEventListener('click', () => startMixed({ timer: true }));
+    els.finalBtn.addEventListener('click', () => startMixed({ timer: true }));
+    els.finalRelaxBtn.addEventListener('click', () => startMixed({ timer: false }));
+
+    els.quitBtn.addEventListener('click', quitGame);
+    els.choices.addEventListener('click', event => {
+      const choice = event.target.closest('.choice');
+      if (!choice || choice.disabled) return;
+      selectChoice(Number(choice.dataset.index));
+    });
+    els.nextBtn.addEventListener('click', () => {
+      if (!session) return;
+      if (session.answered) nextQuestion();
+      else validateSelected();
+    });
+
+    els.retryBtn.addEventListener('click', retrySession);
+    els.homeBtn.addEventListener('click', goHome);
+    els.resetBtn.addEventListener('click', resetProgress);
+
+    els.sheetClose.addEventListener('click', () => closeSheet());
+    els.sheetModal.addEventListener('click', event => {
+      if (event.target === els.sheetModal) closeSheet();
+    });
+    els.sheetPlayBtn.addEventListener('click', () => {
+      const chapterId = sheetChapterId;
+      closeSheet(false);
+      if (chapterId) startChapter(chapterId, { timer: true });
+    });
+    els.sheetPlayRelaxBtn.addEventListener('click', () => {
+      const chapterId = sheetChapterId;
+      closeSheet(false);
+      if (chapterId) startChapter(chapterId, { timer: false });
+    });
+
+    els.confirmOk.addEventListener('click', acceptConfirm);
+    els.confirmCancel.addEventListener('click', cancelConfirm);
+    els.confirmClose.addEventListener('click', cancelConfirm);
+    els.confirmModal.addEventListener('click', event => {
+      if (event.target === els.confirmModal) cancelConfirm();
+    });
+
+    els.librarySearch.addEventListener('input', () => {
+      libraryQuery = els.librarySearch.value;
+      renderLibrary();
+    });
+
+    document.addEventListener('click', event => {
+      const navTarget = event.target.closest('[data-nav]');
+      if (navTarget) {
+        event.preventDefault();
+        navigate(navTarget.dataset.nav);
+        return;
+      }
+      const playTarget = event.target.closest('[data-play]');
+      if (playTarget) {
+        event.preventDefault();
+        startChapter(playTarget.dataset.play, { timer: true });
+        return;
+      }
+      const sheetTarget = event.target.closest('[data-sheet]');
+      if (sheetTarget) {
+        event.preventDefault();
+        openSheet(sheetTarget.dataset.sheet, sheetTarget);
+        return;
+      }
+      const actionTarget = event.target.closest('[data-action]');
+      if (actionTarget) {
+        event.preventDefault();
+        if (actionTarget.dataset.action === 'mixed') {
+          if (currentView === 'game' && session && !session.finished) openQuitConfirm(() => startMixed({ timer: true }));
+          else startMixed({ timer: true });
+        }
+        return;
+      }
+      const filterTarget = event.target.closest('[data-filter]');
+      if (filterTarget) {
+        event.preventDefault();
+        chapterFilter = filterTarget.dataset.filter || 'all';
+        renderChapters();
+      }
+    });
+
+    document.addEventListener('keydown', handleKeydown);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) pauseTimer();
+      else resumeTimer();
+    });
+    window.addEventListener('resize', () => {
+      resizeConfetti();
+      syncSidebarInert();
+    });
+  }
+
+  function init() {
+    bindEvents();
+    renderSound();
+    updateHeader();
+    updateHome();
+    showScreen('home', false);
+    closeSidebar();
+    els.menuToggle.setAttribute('aria-expanded', 'false');
+    resizeConfetti();
+  }
+
+  init();
+
+})();
+
+
+</script>
+</body>
+</html>
