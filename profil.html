@@ -1867,9 +1867,9 @@
           currentUid = null;
           clearSession();
           try { await signOut(auth); } catch (e) {}
-          window.location.replace('login.html');
+          window.location.replace('auth-choice.html');
         } catch (error) {
-          window.location.replace('login.html');
+          window.location.replace('auth-choice.html');
         }
       }
     });

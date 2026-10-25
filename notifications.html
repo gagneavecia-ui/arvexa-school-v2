@@ -1449,7 +1449,9 @@ async function performLogout() {
 
 document.getElementById('logoutBtn').addEventListener('click', (e) => {
   e.preventDefault();
-  performLogout();
+  // ✅ Modale uniforme (même modèle que index.html)
+  if (window.arvexaLogout) { window.arvexaLogout(); return; }
+  performLogout(); // filet de sécurité si le module n'est pas chargé
 });
 
 document.getElementById('menuToggle').addEventListener('click', () => {
@@ -1581,5 +1583,6 @@ window.addEventListener('beforeunload', () => {
 
 console.log('🚀 ARVEXA — Notifications (version corrigée C1-C9)');
 </script>
+<script type="module" src="./arvexa-confirm.js"></script>
 </body>
 </html>

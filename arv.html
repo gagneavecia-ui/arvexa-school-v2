@@ -1919,26 +1919,37 @@ async function loadConversation(conversationId) {
 
 async function deleteConversation(conversationId) {
   if (!state.user) return;
-  if (!confirm('Supprimer cette conversation ?')) return;
-  try {
-    const token = await getIdToken(state.user);
-    await fetch('/api/arv-history', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ action: 'delete', conversationId })
-    });
-    state.conversations = state.conversations.filter((c) => c.id !== conversationId);
-    if (state.conversationId === conversationId) {
-      newConversation();
+
+  // ✅ Modale uniforme (même modèle que index.html)
+  window.arvexaConfirm({
+    title: 'Supprimer cette conversation ?',
+    message: 'Cette action est <strong>irréversible</strong>.',
+    icon: '🗑️',
+    confirmText: 'Supprimer',
+    cancelText: 'Annuler',
+    variant: 'danger',
+    onConfirm: async () => {
+      try {
+        const token = await getIdToken(state.user);
+        await fetch('/api/arv-history', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ action: 'delete', conversationId })
+        });
+        state.conversations = state.conversations.filter((c) => c.id !== conversationId);
+        if (state.conversationId === conversationId) {
+          newConversation();
+        }
+        renderConversations();
+        showToast('Conversation supprimée', 'success');
+      } catch (_) {
+        showToast('Impossible de supprimer', 'error');
+      }
     }
-    renderConversations();
-    showToast('Conversation supprimée', 'success');
-  } catch (_) {
-    showToast('Impossible de supprimer', 'error');
-  }
+  });
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -2386,5 +2397,6 @@ updateSendBtn();
 
 console.log('🚀 ARV Assistant v2.1 — corrections C1-C7 appliquées');
 </script>
+<script type="module" src="./arvexa-confirm.js"></script>
 </body>
 </html>

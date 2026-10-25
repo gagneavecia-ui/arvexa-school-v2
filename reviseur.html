@@ -2717,28 +2717,36 @@ function renderNotionContent(n) {
 async function deleteCurrentNotion() {
   if (!state.currentNotion) return;
 
-  const confirmed = window.confirm('Supprimer cette notion ? Elle pourra être régénérée plus tard.');
-  if (!confirmed) return;
+  // ✅ Modale uniforme (même modèle que index.html)
+  window.arvexaConfirm({
+    title: 'Supprimer cette notion ?',
+    message: 'Elle pourra être <strong>régénérée</strong> plus tard.',
+    icon: '🗑️',
+    confirmText: 'Supprimer',
+    cancelText: 'Annuler',
+    variant: 'danger',
+    onConfirm: async () => {
+      try {
+        await callApi({
+          action: 'deleteNotion',
+          subject: state.subject,
+          chapter: state.chapter,
+          notionId: state.currentNotion.notionId
+        });
 
-  try {
-    await callApi({
-      action: 'deleteNotion',
-      subject: state.subject,
-      chapter: state.chapter,
-      notionId: state.currentNotion.notionId
-    });
+        showToast('Notion supprimée', 'success');
+        state.currentNotion = null;
+        await loadCahier();
 
-    showToast('Notion supprimée', 'success');
-    state.currentNotion = null;
-    await loadCahier();
+        window.history.replaceState({ view: 'viewHome' }, '', window.location.pathname + window.location.search);
+        showView('viewHome');
 
-    window.history.replaceState({ view: 'viewHome' }, '', window.location.pathname + window.location.search);
-    showView('viewHome');
-
-  } catch (err) {
-    console.error('[Réviseur] deleteNotion error:', err);
-    showToast(err.message || 'Erreur de suppression', 'error');
-  }
+      } catch (err) {
+        console.error('[Réviseur] deleteNotion error:', err);
+        showToast(err.message || 'Erreur de suppression', 'error');
+      }
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3144,5 +3152,6 @@ window.addEventListener('beforeunload', () => {
 
 console.log('🚀 ARVEXA — Réviseur v7.3 — Corrections C1-C9 appliquées');
 </script>
+<script type="module" src="./arvexa-confirm.js"></script>
 </body>
 </html>

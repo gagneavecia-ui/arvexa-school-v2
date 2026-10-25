@@ -2268,7 +2268,14 @@ async function sendToWhatsApp() {
   const requestId = generateRequestId();
 
   if (!selectedPaymentMethod) {
-    alert('Choisis un mode de paiement');
+    window.arvexaConfirm({
+      title: 'Mode de paiement',
+      message: 'Choisis d\'abord un <strong>mode de paiement</strong> pour continuer.',
+      icon: '💳',
+      confirmText: 'OK',
+      showCancel: false,
+      variant: 'primary'
+    });
     return;
   }
 
@@ -2500,7 +2507,14 @@ subscribeAutoBtn.addEventListener('click', async () => {
 
   } catch (err) {
     console.error(err);
-    alert('Erreur : ' + err.message);
+    window.arvexaConfirm({
+      title: 'Erreur de paiement',
+      message: 'Une erreur est survenue : <strong>' + String(err.message || 'inconnue').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])) + '</strong>',
+      icon: '❌',
+      confirmText: 'OK',
+      showCancel: false,
+      variant: 'danger'
+    });
     subscribeAutoBtn.disabled = false;
     subscribeAutoBtn.innerHTML = originalHTML;
   }
@@ -2516,14 +2530,29 @@ subscribeManualBtn.addEventListener('click', () => {
 const urlParams = new URLSearchParams(window.location.search);
 const statut = urlParams.get('statut');
 if (statut === 'succes') {
+  // ✅ Modale uniforme (même modèle que index.html)
+  window.history.replaceState({}, '', window.location.pathname);
   setTimeout(() => {
-    alert('✅ Paiement reçu ! Ton abonnement sera activé dans quelques instants.');
-    window.history.replaceState({}, '', window.location.pathname);
+    window.arvexaConfirm({
+      title: 'Paiement reçu',
+      message: 'Ton abonnement sera <strong>activé dans quelques instants</strong>. Reviens sur cette page dans un instant.',
+      icon: '✅',
+      confirmText: 'Parfait !',
+      showCancel: false,
+      variant: 'primary'
+    });
   }, 500);
 } else if (statut === 'annule') {
+  window.history.replaceState({}, '', window.location.pathname);
   setTimeout(() => {
-    alert('❌ Paiement annulé. Tu peux réessayer quand tu veux.');
-    window.history.replaceState({}, '', window.location.pathname);
+    window.arvexaConfirm({
+      title: 'Paiement annulé',
+      message: 'Tu peux <strong>réessayer</strong> quand tu veux.',
+      icon: 'ℹ️',
+      confirmText: 'OK',
+      showCancel: false,
+      variant: 'primary'
+    });
   }, 500);
 }
 
@@ -2545,12 +2574,14 @@ async function performLogout() {
   if (unsubscribeUser) unsubscribeUser();
   clearSession();
   try { await signOut(auth); } catch (e) {}
-  window.location.replace('login.html');
+  window.location.replace('auth-choice.html');
 }
 
 document.getElementById('logoutBtn').addEventListener('click', (e) => {
   e.preventDefault();
-  performLogout();
+  // ✅ Modale uniforme (même modèle que index.html)
+  if (window.arvexaLogout) { window.arvexaLogout(); return; }
+  performLogout(); // filet de sécurité si le module n'est pas chargé
 });
 
 document.getElementById('menuToggle').addEventListener('click', () => {
@@ -2716,5 +2747,6 @@ updateDisplay();
 
 console.log('🚀 ARVEXA — Abonnement (harmonisé, code promo retiré)');
 </script>
+<script type="module" src="./arvexa-confirm.js"></script>
 </body>
 </html>

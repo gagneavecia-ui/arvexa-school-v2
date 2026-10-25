@@ -1626,7 +1626,7 @@ function renderPlan(data) {
   // ═══ ACTION LINKS ═══
   html += `
     <div class="action-links">
-      <a href="arv-pilot.html" class="action-link">
+      <a href="arv.html" class="action-link">
         <div class="action-link-icon"><i class="fas fa-chart-line"></i></div>
         <div class="action-link-body">
           <div class="action-link-title">Comprendre mes priorités</div>
@@ -1840,9 +1840,16 @@ async function loadPlan(forceRefresh = false) {
 // ═══════════════════════════════════════════════════════════════
 $('loadPlanButton').addEventListener('click', () => loadPlan(false));
 $('refreshPlanButton').addEventListener('click', () => {
-  if (confirm('Rafraîchir le plan ? Cela appellera l\'IA et écrasera le cache actuel.')) {
-    loadPlan(true);
-  }
+  // ✅ Modale uniforme (même modèle que index.html)
+  window.arvexaConfirm({
+    title: 'Rafraîchir le plan ?',
+    message: 'Cela appellera l\'<strong>IA</strong> et écrasera le cache actuel.',
+    icon: '🔄',
+    confirmText: 'Rafraîchir',
+    cancelText: 'Annuler',
+    variant: 'primary',
+    onConfirm: () => loadPlan(true)
+  });
 });
 $('copyPlanButton').addEventListener('click', copyPlanAsText);
 $('modalClose').addEventListener('click', hidePremium);
@@ -1870,5 +1877,6 @@ onAuthStateChanged(auth, (user) => {
 console.log('🚀 ARVEXA — Planificateur v2 (ultra-enrichi)');
 </script>
 
+<script type="module" src="./arvexa-confirm.js"></script>
 </body>
 </html>
