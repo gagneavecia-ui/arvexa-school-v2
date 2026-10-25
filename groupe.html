@@ -12,7 +12,6 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-<script src="arvexa-auth-core.js" defer></script>  
   <script src="register-sw.js" defer></script>
 
   <style>
@@ -1403,6 +1402,32 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// ✅ SEC — échappement pour attributs HTML (les guillemets ne sont pas
+// couverts par escapeHtml, ce qui permettait une injection d'attribut)
+function escapeAttr(text) {
+  return String(text || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ✅ SEC — n'accepte que les data URI d'images valides (anti-XSS stocké).
+// Avant : msg.imageBase64 était injecté brut dans src="…" → injection possible.
+const SAFE_IMAGE_RE = /^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+\/=]+$/;
+function safeImageSrc(src) {
+  return (typeof src === 'string' && src.length > 0 && src.length <= 900000 && SAFE_IMAGE_RE.test(src)) ? src : null;
+}
+
+// ✅ SEC — n'accepte que des URLs d'avatar sans guillemets ni balises
+function safeAvatarUrl(url) {
+  if (typeof url !== 'string' || url.length === 0 || url.length > 500000) return null;
+  if (/\"'<>]/.test(url)) return null;
+  if (/^https:\/\//i.test(url) || /^data:image\/(png|jpe?g|gif|webp);base64,/i.test(url)) return url;
+  return null;
+}
+
 function highlightText(text, query) {
   const safeText = escapeHtml(text || '');
   if (!query) return safeText;
@@ -1539,7 +1564,7 @@ function renderMessages() {
         ? '📷 Photo'
         : (msg.replyTo.content || '').substring(0, 80);
       bubbleContent += `
-        <div class="reply-quote" data-reply-id="${msg.replyTo.id}">
+        <div class="reply-quote" data-reply-id="${escapeAttr(msg.replyTo.id)}">
           <span class="reply-author">${escapeHtml(msg.replyTo.author || 'Inconnu')}</span>
           <span class="reply-content">${highlightText(replyPreviewText, searchQuery)}</span>
         </div>
@@ -1549,14 +1574,18 @@ function renderMessages() {
     if (msg.content) {
       bubbleContent += `<div>${highlightText(msg.content, searchQuery)}</div>`;
     }
-    if (msg.imageBase64) {
-      bubbleContent += `<img src="${msg.imageBase64}" class="msg-image" alt="Image" data-img="${msg.id}">`;
+    // ✅ SEC — image validée avant injection (anti-XSS stocké)
+    const safeImg = safeImageSrc(msg.imageBase64);
+    if (safeImg) {
+      bubbleContent += `<img src="${safeImg}" class="msg-image" alt="Image" data-img="${escapeAttr(msg.id)}">`;
     }
 
+    // ✅ SEC — avatar validé avant injection dans l'attribut style
+    const safeAvatar = safeAvatarUrl(msg.userAvatar);
     const senderBlock = !isSelf
       ? `<div class="message-sender">
-           <div class="avatar-small" ${msg.userAvatar ? `style="background-image:url('${msg.userAvatar}');"` : ''}>
-             ${msg.userAvatar ? '' : initial}
+           <div class="avatar-small" ${safeAvatar ? `style="background-image:url('${safeAvatar}');"` : ''}>
+             ${safeAvatar ? '' : initial}
            </div>
            <span class="sender-name">${escapeHtml(msg.userName || 'Anonyme')}</span>
          </div>`
@@ -1711,15 +1740,18 @@ function loadMessages() {
     unsubscribeMessages = null;
   }
 
+  // ✅ FIX — orderBy DESC : on récupère les MAX_MESSAGES PLUS RÉCENTS
+  // (avant : 'asc' + limit affichait les 100 plus anciens → chat figé),
+  // puis on remet dans l'ordre chronologique pour l'affichage.
   const messagesQuery = query(
     collection(db, 'groups', GROUP_ID, 'messages'),
-    orderBy('createdAt', 'asc'),
+    orderBy('createdAt', 'desc'),
     limit(MAX_MESSAGES)
   );
 
   unsubscribeMessages = onSnapshot(messagesQuery,
     (snapshot) => {
-      messages = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      messages = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).reverse();
       applySearch();
     },
     (error) => {
@@ -1823,6 +1855,16 @@ async function sendMessage() {
   const hasImage = !!pendingImageBase64;
 
   if (!content && !hasImage) return;
+
+  // ✅ SEC — limites miroir des règles Firestore (retour utilisateur immédiat)
+  if (content.length > 2000) {
+    showToast('Message trop long (2000 caractères maximum)', 'error');
+    return;
+  }
+  if (hasImage && pendingImageBase64.length > 900000) {
+    showToast('Image trop lourde (limite dépassée)', 'error');
+    return;
+  }
 
   if (content && containsForbiddenWords(content)) {
     showToast('Message contient des mots interdits', 'error');
