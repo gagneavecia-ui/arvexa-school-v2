@@ -20,7 +20,6 @@
 <script src="katex-utils.js" defer></script>
 <style>
 :root {
-  /* Palette — alignée sur index.html */
   --primary: #1A3A2A;
   --primary-dark: #0A1A12;
   --primary-light: #2A5A3A;
@@ -33,39 +32,25 @@
   --danger-light: #E07A5F;
   --warning: #D4A017;
   --info: #4AAFE0;
-
-  /* Fonds */
   --bg-dark: #0A0A0A;
   --bg-surface: #141414;
   --bg-card: rgba(20, 20, 20, 0.7);
   --card-bg: rgba(20, 20, 20, 0.7);
   --block-bg: rgba(0, 0, 0, 0.25);
-
-  /* Textes */
   --text-light: #F5F0E8;
   --text-dim: #8A8A7A;
   --text-muted: #5A5A4A;
   --text-body: #cfd0cc;
-
-  /* Bordures dorées — identité ARVEXA */
   --card-border: rgba(184, 134, 11, 0.06);
   --card-border-hover: rgba(184, 134, 11, 0.2);
-
-  /* Transitions & ombres */
   --transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
-
-  /* Rayons */
   --radius: 16px;
   --radius-lg: 20px;
-
-  /* Layout */
   --header-height: 64px;
   --sidebar-width: 280px;
-
-  /* Safe areas */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -104,6 +89,18 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
   min-height: var(--header-height);
 }
 .header-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+
+/* ✅ 1.1 — Bouton « Retour à l'accueil » */
+.home-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 10px;
+  border: 1px solid var(--card-border); background: transparent;
+  color: var(--text-dim); transition: var(--transition); font-size: 14px; flex-shrink: 0;
+  text-decoration: none;
+}
+.home-btn:hover { border-color: rgba(224, 184, 74, 0.3); color: var(--accent-bright); }
+.home-btn:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 2px; }
+
 .back-btn {
   display: flex; align-items: center; justify-content: center;
   width: 36px; height: 36px; border-radius: 10px;
@@ -234,6 +231,10 @@ main {
   border-color: rgba(224, 184, 74, 0.25);
   transform: translateY(-2px);
 }
+.subject-card:focus-visible {
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 2px;
+}
 .subject-card .subject-emoji { font-size: 26px; line-height: 1; }
 .subject-card .subject-name {
   font-size: 14px; font-weight: 700;
@@ -250,6 +251,7 @@ main {
   text-align: left; width: 100%; position: relative;
 }
 .list-item:hover { border-color: rgba(224, 184, 74, 0.25); }
+.list-item:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 2px; }
 
 .list-item-icon {
   width: 38px; height: 38px; border-radius: 10px;
@@ -376,6 +378,7 @@ main {
   transition: var(--transition);
 }
 .expand-btn:hover { border-color: rgba(224, 184, 74, 0.3); background: rgba(224, 184, 74, 0.05); }
+.expand-btn.hidden { display: none; }
 
 .block {
   padding: 14px 16px; border-radius: 12px;
@@ -561,7 +564,7 @@ main {
   padding-left: 18px; position: relative;
   font-size: 13px; color: #7ce0aa; line-height: 1.65;
 }
-.trap-solution::before { content: '→'; position: absolute; left: 0; top: 0; font-weight: 700; }
+.trap-solution::before { content: '✓'; position: absolute; left: 0; top: 0; font-weight: 700; }
 
 .qa-list { display: flex; flex-direction: column; gap: 10px; }
 .qa-item {
@@ -1150,6 +1153,7 @@ main {
 .btn-full.loading .spinner { display: block; }
 .btn-full.loading .btn-text, .btn-full.loading .btn-icon { display: none; }
 
+/* ✅ 1.3 — Conteneur de toasts accessible */
 .toast-container {
   position: fixed; top: calc(var(--safe-top) + 16px); left: 50%;
   transform: translateX(-50%); z-index: 9999;
@@ -1246,6 +1250,7 @@ main {
 
 @media (max-width: 480px) {
   .header .back-btn { width: 32px; height: 32px; font-size: 13px; }
+  .header .home-btn { width: 32px; height: 32px; font-size: 13px; }
   .page-title { font-size: 14px; }
   .icon-btn { width: 32px; height: 32px; font-size: 13px; }
   .premium-badge { font-size: 10px; padding: 4px 10px; }
@@ -1256,7 +1261,7 @@ main {
   main { padding: 12px 10px 40px; }
   .greeting h1 { font-size: 20px; }
   .page-title { font-size: 13px; }
-  .icon-btn, .back-btn { width: 30px; height: 30px; font-size: 12px; }
+  .icon-btn, .back-btn, .home-btn { width: 30px; height: 30px; font-size: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1269,7 +1274,8 @@ main {
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+[tabindex]:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 6px;
@@ -1279,9 +1285,7 @@ textarea:focus-visible {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(184, 134, 11, 0.25); border-radius: 10px; }
 
-/* ═══════════════════════════════════════════════════════════════
-   POP-UP PREMIUM UNIVERSEL
-   ═══════════════════════════════════════════════════════════════ */
+/* POP-UP PREMIUM UNIVERSEL */
 .arvexa-popup-overlay {
   position: fixed;
   inset: 0;
@@ -1435,64 +1439,6 @@ textarea:focus-visible {
   transform: translateY(-1px);
   box-shadow: 0 8px 26px rgba(224, 184, 74, 0.45);
 }
-
-/* --- Abdou : guide de révision ARVEXA --- */
-.abdou-welcome {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 0 0 20px;
-  padding: 14px 16px;
-  overflow: hidden;
-  border: 1px solid rgba(224, 184, 74, .22);
-  border-radius: 18px;
-  background: linear-gradient(115deg, rgba(26, 58, 42, .48), rgba(10, 10, 10, .92));
-}
-.abdou-welcome__image {
-  display: block;
-  flex: 0 0 auto;
-  width: clamp(88px, 24vw, 132px);
-  height: auto;
-  object-fit: contain;
-  transform-origin: center bottom;
-  animation: abdou-welcome-float 3s ease-in-out infinite;
-}
-.abdou-welcome__copy { min-width: 0; }
-.abdou-welcome__eyebrow {
-  margin: 0 0 5px;
-  color: #E0B84A;
-  font-size: .72rem;
-  font-weight: 800;
-  letter-spacing: .09em;
-  text-transform: uppercase;
-}
-.abdou-welcome__title {
-  margin: 0 0 5px;
-  color: #F5F0E8;
-  font-size: clamp(1rem, 4vw, 1.25rem);
-  line-height: 1.25;
-}
-.abdou-welcome__message {
-  margin: 0;
-  color: rgba(245, 240, 232, .78);
-  font-size: .88rem;
-  line-height: 1.45;
-}
-@keyframes abdou-welcome-float {
-  0%, 100% { transform: translateY(0) rotate(0); }
-  25% { transform: translateY(-4px) rotate(-1deg); }
-  50% { transform: translateY(-7px) rotate(1deg); }
-  75% { transform: translateY(-2px) rotate(-.5deg); }
-}
-@media (max-width: 420px) {
-  .abdou-welcome { gap: 10px; padding: 11px; }
-  .abdou-welcome__image { width: 82px; }
-  .abdou-welcome__message { font-size: .82rem; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .abdou-welcome__image { animation: none; }
-}
-
 </style>
 </head>
 
@@ -1500,6 +1446,10 @@ textarea:focus-visible {
 
 <header class="header">
   <div class="header-left">
+    <!-- ✅ 1.1 — Retour à l'accueil ARVEXA -->
+    <a href="index.html" class="home-btn" aria-label="Retour à l'accueil ARVEXA" title="Retour à l'accueil">
+      <i class="fas fa-home"></i>
+    </a>
     <button class="back-btn hidden" id="backBtn" aria-label="Retour">
       <i class="fas fa-arrow-left"></i>
     </button>
@@ -1513,7 +1463,7 @@ textarea:focus-visible {
       <i class="fas fa-crown"></i>
       <span>Premium</span>
     </div>
-    <button class="icon-btn" id="refreshBtn" title="Rafraîchir">
+    <button class="icon-btn" id="refreshBtn" title="Rafraîchir" aria-label="Rafraîchir">
       <i class="fas fa-rotate"></i>
     </button>
   </div>
@@ -1528,7 +1478,9 @@ textarea:focus-visible {
 </main>
 
 <div class="modal-backdrop" id="modalBackdrop"></div>
-<div class="toast-container" id="toastContainer"></div>
+
+<!-- ✅ 1.3 — Conteneur de toasts accessible -->
+<div class="toast-container" id="toastContainer" role="status" aria-live="polite" aria-atomic="false"></div>
 
 <!-- POP-UP PREMIUM UNIVERSEL — Cahier -->
 <div class="arvexa-popup-overlay" id="premiumOverlay">
@@ -1544,7 +1496,8 @@ textarea:focus-visible {
       Limite de sections <em>atteinte</em>
     </h2>
 
-    <p class="arvexa-popup-message">
+    <!-- ✅ 1.8 — Message dynamique injecté par JS -->
+    <p class="arvexa-popup-message" id="premiumMessage">
       Tu as utilisé tes <strong>5 sections gratuites</strong> ce mois-ci.
       Passe à Premium pour analyser tes cours sans limite.
     </p>
@@ -1568,12 +1521,10 @@ textarea:focus-visible {
 
   <script type="module">
   import { initializeApp } from "firebase/app";
-  import { getAuth, onAuthStateChanged, getIdToken } from "firebase/auth";
+  import { getAuth, getIdToken } from "firebase/auth";
   import { getFirestore, doc, getDoc } from "firebase/firestore";
+  import { requireAuth } from './auth-guard.js';
 
-  // ═══════════════════════════════════════════════════════════════
-  // CONFIG
-  // ═══════════════════════════════════════════════════════════════
   const firebaseConfig = {
     apiKey: "AIzaSyDHscOXw3rLuhV6z1Cny-bdYCumqpnG7QE",
     authDomain: "arvexa-fbf10.firebaseapp.com",
@@ -1613,12 +1564,12 @@ textarea:focus-visible {
   };
 
   const SYMBOL_GROUPS = [
-    { name: 'Opérations', symbols: ['+','−','×','÷','±','=','≠','≈','·','%','<','>','≤','≥','∝','∞'] },
-    { name: 'Puissances', symbols: ['²','³','⁴','⁵','ⁿ','⁰','¹','√','∛','^','_','½','⅓','¼','¾','⅔'] },
-    { name: 'Grecques',   symbols: ['π','θ','α','β','γ','δ','λ','μ','σ','ρ','φ','ψ','Δ','Ω','ħ','ε'] },
-    { name: 'Analyse',    symbols: ['∫','∑','∏','∂','→','←','↔','⇒','⇔','∇','Δ','∞','lim','d/dx','≈','∝'] },
-    { name: 'Ensembles',  symbols: ['∈','∉','⊂','⊃','∪','∩','∅','ℝ','ℕ','ℤ','ℚ','ℂ','∀','∃','∄','≡'] },
-    { name: 'Physique',   symbols: ['⇌','Å','°C','K','mol','pH','⌬','⚛','⚡','Ω','λ','ν','ΔE','Δt','Δx','F'] }
+    { name: 'Opérations', symbols: ['+','−','×','÷','±','=','≠','≡','·','%','<','>','≤','≥','∈','∉'] },
+    { name: 'Puissances', symbols: ['²','³','⁴','⁵','⁶','⁰','¹','√','∛','^','_','½','⅓','¼','¾','⅛'] },
+    { name: 'Grecques',   symbols: ['π','θ','α','β','γ','δ','λ','μ','σ','ρ','φ','ω','τ','η','ξ','ε'] },
+    { name: 'Analyse',    symbols: ['∫','∬','∭','∂','∑','∏','∞','≃','≈','≡','→','↦','lim','d/dx','∀','∃'] },
+    { name: 'Ensembles',  symbols: ['∈','∉','⊂','⊃','⊆','⊇','∩','∪','∅','ℕ','ℤ','ℚ','ℝ','ℂ','⊂≠','⊕'] },
+    { name: 'Physique',   symbols: ['⇔','Å','°C','K','mol','pH','€','☢','⚡','λ','ν','ΔE','Δt','Δx','F'] }
   ];
 
   const state = {
@@ -1632,9 +1583,6 @@ textarea:focus-visible {
 
   const $ = (id) => document.getElementById(id);
 
-  // ═══════════════════════════════════════════════════════════════
-  // ✅ HELPER : Safe array
-  // ═══════════════════════════════════════════════════════════════
   function safeArray(v) {
     return Array.isArray(v) ? v : [];
   }
@@ -1692,7 +1640,7 @@ textarea:focus-visible {
         <h3>${escapeHtml(label)}...</h3>
         <div class="generating-steps">
           <div class="generating-step active" data-step="1">
-            <span class="generating-step-icon">🔍</span>
+            <span class="generating-step-icon">🧠</span>
             <span>Extraction des concepts</span>
           </div>
           <div class="generating-step" data-step="2">
@@ -1777,6 +1725,7 @@ textarea:focus-visible {
       const err = new Error(data?.error || `Erreur ${response.status}`);
       err.code = data?.code;
       err.status = response.status;
+      err.payload = data;
       throw err;
     }
     return data;
@@ -1844,8 +1793,8 @@ textarea:focus-visible {
       notebooks: { emoji: '📓', text: 'Mon cahier' },
       notebook: { emoji: SUBJECTS[state.params.subject]?.emoji || '📖', text: SUBJECTS[state.params.subject]?.label || 'Cahier' },
       chapter: { emoji: '📖', text: 'Chapitre' },
-      section: { emoji: '📝', text: 'Section' },
-      lesson: { emoji: '📄', text: 'Leçon' }
+      section: { emoji: '📄', text: 'Section' },
+      lesson: { emoji: '📚', text: 'Leçon' }
     };
     const info = map[state.view] || map.notebooks;
     $('pageTitle').innerHTML = `<span class="emoji">${info.emoji}</span><span id="pageTitleText">${escapeHtml(info.text)}</span>`;
@@ -1872,7 +1821,6 @@ textarea:focus-visible {
       const safeActivityList = safeArray(data.recentActivity);
 
       const totalSections = data.summary?.totalSections || 0;
-      const streak = data.streak || { current: 0 };
       const studyTime = data.studyTime || {
         formatted: { total: '0 min', week: '0 min', today: '0 min' },
         totalMinutes: 0,
@@ -1887,7 +1835,8 @@ textarea:focus-visible {
         const last = active ? active.last : '';
 
         return `
-          <button class="subject-card" data-subject="${key}">
+          <button class="subject-card" data-subject="${key}"
+                  aria-label="Ouvrir ${escapeHtml(info.label)}">
             <div class="subject-emoji">${info.emoji}</div>
             <div class="subject-name">${escapeHtml(info.label)}</div>
             <div class="subject-meta">
@@ -1904,7 +1853,8 @@ textarea:focus-visible {
           <div class="section-title"><i class="fas fa-clock"></i> Récent</div>
           <div class="list">
             ${safeActivityList.map((a) => `
-              <button class="list-item" data-subject="${a.subject}" data-chapter="${escapeHtml(a.chapterId)}">
+              <button class="list-item" data-subject="${a.subject}" data-chapter="${escapeHtml(a.chapterId)}"
+                      aria-label="Ouvrir le chapitre ${escapeHtml(a.chapterTitle)}">
                 <div class="list-item-icon"><i class="fas fa-book"></i></div>
                 <div class="list-item-body">
                   <div class="list-item-title">${escapeHtml(a.chapterTitle)}</div>
@@ -1922,19 +1872,6 @@ textarea:focus-visible {
         : '';
 
       el.innerHTML = `
-        <div class="abdou-welcome" aria-label="Accueil par Abdou, guide de révision">
-          <img class="abdou-welcome__image"
-               src="/images/abdou-arv-progress.webp"
-               alt="Abdou, ton guide de révision, qui te salue"
-               loading="eager"
-               onerror="this.hidden=true">
-          <div class="abdou-welcome__copy">
-            <p class="abdou-welcome__eyebrow">Ton guide de révision</p>
-            <h2 class="abdou-welcome__title">Salut, prêt à avancer ?</h2>
-            <p class="abdou-welcome__message">On avance étape par étape. Choisis une matière et reprenons ensemble.</p>
-          </div>
-        </div>
-
         <div class="greeting">
           <h1>${getGreeting()}, <em>${escapeHtml(getFirstName())}</em></h1>
           <p>${totalSections > 0 ? 'Continue là où tu t\'es arrêté.' : 'Commence ton premier cahier.'}</p>
@@ -1997,7 +1934,9 @@ textarea:focus-visible {
         : chapters.map((c) => `
             <div class="list-item" data-chapter="${escapeHtml(c.id)}">
               <div class="list-item-icon"><i class="fas fa-book"></i></div>
-              <div class="list-item-body" data-nav="chapter">
+              <div class="list-item-body" data-nav="chapter"
+                   role="button" tabindex="0"
+                   aria-label="Ouvrir le chapitre ${escapeHtml(c.title)}">
                 <div class="list-item-title">${escapeHtml(c.title)}</div>
                 <div class="list-item-meta">
                   <span>${c.sectionsCount} section${c.sectionsCount > 1 ? 's' : ''}</span>
@@ -2005,10 +1944,14 @@ textarea:focus-visible {
                   <span>${escapeHtml(c.last)}</span>
                 </div>
               </div>
-              <button class="list-item-delete" data-delete-chapter="${escapeHtml(c.id)}" title="Supprimer">
+              <button class="list-item-delete" data-delete-chapter="${escapeHtml(c.id)}"
+                      title="Supprimer" aria-label="Supprimer le chapitre ${escapeHtml(c.title)}">
                 <i class="fas fa-trash-alt"></i>
               </button>
-              <div class="list-item-arrow" data-nav="chapter"><i class="fas fa-chevron-right"></i></div>
+              <div class="list-item-arrow" data-nav="chapter" role="button" tabindex="0"
+                   aria-label="Ouvrir le chapitre ${escapeHtml(c.title)}">
+                <i class="fas fa-chevron-right"></i>
+              </div>
             </div>
           `).join('');
 
@@ -2022,19 +1965,27 @@ textarea:focus-visible {
 
         <div class="list">
           ${listHtml}
-          <button class="list-item new" id="newChapterBtn">
+          <button class="list-item new" id="newChapterBtn" aria-label="Créer un nouveau chapitre">
             <i class="fas fa-plus"></i>
             <span>Nouveau chapitre</span>
           </button>
         </div>
       `;
 
+      // ✅ 1.4 — Navigation clavier sur les cartes chapitre
       el.querySelectorAll('[data-chapter]').forEach((item) => {
         const chapterId = item.dataset.chapter;
         item.querySelectorAll('[data-nav="chapter"]').forEach((target) => {
-          target.addEventListener('click', (e) => {
+          const handler = (e) => {
             e.stopPropagation();
             navigate('chapter', { subject, chapterId });
+          };
+          target.addEventListener('click', handler);
+          target.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handler(e);
+            }
           });
         });
       });
@@ -2091,7 +2042,9 @@ textarea:focus-visible {
         : sections.map((s, idx) => `
             <div class="list-item" data-section="${escapeHtml(s.id)}">
               <div class="list-item-icon"><i class="fas fa-check"></i></div>
-              <div class="list-item-body" data-nav="section">
+              <div class="list-item-body" data-nav="section"
+                   role="button" tabindex="0"
+                   aria-label="Ouvrir la section ${escapeHtml(s.title)}">
                 <div class="list-item-title">${idx + 1}. ${escapeHtml(s.title)}</div>
                 <div class="list-item-meta">
                   ${s.questionsCount > 0 ? `<span>${s.questionsCount} Q/R</span><span class="dot"></span>` : ''}
@@ -2099,10 +2052,14 @@ textarea:focus-visible {
                   <span>${escapeHtml(s.time)}</span>
                 </div>
               </div>
-              <button class="list-item-delete" data-delete-section="${escapeHtml(s.id)}" title="Supprimer">
+              <button class="list-item-delete" data-delete-section="${escapeHtml(s.id)}"
+                      title="Supprimer" aria-label="Supprimer la section ${escapeHtml(s.title)}">
                 <i class="fas fa-trash-alt"></i>
               </button>
-              <div class="list-item-arrow" data-nav="section"><i class="fas fa-chevron-right"></i></div>
+              <div class="list-item-arrow" data-nav="section" role="button" tabindex="0"
+                   aria-label="Ouvrir la section ${escapeHtml(s.title)}">
+                <i class="fas fa-chevron-right"></i>
+              </div>
             </div>
           `).join('');
 
@@ -2124,19 +2081,27 @@ textarea:focus-visible {
 
         <div class="list">
           ${listHtml}
-          <button class="list-item new" id="addSectionBtn">
+          <button class="list-item new" id="addSectionBtn" aria-label="Ajouter une section">
             <i class="fas fa-plus"></i>
             <span>Ajouter une section</span>
           </button>
         </div>
       `;
 
+      // ✅ 1.4 — Navigation clavier
       el.querySelectorAll('[data-section]').forEach((item) => {
         const sectionId = item.dataset.section;
         item.querySelectorAll('[data-nav="section"]').forEach((target) => {
-          target.addEventListener('click', (e) => {
+          const handler = (e) => {
             e.stopPropagation();
             navigate('section', { subject, chapterId, sectionId });
+          };
+          target.addEventListener('click', handler);
+          target.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handler(e);
+            }
           });
         });
       });
@@ -2229,11 +2194,17 @@ textarea:focus-visible {
       const container = $('analysisContainer');
       container.innerHTML = renderAnalysis(a, profile);
 
+      // ✅ B11 — N'afficher « Voir tout » que si nécessaire
+      const raw = $('rawInput');
+      if (raw && raw.scrollHeight <= 210) {
+        $('expandRawBtn')?.classList.add('hidden');
+      }
+
       $('expandRawBtn')?.addEventListener('click', () => {
-        const raw = $('rawInput');
-        raw.classList.toggle('expanded');
+        const rawEl = $('rawInput');
+        rawEl.classList.toggle('expanded');
         const span = $('expandRawBtn').querySelector('span');
-        span.textContent = raw.classList.contains('expanded') ? 'Réduire' : 'Voir tout';
+        span.textContent = rawEl.classList.contains('expanded') ? 'Réduire' : 'Voir tout';
       });
 
       el.querySelectorAll('.qa-item').forEach((item) => {
@@ -2261,14 +2232,19 @@ textarea:focus-visible {
         });
       });
 
+      // ✅ B15 — Autosave notes : ne rien envoyer si valeur inchangée
       let notesTimer = null;
+      let lastSavedNotes = s.userNotes || '';
       $('notesArea')?.addEventListener('input', () => {
         const status = $('notesStatus');
+        const currentValue = $('notesArea').value;
+        if (currentValue === lastSavedNotes) return;
         status.textContent = 'Enregistrement...';
         clearTimeout(notesTimer);
         notesTimer = setTimeout(async () => {
           try {
-            await callApi('updateNotes', { subject, chapterId, sectionId, userNotes: $('notesArea').value });
+            await callApi('updateNotes', { subject, chapterId, sectionId, userNotes: currentValue });
+            lastSavedNotes = currentValue;
             delete state.cache.chapter[`${subject}/${chapterId}`];
             status.textContent = 'Enregistré';
             status.className = 'notes-status saved';
@@ -2288,12 +2264,12 @@ textarea:focus-visible {
           showToast('Cette matière n\'est pas encore disponible en mode examen.', 'info', 3000);
           return;
         }
-        var params = new URLSearchParams();
-        params.set('subject', examSubject);
-        if (chap) params.set('chapter', chap);
-        if (chapterId) params.set('chapterId', chapterId);
-        params.set('useNotebook', 'true');
-        window.location.href = 'exam.html?' + params.toString();
+        var params2 = new URLSearchParams();
+        params2.set('subject', examSubject);
+        if (chap) params2.set('chapter', chap);
+        if (chapterId) params2.set('chapterId', chapterId);
+        params2.set('useNotebook', 'true');
+        window.location.href = 'exam.html?' + params2.toString();
       });
 
     } catch (err) {
@@ -2382,7 +2358,7 @@ textarea:focus-visible {
       const examples = safeArray(p.everydayExamples);
       if (examples.length > 0) {
         extra += `<div class="part-terms" style="margin-top:10px;">
-          <div class="part-terms-title">💡 Exemples du quotidien</div>
+          <div class="part-terms-title">🏠 Exemples du quotidien</div>
           <ul class="simple-list">${examples.map((ex, i) => `<li><span class="num">${i + 1}.</span><span>${safeText(ex)}</span></li>`).join('')}</ul>
         </div>`;
       }
@@ -2392,7 +2368,7 @@ textarea:focus-visible {
       const examples = safeArray(p.examples);
       if (examples.length > 0) {
         extra += `<div class="part-terms" style="margin-top:10px;">
-          <div class="part-terms-title">🌐 Exemples</div>
+          <div class="part-terms-title">💬 Exemples</div>
           <div style="display:flex;flex-direction:column;gap:8px;">
             ${examples.map((ex) => `
               <div>
@@ -2410,8 +2386,8 @@ textarea:focus-visible {
           <div style="display:flex;flex-direction:column;gap:6px;">
             ${mistakes.map((m) => `
               <div style="font-size:13px;color:var(--text-body);line-height:1.55;">
-                <span style="color:#ff9a84;">❌ ${safeText(m.mistake)}</span><br>
-                <span style="color:#7ce0aa;">✅ ${safeText(m.correction)}</span>
+                <span style="color:#ff9a84;">✗ ${safeText(m.mistake)}</span><br>
+                <span style="color:#7ce0aa;">✓ ${safeText(m.correction)}</span>
               </div>
             `).join('')}
           </div>
@@ -2827,6 +2803,7 @@ textarea:focus-visible {
 
   // ═══════════════════════════════════════════════════════════════
   // VUE 5 — LEÇON COMPLÈTE
+  // ✅ 6.4 — Q/R et QCM inclus dans la leçon complète
   // ═══════════════════════════════════════════════════════════════
   async function renderLessonView(params) {
     const el = $('view-lesson');
@@ -2847,6 +2824,7 @@ textarea:focus-visible {
 
       const sectionsHtml = sections.map((s, i) => {
         const a = s.analysis || {};
+        const profile = s.profile || 'scientific';
         let content = '';
 
         if (a.explanation?.understanding) {
@@ -2857,11 +2835,31 @@ textarea:focus-visible {
         }
 
         if (a.explanation?.parts) {
-          content += safeArray(a.explanation.parts).map((p) => renderPart(p, s.profile || 'scientific')).join('');
+          content += safeArray(a.explanation.parts).map((p) => renderPart(p, profile)).join('');
         }
 
         if (a.structure) {
-          content += renderStructure(a.structure, s.profile || 'scientific');
+          content += renderStructure(a.structure, profile);
+        }
+
+        // ✅ 6.4 — Inclure les questions dans la leçon complète
+        const questions = safeArray(a.questions);
+        if (questions.length > 0) {
+          content += `<div class="content-section">
+            <div class="content-section-title"><i class="fas fa-circle-question"></i>Banque de questions <span class="count">${questions.length}</span></div>
+            <div class="qa-list">
+              ${questions.map((q, qi) => renderQuestion(q, qi)).join('')}
+            </div>
+          </div>`;
+        }
+
+        // ✅ 6.4 — Inclure les QCM dans la leçon complète
+        const qcm = safeArray(a.qcm);
+        if (qcm.length > 0) {
+          content += `<div class="content-section">
+            <div class="content-section-title"><i class="fas fa-list-check"></i>QCM <span class="count">${qcm.length}</span></div>
+            <div>${qcm.map((q, qi) => renderQcm(q, qi)).join('')}</div>
+          </div>`;
         }
 
         if (s.userNotes && s.userNotes.trim()) {
@@ -2904,6 +2902,31 @@ textarea:focus-visible {
         ${sectionsHtml}
       `;
 
+      // Q/R + QCM interactifs dans la leçon complète
+      el.querySelectorAll('.qa-item').forEach((item) => {
+        item.querySelector('.qa-question').addEventListener('click', () => {
+          item.classList.toggle('open');
+        });
+      });
+
+      el.querySelectorAll('.qcm-item').forEach((qcm) => {
+        const correct = qcm.dataset.correct;
+        const options = qcm.querySelectorAll('.qcm-option');
+        const explanation = qcm.querySelector('.qcm-explanation');
+        options.forEach((opt) => {
+          opt.addEventListener('click', () => {
+            if (qcm.dataset.answered === '1') return;
+            qcm.dataset.answered = '1';
+            const letter = opt.dataset.letter;
+            options.forEach((o) => {
+              if (o.dataset.letter === correct) o.classList.add('correct');
+              else if (o.dataset.letter === letter) o.classList.add('wrong');
+            });
+            if (explanation) explanation.classList.add('show');
+          });
+        });
+      });
+
       $('goToExamLessonBtn')?.addEventListener('click', function () {
         var subj = $('goToExamLessonBtn').dataset.subject;
         var chap = $('goToExamLessonBtn').dataset.chapter;
@@ -2912,12 +2935,12 @@ textarea:focus-visible {
           showToast('Cette matière n\'est pas encore disponible en mode examen.', 'info', 3000);
           return;
         }
-        var params = new URLSearchParams();
-        params.set('subject', examSubject);
-        if (chap) params.set('chapter', chap);
-        if (chapterId) params.set('chapterId', chapterId);
-        params.set('useNotebook', 'true');
-        window.location.href = 'exam.html?' + params.toString();
+        var params2 = new URLSearchParams();
+        params2.set('subject', examSubject);
+        if (chap) params2.set('chapter', chap);
+        if (chapterId) params2.set('chapterId', chapterId);
+        params2.set('useNotebook', 'true');
+        window.location.href = 'exam.html?' + params2.toString();
       });
 
     } catch (err) {
@@ -2977,8 +3000,16 @@ textarea:focus-visible {
     });
   }
 
-  function showPremiumModal() {
+  // ✅ 1.8 — Popup Premium dynamique
+  function showPremiumModal(limit, used) {
     const overlay = $('premiumOverlay');
+    const msgEl = $('premiumMessage');
+    if (msgEl) {
+      const safeLimit = Number.isFinite(limit) ? limit : 5;
+      const safeUsed = Number.isFinite(used) ? used : null;
+      const usedText = safeUsed !== null ? `Tes <strong>${safeLimit} sections gratuites</strong> ce mois-ci` : `Tes <strong>${safeLimit} sections gratuites</strong>`;
+      msgEl.innerHTML = `${usedText} sont épuisées. Passe à Premium pour analyser tes cours sans limite.`;
+    }
     if (overlay) overlay.classList.add('show');
   }
 
@@ -3049,6 +3080,40 @@ textarea:focus-visible {
 
   let __isAddSectionModalOpen = false;
 
+  // ✅ 1.6 — Purge automatique du brouillon > 7 jours
+  const DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  function loadDraft(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+      if (!parsed.value || typeof parsed.value !== 'string') return null;
+      if (!parsed.ts || (Date.now() - parsed.ts) > DRAFT_TTL_MS) {
+        localStorage.removeItem(key);
+        return null;
+      }
+      return parsed.value;
+    } catch (e) {
+      try { localStorage.removeItem(key); } catch (_) {}
+      return null;
+    }
+  }
+
+  function saveDraft(key, value) {
+    try {
+      if (value && value.trim().length > 0) {
+        localStorage.setItem(key, JSON.stringify({ value, ts: Date.now() }));
+      } else {
+        localStorage.removeItem(key);
+      }
+    } catch (e) {}
+  }
+
+  function clearDraft(key) {
+    try { localStorage.removeItem(key); } catch (e) {}
+  }
+
   function openAddSectionModal(subject, chapterId) {
     if (__isAddSectionModalOpen) return;
     __isAddSectionModalOpen = true;
@@ -3108,6 +3173,18 @@ textarea:focus-visible {
     const submitBtn = $('sectionSubmitBtn');
     const toggle = $('symbolsToggle');
     const panel = $('symbolsPanel');
+
+    // ✅ 1.6 — Restauration du brouillon (avec TTL 7 jours)
+    const DRAFT_KEY = 'arvexa_section_draft_' + subject + '_' + chapterId;
+    const saved = loadDraft(DRAFT_KEY);
+    if (saved) {
+      body.value = saved;
+      body.dispatchEvent(new Event('input'));
+    }
+
+    body.addEventListener('input', () => {
+      saveDraft(DRAFT_KEY, body.value);
+    });
 
     const releaseGarde = () => { __isAddSectionModalOpen = false; };
     $('modalBackdrop')?.addEventListener('click', (e) => {
@@ -3176,12 +3253,16 @@ textarea:focus-visible {
         const result = await callApi('createSection', { subject, chapterId, rawInput });
         cleanupProgress();
         showToast('Section analysée', 'success');
+        clearDraft(DRAFT_KEY);
         delete state.cache.chapter[`${subject}/${chapterId}`];
         applyRoute({ view: 'section', params: { subject, chapterId, sectionId: result.sectionId } });
       } catch (e) {
         cleanupProgress();
         if (e.code === 'FREE_SECTION_LIMIT') {
-          showPremiumModal();
+          // ✅ 1.8 — Extraire le quota depuis la réponse API
+          const limit = e.payload?.limit ?? 5;
+          const used = e.payload?.used ?? limit;
+          showPremiumModal(limit, used);
           applyRoute({ view: 'chapter', params: { subject, chapterId } });
         } else {
           showToast('Erreur : ' + e.message, 'error', 5000);
@@ -3212,6 +3293,7 @@ textarea:focus-visible {
 
   // ═══════════════════════════════════════════════════════════════
   // TRACKING TEMPS D'ÉTUDE
+  // ✅ 1.7 — Correction du double comptage à la fermeture
   // ═══════════════════════════════════════════════════════════════
   let studyLastSync = Date.now();
   const STUDY_SYNC_INTERVAL_MS = 2 * 60 * 1000;
@@ -3262,10 +3344,14 @@ textarea:focus-visible {
     }
   }, STUDY_SYNC_INTERVAL_MS);
 
+  // ✅ 1.7 — Réinitialiser studyLastSync AVANT l'envoi pour éviter le double comptage
   window.addEventListener('beforeunload', () => {
     const elapsed = Date.now() - studyLastSync;
     const minutes = Math.floor(elapsed / 60000);
     if (minutes >= 1 && state.user) {
+      // Mettre à jour immédiatement pour que visibilitychange ne renvoie pas les mêmes minutes
+      const minutesToSend = Math.min(120, minutes);
+      studyLastSync = Date.now();
       try {
         const cachedToken = sessionStorage.getItem('arvexa_id_token');
         if (cachedToken) {
@@ -3275,7 +3361,7 @@ textarea:focus-visible {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${cachedToken}`
             },
-            body: JSON.stringify({ action: 'trackStudyTime', minutes: Math.min(120, minutes) }),
+            body: JSON.stringify({ action: 'trackStudyTime', minutes: minutesToSend }),
             keepalive: true
           }).catch(() => {});
         }
@@ -3304,29 +3390,30 @@ textarea:focus-visible {
   // ═══════════════════════════════════════════════════════════════
   // AUTH
   // ═══════════════════════════════════════════════════════════════
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      window.location.replace('auth-choice.html');
-      return;
-    }
-    state.user = user;
+  requireAuth({
+    onUser: async (user) => {
+      state.user = user;
 
-    try {
-      const snap = await getDoc(doc(db, 'users', user.uid));
-      if (snap.exists()) {
-        state.userData = snap.data();
-        state.isPremium = isPremiumUser(state.userData);
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          state.userData = snap.data();
+          state.isPremium = isPremiumUser(state.userData);
+        }
+      } catch (_) {}
+
+      updatePremiumBadge();
+      applyRoute(routeFromHash());
+
+      if (!window.location.hash) {
+        window.history.replaceState(null, '', '#/notebooks');
       }
-    } catch (_) {}
 
-    updatePremiumBadge();
-    applyRoute(routeFromHash());
-
-    if (!window.location.hash) {
-      window.history.replaceState(null, '', '#/notebooks');
+      cacheToken();
+    },
+    onNoUser: () => {
+      window.location.replace('auth-choice.html');
     }
-
-    cacheToken();
   });
 
   function isPremiumUser(data) {
@@ -3347,7 +3434,7 @@ textarea:focus-visible {
     return false;
   }
 
-  console.log('📓 ARVEXA — Mon cahier v9.2 — Corrections appliquées');
+  console.log('📓 ARVEXA — Mon cahier v9.3 — Corrections Phase 2 étape 1');
   </script>
 </body>
 </html>
