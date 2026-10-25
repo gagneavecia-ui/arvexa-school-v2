@@ -12,11 +12,39 @@ const PRICES = { monthly: 2000, annual: 18000 };
 const SITE_URL = 'https://arvexaschool.vercel.app';
 const BASE = 'https://api.saspay.me/api/v1';
 
-if (!getApps().length) {
-  const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
-  initializeApp({ credential: cert(sa) });
+// ✅ FIX CRITIQUE (2026-10-26) — même correction que le webhook : init
+// paresseuse + FIREBASE_ADMIN_CREDENTIALS (la variable réellement présente
+// dans Vercel, comme les autres API) au lieu de FIREBASE_SERVICE_ACCOUNT
+// (inexistante). Sans ça, la fonction crashait au chargement du module.
+let _db = null;
+let _initError = null;
+
+function ensureFirebase() {
+  if (_db) return _db;
+  if (_initError) throw _initError;
+  try {
+    const raw = (process.env.FIREBASE_ADMIN_CREDENTIALS
+             || process.env.FIREBASE_SERVICE_ACCOUNT || '').trim();
+    if (!raw) throw new Error('FIREBASE_ADMIN_CREDENTIALS manquante dans Vercel');
+
+    let sa;
+    try { sa = JSON.parse(raw); }
+    catch (e) {
+      // Piège classique Vercel : clé privée collée avec \n littéraux
+      sa = JSON.parse(raw.replace(/\\n/g, '\n'));
+    }
+    if (!sa || !sa.project_id || !sa.private_key || !sa.client_email) {
+      throw new Error('Service account incomplet (project_id / private_key / client_email)');
+    }
+
+    if (!getApps().length) initializeApp({ credential: cert(sa) });
+    _db = getFirestore();
+    return _db;
+  } catch (e) {
+    _initError = e;
+    throw e;
+  }
 }
-const db = getFirestore();
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', SITE_URL);
@@ -26,6 +54,20 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
+    // ✅ FIX — vérification de la config Firebase AVANT de contacter SasPay :
+    // si elle est cassée, on refuse d'encaisser un paiement qui ne pourrait
+    // jamais être activé par le webhook (fail-closed).
+    let db;
+    try {
+      db = ensureFirebase();
+    } catch (cfgErr) {
+      console.error('🔴 Config Firebase admin invalide :', cfgErr.message);
+      return res.status(500).json({
+        error: 'server_config',
+        detail: 'Paiement temporairement indisponible — contacte le support'
+      });
+    }
+
     // 🔒 clientAmount volontairement ignoré : seul le serveur décide du prix
     const { uid, plan, promoCode, customerEmail, customerName } = req.body || {};
 

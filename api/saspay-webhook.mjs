@@ -10,11 +10,43 @@ import crypto from 'crypto';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 
-if (!getApps().length) {
-  const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
-  initializeApp({ credential: cert(sa) });
+// ✅ FIX CRITIQUE (2026-10-26) — le webhook crashait au CHARGEMENT du module
+// (FUNCTION_INVOCATION_FAILED) : il lisait FIREBASE_SERVICE_ACCOUNT, variable
+// qui n'existe pas dans Vercel, et initialisait Firebase de façon immédiate.
+// Toutes les autres API utilisent FIREBASE_ADMIN_CREDENTIALS avec init paresseux.
+// → L'activation d'abonnement n'a JAMAIS fonctionné en production.
+// Désormais : init paresseuse à l'intérieur du handler + variable correcte
+// + validation robuste + réponse JSON claire en cas de mauvaise config
+// (SasPay peut réessayer au lieu de recevoir un crash silencieux).
+let _db = null;
+let _initError = null;
+
+function ensureFirebase() {
+  if (_db) return _db;
+  if (_initError) throw _initError;
+  try {
+    const raw = (process.env.FIREBASE_ADMIN_CREDENTIALS
+             || process.env.FIREBASE_SERVICE_ACCOUNT || '').trim();
+    if (!raw) throw new Error('FIREBASE_ADMIN_CREDENTIALS manquante dans Vercel');
+
+    let sa;
+    try { sa = JSON.parse(raw); }
+    catch (e) {
+      // Piège classique Vercel : clé privée collée avec \n littéraux
+      sa = JSON.parse(raw.replace(/\\n/g, '\n'));
+    }
+    if (!sa || !sa.project_id || !sa.private_key || !sa.client_email) {
+      throw new Error('Service account incomplet (project_id / private_key / client_email)');
+    }
+
+    if (!getApps().length) initializeApp({ credential: cert(sa) });
+    _db = getFirestore();
+    return _db;
+  } catch (e) {
+    _initError = e;
+    throw e;
+  }
 }
-const db = getFirestore();
 
 const TOLERANCE_SECONDS = 300;
 
@@ -45,6 +77,20 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
   try {
+    // ✅ FIX — initialisation paresseuse : en cas de mauvaise config, on
+    // renvoie une erreur claire (SasPay réessaie) au lieu d'un crash muet.
+    let db;
+    try {
+      db = ensureFirebase();
+    } catch (cfgErr) {
+      console.error('🔴 Config Firebase admin invalide :', cfgErr.message);
+      return res.status(500).json({
+        error: 'server_config',
+        detail: 'Firebase admin non configuré sur le serveur',
+        received: true
+      });
+    }
+
     const rawBody = await readRawBody(req);
     const signature = req.headers['x-webhook-signature'];
     const timestamp = req.headers['x-webhook-timestamp'];
